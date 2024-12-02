@@ -25,8 +25,8 @@ class AudioCueGenerator:
         pan_factor = np.linspace(-1, 1, fade_dur_ind)
         pan_factor = np.concatenate((pan_factor, np.full(len(t) - fade_dur_ind, pan_factor[-1])))
 
-        left_channel = (1 - pan_factor) * self.generate_beep_sound(dur, sample_rate, beep_frequency)
-        right_channel = pan_factor * self.generate_beep_sound(dur, sample_rate, beep_frequency)
+        left_channel = (1 - pan_factor) * self.generate_beep_sound(dur, self.sample_rate, beep_frequency)
+        right_channel = pan_factor * self.generate_beep_sound(dur, self.sample_rate, beep_frequency)
 
         stereo_array = np.column_stack((left_channel, right_channel))
         return stereo_array
@@ -141,9 +141,6 @@ class AudioCueGenerator:
             combined_gaussian += gaussians[i] + gaussians[i + 1]
             # normalize the combined gaussian
             combined_gaussian /= np.max(combined_gaussian)
-        
-        # calcuate tresholds of increasing and decreasing where the gaussian starts and ends
-        #tresholds = [mu_list[0] - 3 * sigma, mu_list[1] + 3 * sigma]
 
         return combined_gaussian * intensity
 
@@ -166,7 +163,9 @@ class AudioCueGenerator:
                                         noise_type="pink", 
                                         peak_amplitude=100, sigma=0.1,
                                         event_duration=0.5):
-        peak_duration= event_duration - 2*3*sigma
+        
+        treshold_sigma = 2
+        peak_duration= event_duration - 2*treshold_sigma*sigma
         
         # Generate noise
         noise_signal = self.generate_noise(total_dur, noise_type)
@@ -176,9 +175,10 @@ class AudioCueGenerator:
                                                 [signal_start, signal_start + peak_duration], #mu list
                                                 sigma,peak_amplitude)
         noise_signal *= envelope
-
-
         return noise_signal
+    
+    
+
 
 # # Example usage:
 audio_cue = AudioCueGenerator(sampleRate=44100)
@@ -190,7 +190,7 @@ eventDur= 0.9
 test_sound = audio_cue.low_reliability_test_sound(
     total_dur=3, signal_start=1.25, 
     event_duration=eventDur,
-    noise_type="pink", sigma=0.1, peak_amplitude=3)
+    noise_type="white", sigma=0.1, peak_amplitude=3)
 audio_cue.play_sound(test_sound)
 
 import matplotlib.pyplot as plt
