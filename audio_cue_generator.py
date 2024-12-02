@@ -9,16 +9,17 @@ import numpy as np
 from psychopy import sound, core
 
 class AudioCueGenerator:
-    def __init__(self):
-        pass
+    def __init__(self, sampleRate=44100):
+        
+        self.sample_rate = sampleRate  # in Hz
 
-    def generate_beep_sound(self, dur=2, sample_rate=44100, beep_frequency=440):
-        t = np.arange(0, dur, 1.0 / sample_rate)
+    def generate_beep_sound(self, dur=2,  beep_frequency=440):
+        t = np.arange(0, dur, 1.0 / self.sample_rate)
         beep_signal = np.sin(2.0 * np.pi * beep_frequency * t)
         return beep_signal
 
-    def create_panning_beep_array(self, dur=2, sample_rate=44100, beep_frequency=440, pan_exponent=2):
-        t = np.arange(0, dur, 1.0 / sample_rate)
+    def create_panning_beep_array(self, dur=2,  beep_frequency=440, pan_exponent=2):
+        t = np.arange(0, dur, 1.0 / self.sample_rate)
         fade_dur_ind = len(t) // 3
 
         pan_factor = np.linspace(-1, 1, fade_dur_ind)
@@ -30,19 +31,19 @@ class AudioCueGenerator:
         stereo_array = np.column_stack((left_channel, right_channel))
         return stereo_array
 
-    def create_stereo_sound(self, dur=2, sample_rate=44100, beep_frequency=440, channel='left'):
-        t = np.arange(0, dur, 1.0 / sample_rate)
+    def create_stereo_sound(self, dur=2,  beep_frequency=440, channel='left'):
+        t = np.arange(0, dur, 1.0 / self.sample_rate)
         if channel == 'left':
-            left_channel = self.generate_beep_sound(dur, sample_rate, beep_frequency)
+            left_channel = self.generate_beep_sound(dur, self.sample_rate, beep_frequency)
             right_channel = np.zeros(len(t))
         elif channel == 'right':
             left_channel = np.zeros(len(t))
-            right_channel = self.generate_beep_sound(dur, sample_rate, beep_frequency)
+            right_channel = self.generate_beep_sound(dur, self.sample_rate, beep_frequency)
 
         stereo_array = np.column_stack((left_channel, right_channel))
         return stereo_array
 
-    def generate_noise(self,dur=2, sample_rate=44100, noise_type="white"):
+    def generate_noise(self,dur=2,  noise_type="white"):
         """
         Generate various types of noise (white, pink, brownian, blue, violet).
         
@@ -52,7 +53,7 @@ class AudioCueGenerator:
         :return: The generated noise signal.
         """
         # Generate raw white noise
-        noise_signal = np.random.normal(0, 1, int(dur * sample_rate))
+        noise_signal = np.random.normal(0, 1, int(dur * self.sample_rate))
         
         if noise_type == "white":
             # White noise: no filtering needed
@@ -61,7 +62,7 @@ class AudioCueGenerator:
         elif noise_type == "pink":
             # Pink noise: 1 / sqrt(f) filter
             num_samples = len(noise_signal)
-            freqs = np.fft.rfftfreq(num_samples, d=1/sample_rate)
+            freqs = np.fft.rfftfreq(num_samples, d=1/self.sample_rate)
             fft_values = np.fft.rfft(noise_signal)
             pink_filter = np.where(freqs > 0, 1 / np.sqrt(freqs), 0)  # Avoid division by zero
             filtered_fft_values = fft_values * pink_filter
@@ -74,7 +75,7 @@ class AudioCueGenerator:
         elif noise_type == "blue":
             # Blue noise: sqrt(f) filter
             num_samples = len(noise_signal)
-            freqs = np.fft.rfftfreq(num_samples, d=1/sample_rate)
+            freqs = np.fft.rfftfreq(num_samples, d=1/self.sample_rate)
             fft_values = np.fft.rfft(noise_signal)
             blue_filter = np.sqrt(freqs)
             blue_filter[freqs == 0] = 0  # Avoid modifying DC component
@@ -84,7 +85,7 @@ class AudioCueGenerator:
         elif noise_type == "violet":
             # Violet noise: f filter
             num_samples = len(noise_signal)
-            freqs = np.fft.rfftfreq(num_samples, d=1/sample_rate)
+            freqs = np.fft.rfftfreq(num_samples, d=1/self.sample_rate)
             fft_values = np.fft.rfft(noise_signal)
             violet_filter = freqs
             violet_filter[freqs == 0] = 0  # Avoid modifying DC component
@@ -99,13 +100,13 @@ class AudioCueGenerator:
         return noise_signal
 
 
-    def generate_a_note(self, dur=2, sample_rate=44100, frequency=440):
-        t = np.arange(0, dur, 1.0 / sample_rate)
+    def generate_a_note(self, dur=2, frequency=440):
+        t = np.arange(0, dur, 1.0 / self.sample_rate)
         a_note = np.sin(2.0 * np.pi * frequency * t)
         return a_note
 
-    def positional_audio(self, dur=2, sample_rate=44100, relPosX=0, relPosY=0.5):
-        t = np.arange(0, dur, 1.0 / sample_rate)
+    def positional_audio(self, dur=2, relPosX=0, relPosY=0.5):
+        t = np.arange(0, dur, 1.0 / self.sample_rate)
         frequency = 440 * (2 ** relPosY)
         sound = np.sin(2.0 * np.pi * frequency * t)
 
@@ -119,8 +120,8 @@ class AudioCueGenerator:
         stereo_array = np.column_stack((left_channel, right_channel))
         return stereo_array
 
-    def play_sound(self, sound_array, sample_rate=44100, dur=2):
-        beep = sound.Sound(value=sound_array, sampleRate=sample_rate, stereo=True)
+    def play_sound(self, sound_array,  dur=2):
+        beep = sound.Sound(value=sound_array, sampleRate=self.sample_rate, stereo=True)
         beep.play()
         core.wait(dur)
 
@@ -141,38 +142,55 @@ class AudioCueGenerator:
             # normalize the combined gaussian
             combined_gaussian /= np.max(combined_gaussian)
         
+        # calcuate tresholds of increasing and decreasing where the gaussian starts and ends
+        #tresholds = [mu_list[0] - 3 * sigma, mu_list[1] + 3 * sigma]
+
         return combined_gaussian * intensity
 
-    def generate_gaussian_envelope(self,total_dur, sample_rate, mu_list, sigma, intensity=1.0, peak_amplitude=1.0):
-        envelope = np.zeros(int(total_dur * sample_rate))
+    def generate_gaussian_envelope(self,total_dur, mu_list, sigma, intensity=1.0, peak_amplitude=1.0):
+        envelope = np.zeros(int(total_dur * self.sample_rate))
         x = np.linspace(0, total_dur, len(envelope))
         envelope = self.sum_of_gaussians(x, mu_list, sigma, intensity) # Generate the Gaussian envelope
         envelope = np.convolve(envelope, np.ones(int(peak_amplitude)) / peak_amplitude, mode='same')
         envelope += 1
+
+        # treshold for the envelope
+        #real_signal_duration = mu_list[1] + 3 * sigma - (mu_list[0] - 3 * sigma)
+        #print("real signal dur is", real_signal_duration)
+        #print("peak duration is", mu_list[1]-mu_list[0])
         return envelope
 
 
-    def low_reliability_test_sound(self, total_dur=2.5, sample_rate=44100, 
+    def low_reliability_test_sound(self, total_dur=2.5, 
                                         signal_start=1,
-                                        signal_duration=0.5, 
                                         noise_type="pink", 
-                                        peak_amplitude=100, sigma=0.1):
+                                        peak_amplitude=100, sigma=0.1,
+                                        event_duration=0.5):
+        peak_duration= event_duration - 2*3*sigma
+        
         # Generate noise
-        noise_signal = self.generate_noise(total_dur, sample_rate, noise_type)
+        noise_signal = self.generate_noise(total_dur, noise_type)
 
         # Apply intensity increment envelope
-        envelope = self.generate_gaussian_envelope(total_dur, sample_rate, 
-                                                [signal_start, signal_start + signal_duration], sigma,peak_amplitude)
+        envelope = self.generate_gaussian_envelope(total_dur, 
+                                                [signal_start, signal_start + peak_duration], #mu list
+                                                sigma,peak_amplitude)
         noise_signal *= envelope
 
 
         return noise_signal
 
 # # Example usage:
-audio_cue = AudioCueGenerator()
+audio_cue = AudioCueGenerator(sampleRate=44100)
+# Uncertainty in the Gaussian envelope
+sigma = 0.1 
+# peak duration of the envelope
+eventDur= 0.9
 
 test_sound = audio_cue.low_reliability_test_sound(
-    total_dur=3, sample_rate=44100, signal_start=0.7, signal_duration=0.5, noise_type="white", sigma=0.1, peak_amplitude=3)
+    total_dur=3, signal_start=1.25, 
+    event_duration=eventDur,
+    noise_type="pink", sigma=0.1, peak_amplitude=3)
 audio_cue.play_sound(test_sound)
 
 import matplotlib.pyplot as plt
@@ -187,10 +205,6 @@ plt.show()
 
 
 import matplotlib.pyplot as plt
-
-# Parameters
-duration = 2  # in seconds
-sample_rate = 44100  # in Hz
 
 
 """ Sample code for generating different types of noise """
