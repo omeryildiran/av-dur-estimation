@@ -150,61 +150,123 @@ class AudioCueGenerator:
         envelope = self.sum_of_gaussians(x, mu_list, sigma, intensity) # Generate the Gaussian envelope
         envelope = np.convolve(envelope, np.ones(int(peak_amplitude)) / peak_amplitude, mode='same')
         envelope += 1
-
-        # treshold for the envelope
-        #real_signal_duration = mu_list[1] + 3 * sigma - (mu_list[0] - 3 * sigma)
-        #print("real signal dur is", real_signal_duration)
-        #print("peak duration is", mu_list[1]-mu_list[0])
         return envelope
 
+    def smooth_envelope(self, envelope, window_size=50):
+        window = np.hanning(window_size)
+        return np.convolve(envelope, window / window.sum(), mode="same")
 
-    def low_reliability_test_sound(self, total_dur=2.5, 
-                                        signal_start=1,
-                                        noise_type="pink", 
-                                        peak_amplitude=100, sigma=0.1,
-                                        event_duration=0.5):
+    # Raised cosine envelope for precise transition and perceptual salience
+    def raised_cosine_envelope(self,t_start, rise_dur, peak_dur, t_total, sample_rate=44100):
+        """
+        Generate a raised-cosine envelope in the time domain.
+        :param t_start: Start time of the event (seconds).
+        :param rise_dur: Duration of the rising phase (seconds).
+        :param peak_dur: Duration of the event peak (seconds).
+        :param t_total: Total duration of the total envelope (seconds).
+        :param sample_rate: Sampling rate (Hz).
+        :return: Raised-cosine envelope as a numpy array.
+        """
+        def time_to_samples(t, sample_rate=44100):
+            return int(t * sample_rate)
+
+        # Convert durations and times to samples
+        total_samples = time_to_samples(t_total, sample_rate)
+        start_sample = time_to_samples(t_start, sample_rate)
+        rise_samples = time_to_samples(rise_dur, sample_rate)
+        peak_samples = time_to_samples(peak_dur, sample_rate)
+        fall_samples = rise_samples
+        event_samples = 2 * rise_samples + peak_samples
+
+        # Ensure the event duration does not exceed the total duration
+        if start_sample + event_samples > total_samples:
+            raise ValueError("The event duration exceeds the total duration of the envelope.")
+
+        # Create time axis for the envelope
+        envelope = np.zeros(total_samples)
+
+        # Rising phase
+        t_rise = np.arange(rise_samples)
+        envelope[start_sample:start_sample + rise_samples] = 0.5 * (1 - np.cos(np.pi * t_rise / rise_samples))
+
+        # Peak phase
+        t_peak_start = start_sample + rise_samples
+        envelope[t_peak_start:t_peak_start + peak_samples] = 1.0
+
+        # Falling phase
+        t_fall_start = t_peak_start + peak_samples
+        t_fall = np.arange(fall_samples)
+        envelope[t_fall_start:t_fall_start + fall_samples] = 0.5 * (1 + np.cos(np.pi * t_fall / fall_samples))
+
+        return envelope
+
+    def low_reliability_test_sound(self, total_dur=2.5, signal_start=1.0, noise_type="pink", 
+                                rise_dur=0.2, peak_dur=0.5, intensity=3.0):
+        """
+        Generate a low-reliability noise signal with a raised-cosine envelope.
+        :param total_dur: Total duration of the noise (seconds).
+        :param signal_start: Start time of the event (seconds).
+        :param noise_type: Type of noise ('white', 'pink', etc.).
+        :param rise_dur: Duration of the rising phase of the envelope (seconds).
+        :param peak_dur: Duration of the peak phase of the envelope (seconds).
+        :param intensity: Peak amplitude of the envelope.
+        :return: Modulated noise signal as a numpy array.
+        """
+        # Generate base noise
+        noise_signal = self.generate_noise(dur=total_dur, noise_type=noise_type)
+
+        # Generate the raised-cosine envelope
+        envelope = self.raised_cosine_envelope(signal_start, rise_dur, peak_dur, total_dur, self.sample_rate)
         
-        treshold_sigma = 2
-        peak_duration= event_duration - 2*treshold_sigma*sigma
+        # Scale the envelope
+        envelope = envelope * (intensity - 1) + 1  # Ensure baseline is 1, and peak reaches the desired intensity
+
+        # Apply the envelope to the noise
+        modulated_noise = noise_signal * envelope
+        return modulated_noise
         
-        # Generate noise
-        noise_signal = self.generate_noise(total_dur, noise_type)
-
-        # Apply intensity increment envelope
-        envelope = self.generate_gaussian_envelope(total_dur, 
-                                                [signal_start, signal_start + peak_duration], #mu list
-                                                sigma,peak_amplitude)
-        noise_signal *= envelope
-        return noise_signal
-    
     
 
 
-# # Example usage:
-audio_cue = AudioCueGenerator(sampleRate=44100)
-# Uncertainty in the Gaussian envelope
-sigma = 0.1 
-# peak duration of the envelope
-eventDur= 0.9
-
-test_sound = audio_cue.low_reliability_test_sound(
-    total_dur=3, signal_start=1.25, 
-    event_duration=eventDur,
-    noise_type="white", sigma=0.1, peak_amplitude=3)
-audio_cue.play_sound(test_sound)
-
+# import for plotting
 import matplotlib.pyplot as plt
-# Plot high-reliability audio stimulus
-plt.figure()
-plt.plot(test_sound)
-plt.title("Low-Reliability Audio with Intensity Increment")
+
+# Example usage with raised-cosine envelope
+audio_cue = AudioCueGenerator(sampleRate=44100)
+
+# Parameters
+total_duration = 3.0  # Total duration of the sound
+event_start = 1.0    # Start of the event
+rise_duration = 0.2   # Duration of the rising phase
+peak_duration = 0.5   # Duration of the peak phase
+noise_type = "white"  # Noise type
+intensity = 10.0       # Peak amplitude of the envelope
+
+# Generate low-reliability test sound
+test_sound = audio_cue.low_reliability_test_sound(total_dur=total_duration, signal_start=event_start, 
+                                                  rise_dur=rise_duration, peak_dur=peak_duration, 
+                                                  noise_type=noise_type, intensity=intensity)
+
+# Play the sound
+#audio_cue.play_sound(test_sound)
+
+# envelope = audio_cue.raised_cosine_envelope(signal_start, rise_duration, peak_duration, total_duration, sample_rate=44100)
+
+# plt.figure(figsize=(10, 4))
+# plt.plot(envelope, label="Raised-Cosine Envelope")
+# plt.title("Raised-Cosine Envelope")
+# plt.xlabel("Sample")
+# plt.ylabel("Amplitude")
+# plt.legend()
+# plt.show()
+
+plt.figure(figsize=(10, 4))
+plt.plot(test_sound, label="Modulated Noise")
+plt.title("Low-Reliability Test Sound with Raised-Cosine Envelope")
 plt.xlabel("Sample")
 plt.ylabel("Amplitude")
+plt.legend()
 plt.show()
-
-
-
-import matplotlib.pyplot as plt
 
 
 """ Sample code for generating different types of noise """
