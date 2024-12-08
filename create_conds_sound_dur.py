@@ -33,11 +33,6 @@ class audioDurationGen:
         rise_durations = np.repeat(self.rise_conds, len(conditions_matrix[:, 1]) // len(self.rise_conds))
         conditions_matrix = np.column_stack((conditions_matrix, rise_durations)) # Rise conditions 4
 
-                
-        # # Repeat the matrix to get 5 trials per condition and shuffle
-        conditions_matrix = np.tile(conditions_matrix, (self.trial_per_condition, 1))
-
-
         # test 1st or test 2nd order column exactly half of the time
         orders=np.tile(np.array([1, 2]), len(conditions_matrix) // 2).astype(int)
         conditions_matrix = np.column_stack((conditions_matrix, orders)) # Order of test 5
@@ -45,15 +40,27 @@ class audioDurationGen:
         # extend by thne trial per condition to get the final matrix
         conditions_matrix = np.tile(conditions_matrix, (self.trial_per_condition, 1)) 
         
+        # assign random intensity to each trial
+        intensity = np.random.uniform(2, 10, len(conditions_matrix))
+        conditions_matrix = np.column_stack((conditions_matrix, intensity)) # Intensity 6
+
         # shuffle the matrix to get random order
-        #np.random.shuffle(conditions_matrix)
+        np.random.shuffle(conditions_matrix)
+
+        # add the trial number
+        trial_num = np.arange(1, len(conditions_matrix)+1)
+        conditions_matrix = np.column_stack((conditions_matrix, trial_num))
+
         
         return conditions_matrix
     
 
-# # example
-# gen = audioDurationGen(1,[0.1,2.5])
+# example
+gen = audioDurationGen(10,[0.1,2.5])
+conditions_matrix = gen.gen_duration_matrix()
+
 # conditions_matrix = gen.gen_duration_matrix()
+# print(conditions_matrix.shape)
 # #print(conditions_matrix)
 # print(conditions_matrix.shape)
 # import matplotlib.pyplot as plt

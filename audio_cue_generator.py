@@ -257,7 +257,7 @@ class AudioCueGenerator:
             raise ValueError("Invalid order value. Use 1 or 2.")
         
         # normalize the signal
-        # stim_sound = stim_sound / np.max(np.abs(stim_sound))
+        stim_sound = stim_sound / np.max(np.abs(stim_sound))
         
         return stim_sound
     
@@ -265,30 +265,33 @@ class AudioCueGenerator:
 
 
 
-# import for plotting
-import matplotlib.pyplot as plt
 
 
-# Example usage with raised-cosine envelope
-audio_cue = AudioCueGenerator(sampleRate=96000)
+# # # Example usage with raised-cosine envelope
+# audio_cue = AudioCueGenerator(sampleRate=96000)
 
-# generate whole stim
-test_dur = 1
-standard_dur = 1
-noise_type = "white"
-intensity = 2.5
-rise_dur = 0.2
-order = 1
+# # generate whole stim
+# test_dur = 1
+# standard_dur = 1
+# noise_type = "white"
+# intensity = 2.5
+# rise_dur = 0.2
+# order = 1
 
-stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise_dur, order)
-audio_cue.play_sound(stim_sound)
+# stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise_dur, order)
+# audio_cue.play_sound(stim_sound)
 
-t=np.linspace(0, len(stim_sound)/44100, len(stim_sound))
+# # Plot the sound
+# t=np.linspace(0, len(stim_sound)/44100, len(stim_sound))
+# #import for plotting
+# import matplotlib.pyplot as plt
 
-# Plot the sound
-plt.figure(figsize=(10, 4))
-plt.plot(t,stim_sound, label="Modulated Noise")
-plt.show
+# plt.figure(figsize=(10, 4))
+# plt.plot(t,stim_sound, label="Modulated Noise")
+# plt.show()
+
+
+
 """
 # start a timer
 import time
