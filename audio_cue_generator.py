@@ -181,6 +181,11 @@ class AudioCueGenerator:
 
         # Ensure the event duration does not exceed the total duration
         if start_sample + event_samples > total_samples:
+            # print durations
+            print("Event Duration: ", event_samples / sample_rate)
+            print("Total Duration: ", total_samples / sample_rate)
+            print("Rise Duration: ", rise_samples / sample_rate)
+            
             raise ValueError("The event duration exceeds the total duration of the envelope.")
 
         # Create time axis for the envelope
@@ -227,10 +232,10 @@ class AudioCueGenerator:
         modulated_noise = noise_signal * envelope
         return modulated_noise
         
-    def whole_stimulus(self, test_dur, standard_dur, noise_type, intensity, rise_dur,order):
+    def whole_stimulus(self, test_dur, standard_dur, noise_type, intensity, rise_dur,order, pre_dur=0.1, post_dur=0.1,isi_dur=0.3):
 
         # 1. generate pre-cue sound noise for 0.1 seconds
-        pre_cue_sound = self.generate_noise(dur=np.random.uniform(0.05, 0.2), noise_type=noise_type)
+        pre_cue_sound = self.generate_noise(dur=pre_dur, noise_type=noise_type)
 
         # 2. generate test sound noise for 2.5 seconds
         test_sound = self.low_reliability_test_sound(total_dur=test_dur, 
@@ -238,7 +243,7 @@ class AudioCueGenerator:
                                                     noise_type=noise_type, 
                                                     intensity=intensity)
         # 3. interstimulus interval noise 
-        isi_sound = self.generate_noise(dur=np.random.uniform(0.2, 0.6), noise_type=noise_type)
+        isi_sound = self.generate_noise(dur=isi_dur, noise_type=noise_type)
         
         # 4. generate standard sound noise
         standard_sound = self.low_reliability_test_sound(total_dur=standard_dur, 
@@ -258,7 +263,7 @@ class AudioCueGenerator:
         
         # normalize the signal
         stim_sound = stim_sound / np.max(np.abs(stim_sound))
-        
+
         return stim_sound
     
 
@@ -266,22 +271,21 @@ class AudioCueGenerator:
 
 
 
-
-# # # Example usage with raised-cosine envelope
+# # Example usage with raised-cosine envelope
 # audio_cue = AudioCueGenerator(sampleRate=96000)
 
-# # generate whole stim
+# #generate whole stim
 # test_dur = 1
 # standard_dur = 1
 # noise_type = "white"
-# intensity = 2.5
+# intensity = 5
 # rise_dur = 0.2
 # order = 1
 
-# stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise_dur, order)
+# stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise_dur, order, pre_dur=0.1, post_dur=0.1,isi_dur=0.3)
 # audio_cue.play_sound(stim_sound)
 
-# # Plot the sound
+# #Plot the sound
 # t=np.linspace(0, len(stim_sound)/44100, len(stim_sound))
 # #import for plotting
 # import matplotlib.pyplot as plt

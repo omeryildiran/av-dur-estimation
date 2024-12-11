@@ -47,7 +47,7 @@ expInfo = {'participant': '', 'session number': '001'}
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
 #dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 #core.quit() if dlg.OK == False else None
-filename = exp_dir + os.sep + u'data\%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
+filename = exp_dir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
 
 
 #setup screen properties
@@ -68,7 +68,7 @@ myMon = monitors.Monitor('macAir', width=screen_width, distance=screen_distance)
 myMon.setSizePix((sizeIs, sizeIs))
 # Create window
 win = visual.Window(size=(sizeIs, sizeIs),
-                    fullscr=False, monitor=myMon, units='pix', color="black", useFBO=True, screen=1, colorSpace='rgb')
+                    fullscr=True, monitor=myMon, units='pix', color="black", useFBO=True, screen=1, colorSpace='rgb')
 
 # Set window properties
 win.monitor.setWidth(screen_width)
@@ -94,6 +94,8 @@ welcome_text_comp = visual.TextStim(win, text=welcome_text, color='white', heigh
 welcome_text_comp.draw()
 win.flip()
 event.waitKeys() # wait for a key press
+#core.quit() if event.getKeys(keyList=['escape']) else None
+    
 
 # Set up fixation cross
 fixation = visual.TextStim(win, text='+', color='white', height=deg2pix(1,monitor=win.monitor), pos=(0, 0))
@@ -103,32 +105,42 @@ win.flip()
 
 
 # Retrieve the conditions
-# create the conditions matrix
-gen = audioDurationGen(trial_per_condition=1,rise_conds=[0.1,0.25])
+# create the conditions matri x
+gen = audioDurationGen(trial_per_condition=8,rise_conds=[0.20],intens=2.5)
 conditions_matrix = gen.gen_duration_matrix()
-std_durs = conditions_matrix[:, 0]
-delta_durs = conditions_matrix[:, 1]
-real_delta_durs = conditions_matrix[:, 2]
-test_durs = conditions_matrix[:, 3]
-rise_durs = conditions_matrix[:, 4]
-orders = conditions_matrix[:, 5]
+std_durs = conditions_matrix[:, 0] # standard durations
+delta_durs = conditions_matrix[:, 1] # relative durations
+real_delta_durs = conditions_matrix[:, 2] # real relative durations
+test_durs = conditions_matrix[:, 3] # test durations
+rise_durs = conditions_matrix[:, 4] # rise conditions
+orders = conditions_matrix[:, 5] # order of the test
+intensities = conditions_matrix[:, 6] # intensity of the test
+pre_durs = conditions_matrix[:, 7] # pre duration
+post_durs = conditions_matrix[:, 8] # post duration
+isi_durs = conditions_matrix[:, 9] # ISI duration
 
-intensities = conditions_matrix[:, -2] 
-trial_num = conditions_matrix[:, -1]
 
+trial_num = conditions_matrix[:, -1] # trial number
+
+# total stim durations
 total_audio_durs=np.zeros(conditions_matrix.shape[0])
 
 # Create a dataframe to store the results
-data = pd.DataFrame(columns=['participant', 'trial_num', 'std_dur', 'delta_dur', 'real_delta_dur', 'test_dur', 'rise_cond', 'order', 'response', 'RT'])
+# data = pd.DataFrame(columns=['standard_dur', 'delta_dur', 'delta_dur_adjusted', 'test_dur', 'rise_dur', 
+#                              'test_order', 'intensity','pre_dur','post_dur','isi_dur','trial_num', 'total_dur','response', 'RT'])
 # or add response and RT to the conditions matrix full of NaNs
-conditions_matrix = np.column_stack((conditions_matrix, np.nan * np.zeros((len(conditions_matrix), 2))))
+conditions_matrix = np.column_stack((conditions_matrix, np.nan * np.zeros((len(conditions_matrix), 3)))) # total_audio_dur, response, RT
+
+# # update the data frame with the conditions matrix
+# data = pd.DataFrame(conditions_matrix, columns=['standard_dur', 'delta_dur', 'delta_dur_adjusted', 'test_dur', 'rise_dur',
+#                             'test_order', 'intensity','pre_dur','post_dur','isi_dur','trial_num', 'total_dur','response', 'response_rt'])
 
 
 # Initialize the stimulus component
 sampleRate = 44100
 audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
-audio_stim=audio_cue_gen.whole_stimulus(test_durs[0], std_durs[0], "white", 3, rise_durs[0], order=orders[0])
-audio_stim_sound=sound.Sound(audio_stim, sampleRate=sampleRate, stereo=False)
+# audio_stim=audio_cue_gen.whole_stimulus(test_durs[0], std_durs[0], "white", 3, rise_durs[0], order=orders[0])
+# audio_stim_sound=sound.Sound(audio_stim, sampleRate=sampleRate, stereo=False)
 #audio_stim_sound.play()
 #print(intensities[0])
 #audio_cue_gen.play_sound(audio_stim)
@@ -137,7 +149,7 @@ audio_stim_sound=sound.Sound(audio_stim, sampleRate=sampleRate, stereo=False)
 endExpNow = False  # flag for 'escape' or other condition => quit the exp
 mouse = event.Mouse(win=win,visible=False)
 frameTolerance = 0.001  # how close to onset before 'same' frame
-trialN=0
+trialN=-1
 
 # Responses
 response = None
@@ -150,9 +162,9 @@ responseKeys = keyboard.Keyboard(backend='iohub')
 while trialN <= conditions_matrix.shape[0] and not endExpNow:
     trialN += 1
     # have a rest screen
-    if trialN % 20 == 0 and trialN > 0:
-        block_num = trialN // 20
-        total_blocks = conditions_matrix.shape[0] // 20
+    if trialN % 30 == 0 and trialN > 0:
+        block_num = trialN // 30
+        total_blocks = conditions_matrix.shape[0] // 30
         rest_text = f"""You can have a break now.
         You are in block {block_num} out of {total_blocks}.
         Press any key to continue."""
@@ -173,8 +185,12 @@ while trialN <= conditions_matrix.shape[0] and not endExpNow:
     rise_dur = rise_durs[trialN]
     order = orders[trialN]
     intensity = intensities[trialN]
+    pre_dur = pre_durs[trialN]
+    post_dur = post_durs[trialN]
+    isi_dur = isi_durs[trialN]
 
-    audio_stim=audio_cue_gen.whole_stimulus(test_dur, std_dur, "white", intensity, rise_dur, order=order)
+
+    audio_stim=audio_cue_gen.whole_stimulus(test_dur, std_dur, "white", intensity, rise_dur, order,pre_dur,post_dur,isi_dur)
     total_dur_of_audio = len(audio_stim) / sampleRate
     total_audio_durs[trialN]=total_dur_of_audio
     audio_stim_sound=sound.Sound(audio_stim, sampleRate=sampleRate, stereo=False)
@@ -211,13 +227,14 @@ while trialN <= conditions_matrix.shape[0] and not endExpNow:
 
                 audio_stim_sound.status = FINISHED
                 continueRoutine = False
+                audio_stim_sound.stop()
                 break
         
         # check for quit (typically the Esc key)
         if event.getKeys(keyList=["escape"]):
             endExpNow = True
+            audio_stim_sound.stop()
             break
-
         win.flip()
 
     # clear the screen
@@ -231,7 +248,9 @@ while trialN <= conditions_matrix.shape[0] and not endExpNow:
 
     # response timer
     t_start = globalClock.getTime()
-    response_text = f'Is sound {int(order)} longer than the {int(order+1)} sound?\n Press left for no and right for yes.'
+    #response_text = f'Is sound {int(order)} longer than the {int(order+1)} sound?\n Press left for no and right for yes.'
+    # Two interval forced choice response
+    response_text = "First longer (<-) vs Second longer (->)"
     response_text_comp = visual.TextStim(win, text=response_text, color='white', height=30)
     
     while waitingResponse and not endExpNow:
@@ -240,12 +259,53 @@ while trialN <= conditions_matrix.shape[0] and not endExpNow:
 
         response = responseKeys.getKeys(keyList=['left', 'right'], waitRelease=False)
         if response:
-            responses[trialN] = 0 if response[0].name=='left' else 1
+            responses[trialN] = 1 if response[0].name=='left' else 2  # 0 for no, 1 for yes
             response_rts[trialN] = globalClock.getTime() - t_start
+
+            # add the response to the data
+            conditions_matrix[trialN, -3] = round(total_dur_of_audio,6)
+            conditions_matrix[trialN, -2] = responses[trialN]
+            conditions_matrix[trialN, -1] = round(response_rts[trialN],6)
+
+            # save conditions matrix as data
+            data = pd.DataFrame(conditions_matrix, columns=['standard_dur', 'delta_dur', 'delta_dur_adjusted', 'test_dur', 'rise_dur',
+                                        'test_order', 'intensity','pre_dur','post_dur','isi_dur','trial_num', 'total_dur','response', 'response_rt'])
+            data.to_csv(filename + '.csv')
+
+            # save as mat file with the same variable names
+            sio.savemat(filename + '.mat', {'standard_dur': std_durs, 'delta_dur': delta_durs, 'delta_dur_adjusted': real_delta_durs,
+                                            'test_dur': test_durs, 'rise_dur': rise_durs, 'test_order': orders, 'intensity': intensities,
+                                            'pre_dur': pre_durs, 'post_dur': post_durs, 'isi_dur': isi_durs, 'trial_num': trial_num,
+                                            'total_dur': conditions_matrix[:, -1], 'response': conditions_matrix[:, -2], 'response_rt': conditions_matrix[:, -3]})
+            
+            
+
             waitingResponse = False
 
         if endExpNow or event.getKeys(keyList=["escape"]):
-            endExpNow = True 
+            endExpNow = True
+            break
+    
+# clear the screen
+win.flip()
+
+waitEndExp = True
+# End of Experiment Routine
+while waitEndExp:
+    #save data
+    # data.to_csv(filename + '.csv')
+    # sio.savemat(filename + '.mat', {'data': conditions_matrix})
+    # end of experiment text
+    end_text = """End of the experiment.
+    Thank you for your participation. Press any key to exit."""
+    end_text_comp = visual.TextStim(win, text=end_text, color='white', height=30)
+    end_text_comp.draw()
+    win.flip()
+    event.waitKeys()
+    waitEndExp = False
+    core.quit()
+    
+        
             
 
 
