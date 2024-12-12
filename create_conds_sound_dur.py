@@ -73,7 +73,7 @@ class audioDurationGen:
     
 
 # example
-gen = audioDurationGen(trial_per_condition=10,rise_conds=[0.1,0.20])
+gen = audioDurationGen(trial_per_condition=40,rise_conds=[0.1,0.20])
 conditions_matrix = gen.gen_duration_matrix()
 
 print(conditions_matrix.shape)
@@ -88,7 +88,8 @@ plt.plot(conditions_matrix[:, 0], conditions_matrix[:, 3], 'o')
 print('min test duration:', conditions_matrix[:, 3].min())
 print('max test duration:', conditions_matrix[:, 3].max())
 print("avg test duration:", np.mean(conditions_matrix[:, 3]))
-
+print('avg total dur', np.mean(conditions_matrix[:, 0]+conditions_matrix[:, 3]+conditions_matrix[:, 7]+conditions_matrix[:, 8]+conditions_matrix[:, 9]))
+print('approximate experiment duration', np.mean(conditions_matrix[:, 0]+conditions_matrix[:, 3]+conditions_matrix[:, 7]+conditions_matrix[:, 8]+conditions_matrix[:, 9])*len(conditions_matrix)/60)
 # # min max lines
 #plt.axhline(y=conditions_matrix[:, 3].min(), color='r', linestyle='--')
 #plt.axhline(y=conditions_matrix[:, 3].max(), color='r', linestyle='--')

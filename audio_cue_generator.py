@@ -251,7 +251,7 @@ class AudioCueGenerator:
                                                     noise_type=noise_type, 
                                                     intensity=intensity)
         # 5. generate post-cue sound noise for 0.1 seconds
-        post_cue_sound = self.generate_noise(dur=np.random.uniform(0.05, 0.2), noise_type=noise_type) 
+        post_cue_sound = self.generate_noise(dur=post_dur, noise_type=noise_type) 
 
         # concatenate all bins into one continuous signal depending on the order
         if order == 1:
@@ -271,7 +271,7 @@ class AudioCueGenerator:
 
 
 
-# # Example usage with raised-cosine envelope
+# # # Example usage with raised-cosine envelope
 # audio_cue = AudioCueGenerator(sampleRate=96000)
 
 # #generate whole stim

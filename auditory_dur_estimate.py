@@ -157,7 +157,7 @@ responses=np.zeros(conditions_matrix.shape[0])
 response_rts=np.zeros(conditions_matrix.shape[0])
 responseKeys = keyboard.Keyboard(backend='iohub')
 
-
+# region [rgba(0, 0, 0, 0.37)]
 # Start the trial - response loop (there weill be)
 while trialN <= conditions_matrix.shape[0] and not endExpNow:
     trialN += 1
@@ -286,6 +286,8 @@ while trialN <= conditions_matrix.shape[0] and not endExpNow:
             endExpNow = True
             break
     
+
+# endregion
 # clear the screen
 win.flip()
 
