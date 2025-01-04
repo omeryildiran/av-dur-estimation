@@ -60,6 +60,8 @@ monitor_options = {
     "macAir": { "sizeIs": 800, "screen_width": 25, "screen_height": 20, "screen_distance": 40 }
 }
 def adj_delta(weber_fraction,delta,standard):
+    # example usage
+    # adj_delta(0.15,delta_dur_percent,standard_dur)
     return standard*delta/(weber_fraction+1)
 
 monitorSpecs = monitor_options["macAir"]
@@ -111,9 +113,9 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-gen = audioDurationGen(trial_per_condition=50,rise_conds=[0.05,0.245],intens=2.5)
+conds_obj = audioDurationGen(trial_per_condition=50,rise_conds=[0.05,0.245],intens=2.5)
 
-conditions_matrix = gen.gen_duration_matrix()
+conditions_matrix = conds_obj.gen_duration_matrix()
 conditions_matrix[:, 1] = np.zeros(conditions_matrix.shape[0]) # delta dur
 conditions_matrix[:, 3] = np.zeros(conditions_matrix.shape[0]) # test dur
 conditions_matrix[:, 2] = np.zeros(conditions_matrix.shape[0]) # real delta dur
@@ -137,7 +139,7 @@ trial_num = conditions_matrix[:, -1] # trial number
 total_audio_durs=np.zeros(conditions_matrix.shape[0])
 
 # Create a dataframe to store the results
-# data = pd.DataFrame(columns=['standard_dur', 'delta_dur', 'delta_dur_adjusted', 'test_dur', 'rise_dur', 
+# data = pd.DataFrame(columns=['standard_dur', 'delta_dur_percent', 'delta_dur_adjusted', 'test_dur', 'rise_dur', 
 #                              'test_order', 'intensity','pre_dur','post_dur','isi_dur','trial_num', 'total_dur','response', 'RT'])
 # or add response and RT to the conditions matrix full of NaNs
 conditions_matrix = np.column_stack((conditions_matrix, np.nan * np.zeros((len(conditions_matrix), 4)))) # total_audio_dur, response,is_correct, RT
@@ -165,8 +167,8 @@ responseKeys = keyboard.Keyboard(backend='iohub')
 # Start the trial - response loop (there weill be)
 """ Staircase Setup"""
 stepFactor=0.5
-initStep=0.10
-maxReversals=10
+initStep=0.2
+maxReversals=30
 stairCaseLonger = stairCase(init_level=0.001, init_step=initStep, method="3D1U", step_factor=stepFactor, min_level=0, max_reversals=maxReversals)
 stairCaseLonger2D1U = stairCase(init_level=0.001, init_step=initStep, method="2D1U", step_factor=stepFactor, min_level=0, max_reversals=maxReversals)
 
@@ -175,7 +177,7 @@ stairCaseShorter2U1D = stairCase(init_level=-0.001, init_step=-initStep, method=
 
 stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, min_level=0, max_reversals=maxReversals) # no need for it just decide on deltas
 
-all_staircases=[stairCaseShorter,stairCaseShorter,stairCaseShorter2U1D,stairCaseLonger,stairCaseLonger,stairCaseLonger2D1U,stairCaseLapse]
+all_staircases=[stairCaseShorter,stairCaseShorter2U1D,stairCaseLonger,stairCaseLonger2D1U,stairCaseLapse]
 np.random.shuffle(all_staircases)
 stopped_stair_count=0
 while not endExpNow and stopped_stair_count!=len(all_staircases):
@@ -216,22 +218,24 @@ while not endExpNow and stopped_stair_count!=len(all_staircases):
 
     # Get the current trial
     standard_dur = standard_durs[trialN]
-    print(f"Standard duration: {standard_dur}")
-    delta_dur = stair.next_trial() 
-    print(f"Delta duration: {delta_dur}")
-    real_delta= adj_delta(0.15,delta_dur,standard_dur) 
+    delta_dur_percent = stair.next_trial() # delta dur in terms of percentage of the standard duration (0.1, 0.2, 0.3, 0.4, 0.5)
+    real_delta=   delta_dur_percent*standard_dur # delta dur in terms of seconds
     test_dur = standard_dur + real_delta
-    print(f"Real delta duration: {real_delta}")
 
-    delta_durs[trialN] = delta_dur
+    # print(f"Standard duration: {standard_dur}")
+    # print(f"Delta duration: {delta_dur_percent}")
+    # print(f"Real delta duration: {real_delta}")
+    # print(f"Test duration: {test_durs[trialN]}")
+
+
+    delta_durs[trialN] = delta_dur_percent
     test_durs[trialN] = test_dur
     real_delta_durs[trialN] = real_delta
 
-    print(f"Test duration: {test_durs[trialN]}")
     
     rise_dur = rise_durs[trialN]
     order = orders[trialN]
-    intensity = intensities[trialN]
+    intensity = conds_obj.intens
     pre_dur = pre_durs[trialN]
     post_dur = post_durs[trialN]
     isi_dur = isi_durs[trialN]
@@ -310,7 +314,7 @@ while not endExpNow and stopped_stair_count!=len(all_staircases):
             response_rts[trialN] = globalClock.getTime() - t_start
 
             # add the response to the data
-            conditions_matrix[trialN, 1] = delta_dur # delta dur
+            conditions_matrix[trialN, 1] = delta_dur_percent # delta dur
             conditions_matrix[trialN, 3] = test_dur # test dur
             conditions_matrix[trialN, 2] = test_dur-standard_dur# real delta dur
 
@@ -323,12 +327,12 @@ while not endExpNow and stopped_stair_count!=len(all_staircases):
             matrix_to_save = conditions_matrix[:trialN+1, :]
 
             # save conditions matrix as data
-            data = pd.DataFrame(matrix_to_save, columns=['standard_dur', 'delta_dur', 'delta_dur_adjusted', 'test_dur', 'rise_dur',
+            data = pd.DataFrame(matrix_to_save, columns=['standard_dur', 'delta_dur_percent', 'delta_dur_adjusted', 'test_dur', 'rise_dur',
                                         'test_order', 'intensity','pre_dur','post_dur','isi_dur','trial_num', 'total_dur','response','is_correct', 'response_rt'])
             data.to_csv(filename + '.csv')
 
             # save as mat file with the same variable names
-            sio.savemat(filename + '.mat', {'standard_dur': standard_durs, 'delta_dur': delta_durs, 'delta_dur_adjusted': real_delta_durs,
+            sio.savemat(filename + '.mat', {'standard_dur': standard_durs, 'delta_dur_percent': delta_durs, 'delta_dur_adjusted': real_delta_durs,
                                             'test_dur': test_durs, 'rise_dur': rise_durs, 'test_order': orders, 'intensity': intensities,
                                             'pre_dur': pre_durs, 'post_dur': post_durs, 'isi_dur': isi_durs, 'trial_num': trial_num,
                                             'total_dur': matrix_to_save[:, -4], 'response': matrix_to_save[:, -3], 'is_correct':matrix_to_save[:,-2],'response_rt': matrix_to_save[:, -1]})
