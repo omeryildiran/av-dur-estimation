@@ -34,7 +34,7 @@ from my_staircase import stairCase
 prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
 
 # import condition generator
-from create_conds_sound_dur import audioDurationGen
+from create_conds_staircase import audioDurationGen
 # import audio generator
 from audio_cue_generator import AudioCueGenerator
 # import the staircase
@@ -113,37 +113,47 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-conds_obj = audioDurationGen(trial_per_condition=50,rise_conds=[0.05,0.245],intens=2.5)
-
+conds_obj = audioDurationGen(trial_per_condition=40,rise_conds=[0.05,0.25],intens=5)
+#print('given trials number',len(conds_obj.intens))
+#total_trials=(conds_obj.trial_per_condition)*2*4
+max_trial_per_stair=70#total_trials//5
+"""
+matrix columns:
+0: Standard durations
+1: Rise conditions
+2: Order of test
+3: Pre duration
+4: Post duration
+5: ISI duration
+6: Trial number
+7: Total audio duration
+8: Response
+9: Is correct
+10: Response RT
+"""
 conditions_matrix = conds_obj.gen_duration_matrix()
-conditions_matrix[:, 1] = np.zeros(conditions_matrix.shape[0]) # delta dur
-conditions_matrix[:, 3] = np.zeros(conditions_matrix.shape[0]) # test dur
-conditions_matrix[:, 2] = np.zeros(conditions_matrix.shape[0]) # real delta dur
 
 standard_durs = conditions_matrix[:, 0] # standard durations
-delta_durs = conditions_matrix[:, 1] # relative durations
-real_delta_durs = conditions_matrix[:, 2] # real relative durations
-test_durs = conditions_matrix[:, 3] # test durations
-
-rise_durs = conditions_matrix[:, 4] # rise conditions
-orders = conditions_matrix[:, 5] # order of the test
-intensities = conditions_matrix[:, 6] # intensity of the test
-pre_durs = conditions_matrix[:, 7] # pre duration
-post_durs = conditions_matrix[:, 8] # post duration
-isi_durs = conditions_matrix[:, 9] # ISI duration
-
-
-trial_num = conditions_matrix[:, -1] # trial number
+rise_durs = conditions_matrix[:, 1] # rise conditions
+orders = conditions_matrix[:, 2] # order of the test
+pre_durs = conditions_matrix[:, 3] # pre duration
+post_durs = conditions_matrix[:, 4] # post duration
+isi_durs = conditions_matrix[:, 5] # ISI duration
+trial_num = conditions_matrix[:, 6] # trial number
 
 # total stim durations
-total_audio_durs=np.zeros(conditions_matrix.shape[0])
+total_audio_durs=[]
 
-# Create a dataframe to store the results
-# data = pd.DataFrame(columns=['standard_dur', 'delta_dur_percent', 'delta_dur_adjusted', 'test_dur', 'rise_dur', 
-#                              'test_order', 'intensity','pre_dur','post_dur','isi_dur','trial_num', 'total_dur','response', 'RT'])
-# or add response and RT to the conditions matrix full of NaNs
-conditions_matrix = np.column_stack((conditions_matrix, np.nan * np.zeros((len(conditions_matrix), 4)))) # total_audio_dur, response,is_correct, RT
+# add columns for total audio duration, response, is_correct, RT
+conditions_matrix = np.column_stack((conditions_matrix, np.nan * np.zeros((len(conditions_matrix), 4)))) # total_audio_dur, response, is_correct, RT
+"""
+7: 
+7: Total audio duration
+8: Response
+9: Is correct
+10: Response RT
 
+"""
 
 # Initialize the stimulus component
 sampleRate = 44100
@@ -158,47 +168,112 @@ trialN=-1
 
 # Responses
 response = None
-responses=np.zeros(conditions_matrix.shape[0])
-is_corrects=np.zeros(conditions_matrix.shape[0])
-response_rts=np.zeros(conditions_matrix.shape[0])
+tolerance_trials=50
+responses=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+is_corrects=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+response_rts=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+response_keys=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+
 responseKeys = keyboard.Keyboard(backend='iohub')
 
-# region [rgba(2, 0, 30, 0.30)]
+current_stairs=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+delta_durs=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+test_durs=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+real_delta_durs=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+intensities=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+
+# create empty data matrix to save the data
+exp_data=np.zeros((conditions_matrix.shape[0]+50, 19),dtype=object)
+
+# region [rgba(2, 40, 30, 0.30)]
 # Start the trial - response loop (there weill be)
 """ Staircase Setup"""
 stepFactor=0.5
-initStep=0.2
+initStep=0.15
 maxReversals=30
-stairCaseLonger = stairCase(init_level=0.001, init_step=initStep, method="3D1U", step_factor=stepFactor, min_level=0, max_reversals=maxReversals)
-stairCaseLonger2D1U = stairCase(init_level=0.001, init_step=initStep, method="2D1U", step_factor=stepFactor, min_level=0, max_reversals=maxReversals)
+max_level=0.6
 
-stairCaseShorter = stairCase(init_level=-0.001, init_step=-initStep, method="3U1D", step_factor=stepFactor, min_level=0, max_reversals=maxReversals)
-stairCaseShorter2U1D = stairCase(init_level=-0.001, init_step=-initStep, method="2U1D", step_factor=stepFactor, min_level=0, max_reversals=maxReversals)
+stairCaseLonger = stairCase(init_level=0.05, init_step=initStep, method="3D1U", step_factor=stepFactor, max_level=0.6, max_reversals=maxReversals, max_trials=max_trial_per_stair)
+stairCaseLonger2D1U = stairCase(init_level=0.05, init_step=initStep, method="2D1U", step_factor=stepFactor, max_level=0.6, max_reversals=maxReversals, max_trials=max_trial_per_stair)
 
-stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, min_level=0, max_reversals=maxReversals) # no need for it just decide on deltas
+stairCaseShorter = stairCase(init_level=-0.05, init_step=-initStep, method="3U1D", step_factor=stepFactor, max_level=-0.6, max_reversals=maxReversals, max_trials=max_trial_per_stair)
+stairCaseShorter2U1D = stairCase(init_level=-0.05, init_step=-initStep, method="2U1D", step_factor=stepFactor, max_level=-0.6, max_reversals=maxReversals, max_trials=max_trial_per_stair)
+
+stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=0.6, max_reversals=maxReversals) # no need for it just decide on deltas
 
 all_staircases=[stairCaseShorter,stairCaseShorter2U1D,stairCaseLonger,stairCaseLonger2D1U,stairCaseLapse]
 np.random.shuffle(all_staircases)
 stopped_stair_count=0
-while not endExpNow and stopped_stair_count!=len(all_staircases):
+
+def lapse_rate_cond_generate():
+    lapse_deltas=[-0.55,-0.50,0.50,0.55]
+    all_conds=[]
+    for i in np.unique(standard_durs):
+        for j in np.unique(rise_durs):
+            for k in lapse_deltas:
+                all_conds.append([i,j,k])
     
+    # tile the lapse conditions
+    all_conds=np.tile(all_conds,(4,1))
+    np.random.shuffle(all_conds) 
+    return all_conds
+
+lapse_rate_conds=lapse_rate_cond_generate()
+
+# Convert to list the standard durs and rise durs
+standard_durs = standard_durs.tolist()
+rise_durs = rise_durs.tolist()
+while not endExpNow and stopped_stair_count!=len(all_staircases):
+
     def chose_stair():
         tmp_stair=np.random.choice(all_staircases)
         if tmp_stair.stair_stopped==False:
             stair=tmp_stair
             return stair
-
         else:
-            ## delete stopped staircase by its index position
-            # all_staircases.pop(all_staircases.index(tmp_stair))
-            # global stopped_stair_count
-            # stopped_stair_count+=1
             return chose_stair()
-
-        
     stair=chose_stair()
-        
+    current_stair=stair.method
+
+    # Get the current trial
+    if current_stair=="lapse_rate":
+        if len(lapse_rate_conds)>0:
+            standard_dur=lapse_rate_conds[0][0]
+            rise_dur=lapse_rate_conds[0][1]
+            delta_dur_percent=lapse_rate_conds[0][2]
+            lapse_rate_conds=lapse_rate_conds[1:]
+        else:
+            stopped_stair_count+=1
+            continue
+    else:
+        #TODO: TRY to get the next trial from the staircase but if the length of standard_durs is achieved maximum
+        # Pop the last elemnt and assign it to the current trial
+        standard_dur = standard_durs.pop()
+        rise_dur = rise_durs.pop()
+
+        delta_dur_percent = stair.next_trial() # delta dur in terms of percentage of the standard duration (0.1, 0.2, 0.3, 0.4, 0.5)
+
+    delta_dur_s= standard_dur*delta_dur_percent # delta dur in terms of seconds
+    test_dur_s = standard_dur + delta_dur_s
+
+    print(f'Current Stair: {current_stair} - Standard Dur: {standard_dur} - Delta Dur: {delta_dur_percent} - Test Dur: {test_dur_s} - Rise Dur: {rise_dur}, delta_dur_s: {delta_dur_s}')
     
+    delta_durs[trialN] = delta_dur_percent
+    test_durs[trialN] = test_dur_s
+    real_delta_durs[trialN] = delta_dur_s
+    
+    # Assign values calculate directly now
+    order = int(np.random.choice([1,2])) # or orders[trialN]
+    intensity = conds_obj.intens
+    pre_dur = max(float(np.random.normal(0.25, 0.05)),0.2)
+    post_dur = max(float(np.random.normal(0.25, 0.05)),0.2)
+    isi_dur = max(float(np.random.normal(0.25, 0.05)),0.2)
+
+    audio_stim=audio_cue_gen.whole_stimulus(test_dur_s, standard_dur, "white", intensity, rise_dur, order,pre_dur,post_dur,isi_dur) # create the audio stimulus
+    total_dur_of_audio = len(audio_stim) / sampleRate # calculate the total duration of the audio stimulus
+    total_audio_durs.append(total_dur_of_audio) # save the total duration of the audio stimulus
+    audio_stim_sound=sound.Sound(audio_stim, sampleRate=sampleRate, stereo=False)
+
     trialN += 1
     # have a rest screen
     if trialN % 30 == 0 and trialN > 0:
@@ -216,35 +291,6 @@ while not endExpNow and stopped_stair_count!=len(all_staircases):
     if endExpNow or event.getKeys(keyList=['escape']):
         core.quit()
 
-    # Get the current trial
-    standard_dur = standard_durs[trialN]
-    delta_dur_percent = stair.next_trial() # delta dur in terms of percentage of the standard duration (0.1, 0.2, 0.3, 0.4, 0.5)
-    real_delta=   delta_dur_percent*standard_dur # delta dur in terms of seconds
-    test_dur = standard_dur + real_delta
-
-    # print(f"Standard duration: {standard_dur}")
-    # print(f"Delta duration: {delta_dur_percent}")
-    # print(f"Real delta duration: {real_delta}")
-    # print(f"Test duration: {test_durs[trialN]}")
-
-
-    delta_durs[trialN] = delta_dur_percent
-    test_durs[trialN] = test_dur
-    real_delta_durs[trialN] = real_delta
-
-    
-    rise_dur = rise_durs[trialN]
-    order = orders[trialN]
-    intensity = conds_obj.intens
-    pre_dur = pre_durs[trialN]
-    post_dur = post_durs[trialN]
-    isi_dur = isi_durs[trialN]
-
-
-    audio_stim=audio_cue_gen.whole_stimulus(test_dur, standard_dur, "white", intensity, rise_dur, order,pre_dur,post_dur,isi_dur)
-    total_dur_of_audio = len(audio_stim) / sampleRate
-    total_audio_durs[trialN]=total_dur_of_audio
-    audio_stim_sound=sound.Sound(audio_stim, sampleRate=sampleRate, stereo=False)
 
     # clear the screen and wait for 100 ms
     win.flip()
@@ -285,64 +331,120 @@ while not endExpNow and stopped_stair_count!=len(all_staircases):
             break
         win.flip()
 
+    stair_num_reversal=stair.reversals
+    stair_is_reversal=stair.is_reversal
+    # endregion
+
+    # region [rgba(40, 10, 3, 0.30)]
+
+    """ SAVE TRIAL DATA BEFORE RESPONSE"""
+    exp_data[trialN, 0] = standard_dur
+    exp_data[trialN, 1] = rise_dur
+    exp_data[trialN, 2] = order
+    exp_data[trialN, 3] = pre_dur
+    exp_data[trialN, 4] = post_dur
+    exp_data[trialN, 5] = isi_dur
+    exp_data[trialN, 6] = trialN
+    exp_data[trialN, 7] = round(total_dur_of_audio,6)
+    exp_data[trialN, 8] = delta_dur_percent
+    exp_data[trialN, 9] = delta_dur_s
+    exp_data[trialN, 10] = test_dur_s
+    exp_data[trialN, 11] = intensity
+    
+    # stair data
+    exp_data[trialN, 12] = current_stair
+    exp_data[trialN,16]= stair_num_reversal # num of reversals
+    exp_data[trialN,17]= stair_is_reversal # is this trial a reversal (1: reversal 0: not reversal)
+
+
+    # endregion
+
     # clear the screen
     fixation.setAutoDraw(False)
-
     waitingResponse = True
-
     # clear event buffer
     event.clearEvents(eventType='keyboard')
     responseKeys.clearEvents()
-
     # response timer
     t_start = globalClock.getTime()
-    #response_text = f'Is sound {int(order)} longer than the {int(order+1)} sound?\n Press left for no and right for yes.'
     # Two interval forced choice response
     response_text = "First longer (<-) vs Second longer (->)"
     response_text_comp = visual.TextStim(win, text=response_text, color='white', height=30)
     
+    # region [rgba(40, 10, 30, 0.30)]
+
     while waitingResponse and not endExpNow:
         response_text_comp.draw()
         win.flip()
 
         response = responseKeys.getKeys(keyList=['left', 'right'], waitRelease=False)
+        class simKeys:
+            def __init__(self, keyList, rtRange):
+                self.name=np.random.choice(keyList)
+                self.rt = np.random.choice(np.linspace(rtRange[0], rtRange[1])/1000)
+
+        # # Simulate a key press for testing purposes
+        # if not response:
+        #     #fake a response responseKeys 
+        #     response=[simKeys(keyList=['left', 'right'], rtRange=[200,1000])]
+
+            
         # record the response
         if response:
             responses[trialN] = 1 if response[0].name=='left' else 2  # 1 for first longer, 2 for second longer
-            is_correct=test_dur>standard_dur and responses[trialN]==order or test_dur<standard_dur and responses[trialN]!=order # 1 for correct, 0 for incorrect
+            is_correct=test_dur_s>standard_dur and responses[trialN]==order or test_dur_s<standard_dur and responses[trialN]!=order # 1 for correct, 0 for incorrect
             is_corrects[trialN] = is_correct
             response_rts[trialN] = globalClock.getTime() - t_start
 
-            # add the response to the data
-            conditions_matrix[trialN, 1] = delta_dur_percent # delta dur
-            conditions_matrix[trialN, 3] = test_dur # test dur
-            conditions_matrix[trialN, 2] = test_dur-standard_dur# real delta dur
-
-            conditions_matrix[trialN, -4] = round(total_dur_of_audio,6) # total audio duration
-            conditions_matrix[trialN, -3] = responses[trialN] # response
-            conditions_matrix[trialN, -2] = is_corrects[trialN] # is_correct
-            conditions_matrix[trialN, -1] = round(response_rts[trialN],6) # response RT
+            exp_data[trialN, 13] = responses[trialN] # response as num
+            exp_data[trialN, 14] = is_correct 
+            exp_data[trialN, 15] = round(response_rts[trialN],6)
+            exp_data[trialN, 18] = response[0].name # response key as name
 
             # constrain the conditions matrix to the max current trial
-            matrix_to_save = conditions_matrix[:trialN+1, :]
-
-            # save conditions matrix as data
-            data = pd.DataFrame(matrix_to_save, columns=['standard_dur', 'delta_dur_percent', 'delta_dur_adjusted', 'test_dur', 'rise_dur',
-                                        'test_order', 'intensity','pre_dur','post_dur','isi_dur','trial_num', 'total_dur','response','is_correct', 'response_rt'])
-            data.to_csv(filename + '.csv')
+            exp_data_saved = exp_data[:trialN+1, :]
+         
+            # save exp_data as DataFrame
+            data_saved = pd.DataFrame(exp_data_saved, columns=[
+                'standard_dur', 'rise_dur', 'order', 'pre_dur', 'post_dur', 'isi_dur', 'trial_num',
+                'total_audio_dur', 'delta_dur_percents', 'delta_dur_s', 'test_dur_s', 'intensities',
+                'current_stair', 'responses', 'is_correct', 'response_rts' , 'stair_num_reversal', 'stair_is_reversal', 'response_keys'
+            ])            
+            data_saved.to_csv(filename + '.csv')
 
             # save as mat file with the same variable names
-            sio.savemat(filename + '.mat', {'standard_dur': standard_durs, 'delta_dur_percent': delta_durs, 'delta_dur_adjusted': real_delta_durs,
-                                            'test_dur': test_durs, 'rise_dur': rise_durs, 'test_order': orders, 'intensity': intensities,
-                                            'pre_dur': pre_durs, 'post_dur': post_durs, 'isi_dur': isi_durs, 'trial_num': trial_num,
-                                            'total_dur': matrix_to_save[:, -4], 'response': matrix_to_save[:, -3], 'is_correct':matrix_to_save[:,-2],'response_rt': matrix_to_save[:, -1]})
-            
+        # save as mat file with the same variable names
+            sio.savemat(
+                filename + '.mat', 
+                {
+                    'standard_dur': exp_data_saved[:, 0],
+                    'rise_dur': exp_data_saved[:, 1],
+                    'order': exp_data_saved[:, 2],
+                    'pre_dur': exp_data_saved[:, 3],
+                    'post_dur': exp_data_saved[:, 4],
+                    'isi_dur': exp_data_saved[:, 5],
+                    'trial_num': exp_data_saved[:, 6],
+                    'total_audio_dur': exp_data_saved[:, 7],
+                    'delta_dur_percents': exp_data_saved[:, 8],
+                    'delta_dur_s': exp_data_saved[:, 9],
+                    'test_dur_s': exp_data_saved[:, 10],
+                    'intensities': exp_data_saved[:, 11],
+                    'current_stair': exp_data_saved[:, 12],
+                    'responses': exp_data_saved[:, 13],
+                    'is_correct': exp_data_saved[:, 14],
+                    'response_rts': exp_data_saved[:, 15],
+                    'stair_num_reversal': exp_data_saved[:, 16],
+                    'stair_is_reversal': exp_data_saved[:, 17],
+                    'response_keys': exp_data_saved[:, 18]
+                    
+                }
+            )
 
-        
             waitingResponse = False
         
             # update staircase
             stair.update_staircase(is_correct)
+
             if stair.stair_stopped:
                 stopped_stair_count+=1
 
