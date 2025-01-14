@@ -10,7 +10,7 @@ class stairCase():
                  method="3D1U", 
                  step_factor=0.5,
                  min_level=0,
-                 max_reversals=10,
+                 max_reversals=100,
                  max_trials=50,
                  max_level=0.6):
         """
@@ -52,7 +52,7 @@ class stairCase():
         self.max_trials = max_trials
         self.is_reversal=False
 
-        self.lapse_levels = [-0.7, -0.80, 0.8, 0.7] * 50
+        self.lapse_levels = [-0.55, 0.55,1] *30# big number so indeed we dont care about lapse rate here but we handle it in the experiment code itself.
         np.random.shuffle(self.lapse_levels)
 
     def next_trial(self):

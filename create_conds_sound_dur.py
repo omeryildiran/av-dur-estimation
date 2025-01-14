@@ -7,7 +7,7 @@ class audioDurationGen:
         self.relative_durations = np.array([-300, -200, -50, 50, 200, 300]) / 1000  # Convert to seconds
         self.weber_fraction = 0.15 # ref (Hartcher-O’Brien & Alais, 2011)
         self.rise_conds = rise_conds
-        self.intens = intens
+        self.intens = intens # intensity of the sound
 
     def gen_duration_matrix(self):
         # Calculate test durations and real relative durations using vectorized operations
@@ -52,9 +52,9 @@ class audioDurationGen:
         np.random.shuffle(conditions_matrix)
 
         # add pre_duration and post_duration
-        pre_duration = np.random.normal(0.25, 0.05, len(conditions_matrix))
-        post_duration = np.random.normal(0.25, 0.05, len(conditions_matrix))
-        isi_duration = np.random.normal(0.25, 0.05, len(conditions_matrix))
+        pre_duration = np.random.normal(0.3, 0.05, len(conditions_matrix))
+        post_duration = np.random.normal(0.3, 0.05, len(conditions_matrix))
+        isi_duration = np.random.normal(0.3, 0.05, len(conditions_matrix))
 
         # round the durations
         pre_duration = np.round(pre_duration, 6)
@@ -73,9 +73,9 @@ class audioDurationGen:
     
 
 # # example
-# gen = audioDurationGen(trial_per_condition=40,rise_conds=[0.1,0.20])
-# conditions_matrix = gen.gen_duration_matrix()
-
+gen = audioDurationGen(trial_per_condition=40,rise_conds=[0.1,0.20])
+conditions_matrix = gen.gen_duration_matrix()
+print(np.unique(conditions_matrix[:, 0]))
 # print(conditions_matrix.shape)
 # #print(conditions_matrix)
 # print(conditions_matrix.shape)

@@ -113,10 +113,9 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-conds_obj = audioDurationGen(trial_per_condition=40,rise_conds=[0.05,0.25],intens=5)
+conds_obj = audioDurationGen(trial_per_condition=50,rise_conds=[0.05,0.25],intens=5)
 #print('given trials number',len(conds_obj.intens))
 #total_trials=(conds_obj.trial_per_condition)*2*4
-max_trial_per_stair=70#total_trials//5
 """
 matrix columns:
 0: Standard durations
@@ -164,7 +163,7 @@ audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
 endExpNow = False  # flag for 'escape' or other condition => quit the exp
 mouse = event.Mouse(win=win,visible=False)
 frameTolerance = 0.001  # how close to onset before 'same' frame
-trialN=-1
+trialN=0
 
 # Responses
 response = None
@@ -190,12 +189,13 @@ exp_data=np.zeros((conditions_matrix.shape[0]+50, 19),dtype=object)
 """ Staircase Setup"""
 stepFactor=0.5
 initStep=0.15
-maxReversals=30
+maxReversals=100
 max_level=0.6
 
+# Create the staircases
+max_trial_per_stair=70#total_trials//5
 stairCaseLonger = stairCase(init_level=0.05, init_step=initStep, method="3D1U", step_factor=stepFactor, max_level=0.6, max_reversals=maxReversals, max_trials=max_trial_per_stair)
 stairCaseLonger2D1U = stairCase(init_level=0.05, init_step=initStep, method="2D1U", step_factor=stepFactor, max_level=0.6, max_reversals=maxReversals, max_trials=max_trial_per_stair)
-
 stairCaseShorter = stairCase(init_level=-0.05, init_step=-initStep, method="3U1D", step_factor=stepFactor, max_level=-0.6, max_reversals=maxReversals, max_trials=max_trial_per_stair)
 stairCaseShorter2U1D = stairCase(init_level=-0.05, init_step=-initStep, method="2U1D", step_factor=stepFactor, max_level=-0.6, max_reversals=maxReversals, max_trials=max_trial_per_stair)
 
@@ -206,24 +206,30 @@ np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[-0.55,-0.50,0.50,0.55]
+    lapse_deltas=[-0.55,0.55]
     all_conds=[]
-    for i in np.unique(standard_durs):
-        for j in np.unique(rise_durs):
-            for k in lapse_deltas:
+    for i in np.unique(standard_durs): # standard durations 1.3, 1.6, 1.9
+        for j in np.unique(rise_durs): # rise durations 0.05, 0.25
+            for k in lapse_deltas: # lapse deltas -0.55, 0.55
                 all_conds.append([i,j,k])
-    
+    # in total 12 conditions
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(4,1))
+    all_conds=np.tile(all_conds,(3,1))
     np.random.shuffle(all_conds) 
     return all_conds
-
 lapse_rate_conds=lapse_rate_cond_generate()
+print(f"lapse rate conditions: {lapse_rate_conds}")
+total_trial_num=len(standard_durs)+len(lapse_rate_conds)
+
+print(f'There are in total  {lapse_rate_conds.shape[0]} lapse rate conditions')
+print(f"there are maximum {len(standard_durs)} normal trials in total of  {max_trial_per_stair*4} staircase trials" )
 
 # Convert to list the standard durs and rise durs
 standard_durs = standard_durs.tolist()
 rise_durs = rise_durs.tolist()
-while not endExpNow and stopped_stair_count!=len(all_staircases):
+lapse_ended=False
+while not endExpNow and stopped_stair_count!=(len(all_staircases)):
+    print(f"Trial {trialN} out of {total_trial_num}")
 
     def chose_stair():
         tmp_stair=np.random.choice(all_staircases)
@@ -237,24 +243,30 @@ while not endExpNow and stopped_stair_count!=len(all_staircases):
 
     # Get the current trial
     if current_stair=="lapse_rate":
-        if len(lapse_rate_conds)>0:
-            standard_dur=lapse_rate_conds[0][0]
-            rise_dur=lapse_rate_conds[0][1]
-            delta_dur_percent=lapse_rate_conds[0][2]
-            lapse_rate_conds=lapse_rate_conds[1:]
+        if not lapse_ended:
+            if lapse_rate_conds.shape[0]>0:
+                standard_dur=lapse_rate_conds[0][0]
+                rise_dur=lapse_rate_conds[0][1]
+                delta_dur_percent=lapse_rate_conds[0][2]
+                lapse_rate_conds=lapse_rate_conds[1:]
+            else:
+                stopped_stair_count+=1
+                lapse_ended=True
+                stair.stair_stopped=True
+                continue
         else:
-            stopped_stair_count+=1
             continue
+
     else:
         #TODO: TRY to get the next trial from the staircase but if the length of standard_durs is achieved maximum
         # Pop the last elemnt and assign it to the current trial
         standard_dur = standard_durs.pop()
         rise_dur = rise_durs.pop()
 
-        delta_dur_percent = stair.next_trial() # delta dur in terms of percentage of the standard duration (0.1, 0.2, 0.3, 0.4, 0.5)
+        delta_dur_percent = round(stair.next_trial(),5) # delta dur in terms of percentage of the standard duration (0.1, 0.2, 0.3, 0.4, 0.5)
 
-    delta_dur_s= standard_dur*delta_dur_percent # delta dur in terms of seconds
-    test_dur_s = standard_dur + delta_dur_s
+    delta_dur_s= round(standard_dur*delta_dur_percent,5)  # delta dur in terms of seconds
+    test_dur_s = round(standard_dur + delta_dur_s,5)
 
     print(f'Current Stair: {current_stair} - Standard Dur: {standard_dur} - Delta Dur: {delta_dur_percent} - Test Dur: {test_dur_s} - Rise Dur: {rise_dur}, delta_dur_s: {delta_dur_s}')
     
@@ -273,6 +285,7 @@ while not endExpNow and stopped_stair_count!=len(all_staircases):
     total_dur_of_audio = len(audio_stim) / sampleRate # calculate the total duration of the audio stimulus
     total_audio_durs.append(total_dur_of_audio) # save the total duration of the audio stimulus
     audio_stim_sound=sound.Sound(audio_stim, sampleRate=sampleRate, stereo=False)
+    audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001)
 
     trialN += 1
     # have a rest screen
@@ -305,7 +318,6 @@ while not endExpNow and stopped_stair_count!=len(all_staircases):
 
     continueRoutine = True
     """ Run the trial routine""" 
-    print(f"Trial {trialN} out of {conditions_matrix.shape[0]}")
     while continueRoutine:
         t = globalClock.getTime()
         # draw the fixation cross
@@ -383,10 +395,10 @@ while not endExpNow and stopped_stair_count!=len(all_staircases):
                 self.name=np.random.choice(keyList)
                 self.rt = np.random.choice(np.linspace(rtRange[0], rtRange[1])/1000)
 
-        # # Simulate a key press for testing purposes
-        # if not response:
-        #     #fake a response responseKeys 
-        #     response=[simKeys(keyList=['left', 'right'], rtRange=[200,1000])]
+        # Simulate a key press for testing purposes
+        if not response:
+            #fake a response responseKeys 
+            response=[simKeys(keyList=['left', 'right'], rtRange=[200,1000])]
 
             
         # record the response
@@ -464,6 +476,7 @@ while waitEndExp:
     # data.to_csv(filename + '.csv')
     # sio.savemat(filename + '.mat', {'data': conditions_matrix})
     # end of experiment text
+    print("end of exp")
     end_text = """End of the experiment.
     Thank you for your participation. Press any key to exit."""
     end_text_comp = visual.TextStim(win, text=end_text, color='white', height=30)
@@ -471,7 +484,7 @@ while waitEndExp:
     win.flip()
     event.waitKeys()
     waitEndExp = False
-    core.quit()
+core.quit()
     
         
             
