@@ -271,28 +271,43 @@ class AudioCueGenerator:
 
 
 
-# # # Example usage with raised-cosine envelope
-# audio_cue = AudioCueGenerator(sampleRate=96000)
+# # Example usage with raised-cosine envelope
+audio_cue = AudioCueGenerator(sampleRate=44100)
 
-# #generate whole stim
-# test_dur = 1
-# standard_dur = 1
-# noise_type = "white"
-# intensity = 5
-# rise_dur = 0.2
-# order = 1
+#generate whole stim
+test_dur = 1.2
+standard_dur = 1.2
+noise_type = "white"
+intensity = 3.75
+rise_dur = 0.28
+order = 2
+pre_cue_sound=0.25
+test_sound=test_dur
+isi_sound=0.25
+stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise_dur, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound)
+#audio_cue.play_sound(stim_sound)
 
-# stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise_dur, order, pre_dur=0.1, post_dur=0.1,isi_dur=0.3)
-# audio_cue.play_sound(stim_sound)
+#Plot the sound
+t=np.linspace(0, len(stim_sound)/44100, len(stim_sound))
+#import for plotting
+import matplotlib.pyplot as plt
 
-# #Plot the sound
-# t=np.linspace(0, len(stim_sound)/44100, len(stim_sound))
-# #import for plotting
-# import matplotlib.pyplot as plt
+plt.figure(figsize=(10, 4))
+plt.plot(t,stim_sound, label="Modulated Noise")
 
-# plt.figure(figsize=(10, 4))
-# plt.plot(t,stim_sound, label="Modulated Noise")
-# plt.show()
+# shade the event regions
+plt.axvspan(0, pre_cue_sound, color='gray', alpha=0.3, label='Pre Cue')
+plt.axvspan(pre_cue_sound, pre_cue_sound+test_sound, color='red', alpha=0.3, label='Standard Sound')
+plt.axvspan(pre_cue_sound+test_sound, pre_cue_sound+test_sound+isi_sound, color='blue', alpha=0.3, label='ISI')
+plt.axvspan(pre_cue_sound+test_sound+isi_sound, pre_cue_sound+test_sound+isi_sound+standard_dur, color='green', alpha=0.3, label='Test Sound')
+
+plt.axvspan(pre_cue_sound+test_sound+isi_sound+standard_dur, len(stim_sound) / 44100, color='gray', alpha=0.3, label='Post Cue')
+plt.xlabel("Sample")
+plt.ylabel("Amplitude")
+
+plt.legend( bbox_to_anchor=(1.05, 1), loc='upper right')
+plt.title("Auditory stimulus")
+plt.show()
 
 
 

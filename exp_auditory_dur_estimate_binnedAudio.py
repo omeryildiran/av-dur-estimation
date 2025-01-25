@@ -9,7 +9,7 @@ Start Date: 11/2024
 Last Update: 11/2024
 
 """
-
+import matplotlib.pyplot as plt
 # Importing Libraries
 from psychopy import sound, gui, visual, core, data, event, logging, clock, colors, layout, iohub, hardware
 import os
@@ -19,6 +19,7 @@ from numpy.random import random, randint, normal, shuffle, choice as randchoice
 from psychopy.constants import (NOT_STARTED, STARTED, PLAYING, PAUSED,
                                 STOPPED, FINISHED, PRESSED, RELEASED, FOREVER)
 import sys  # to get file system encoding
+#from psychopy import prefs/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/exp_auditory_dur_estimate_binnedAudio.py
 from psychopy import prefs
 import psychopy.iohub as io
 from psychopy.iohub.util import hideWindow, showWindow
@@ -36,7 +37,7 @@ prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
 # import condition generator
 from create_conds_staircase import audioDurationGen
 # import audio generator
-from audio_cue_generator import AudioCueGenerator
+from audio_cue_gen_binned import AudioCueGenerator
 # import the staircase
 from my_staircase import stairCase
 
@@ -75,7 +76,7 @@ myMon = monitors.Monitor('macAir', width=screen_width, distance=screen_distance)
 myMon.setSizePix((sizeIs, sizeIs))
 # Create window
 win = visual.Window(size=(sizeIs, sizeIs),
-                    fullscr=True, monitor=myMon, units='pix', color="black", useFBO=True, screen=1, colorSpace='rgb')
+                    fullscr=False, monitor=myMon, units='pix', color="black", useFBO=True, screen=1, colorSpace='rgb')
 
 # Set window properties
 win.monitor.setWidth(screen_width)
@@ -113,8 +114,13 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-conds_obj = audioDurationGen(trial_per_condition=50,rise_conds=[0.05,0.28],
-                             standard_durations=[1.5,2],intens=3.75)
+rise_conds=[4,0.2]
+intens=6
+conds_obj = audioDurationGen(trial_per_condition=90,
+                             rise_conds=rise_conds,
+                             standard_durations=[0.5,0.7],
+                             intens=intens)
+bin_dur=0.1
 #print('given trials number',len(conds_obj.intens))
 #total_trials=(conds_obj.trial_per_condition)*2*4
 """
@@ -159,6 +165,24 @@ conditions_matrix = np.column_stack((conditions_matrix, np.nan * np.zeros((len(c
 sampleRate = 44100
 audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
 
+# test_dur = 1
+# standard_dur = 0.5
+# noise_type = "white"
+# intensity = 6
+# rise_dur = 0 
+# order = 2
+# bin_dur = 0.1 # 100 ms bins
+# amp_mean = 0
+# amp_var = 3.5 
+
+# stim_sound=audio_cue_gen.whole_stimulus_with_binning(
+#     test_dur, standard_dur, noise_type, intensity, order, 
+#     pre_dur=0.25, post_dur=0.25, isi_dur=0.3, 
+#     bin_dur=bin_dur, amp_mean=amp_mean, amp_var=amp_var
+# )
+
+# #Play and plot the stimulus
+# audio_cue_gen.play_sound(stim_sound)
 
 # Create general variables before the trial loop
 endExpNow = False  # flag for 'escape' or other condition => quit the exp
@@ -191,23 +215,30 @@ exp_data=np.zeros((conditions_matrix.shape[0]+50, 19),dtype=object)
 stepFactor=0.5
 initStep=0.15
 maxReversals=100
-max_level=0.55
+max_level=0.7
 
 # Create the staircases
-max_trial_per_stair=70#total_trials//5
-stairCaseLonger = stairCase(init_level=0.05, init_step=initStep, method="3D1U", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
-stairCaseLonger2D1U = stairCase(init_level=0.05, init_step=initStep, method="2D1U", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
-stairCaseShorter = stairCase(init_level=-0.05, init_step=-initStep, method="3U1D", step_factor=stepFactor, max_level=-max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
-stairCaseShorter2U1D = stairCase(init_level=-0.05, init_step=-initStep, method="2U1D", step_factor=stepFactor, max_level=-max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
+max_trial_per_stair=90#total_trials//5
+
+print(f'rise unique: {np.unique(rise_durs)}')
+stairCaseLonger = stairCase(init_level=0.05, init_step=initStep, method="3D1U", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[0])
+#stairCaseLonger2D1U = stairCase(init_level=0.05, init_step=initStep, method="2D1U", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
+stairCaseShorter = stairCase(init_level=-0.05, init_step=-initStep, method="3U1D", step_factor=stepFactor, max_level=-max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[0])
+#stairCaseShorter2U1D = stairCase(init_level=-0.05, init_step=-initStep, method="2U1D", step_factor=stepFactor, max_level=-max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
+
+stairCaseLonger_b = stairCase(init_level=0.05, init_step=initStep, method="3D1U", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[1])
+stairCaseShorter_b = stairCase(init_level=-0.05, init_step=-initStep, method="3U1D", step_factor=stepFactor, max_level=-max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[1])
+
+
 
 stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
 
-all_staircases=[stairCaseShorter,stairCaseShorter2U1D,stairCaseLonger,stairCaseLonger2D1U,stairCaseLapse]
+all_staircases=[stairCaseShorter,stairCaseLonger,stairCaseLapse,stairCaseLonger_b,stairCaseShorter_b] #stairCaseShorter2U1D,stairCaseLonger2D1U,]
 np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[-0.55,0.55]
+    lapse_deltas=[-0.8,-0.08,+0.08,0.8]
     all_conds=[]
     for i in np.unique(standard_durs): # standard durations 1.3, 1.6, 1.9
         for j in np.unique(rise_durs): # rise durations 0.05, 0.25
@@ -215,12 +246,12 @@ def lapse_rate_cond_generate():
                 all_conds.append([i,j,k])
     # in total 12 conditions
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(3,1))
+    all_conds=np.tile(all_conds,(2,1))
     np.random.shuffle(all_conds) 
     return all_conds
 lapse_rate_conds=lapse_rate_cond_generate()
-print(f"lapse rate conditions: {lapse_rate_conds}")
-total_trial_num=len(standard_durs)+len(lapse_rate_conds)
+#print(f"lapse rate conditions: {lapse_rate_conds}")
+total_trial_num=max_trial_per_stair*(len(all_staircases)-1)+len(lapse_rate_conds)
 
 print(f'There are in total  {lapse_rate_conds.shape[0]} lapse rate conditions')
 print(f"there are maximum {len(standard_durs)} normal trials in total of  {max_trial_per_stair*4} staircase trials" )
@@ -231,15 +262,28 @@ rise_durs = rise_durs.tolist()
 lapse_ended=False
 while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     print(f"Trial {trialN} out of {total_trial_num}")
-
-    def chose_stair():
-        tmp_stair=np.random.choice(all_staircases)
+    
+    shuffle(all_staircases)
+    def chose_stair(stair_n=0):
+        #print(f'stair number {stair_n}')
+        tmp_stair=all_staircases[stair_n]#np.random.choice(all_staircases)
+        # print(f'stair_level {tmp_stair.sigma_level}')
+        # print(f'staircase method: {tmp_stair.method}')
+        # print(f'rise_dur: {rise_durs[-1]}')
         if tmp_stair.stair_stopped==False:
-            stair=tmp_stair
-            return stair
+            if tmp_stair.method!="lapse_rate":
+                if round(tmp_stair.sigma_level,2)==round(rise_durs[-1],2):
+                    return tmp_stair
+                else:
+                    return chose_stair(stair_n+1)
+            else:
+                print('Yes in lapse')
+                return tmp_stair
         else:
-            return chose_stair()
-    stair=chose_stair()
+            return chose_stair(stair_n+1)
+
+    
+    stair=chose_stair(-1)
     current_stair=stair.method
 
     # Get the current trial
@@ -254,6 +298,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 stopped_stair_count+=1
                 lapse_ended=True
                 stair.stair_stopped=True
+                print('lapse rate ended')
                 continue
         else:
             continue
@@ -282,10 +327,30 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     post_dur = max(float(np.random.normal(0.25, 0.05)),0.2)
     isi_dur = max(float(np.random.normal(0.25, 0.05)),0.2)
 
-    audio_stim=audio_cue_gen.whole_stimulus(test_dur_s, standard_dur, "white", intensity, rise_dur, order,pre_dur,post_dur,isi_dur) # create the audio stimulus
+    #audio_stim=audio_cue_gen.whole_stimulus(test_dur_s, standard_dur, "white", intensity, rise_dur, order,pre_dur,post_dur,isi_dur) # create the audio stimulus
+    
+    audio_stim = audio_cue_gen.whole_stimulus_with_binning(
+    test_dur=test_dur_s, standard_dur=standard_dur, noise_type='white', intensity=intens, 
+    order=1, 
+    pre_dur=pre_dur, post_dur=post_dur, isi_dur=isi_dur, 
+    bin_dur=0.1, amp_mean=0, amp_var=rise_dur)    
+    
     total_dur_of_audio = len(audio_stim) / sampleRate # calculate the total duration of the audio stimulus
     total_audio_durs.append(total_dur_of_audio) # save the total duration of the audio stimulus
-    audio_stim_sound=sound.Sound(audio_stim, sampleRate=sampleRate, stereo=False)
+    
+    audio_stim_sound=sound.Sound(value=audio_stim, sampleRate=sampleRate, stereo=True)
+
+    # t = np.linspace(0, total_dur_of_audio, len(audio_stim))
+    # plt.figure(figsize=(10, 4))
+    # plt.plot(t, audio_stim)
+    # plt.title("Stimulus (Low-rel test+Standard) Sound with Binning")
+    # plt.xlabel("Time (s)")
+    # plt.ylabel("Amplitude")
+    # plt.axvspan(pre_dur, pre_dur+test_dur_s, color="blue", alpha=0.5, label="Test Sound")
+    # plt.axvspan(pre_dur+test_dur_s+isi_dur, pre_dur+test_dur_s+isi_dur+standard_dur, color="purple", alpha=0.5, label="Standard Sound")
+    # plt.show()
+
+    # For testing purposes
     #audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) # uncomment for testing
 
     trialN += 1
@@ -327,6 +392,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         # audio stimulus
         if audio_stim_sound.status == NOT_STARTED and t >= 0:
             audio_stim_sound.play()
+
             audio_stim_sound.status = STARTED
             t_start = globalClock.getTime()
         elif audio_stim_sound.status == STARTED:
@@ -334,8 +400,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 t_dur=t-t_start
                 audio_stim_sound.status = FINISHED
                 continueRoutine = False
-                audio_stim_sound.stop()
-                break
+                #audio_stim_sound.stop()
+                #break
         
         # check for quit (typically the Esc key)
         if event.getKeys(keyList=["escape"]):
@@ -396,7 +462,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 self.name=np.random.choice(keyList)
                 self.rt = np.random.choice(np.linspace(rtRange[0], rtRange[1])/1000)
 
-        # Simulate a key press for testing purposes
+        # for testing purposesSimulate a key press
         # if not response:
         #     #fake a response responseKeys 
         #     response=[simKeys(keyList=['left', 'right'], rtRange=[200,1000])]
