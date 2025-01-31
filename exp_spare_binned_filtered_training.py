@@ -9,7 +9,6 @@ Start Date: 11/2024
 Last Update: 11/2024
 
 """
-ExpTesting = False
 import matplotlib.pyplot as plt
 # Importing Libraries
 from psychopy import sound, gui, visual, core, data, event, logging, clock, colors, layout, iohub, hardware
@@ -33,9 +32,9 @@ import pandas as pd
 from my_staircase import stairCase
 
 # audio prefs
-#prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
-prefs.hardware['audioLib'] = ['PTB']
-#prefs.hardware['audioDevice'] = 3
+prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
+#prefs.hardware['audioLib'] = ['PTB']
+prefs.hardware['audioDevice'] = 3
 
 #prefs.general['audioLatencyMode'] = 4
 
@@ -84,7 +83,7 @@ myMon = monitors.Monitor('macAir', width=screen_width, distance=screen_distance)
 myMon.setSizePix((sizeIs, sizeIs))
 # Create window
 win = visual.Window(size=(sizeIs, sizeIs),
-                    fullscr=True, monitor=myMon, units='pix', color="black", useFBO=True, screen=0, colorSpace='rgb')
+                    fullscr=False, monitor=myMon, units='pix', color="black", useFBO=True, screen=0, colorSpace='rgb')
 
 # Set window properties
 win.monitor.setWidth(screen_width)
@@ -124,7 +123,7 @@ win.flip()
 # create the conditions matri x
 rise_conds=[3.5,0.5]
 intens=9
-n_trial_per_condition=55
+n_trial_per_condition=50
 conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*2,
                              rise_conds=rise_conds,
                              standard_durations=[0.5],
@@ -212,24 +211,16 @@ max_level=0.8
 max_trial_per_stair=n_trial_per_condition#total_trials//5
 
 print(f'rise unique: {np.unique(rise_durs)}')
-stairCaseLonger = stairCase(init_level=0.05, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1.5, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[0],sign_of_stair=1)
-#stairCaseLonger2D1U = stairCase(init_level=0.05, init_step=initStep, method="2D1U", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
-stairCaseShorter = stairCase(init_level=0.05, init_step=initStep, method="3U1D",step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[0],sign_of_stair=-1)
-#stairCaseShorter2U1D = stairCase(init_level=-0.05, init_step=-initStep, method="2U1D", step_factor=stepFactor, max_level=-max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
-
-stairCaseLonger_b = stairCase(init_level=0.05, init_step=initStep, method="3D1Ub", step_factor=stepFactor, max_level=max_level+1.5, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[1],sign_of_stair=1)
-stairCaseShorter_b = stairCase(init_level=0.05, init_step=initStep, method="3U1Db",step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[1],sign_of_stair=-1)
 
 
+stair_training = stairCase(init_level=0.6, init_step=initStep, method="training", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
 
-stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
-
-all_staircases=[stairCaseShorter,stairCaseLonger,stairCaseLapse,stairCaseLonger_b,stairCaseShorter_b,]
+all_staircases=[stair_training]
 np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[-0.9,-0.1,+0.1,0.9]
+    lapse_deltas=[-0.9,0.9]
     all_conds=[]
     for i in np.unique(standard_durs): # standard durations 1.3, 1.6, 1.9
         for j in np.unique(rise_durs): # rise durations 0.05, 0.25
@@ -237,7 +228,7 @@ def lapse_rate_cond_generate():
                 all_conds.append([i,j,k])
     # in total 12 conditions
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(3,1))
+    all_conds=np.tile(all_conds,(2,1))
     np.random.shuffle(all_conds) 
     return all_conds
 lapse_rate_conds=lapse_rate_cond_generate()
@@ -254,33 +245,14 @@ lapse_ended=False
 while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     print(f"Trial {trialN} out of {total_trial_num}")
     
-    #shuffle(all_staircases)
-    def chose_stair(stair_n=0):
-        #print(f'stair number {stair_n}')
-        tmp_stair=all_staircases[stair_n]#np.random.choice(all_staircases)
-        # print(f'stair_level {tmp_stair.sigma_level}')
-        # print(f'staircase method: {tmp_stair.method}')
-        # print(f'rise_dur: {rise_durs[-1]}')
-        if tmp_stair.stair_stopped==False:
-            if tmp_stair.method!="lapse_rate":
-                if round(tmp_stair.sigma_level,2)==round(rise_durs[-1],2):
-                    return tmp_stair
-                else:
-                    return chose_stair((stair_n+1)%len(all_staircases))
-            else:
-                print('Yes in lapse')
-                return tmp_stair
-        else:
-            return chose_stair((stair_n+1)%len(all_staircases))
-
     
-    stair=chose_stair(trialN%len(all_staircases))
+    stair=stair_training 
     if trialN%len(all_staircases)==0:
         shuffle(all_staircases)
     current_stair=stair.method
 
     # Get the current trial
-    if current_stair=="lapse_rate":
+    if current_stair=="lapse_rate" or current_stair=="training":
         if not lapse_ended:
             if lapse_rate_conds.shape[0]>0:
                 standard_dur=lapse_rate_conds[0][0]
@@ -297,8 +269,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             continue
 
     else:
-        #TODO: TRY to get the next trial from the staircase but if the length of standard_durs is achieved maximum
-        # Pop the last elemnt and assign it to the current trial
         standard_dur = standard_durs.pop()
         rise_dur = rise_durs.pop()
 
@@ -333,23 +303,9 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     
     audio_stim_sound=sound.Sound(value=audio_stim, sampleRate=sampleRate, stereo=True)
 
+
     # For testing purposes uncomment the following line
-    if ExpTesting:
-        audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) 
-
-
-    if randchoice([True,False,False,False,False]) and trialN>1:
-        # draw correct or incorrect text
-        if is_corrects[trialN-1]:
-            feedback_text = "Correct!"
-        else:
-            feedback_text = "Incorrect!"
-        color= 'green' if is_corrects[trialN-1] else 'red'
-        feedback_text_comp = visual.TextStim(win, text=feedback_text, color=color, height=50)
-        feedback_text_comp.draw()
-        win.flip()
-        # comment for testing
-        event.waitKeys() if ExpTesting==False else None
+    #audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) 
 
     trialN += 1
     # have a rest screen
@@ -363,9 +319,20 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         rest_text_comp.draw()
         win.flip()
         # comment for testing
-        event.waitKeys() if ExpTesting==False else None
-
-
+        event.waitKeys()
+    
+    if current_stair=="training":
+        # draw correct or incorrect text
+        if is_corrects[trialN-1]:
+            feedback_text = "Correct!"
+        else:
+            feedback_text = "Incorrect!"
+        color= 'green' if is_corrects[trialN-1] else 'red'
+        feedback_text_comp = visual.TextStim(win, text=feedback_text, color=color, height=50)
+        feedback_text_comp.draw()
+        win.flip()
+        # comment for testing
+        event.waitKeys()
     # Check if the experiment is over
     if endExpNow or event.getKeys(keyList=['escape']):
         core.quit()
@@ -462,10 +429,10 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 self.name=np.random.choice(keyList)
                 self.rt = np.random.choice(np.linspace(rtRange[0], rtRange[1])/1000)
 
-        #  for testing purposesSimulate a key press
-        if not response and ExpTesting:
-            #fake a response responseKeys 
-            response=[simKeys(keyList=['left', 'right'], rtRange=[200,1000])]
+        # #  for testing purposesSimulate a key press
+        # if not response:
+        #     #fake a response responseKeys 
+        #     response=[simKeys(keyList=['left', 'right'], rtRange=[200,1000])]
 
             
         # record the response
