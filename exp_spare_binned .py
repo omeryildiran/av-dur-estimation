@@ -42,7 +42,7 @@ prefs.hardware['audioLib'] = ['PTB']
 # import condition generator
 from create_conds_staircase import audioDurationGen
 # import audio generator
-from audio_cue_gen_filtered import AudioCueGenerator
+from audio_cue_gen_bin_filter_v2 import AudioCueGenerator
 # import the staircase
 from my_staircase import stairCase
 
@@ -122,14 +122,15 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-rise_conds=[3.5,0.5]
+rise_conds=[0.2, 4.5]
 intens=9
-n_trial_per_condition=55
+n_trial_per_condition=70
+bin_dur=0.1
+
 conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*2,
                              rise_conds=rise_conds,
                              standard_durations=[0.5],
-                             intens=intens)
-bin_dur=0.025
+                             intens=intens) 
 #print('given trials number',len(conds_obj.intens))
 #total_trials=(conds_obj.trial_per_condition)*2*4
 """
@@ -171,7 +172,7 @@ conditions_matrix = np.column_stack((conditions_matrix, np.nan * np.zeros((len(c
 """
 
 # Initialize the stimulus component
-sampleRate = 44100
+sampleRate = 48000
 audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
 
 
@@ -206,30 +207,30 @@ exp_data=np.zeros((conditions_matrix.shape[0]+tolerance_trials, 19),dtype=object
 stepFactor=0.67
 initStep=0.2
 maxReversals=100
-max_level=0.8
+max_level=0.9
 
 # Create the staircases
 max_trial_per_stair=n_trial_per_condition#total_trials//5
 
 print(f'rise unique: {np.unique(rise_durs)}')
-stairCaseLonger = stairCase(init_level=0.05, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1.5, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[0],sign_of_stair=1)
+stairCaseLonger = stairCase(init_level=0.05, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+0.5, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[0],sign_of_stair=1)
 #stairCaseLonger2D1U = stairCase(init_level=0.05, init_step=initStep, method="2D1U", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
 stairCaseShorter = stairCase(init_level=0.05, init_step=initStep, method="3U1D",step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[0],sign_of_stair=-1)
 #stairCaseShorter2U1D = stairCase(init_level=-0.05, init_step=-initStep, method="2U1D", step_factor=stepFactor, max_level=-max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair)
 
-stairCaseLonger_b = stairCase(init_level=0.05, init_step=initStep, method="3D1Ub", step_factor=stepFactor, max_level=max_level+1.5, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[1],sign_of_stair=1)
+stairCaseLonger_b = stairCase(init_level=0.05, init_step=initStep, method="3D1Ub", step_factor=stepFactor, max_level=max_level+0.5, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[1],sign_of_stair=1)
 stairCaseShorter_b = stairCase(init_level=0.05, init_step=initStep, method="3U1Db",step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[1],sign_of_stair=-1)
 
 
 
 stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
 
-all_staircases=[stairCaseShorter,stairCaseLonger,stairCaseLapse,stairCaseLonger_b,stairCaseShorter_b,]
+all_staircases=[stairCaseShorter,stairCaseLonger,stairCaseLapse, stairCaseLonger_b,stairCaseShorter_b,]
 np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[-0.9,-0.1,+0.1,0.9]
+    lapse_deltas=[-0.7,-0.02,+0.02,0.7]
     all_conds=[]
     for i in np.unique(standard_durs): # standard durations 1.3, 1.6, 1.9
         for j in np.unique(rise_durs): # rise durations 0.05, 0.25
@@ -237,7 +238,7 @@ def lapse_rate_cond_generate():
                 all_conds.append([i,j,k])
     # in total 12 conditions
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(3,1))
+    all_conds=np.tile(all_conds,(4,1))
     np.random.shuffle(all_conds) 
     return all_conds
 lapse_rate_conds=lapse_rate_cond_generate()
@@ -326,19 +327,23 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     test_dur=test_dur_s, standard_dur=standard_dur, noise_type='white', intensity=intens, 
     order=order, 
     pre_dur=pre_dur, post_dur=post_dur, isi_dur=isi_dur, 
-    bin_dur=0.1, amp_mean=0, amp_var=rise_dur)    
+    bin_dur=bin_dur, amp_mean=0, amp_var=rise_dur)    
     
     total_dur_of_audio = len(audio_stim) / sampleRate # calculate the total duration of the audio stimulus
     total_audio_durs.append(total_dur_of_audio) # save the total duration of the audio stimulus
     
     audio_stim_sound=sound.Sound(value=audio_stim, sampleRate=sampleRate, stereo=True)
 
+
+    # plt.plot(audio_stim)
+    # plt.show()
+
     # For testing purposes uncomment the following line
     if ExpTesting:
         audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) 
 
 
-    if randchoice([True,False,False,False,False]) and trialN>1:
+    if randchoice([True,False,False,False]) and trialN>1:
         # draw correct or incorrect text
         if is_corrects[trialN-1]:
             feedback_text = "Correct!"
@@ -349,7 +354,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         feedback_text_comp.draw()
         win.flip()
         # comment for testing
-        event.waitKeys() if ExpTesting==False else None
+        core.wait(0.5) if ExpTesting==False else None
+        
 
     trialN += 1
     # have a rest screen
@@ -471,7 +477,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         # record the response
         if response:
             responses[trialN] = 1 if response[0].name=='left' else 2  # 1 for first longer, 2 for second longer
-            is_correct=test_dur_s>standard_dur and responses[trialN]==order or test_dur_s<standard_dur and responses[trialN]!=order # 1 for correct, 0 for incorrect
+            is_correct=(test_dur_s>standard_dur and responses[trialN]==order) or (test_dur_s<standard_dur and responses[trialN]!=order) # 1 for correct, 0 for incorrect
             is_corrects[trialN] = is_correct
             response_rts[trialN] = globalClock.getTime() - t_start
 

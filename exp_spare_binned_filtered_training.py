@@ -41,7 +41,7 @@ prefs.hardware['audioDevice'] = 3
 # import condition generator
 from create_conds_staircase import audioDurationGen
 # import audio generator
-from audio_cue_gen_filtered import AudioCueGenerator
+from audio_cue_gen_bin_filter_v2 import AudioCueGenerator
 # import the staircase
 from my_staircase import stairCase
 
@@ -83,7 +83,7 @@ myMon = monitors.Monitor('macAir', width=screen_width, distance=screen_distance)
 myMon.setSizePix((sizeIs, sizeIs))
 # Create window
 win = visual.Window(size=(sizeIs, sizeIs),
-                    fullscr=False, monitor=myMon, units='pix', color="black", useFBO=True, screen=0, colorSpace='rgb')
+                    fullscr=True, monitor=myMon, units='pix', color="black", useFBO=True, screen=0, colorSpace='rgb')
 
 # Set window properties
 win.monitor.setWidth(screen_width)
@@ -121,14 +121,14 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-rise_conds=[3.5,0.5]
+rise_conds=[6,0.2]
 intens=9
 n_trial_per_condition=50
 conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*2,
                              rise_conds=rise_conds,
                              standard_durations=[0.5],
                              intens=intens)
-bin_dur=0.025
+bin_dur=0.1
 #print('given trials number',len(conds_obj.intens))
 #total_trials=(conds_obj.trial_per_condition)*2*4
 """
@@ -220,7 +220,7 @@ np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[-0.9,0.9]
+    lapse_deltas=[-0.7,0.7]
     all_conds=[]
     for i in np.unique(standard_durs): # standard durations 1.3, 1.6, 1.9
         for j in np.unique(rise_durs): # rise durations 0.05, 0.25
@@ -228,7 +228,7 @@ def lapse_rate_cond_generate():
                 all_conds.append([i,j,k])
     # in total 12 conditions
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(2,1))
+    all_conds=np.tile(all_conds,(4,1))
     np.random.shuffle(all_conds) 
     return all_conds
 lapse_rate_conds=lapse_rate_cond_generate()
@@ -296,7 +296,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     test_dur=test_dur_s, standard_dur=standard_dur, noise_type='white', intensity=intens, 
     order=order, 
     pre_dur=pre_dur, post_dur=post_dur, isi_dur=isi_dur, 
-    bin_dur=0.1, amp_mean=0, amp_var=rise_dur)    
+    bin_dur=bin_dur, amp_mean=0, amp_var=rise_dur)    
     
     total_dur_of_audio = len(audio_stim) / sampleRate # calculate the total duration of the audio stimulus
     total_audio_durs.append(total_dur_of_audio) # save the total duration of the audio stimulus
@@ -321,7 +321,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         # comment for testing
         event.waitKeys()
     
-    if current_stair=="training":
+    if current_stair=="training" and trialN>0:
         # draw correct or incorrect text
         if is_corrects[trialN-1]:
             feedback_text = "Correct!"
@@ -332,7 +332,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         feedback_text_comp.draw()
         win.flip()
         # comment for testing
-        event.waitKeys()
+        #event.waitKeys()
+        core.wait(0.5)
     # Check if the experiment is over
     if endExpNow or event.getKeys(keyList=['escape']):
         core.quit()

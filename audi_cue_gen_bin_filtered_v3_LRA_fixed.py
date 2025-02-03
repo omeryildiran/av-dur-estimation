@@ -185,26 +185,28 @@ class AudioCueGenerator:
                                                     min_amp=1,
                                                     amp_var=0.1)
   
+        
+        # 2. Generate test sound with binning and raised cosine envelope
+
+        standard_sound= self.generate_binned_noise_v2(
+            total_dur=standard_dur, noise_type=noise_type, 
+            bin_dur=bin_dur, min_amp=3, amp_var=amp_var)
+
+        self.standard_bounds = [min(np.abs(standard_sound)), max(np.abs(standard_sound))]
+
         # 4. Generate standard sound noise
 
-        standard_sound= self.generate_binned_noise_v2(total_dur=standard_dur, 
+        test_sound= self.generate_binned_noise_v2(total_dur=test_dur, 
                                                     noise_type=noise_type, 
                                                     bin_dur=bin_dur, 
                                                     min_amp=3, 
-                                                    amp_var=0.5)
-        self.standard_bounds = [min(np.abs(standard_sound)), max(np.abs(standard_sound))]
-
-        # 2. Generate test sound with binning and raised cosine envelope
-
-        test_sound = self.generate_binned_noise_v2(
-            total_dur=test_dur, noise_type=noise_type, 
-            bin_dur=bin_dur, min_amp=3, amp_var=amp_var)
+                                                    amp_var=0.1)
         # normalize test based on the standard sound
         std_amp = np.max(np.abs(standard_sound))
         test_amp = np.max(np.abs(test_sound))
         scaling_ratio = std_amp / test_amp
         test_sound = test_sound * scaling_ratio
-
+        
         # 3. Generate interstimulus interval (ISI) noise
         isi_sound= self.generate_binned_noise_v2(total_dur=pre_dur,
                                                     noise_type=noise_type,
@@ -248,14 +250,14 @@ from psychopy.sound import backend_ptb as ptb
 prefs.hardware['audioDevice'] = 3
 
 # Generate whole stimulus with binning
-test_dur = 1
+test_dur = 0.2
 standard_dur = 1
 noise_type = "white"
 intensity = 9
 order = 1
-bin_dur = 0.1# 100 ms bins
+bin_dur = 0.05# 100 ms bins
 amp_mean = 0
-amp_var = 4# to increase the perceptual noise in the test stimuli just modify the amplitude variance value. 
+amp_var = 10# to increase the perceptual noise in the test stimuli just modify the amplitude variance value. 
 # the higher the value the more perceptual noise will be added to the test stimuli.
 # Bin duration should stay the same as the standard stimuli.
 
