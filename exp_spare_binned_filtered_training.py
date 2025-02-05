@@ -9,6 +9,7 @@ Start Date: 11/2024
 Last Update: 11/2024
 
 """
+from psychopy.sound import backend_ptb as ptb
 import matplotlib.pyplot as plt
 # Importing Libraries
 from psychopy import sound, gui, visual, core, data, event, logging, clock, colors, layout, iohub, hardware
@@ -32,16 +33,17 @@ import pandas as pd
 from my_staircase import stairCase
 
 # audio prefs
-prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
-#prefs.hardware['audioLib'] = ['PTB']
-prefs.hardware['audioDevice'] = 3
+#prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
+print(ptb.getDevices(kind='output'))
+prefs.hardware['audioLib'] = ['PTB']
+prefs.hardware['audioDevice'] = 1
 
 #prefs.general['audioLatencyMode'] = 4
 
 # import condition generator
 from create_conds_staircase import audioDurationGen
 # import audio generator
-from audio_cue_gen_bin_filter_v2 import AudioCueGenerator
+from audi_cue_gen_bin_filtered_v3_LRA_fixed import AudioCueGenerator
 # import the staircase
 from my_staircase import stairCase
 
@@ -121,14 +123,14 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-rise_conds=[6,0.2]
+rise_conds=[5]
 intens=9
 n_trial_per_condition=50
 conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*2,
                              rise_conds=rise_conds,
-                             standard_durations=[0.5],
+                             standard_durations=[0.8],
                              intens=intens)
-bin_dur=0.1
+bin_dur=0.05
 #print('given trials number',len(conds_obj.intens))
 #total_trials=(conds_obj.trial_per_condition)*2*4
 """
@@ -228,7 +230,7 @@ def lapse_rate_cond_generate():
                 all_conds.append([i,j,k])
     # in total 12 conditions
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(4,1))
+    all_conds=np.tile(all_conds,(7,1))
     np.random.shuffle(all_conds) 
     return all_conds
 lapse_rate_conds=lapse_rate_cond_generate()
@@ -242,6 +244,7 @@ print(f"there are maximum {len(standard_durs)} normal trials in total of  {max_t
 standard_durs = standard_durs.tolist()
 rise_durs = rise_durs.tolist()
 lapse_ended=False
+
 while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     print(f"Trial {trialN} out of {total_trial_num}")
     
@@ -277,7 +280,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     delta_dur_s= round(standard_dur*delta_dur_percent,5)  # delta dur in terms of seconds
     test_dur_s = round(standard_dur + delta_dur_s,5)
 
-    print(f'Current Stair: {current_stair} - Standard Dur: {standard_dur} - Delta Dur: {delta_dur_percent} - Test Dur: {test_dur_s} - Rise Dur: {rise_dur}, delta_dur_s: {delta_dur_s}')
     
     delta_durs[trialN] = delta_dur_percent
     test_durs[trialN] = test_dur_s
@@ -289,6 +291,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     pre_dur = np.random.uniform(0.25, 0.55)
     post_dur = np.random.uniform(0.25, 0.55)
     isi_dur = np.random.uniform(0.3, 0.75)
+
+    print(f'Current Stair: {current_stair}, Standard Dur: {standard_dur}, Test Dur: {test_dur_s}, Rise Dur: {rise_dur},Test in: {order} place,  Delta Dur: {delta_dur_percent},  delta_dur_s: {delta_dur_s}')
 
     #audio_stim=audio_cue_gen.whole_stimulus(test_dur_s, standard_dur, "white", intensity, rise_dur, order,pre_dur,post_dur,isi_dur) # create the audio stimulus
     
@@ -323,11 +327,12 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     
     if current_stair=="training" and trialN>0:
         # draw correct or incorrect text
-        if is_corrects[trialN-1]:
+        if is_correct:
             feedback_text = "Correct!"
+            color='green'
         else:
             feedback_text = "Incorrect!"
-        color= 'green' if is_corrects[trialN-1] else 'red'
+            color='red'
         feedback_text_comp = visual.TextStim(win, text=feedback_text, color=color, height=50)
         feedback_text_comp.draw()
         win.flip()
@@ -419,7 +424,9 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     response_text_comp = visual.TextStim(win, text=response_text, color='white', height=30)
     
     # region [rgba(40, 10, 30, 0.30)]
-
+    #plt.plot(audio_stim)
+    #plt.show()
+    
     while waitingResponse and not endExpNow:
         response_text_comp.draw()
         win.flip()
@@ -439,7 +446,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         # record the response
         if response:
             responses[trialN] = 1 if response[0].name=='left' else 2  # 1 for first longer, 2 for second longer
-            is_correct=test_dur_s>standard_dur and responses[trialN]==order or test_dur_s<standard_dur and responses[trialN]!=order # 1 for correct, 0 for incorrect
+            is_correct=(test_dur_s>standard_dur and responses[trialN]==order) or (test_dur_s<standard_dur and responses[trialN]!=order) # 1 for correct, 0 for incorrect
+            print(f"Response: {response[0].name} - Order: {order} - Is Correct: {is_correct}")
             is_corrects[trialN] = is_correct
             response_rts[trialN] = globalClock.getTime() - t_start
 

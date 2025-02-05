@@ -118,8 +118,10 @@ class AudioCueGenerator:
 
 
     
+    
+    
     def generate_binned_noise_v2(self, total_dur=2.5, noise_type="white", 
-                            bin_dur=0.1, min_amp=1, amp_var=0.5):
+                            bin_dur=0.1, min_amp=1, amp_var=0.5, sound_type='noise'):
         """
         Generate binned noise where each bin has amplitude variations.
         
@@ -142,29 +144,46 @@ class AudioCueGenerator:
 
         # Generate base noise (each bin as independent Gaussian noise)
         noise_signal = np.zeros(total_samples)
-        bin_v1 = np.random.randn(n_bins
-        , bin_samples)  # Random normal noise for each bin
-     
-        # Sample amplitude fxor each bin (matching MATLAB's approach)
-        amp_noise = np.random.rand(1, n_bins) * amp_var + min_amp
+        bin_v1 = np.random.randn(n_bins  , bin_samples)  # Random normal noise for each bin
+
+        # or using uniform distribution
+        amp_noise = np.random.uniform(min_amp, min_amp + amp_var, (1, n_bins))
+
+        # # change first and last bin amplitude
+        if sound_type !='noise' :
+            amp_noise[0, 0] = np.random.uniform(min_amp+1, min_amp+ amp_var+1)
+        if sound_type != 'noise'and remaining_samples == 0:
+            amp_noise[0, -1] = np.random.uniform(min_amp+1, min_amp+ amp_var+1) 
+        #amp_noise[0, 0] = np.random.uniform(min_amp+2, min_amp+ amp_var+2)
         # Multiply each bin by its sampled amplitude
         bin_v1.reshape(-1, bin_samples)
         bin_v2 = np.zeros((n_bins, bin_samples))
-        #print(amp_noise[0, 0])
+
         for i in range(n_bins):
             bin_v2[i, :] = bin_v1[i, :] * amp_noise[0, i]
         # Reshape into a 1D signal
         noise_signal[:n_bins * bin_samples] = bin_v2.flatten()
-
         #Handle remaining samples (if total_samples is not divisible by bin_samples)
         if remaining_samples > 0:
             # Generate noise for the last bin
             last_bin_noise = np.random.randn(remaining_samples)
             # Sample amplitude for the last bin
-            last_bin_amp = np.random.rand() * amp_var + min_amp
+            last_bin_amp = np.random.uniform(min_amp, min_amp + amp_var) 
+            last_bin_noise = last_bin_noise * last_bin_amp
+            noise_signal[-remaining_samples:] = last_bin_noise
+
+        if remaining_samples > 0 and sound_type != 'noise':
+            # Generate noise for the last bin
+            last_bin_noise = np.random.randn(remaining_samples)
+            # Sample amplitude for the last bin
+            last_bin_amp = np.random.uniform(min_amp+1, min_amp+ amp_var+1) 
             last_bin_noise = last_bin_noise * last_bin_amp
             noise_signal[-remaining_samples:] = last_bin_noise 
 
+        # if sound_type == 'reliable_signal':
+        #     noise_signal = noise_signal * 3#*1/amp_var
+        # elif sound_type == 'unreliable_signal':
+        #     noise_signal = noise_signal * 3#*1/amp_var
 
         # print(max(noise_signal))
         return noise_signal
@@ -189,10 +208,16 @@ class AudioCueGenerator:
         # 2. Generate test sound with binning and raised cosine envelope
 
         standard_sound= self.generate_binned_noise_v2(
-            total_dur=standard_dur, noise_type=noise_type, 
-            bin_dur=bin_dur, min_amp=3, amp_var=amp_var)
+                                                    total_dur=standard_dur, 
+                                                    noise_type=noise_type, 
+                                                    bin_dur=bin_dur, 
+                                                    min_amp=2.25, 
+                                                    amp_var=amp_var,
+                                                    sound_type='unreliable_signal')
+        
+        
 
-        self.standard_bounds = [min(np.abs(standard_sound)), max(np.abs(standard_sound))]
+        standard_bounds = [min(np.abs(standard_sound)), max(np.abs(standard_sound))] 
 
         # 4. Generate standard sound noise
 
@@ -200,12 +225,21 @@ class AudioCueGenerator:
                                                     noise_type=noise_type, 
                                                     bin_dur=bin_dur, 
                                                     min_amp=3, 
-                                                    amp_var=0.1)
+                                                    amp_var=0.000001,
+                                                    sound_type='reliable_signal')
+        
+        test_bounds = [min(np.abs(test_sound)), max(np.abs(test_sound))]
+        
+        # maximize the amplitude of the test sound
+
+
         # normalize test based on the standard sound
-        std_amp = np.max(np.abs(standard_sound))
+        amp_noise=np.max(np.abs(pre_cue_sound))
+        print(amp_noise)
+        test_sound= amp_noise*3.5* (test_sound/np.max(np.abs(test_sound)))
         test_amp = np.max(np.abs(test_sound))
-        scaling_ratio = std_amp / test_amp
-        test_sound = test_sound * scaling_ratio
+        standard_amp = np.max(np.abs(standard_sound))
+        standard_sound = test_amp * (standard_sound/standard_amp)
         
         # 3. Generate interstimulus interval (ISI) noise
         isi_sound= self.generate_binned_noise_v2(total_dur=pre_dur,
@@ -232,6 +266,7 @@ class AudioCueGenerator:
         # Normalize the signal
         # lowpass filter stim
         stim_sound=self.lowpass_filter(stim_sound,700,self.sample_rate,4)
+        np.clip(stim_sound, -4, 4, out=stim_sound)
         #stim_sound=np.concatenate([stim_sound])
         #print(max(stim_sound))
         stim_sound = stim_sound / np.max(np.abs(stim_sound))
@@ -246,41 +281,66 @@ audio_cue = AudioCueGenerator(sampleRate=48000)
 from psychopy import prefs
 prefs.hardware['audioLib'] = ['PTB']
 from psychopy.sound import backend_ptb as ptb
-#print(ptb.getDevices(kind='output'))
-prefs.hardware['audioDevice'] = 3
+print(ptb.getDevices(kind='output'))
+prefs.hardware['audioDevice'] = 1
 
 # Generate whole stimulus with binning
-test_dur = 0.2
-standard_dur = 1
+test_dur = 0.8
+standard_dur = 0.8
 noise_type = "white"
 intensity = 9
 order = 1
-bin_dur = 0.05# 100 ms bins
+bin_dur = 0.1# 100 ms bins
 amp_mean = 0
-amp_var = 10# to increase the perceptual noise in the test stimuli just modify the amplitude variance value. 
+amp_var = 0.2# to increase the perceptual noise in the test stimuli just modify the amplitude variance value. 
 # the higher the value the more perceptual noise will be added to the test stimuli.
 # Bin duration should stay the same as the standard stimuli.
-
 pre_post_dur=0.4
-stim_sound = audio_cue.whole_stimulus_with_binning(
-    test_dur=test_dur , standard_dur=standard_dur, noise_type='white', intensity=9, order=order, 
-    pre_dur=pre_post_dur, post_dur=pre_post_dur, isi_dur=pre_post_dur, 
-    bin_dur=bin_dur, amp_mean=amp_mean, amp_var=amp_var
-)
 
-#Play and plot the stimulus
-#audio_cue.play_sound(stim_sound)
+def plot_one_example():
+    stim_sound = audio_cue.whole_stimulus_with_binning(
+        test_dur=test_dur , standard_dur=standard_dur, noise_type='white', intensity=9, order=order, 
+        pre_dur=pre_post_dur, post_dur=pre_post_dur, isi_dur=pre_post_dur, 
+        bin_dur=bin_dur, amp_mean=amp_mean, amp_var=amp_var
+    )
+    t = np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
 
-# Plot the stimulus
-t = np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
-plt.figure(figsize=(10, 4))
-plt.plot(t, stim_sound)
-plt.title("Stimulus (Low-rel test+Standard) Sound with Binning")
-plt.xlabel("Time (s)")
-plt.ylabel("Amplitude")
-plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="blue", alpha=0.5, label="Test Sound")
-plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="purple", alpha=0.5, label="Standard Sound")
+    #Play and plot the stimulus
+    #audio_cue.play_sound(stim_sound)
 
-plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
-plt.show()
+    # Plot the stimulus
+    plt.figure(figsize=(10, 4))
+    plt.plot(t, stim_sound)
+    plt.title("Stimulus (Low-rel test+Standard) Sound with Binning")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="blue", alpha=0.5, label="Reliable signal")
+    plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="purple", alpha=0.5, label="unreliable signal")
 
+    plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
+    plt.show()
+
+#plot_one_example()
+
+## PLot different sounds with different amplitude variance
+def plot_sounds():
+    for idx, amp_var in enumerate([0.2,3,5,10]):
+        stim_sound = audio_cue.whole_stimulus_with_binning(
+        test_dur=test_dur , standard_dur=standard_dur, noise_type='white', intensity=9, order=order,
+        pre_dur=pre_post_dur, post_dur=pre_post_dur, isi_dur=pre_post_dur,
+        bin_dur=bin_dur, amp_mean=amp_mean, amp_var=amp_var
+        )
+        t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
+        #audio_cue.play_sound(stim_sound)
+        plt.subplot(2, 2, idx + 1)
+        plt.plot(t, stim_sound)
+        plt.title(f"Amplitude Variance: {amp_var}")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="green", alpha=0.5, label="Reliable signal")
+        plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="purple", alpha=0.2, label="unreliable signal")
+    plt.tight_layout()
+    plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
+    plt.show()
+    
+plot_sounds()
