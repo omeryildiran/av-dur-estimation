@@ -123,14 +123,14 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-rise_conds=[5]
+rise_conds=[3.5,0.2]
 intens=9
 n_trial_per_condition=50
 conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*2,
                              rise_conds=rise_conds,
                              standard_durations=[0.8],
                              intens=intens)
-bin_dur=0.05
+bin_dur=0.1
 #print('given trials number',len(conds_obj.intens))
 #total_trials=(conds_obj.trial_per_condition)*2*4
 """

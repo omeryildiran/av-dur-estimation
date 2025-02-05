@@ -151,9 +151,9 @@ class AudioCueGenerator:
 
         # # change first and last bin amplitude
         if sound_type !='noise' :
-            amp_noise[0, 0] = np.random.uniform(min_amp+1, min_amp+ amp_var+1)
+            amp_noise[0, 0] = np.random.uniform(min_amp+0.5, min_amp+ amp_var+0.5)
         if sound_type != 'noise'and remaining_samples == 0:
-            amp_noise[0, -1] = np.random.uniform(min_amp+1, min_amp+ amp_var+1) 
+            amp_noise[0, -1] = np.random.uniform(min_amp+0.5, min_amp+ amp_var+0.5) 
         #amp_noise[0, 0] = np.random.uniform(min_amp+2, min_amp+ amp_var+2)
         # Multiply each bin by its sampled amplitude
         bin_v1.reshape(-1, bin_samples)
@@ -176,7 +176,7 @@ class AudioCueGenerator:
             # Generate noise for the last bin
             last_bin_noise = np.random.randn(remaining_samples)
             # Sample amplitude for the last bin
-            last_bin_amp = np.random.uniform(min_amp+1, min_amp+ amp_var+1) 
+            last_bin_amp = np.random.uniform(min_amp+0.5, min_amp+ amp_var+0.5) 
             last_bin_noise = last_bin_noise * last_bin_amp
             noise_signal[-remaining_samples:] = last_bin_noise 
 
@@ -236,7 +236,7 @@ class AudioCueGenerator:
         # normalize test based on the standard sound
         amp_noise=np.max(np.abs(pre_cue_sound))
         print(amp_noise)
-        test_sound= amp_noise*3.5* (test_sound/np.max(np.abs(test_sound)))
+        test_sound= amp_noise*5* (test_sound/np.max(np.abs(test_sound)))
         test_amp = np.max(np.abs(test_sound))
         standard_amp = np.max(np.abs(standard_sound))
         standard_sound = test_amp * (standard_sound/standard_amp)
@@ -285,14 +285,14 @@ print(ptb.getDevices(kind='output'))
 prefs.hardware['audioDevice'] = 1
 
 # Generate whole stimulus with binning
-test_dur = 0.8
-standard_dur = 0.8
+test_dur = 0.5
+standard_dur = 0.5
 noise_type = "white"
 intensity = 9
 order = 1
 bin_dur = 0.1# 100 ms bins
 amp_mean = 0
-amp_var = 0.2# to increase the perceptual noise in the test stimuli just modify the amplitude variance value. 
+amp_var = 3.5# to increase the perceptual noise in the test stimuli just modify the amplitude variance value. 
 # the higher the value the more perceptual noise will be added to the test stimuli.
 # Bin duration should stay the same as the standard stimuli.
 pre_post_dur=0.4
@@ -306,7 +306,7 @@ def plot_one_example():
     t = np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
 
     #Play and plot the stimulus
-    #audio_cue.play_sound(stim_sound)
+    audio_cue.play_sound(stim_sound)
 
     # Plot the stimulus
     plt.figure(figsize=(10, 4))
@@ -324,7 +324,7 @@ def plot_one_example():
 
 ## PLot different sounds with different amplitude variance
 def plot_sounds():
-    for idx, amp_var in enumerate([0.2,3,5,10]):
+    for idx, amp_var in enumerate([0.2,3.5,5,10]):
         stim_sound = audio_cue.whole_stimulus_with_binning(
         test_dur=test_dur , standard_dur=standard_dur, noise_type='white', intensity=9, order=order,
         pre_dur=pre_post_dur, post_dur=pre_post_dur, isi_dur=pre_post_dur,
@@ -343,4 +343,4 @@ def plot_sounds():
     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
     plt.show()
     
-plot_sounds()
+#plot_sounds()
