@@ -7,11 +7,29 @@ Last Update: 11/2024
 
 import numpy as np
 from psychopy import sound, core
+from scipy.signal import butter, filtfilt
+from scipy.signal import butter, sosfilt
+
 
 class AudioCueGenerator:
     def __init__(self, sampleRate=44100):
         
         self.sample_rate = sampleRate  # in Hz
+
+    def lowpass_filter(self, signal, cutoff, sample_rate, order=4):
+        """
+        Apply a lowpass filter using second-order sections (SOS).
+        
+        :param signal: Input signal
+        :param cutoff: Cutoff frequency (Hz)
+        :param sample_rate: Sampling rate (Hz)
+        :param order: Filter order
+        :return: Filtered signal
+        """
+        nyquist = 0.5 * sample_rate
+        normal_cutoff = cutoff / nyquist
+        sos = butter(order, normal_cutoff, btype='low', analog=False, output='sos')
+        return sosfilt(sos, signal)
 
     def generate_beep_sound(self, dur=2,  beep_frequency=440):
         t = np.arange(0, dur, 1.0 / self.sample_rate)
@@ -53,7 +71,7 @@ class AudioCueGenerator:
         :return: The generated noise signal.
         """
         # Generate raw white noise
-        noise_signal = np.random.normal(0, 1, int(dur * self.sample_rate))
+        noise_signal = np.random.normal(0, 3, int(dur * self.sample_rate))
         
         if noise_type == "white":
             # White noise: no filtering needed
@@ -172,13 +190,21 @@ class AudioCueGenerator:
             return int(t * sample_rate)
 
         # Convert durations and times to samples
-        total_samples = time_to_samples(t_total, sample_rate)
+        #total_samples = round(time_to_samples(t_total, sample_rate))
         start_sample = time_to_samples(t_start, sample_rate)
         rise_samples = time_to_samples(rise_dur, sample_rate)
         peak_samples = time_to_samples(peak_dur, sample_rate)
+        rise_fall_samples = time_to_samples(2*rise_dur, sample_rate)
         fall_samples = rise_samples
-        event_samples = 2 * rise_samples + peak_samples
 
+        event_samples = round(rise_fall_samples + peak_samples)
+        total_samples = event_samples 
+
+        # print("Total Samples: ", total_samples)
+        # print("Rise Samples: ", rise_samples)
+        # print("Peak Samples: ", peak_samples)
+        # print("Event Samples: ", event_samples)
+        
         # Ensure the event duration does not exceed the total duration
         if start_sample + event_samples > total_samples:
             # print durations
@@ -197,12 +223,15 @@ class AudioCueGenerator:
 
         # Peak phase
         t_peak_start = start_sample + rise_samples
+        #print("Peak Start: ", t_peak_start) 
         envelope[t_peak_start:t_peak_start + peak_samples] = 1.0
 
         # Falling phase
         t_fall_start = t_peak_start + peak_samples
+        #print("\nFall Start: ", t_fall_start)
+
         t_fall = np.arange(fall_samples)
-        envelope[t_fall_start:t_fall_start + fall_samples] = 0.5 * (1 + np.cos(np.pi * t_fall / fall_samples))
+        envelope[t_fall_start:] = 0.5 * (1 + np.cos(np.pi * t_fall / fall_samples))
 
         return envelope
 
@@ -219,15 +248,18 @@ class AudioCueGenerator:
         :return: Modulated noise signal as a numpy array.
         """
         peak_dur = total_dur - 2*rise_dur  # Ensure the peak phase does not exceed the total duration
-        # Generate base noise
-        noise_signal = self.generate_noise(dur=total_dur, noise_type=noise_type)
-
+        #print("Peak Duration: ", peak_dur)
         # Generate the raised-cosine envelope
         envelope = self.raised_cosine_envelope(0, rise_dur, peak_dur, total_dur, self.sample_rate)
         
+        # Generate base noise
+        noise_signal = np.random.normal(0, 3,len(envelope))#self.generate_noise(dur=total_dur, noise_type=noise_type)
+        noise_signal = noise_signal / np.max(np.abs(noise_signal))
+
+
         # Scale the envelope
         envelope = envelope * (intensity - 1) + 1  # Ensure baseline is 1, and peak reaches the desired intensity
-
+        #print(len(noise_signal), len(envelope))
         # Apply the envelope to the noise
         modulated_noise = noise_signal * envelope
         return modulated_noise
@@ -241,7 +273,7 @@ class AudioCueGenerator:
         test_sound = self.low_reliability_test_sound(total_dur=test_dur, 
                                                     rise_dur=rise_dur, 
                                                     noise_type=noise_type, 
-                                                    intensity=intensity)
+                                                    intensity=intensity)       
         # 3. interstimulus interval noise 
         isi_sound = self.generate_noise(dur=isi_dur, noise_type=noise_type)
         
@@ -252,15 +284,17 @@ class AudioCueGenerator:
                                                     intensity=intensity)
         # 5. generate post-cue sound noise for 0.1 seconds
         post_cue_sound = self.generate_noise(dur=post_dur, noise_type=noise_type) 
+        jitter_sound = np.zeros(int(0.015 * self.sample_rate))
 
         # concatenate all bins into one continuous signal depending on the order
         if order == 1:
-            stim_sound = np.concatenate([pre_cue_sound, test_sound, isi_sound, standard_sound, post_cue_sound])
+            stim_sound = np.concatenate([jitter_sound,pre_cue_sound, test_sound, isi_sound, standard_sound, post_cue_sound,jitter_sound])
         elif order == 2:
-            stim_sound = np.concatenate([pre_cue_sound, standard_sound, isi_sound, test_sound, post_cue_sound])
+            stim_sound = np.concatenate([jitter_sound,pre_cue_sound, standard_sound, isi_sound, test_sound, post_cue_sound,jitter_sound])
         else:
             raise ValueError("Invalid order value. Use 1 or 2.")
         
+        #stim_sound=self.lowpass_filter(stim_sound,400,self.sample_rate,4)
         # normalize the signal
         stim_sound = stim_sound / np.max(np.abs(stim_sound))
 
@@ -275,40 +309,43 @@ class AudioCueGenerator:
 audio_cue = AudioCueGenerator(sampleRate=44100)
 
 #generate whole stim
-test_dur = 1.2
-standard_dur = 1.2
+test_dur = 1
+standard_dur = 1
 noise_type = "white"
-intensity = 3.75
-rise_dur = 0.28
-order = 2
-pre_cue_sound=0.25
+intensity = 1.75
+rise_dur = 0.2
+order = 1
+pre_cue_sound=0.5
+pre_post_dur=pre_cue_sound
 test_sound=test_dur
-isi_sound=0.25
-stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise_dur, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound)
+isi_sound=0.5
 #audio_cue.play_sound(stim_sound)
 
-#Plot the sound
-t=np.linspace(0, len(stim_sound)/44100, len(stim_sound))
 #import for plotting
 import matplotlib.pyplot as plt
 
-plt.figure(figsize=(10, 4))
-plt.plot(t,stim_sound, label="Modulated Noise")
+## PLot different sounds with different amplitude variance
+def plot_sounds():
+    plt.figure(figsize=(10, 4))
+    for idx, rise in enumerate([0.2,0.05]):
+        stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound)
 
-# shade the event regions
-plt.axvspan(0, pre_cue_sound, color='gray', alpha=0.3, label='Pre Cue')
-plt.axvspan(pre_cue_sound, pre_cue_sound+test_sound, color='red', alpha=0.3, label='Standard Sound')
-plt.axvspan(pre_cue_sound+test_sound, pre_cue_sound+test_sound+isi_sound, color='blue', alpha=0.3, label='ISI')
-plt.axvspan(pre_cue_sound+test_sound+isi_sound, pre_cue_sound+test_sound+isi_sound+standard_dur, color='green', alpha=0.3, label='Test Sound')
-
-plt.axvspan(pre_cue_sound+test_sound+isi_sound+standard_dur, len(stim_sound) / 44100, color='gray', alpha=0.3, label='Post Cue')
-plt.xlabel("Sample")
-plt.ylabel("Amplitude")
-
-plt.legend( bbox_to_anchor=(1.05, 1), loc='upper right')
-plt.title("Auditory stimulus")
-plt.show()
-
+        t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
+        # if idx in [1]:
+        #     audio_cue.play_sound(stim_sound)
+        
+        plt.subplot(1, 2, idx + 1)
+        plt.plot(t, stim_sound)
+        plt.title(f"Rise duration: {rise}")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="red", alpha=0.5, label="Reliable signal")
+        plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="forestgreen", alpha=0.2, label="unreliable signal")
+    plt.tight_layout()
+    plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
+    plt.show()
+    
+plot_sounds()
 
 
 """
