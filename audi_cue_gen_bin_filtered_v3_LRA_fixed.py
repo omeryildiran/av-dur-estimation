@@ -147,9 +147,9 @@ class AudioCueGenerator:
         bin_v1 = np.random.randn(n_bins  , bin_samples)  # Random normal noise for each bin
 
         # or using uniform distribution
-        amp_noise = np.random.uniform(min_amp, min_amp + amp_var, (1, n_bins))
+        #amp_noise = np.random.uniform(min_amp, min_amp + amp_var, (1, n_bins))
         #or from gaussian distribution
-        #amp_noise = np.random.normal(min_amp, amp_var, (1, n_bins))+min_amp
+        amp_noise = np.random.normal(min_amp, amp_var, (1, n_bins))+min_amp
 
         # # # # change first and last bin amplitude
         # if sound_type =='unreliable_signal': 
@@ -163,8 +163,7 @@ class AudioCueGenerator:
 
         for i in range(n_bins):
             bin_v2[i, :] = bin_v1[i, :] * amp_noise[0, i]
-        # Reshape into a 1D signal
-        noise_signal[:n_bins * bin_samples] = bin_v2.flatten()
+
         #Handle remaining samples (if total_samples is not divisible by bin_samples)
         if remaining_samples > 0:
             # Generate noise for the last bin
@@ -186,7 +185,9 @@ class AudioCueGenerator:
         #     noise_signal = noise_signal * 3#*1/amp_var
         # elif sound_type == 'unreliable_signal':
         #     noise_signal = noise_signal * 3#*1/amp_var
-
+        
+        # Reshape into a 1D signal
+        noise_signal[:n_bins * bin_samples] = bin_v2.flatten()
         # print(max(noise_signal))
         return noise_signal
 
