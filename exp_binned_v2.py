@@ -113,12 +113,12 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-rise_conds=[0.5, 3.5]
+rise_conds=[0.5, 5]
 intens=9
-n_trial_per_condition=50
+n_trial_per_condition=55
 bin_dur=0.1
 
-conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*2,
+conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*8,
                              rise_conds=rise_conds,
                              standard_durations=[0.5],
                              intens=intens) 
@@ -325,7 +325,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 test_dur=test_dur_s, standard_dur=standard_dur, noise_type='white', intensity=intens, 
                 order=order, 
                 pre_dur=pre_dur, post_dur=post_dur, isi_dur=isi_dur, 
-                bin_dur=bin_dur, amp_mean=0, amp_var=rise_dur)    
+                bin_dur=bin_dur, amp_var=rise_dur)    
 
     total_dur_of_audio = len(audio_stim) / sampleRate # calculate the total duration of the audio stimulus
     total_audio_durs.append(total_dur_of_audio) # save the total duration of the audio stimulus
