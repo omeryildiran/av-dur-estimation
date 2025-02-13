@@ -109,15 +109,6 @@ class AudioCueGenerator:
         sos = butter(order, normal_cutoff, btype='low', analog=False, output='sos')
         return sosfilt(sos, signal)
 
-    # # Apply lowpass filtering (similar to MATLAB `lowpass(samples, 700, sampRate)`)
-    # def lowpass_filter(self,signal, cutoff, sample_rate, order=4):
-    #     nyquist = 0.5 * sample_rate
-    #     normal_cutoff = cutoff / nyquist
-    #     b, a = butter(order, normal_cutoff, btype='lowpass', analog=False)
-    #     return filtfilt(b, a, signal)
-
-
-        
     def generate_binned_noise_v2(self, total_dur=2.5, noise_type="white", 
                                 bin_dur=0.1, min_amp=1, amp_var=0.5, sound_type='noise'):        # Calculate the number of bins and samples per bin
         bin_samples = int(bin_dur * self.sample_rate)
@@ -166,7 +157,26 @@ class AudioCueGenerator:
                                                     bin_dur=bin_dur,
                                                     min_amp=2,
                                                     amp_var=0.1)
-  
+          # 3. Generate interstimulus interval (ISI) noise
+        isi_sound= self.generate_binned_noise_v2(total_dur=pre_dur,
+                                                    noise_type=noise_type,
+                                                    bin_dur=bin_dur,
+                                                    min_amp=2,
+                                                    amp_var=0.1)
+
+        # 5. Generate post-cue sound noise
+        post_cue_sound = self.generate_binned_noise_v2(total_dur=post_dur,
+                                                    noise_type=noise_type,
+                                                    bin_dur=bin_dur,
+                                                    min_amp=2,
+                                                    amp_var=0.1)
+        jitter_sound = np.zeros(int(0.015 * self.sample_rate))
+
+        noiseScaler=0.9
+        pre_cue_sound=pre_cue_sound*noiseScaler
+        isi_sound=isi_sound*noiseScaler
+        post_cue_sound=post_cue_sound*noiseScaler
+
         
         # 2. Generate test sound with binning and raised cosine envelope
         min_amp_unreliable = 4
@@ -181,9 +191,6 @@ class AudioCueGenerator:
                                                     sound_type='reliable_signal')
         
         
-
-        standard_bounds = [min(np.abs(standard_sound)), max(np.abs(standard_sound))] 
-
         # 4. Generate standard sound noise
         test_sound= self.generate_binned_noise_v2(total_dur=test_dur, 
                                                     noise_type=noise_type, 
@@ -192,26 +199,14 @@ class AudioCueGenerator:
                                                     amp_var=amp_var,
                                                     sound_type='unreliable_signal')
         
-        test_bounds = [min(np.abs(test_sound)), max(np.abs(test_sound))]
+
+        test_sound = test_sound*(np.mean(abs(standard_sound))/np.mean(abs(test_sound)))
         
-        # # maximize the amplitude of the test sound
+        print('\n')
+        print(f"Mean of test sound: {np.mean(abs(test_sound)):.3f}, Min: {min(np.abs(test_sound)):.3f}, Max: {max(np.abs(standard_sound)):.3f}, Std: {np.std(test_sound):.3f}, Var: {np.var(test_sound):.3f}, Sum: {np.sum(test_sound):.3f}")
+        print(f"Mean of standard sound: {np.mean(abs(standard_sound)):.3f}, Min: {min(np.abs(standard_sound)):.3f}, Max: {max(np.abs(standard_sound)):.3f}, Std: {np.std(standard_sound):.3f}, Var: {np.var(standard_sound):.3f}, Sum: {np.sum(standard_sound):.3f}")
 
-        # 3. Generate interstimulus interval (ISI) noise
-        isi_sound= self.generate_binned_noise_v2(total_dur=pre_dur,
-                                                    noise_type=noise_type,
-                                                    bin_dur=bin_dur,
-                                                    min_amp=2,
-                                                    amp_var=0.1)
-
-        # 5. Generate post-cue sound noise
-        post_cue_sound = self.generate_binned_noise_v2(total_dur=post_dur,
-                                                    noise_type=noise_type,
-                                                    bin_dur=bin_dur,
-                                                    min_amp=2,
-                                                    amp_var=0.1)
-        jitter_sound = np.zeros(int(0.015 * self.sample_rate))
         # Concatenate all segments depending on the order
- 
         if order == 1:
             stim_sound = np.concatenate([jitter_sound,pre_cue_sound, test_sound, isi_sound, standard_sound, post_cue_sound,jitter_sound])
         elif order == 2:
@@ -250,7 +245,7 @@ pre_post_dur=0.4123
 ## PLot different sounds with different amplitude variance
 def plot_sounds():
     plt.figure(figsize=(16, 10))
-    for idx, amp_var in enumerate([0.5,3.5, 5]):
+    for idx, amp_var in enumerate([0.5, 5]):
         stim_sound = audio_cue.whole_stimulus_with_binning(
         test_dur=test_dur , standard_dur=standard_dur, noise_type='white', intensity=9, order=order,
         pre_dur=pre_post_dur, post_dur=pre_post_dur, isi_dur=pre_post_dur,
