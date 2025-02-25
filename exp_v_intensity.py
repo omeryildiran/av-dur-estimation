@@ -1,4 +1,5 @@
 ExpTesting = False
+ExpTraining= False
 import matplotlib.pyplot as plt
 # Importing Libraries
 from psychopy import sound, gui, visual, core, data, event, logging, clock, colors, layout, iohub, hardware
@@ -113,9 +114,10 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-rise_conds=[0.1, 1.2]
+
+rise_conds= [0.1,  0.85] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
-n_trial_per_condition=40
+n_trial_per_condition=45 
 bin_dur=0.1
 
 conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*8,
@@ -220,7 +222,10 @@ stairCaseShorter2U1D = stairCase(init_level=initLevel, init_step=initStep, metho
 
 stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
 
-all_staircases=[stairCaseLapse, stairCaseLonger,stairCaseShorter,stairCaseLonger2D1U,stairCaseShorter2U1D]#, stairCaseLonger_b,stairCaseShorter_b,] 
+if ExpTraining:
+    all_staircases=[stairCaseLapse]
+else:
+    all_staircases=[stairCaseLapse, stairCaseLonger,stairCaseShorter,stairCaseLonger2D1U,stairCaseShorter2U1D]#, stairCaseLonger_b,stairCaseShorter_b,] 
 
 #all_staircases=[stairCaseShorter,stairCaseLonger,stairCaseLapse, ]#stairCaseLonger_b,stairCaseShorter_b,]
 np.random.shuffle(all_staircases)
@@ -342,20 +347,20 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) 
 
 
-    # if randchoice([True,False,False,False]) and trialN>0:
-    #     # draw correct or incorrect text
-    #     if is_correct:
-    #         feedback_text = "Correct!"
-    #         color='green'
-    #     else:
-    #         feedback_text = "Incorrect!"
-    #         color='red'
+    if ExpTraining and trialN>0:
+        # draw correct or incorrect text
+        if is_correct:
+            feedback_text = "Correct!"
+            color='green'
+        else:
+            feedback_text = "Incorrect!"
+            color='red'
         
-    #     feedback_text_comp = visual.TextStim(win, text=feedback_text, color=color, height=50)
-    #     feedback_text_comp.draw()
-    #     win.flip()
-    #     # comment for testing
-    #     core.wait(0.5) if ExpTesting==False else None
+        feedback_text_comp = visual.TextStim(win, text=feedback_text, color=color, height=50)
+        feedback_text_comp.draw()
+        win.flip()
+        # comment for testing
+        core.wait(0.5) if ExpTesting==False else None
 
 
     trialN += 1

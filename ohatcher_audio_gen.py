@@ -125,10 +125,11 @@ class AudioCueGenerator:
         rise_samples = time_to_samples(rise_dur, sample_rate)
         peak_samples = time_to_samples(peak_dur, sample_rate)
         rise_fall_samples = time_to_samples(2*rise_dur, sample_rate)
-        fall_samples = rise_samples
+        
 
         event_samples = round(rise_fall_samples + peak_samples)
         total_samples = event_samples 
+        fall_samples = total_samples - peak_samples - rise_samples
         # Ensure the event duration does not exceed the total duration
         if start_sample + event_samples > total_samples:
             # print durations
@@ -190,13 +191,13 @@ class AudioCueGenerator:
         pre_cue_sound = self.generate_noise(dur=pre_dur, noise_type=noise_type)
       # 4. generate standard sound noise
         standard_sound = self.low_reliability_test_sound(total_dur=standard_dur, 
-                                                    rise_dur=0.05, 
+                                                    rise_dur=0.005, 
                                                     noise_type=noise_type, 
                                                     intensity=intensity)
         
         # 2. generate test sound noise for 2.5 seconds
         test_sound = self.low_reliability_test_sound(total_dur=test_dur, 
-                                                    rise_dur=0.05, 
+                                                    rise_dur=0.005, 
                                                     noise_type=noise_type, 
                                                     intensity=intensity)       
 
@@ -224,14 +225,26 @@ class AudioCueGenerator:
         background_noise = background_noise * (np.max(abs(stim_sound)) / np.max(abs(background_noise))) * intensity_background
         print(max(background_noise))
         print(max(stim_sound))
-        # plt.plot(background_noise)
-        # plt.show()
-        # plt.plot(stim_sound)
-        # plt.show()
-        # smooth the sound waveform
-        stim_sound = self.broadband_filter(stim_sound,10, 850, self.sample_rate, order=4)
-        background_noise = self.broadband_filter(background_noise, 50, 700, self.sample_rate, order=4)
 
+        # smooth the sound waveform
+        background_noise = self.broadband_filter(background_noise,10, 850, self.sample_rate, order=4)
+        stim_sound = self.broadband_filter(stim_sound, 50, 600, self.sample_rate, order=4)
+        
+        
+        
+        #plt.show()
+        t=np.linspace(0, len(stim_sound[:1*self.sample_rate]) / self.sample_rate, len(stim_sound[:1*self.sample_rate]))
+        plt.plot(t,background_noise[:1*self.sample_rate], alpha=0.7, color="#008631", label="Background Noise")  
+        plt.plot(t,stim_sound[:1*self.sample_rate], alpha=0.8, color="black", label="Bursts")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        # remove axspines
+        plt.gca().spines['top'].set_visible(False)
+        plt.gca().spines['right'].set_visible(False)
+        plt.legend()
+        plt.title("High Reliability Stimulus")
+        #plt.tight_layout()
+        plt.show()
 
         #stim_sound=self.lowpass_filter(stim_sound,400,self.sample_rate,4)
         #stim_sound = self.broadband_filter(stim_sound, 10, 10000, self.sample_rate, order=4)
@@ -254,16 +267,16 @@ class AudioCueGenerator:
 audio_cue = AudioCueGenerator(sampleRate=44100)
 
 #generate whole stim
-test_dur = 1
-standard_dur = 1
+test_dur = 0.5
+standard_dur = 0.5
 noise_type = "white"
-intensity = 4
+intensity = 5
 rise_dur = 0.2
 order = 1
-pre_cue_sound=0.5
+pre_cue_sound=0.25
 pre_post_dur=pre_cue_sound
 test_sound=test_dur
-isi_sound=0.5
+isi_sound=0.25
 #audio_cue.play_sound(stim_sound)
 
 #import for plotting
@@ -273,23 +286,24 @@ import matplotlib.pyplot as plt
 def plot_sounds():
     plt.figure(figsize=(10, 4))
     for idx, rise in enumerate([0.05,0.05]):
-        stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound,intensity_background=1.2)
+        stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound,
+                                              intensity_background=0.3)
 
         t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
-        if idx in [1]:
-            audio_cue.play_sound(stim_sound)
+        # if idx in [1]:
+        #     audio_cue.play_sound(stim_sound)
         
-        plt.subplot(1, 2, idx + 1)
-        plt.plot(t, stim_sound)
-        plt.title(f"Rise duration: {rise}")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Amplitude")
-        plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="red", alpha=0.5, label="Reliable signal")
-        plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="forestgreen", alpha=0.2, label="unreliable signal")
-    #plt.ylim(-2,3)
-    plt.tight_layout()
-    plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
-    plt.show()
+    #     plt.subplot(1, 2, idx + 1)
+    #     plt.plot(t, stim_sound)
+    #     plt.title(f"Rise duration: {rise}")
+    #     plt.xlabel("Time (s)")
+    #     plt.ylabel("Amplitude")
+    #     plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="red", alpha=0.5, label="Reliable signal")
+    #     plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="forestgreen", alpha=0.2, label="unreliable signal")
+    # #plt.ylim(-2,3)
+    # plt.tight_layout()
+    # plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
+    # plt.show()
     
 plot_sounds()
 
