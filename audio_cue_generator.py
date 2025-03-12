@@ -268,20 +268,27 @@ class AudioCueGenerator:
 
         # 1. generate pre-cue sound noise for 0.1 seconds
         pre_cue_sound = self.generate_noise(dur=pre_dur, noise_type=noise_type)
-
+      # 4. generate standard sound noise
+        standard_sound = self.low_reliability_test_sound(total_dur=standard_dur, 
+                                                    rise_dur=0, 
+                                                    noise_type=noise_type, 
+                                                    intensity=intensity)
+        
         # 2. generate test sound noise for 2.5 seconds
         test_sound = self.low_reliability_test_sound(total_dur=test_dur, 
                                                     rise_dur=rise_dur, 
                                                     noise_type=noise_type, 
                                                     intensity=intensity)       
+        
+        print("Standard Sound: ", np.std(standard_sound))
+        print("Test Sound: ", np.std(test_sound))
+        # ensure that test sound and standard sound have same standard deviation
+        test_sound = test_sound * (np.std(standard_sound) / np.std(test_sound))
+
         # 3. interstimulus interval noise 
         isi_sound = self.generate_noise(dur=isi_dur, noise_type=noise_type)
         
-        # 4. generate standard sound noise
-        standard_sound = self.low_reliability_test_sound(total_dur=standard_dur, 
-                                                    rise_dur=0, 
-                                                    noise_type=noise_type, 
-                                                    intensity=intensity)
+  
         # 5. generate post-cue sound noise for 0.1 seconds
         post_cue_sound = self.generate_noise(dur=post_dur, noise_type=noise_type) 
         jitter_sound = np.zeros(int(0.015 * self.sample_rate))

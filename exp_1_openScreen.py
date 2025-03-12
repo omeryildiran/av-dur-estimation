@@ -69,12 +69,11 @@ screen_distance = monitorSpecs["screen_distance"]
 myMon = monitors.Monitor('macAir', width=screen_width, distance=screen_distance)
 myMon.setSizePix((sizeIs, sizeIs))
 # Create window
-try:
-    win = visual.Window(size=(sizeIs, sizeIs),
-                    fullscr=True, monitor=myMon, units='pix', color="black", useFBO=True, screen=1, colorSpace='rgb')
-except:
-    win = visual.Window(size=(sizeIs, sizeIs),
-                    fullscr=True, monitor=myMon, units='pix', color="black", useFBO=True, screen=0, colorSpace='rgb')
+
+
+win = visual.Window(size=(sizeIs, sizeIs),
+                fullscr=fullScreen, monitor=myMon, units='pix', color="black", useFBO=False, screen=0, colorSpace='rgb')
+
 
 
 # Set window properties
@@ -82,13 +81,19 @@ win.monitor.setWidth(screen_width)
 win.monitor.setDistance(screen_distance)
 win.monitor.setSizePix((sizeIs, sizeIs))
 
-refreshRate=win.getActualFrameRate()
+#refreshRate=win.getActualFrameRate()
+#print('Frame Rate: ', refreshRate)
+#frame_dur = 1.0/round(refreshRate, 2) if refreshRate else 1.0/60.0
 
 
 # frame rate
 refreshRate=win.getActualFrameRate()
 print('Frame Rate: ', refreshRate)
 frame_dur = 1.0/round(refreshRate, 2) if refreshRate else 1.0/60.0
+
+
+frameRate=120
+frameDur=1/frameRate
 
 welcome_text="""Welcome to the experiment!
 Press any key to start the experiment."""

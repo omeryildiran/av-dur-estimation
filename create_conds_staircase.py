@@ -67,10 +67,10 @@ class audioDurationGen:
 
 
 
-# Example usage
-gen = audioDurationGen(trial_per_condition=25, rise_conds=[0.1, 0.20])
-conditions_matrix = gen.gen_duration_matrix()
-print(conditions_matrix.shape)
+# # Example usage
+# gen = audioDurationGen(trial_per_condition=25, rise_conds=[0.1, 0.20])
+# conditions_matrix = gen.gen_duration_matrix()
+# print(conditions_matrix.shape)
 
 
 # print(conditions_matrix[:,0])

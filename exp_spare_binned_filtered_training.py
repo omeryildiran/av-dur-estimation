@@ -123,12 +123,12 @@ win.flip()
 
 # Retrieve the conditions
 # create the conditions matri x
-rise_conds=[3.5,0.2]
+rise_conds=[0.5,5]
 intens=9
 n_trial_per_condition=50
 conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*2,
                              rise_conds=rise_conds,
-                             standard_durations=[0.8],
+                             standard_durations=[0.5],
                              intens=intens)
 bin_dur=0.1
 #print('given trials number',len(conds_obj.intens))
@@ -230,7 +230,7 @@ def lapse_rate_cond_generate():
                 all_conds.append([i,j,k])
     # in total 12 conditions
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(7,1))
+    all_conds=np.tile(all_conds,(5,1))
     np.random.shuffle(all_conds) 
     return all_conds
 lapse_rate_conds=lapse_rate_cond_generate()
@@ -288,19 +288,17 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     # Assign values calculate directly now
     order = int(np.random.choice([1,2])) # or orders[trialN]
     intensity = conds_obj.intens
-    pre_dur = np.random.uniform(0.25, 0.55)
-    post_dur = np.random.uniform(0.25, 0.55)
-    isi_dur = np.random.uniform(0.3, 0.75)
+    pre_dur = np.random.uniform(0.4, 0.65)
+    post_dur = np.random.uniform(0.4, 0.65)
+    isi_dur = np.random.uniform(0.6, 0.85)
 
     print(f'Current Stair: {current_stair}, Standard Dur: {standard_dur}, Test Dur: {test_dur_s}, Rise Dur: {rise_dur},Test in: {order} place,  Delta Dur: {delta_dur_percent},  delta_dur_s: {delta_dur_s}')
 
-    #audio_stim=audio_cue_gen.whole_stimulus(test_dur_s, standard_dur, "white", intensity, rise_dur, order,pre_dur,post_dur,isi_dur) # create the audio stimulus
-    
     audio_stim = audio_cue_gen.whole_stimulus_with_binning(
-    test_dur=test_dur_s, standard_dur=standard_dur, noise_type='white', intensity=intens, 
-    order=order, 
-    pre_dur=pre_dur, post_dur=post_dur, isi_dur=isi_dur, 
-    bin_dur=bin_dur, amp_mean=0, amp_var=rise_dur)    
+                test_dur=test_dur_s, standard_dur=standard_dur, noise_type='white', intensity=intens, 
+                order=order, 
+                pre_dur=pre_dur, post_dur=post_dur, isi_dur=isi_dur, 
+                bin_dur=bin_dur, amp_var=rise_dur)    
     
     total_dur_of_audio = len(audio_stim) / sampleRate # calculate the total duration of the audio stimulus
     total_audio_durs.append(total_dur_of_audio) # save the total duration of the audio stimulus

@@ -13,7 +13,7 @@ trialClock = core.Clock()
 
 rise_conds= [0.1,  0.85] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
-n_trial_per_condition=45 
+n_trial_per_condition=50 
 bin_dur=0.1
 
 conds_obj = expConds(trial_per_condition=n_trial_per_condition*8,
@@ -28,7 +28,7 @@ matrix columns:
 1: Rise conditions
 2: Order of test
 3: Pre duration
-4: Post duration
+4: Post duratione
 5: ISI duration
 6: Trial number
 7: Total audio duration

@@ -31,7 +31,7 @@ prefs.hardware['audioDevice'] = 1
 # import condition generator
 from create_conds_staircase import audioDurationGen
 # import audio generator
-from audi_cue_gen_bin_filtered_v3_LRA_fixed import AudioCueGenerator
+from audio_cue_gen_binned_sinusoidal import AudioCueGenerator
 # import the staircase
 from my_staircase import stairCase
 
@@ -115,7 +115,7 @@ win.flip()
 # create the conditions matri x
 rise_conds=[0.5, 5]
 intens=9
-n_trial_per_condition=55
+n_trial_per_condition=40
 bin_dur=0.1
 
 conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*8,
@@ -322,7 +322,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     #audio_stim=audio_cue_gen.whole_stimulus(test_dur_s, standard_dur, "white", intensity, rise_dur, order,pre_dur,post_dur,isi_dur) # create the audio stimulus
 
     audio_stim = audio_cue_gen.whole_stimulus_with_binning(
-                test_dur=test_dur_s, standard_dur=standard_dur, noise_type='white', intensity=intens, 
+                test_dur=test_dur_s, standard_dur=standard_dur, noise_type='white',
                 order=order, 
                 pre_dur=pre_dur, post_dur=post_dur, isi_dur=isi_dur, 
                 bin_dur=bin_dur, amp_var=rise_dur)    

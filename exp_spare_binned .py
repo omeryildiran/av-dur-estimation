@@ -128,7 +128,7 @@ win.flip()
 # Retrieve the conditions
 # create the conditions matri x
 rise_conds=[0.05,0.2]
-intens=1.6
+intens=1.75
 n_trial_per_condition=60
 bin_dur=0.1
 
@@ -323,9 +323,9 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     # Assign values calculate directly now
     order = int(np.random.choice([1,2])) # or orders[trialN]
     intensity = conds_obj.intens
-    pre_dur = np.random.uniform(0.25, 0.8)
-    post_dur = np.random.uniform(0.25, 0.8)
-    isi_dur = np.random.uniform(0.35, 0.75)
+    pre_dur = np.random.uniform(0.3, 0.6)
+    post_dur = np.random.uniform(0.3, 0.6)
+    isi_dur = np.random.uniform(0.6, 0.85)
 
     print(f'Current Stair: {current_stair}, Standard Dur: {standard_dur}, Test Dur: {test_dur_s}, Rise Dur: {rise_dur},Test in: {order} place,  Delta Dur: {delta_dur_percent},  delta_dur_s: {delta_dur_s}')
 
@@ -477,7 +477,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     response_text_comp = visual.TextStim(win, text=response_text, color='white', height=30)
     
     # region [rgba(40, 10, 30, 0.30)]
-    #core.wait(0.2) if ExpTesting==False else None
+    core.wait(0.15) if ExpTesting==False else None
+
     noise_audio.play()
 
     while waitingResponse and not endExpNow:

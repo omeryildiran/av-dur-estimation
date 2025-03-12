@@ -232,19 +232,19 @@ class AudioCueGenerator:
         
         
         
-        #plt.show()
-        t=np.linspace(0, len(stim_sound[:1*self.sample_rate]) / self.sample_rate, len(stim_sound[:1*self.sample_rate]))
-        plt.plot(t,background_noise[:1*self.sample_rate], alpha=0.7, color="#008631", label="Background Noise")  
-        plt.plot(t,stim_sound[:1*self.sample_rate], alpha=0.8, color="black", label="Bursts")
-        plt.xlabel("Time (s)")
-        plt.ylabel("Amplitude")
-        # remove axspines
-        plt.gca().spines['top'].set_visible(False)
-        plt.gca().spines['right'].set_visible(False)
-        plt.legend()
-        plt.title("High Reliability Stimulus")
-        #plt.tight_layout()
-        plt.show()
+        # #plt.show()
+        # t=np.linspace(0, len(stim_sound[:1*self.sample_rate]) / self.sample_rate, len(stim_sound[:1*self.sample_rate]))
+        # plt.plot(t,background_noise[:1*self.sample_rate], alpha=0.7, color="#008631", label="Background Noise")  
+        # plt.plot(t,stim_sound[:1*self.sample_rate], alpha=0.8, color="black", label="Bursts")
+        # plt.xlabel("Time (s)")
+        # plt.ylabel("Amplitude")
+        # # remove axspines
+        # plt.gca().spines['top'].set_visible(False)
+        # plt.gca().spines['right'].set_visible(False)
+        # plt.legend()
+        # plt.title("High Reliability Stimulus")
+        # #plt.tight_layout()
+        # plt.show()
 
         #stim_sound=self.lowpass_filter(stim_sound,400,self.sample_rate,4)
         #stim_sound = self.broadband_filter(stim_sound, 10, 10000, self.sample_rate, order=4)
@@ -305,7 +305,7 @@ def plot_sounds():
     # plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
     # plt.show()
     
-plot_sounds()
+#plot_sounds()
 
 
 

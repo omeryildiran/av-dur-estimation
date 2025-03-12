@@ -42,7 +42,7 @@ os.chdir(exp_dir)
 """          Experiment INFO Setup"""
 # Experiment Information
 # ask for participant and session number
-expName = 'auditory_dur_estimate_bin_stair'
+expName = 'auditory_dur_estimate'
 expInfo = {'participant': '', 'session number': '001'}
 if ExpTesting:
     expInfo['participant'] = 'test'
@@ -91,11 +91,6 @@ refreshRate=win.getActualFrameRate()
 print('Frame Rate: ', refreshRate)
 frame_dur = 1.0/round(refreshRate, 2) if refreshRate else 1.0/60.0
 
-# Handy timers
-globalClock = core.Clock()
-trialClock = core.Clock()
-
-# Set up welcome screen
 welcome_text="""Welcome to the experiment!
 Press any key to start the experiment."""
 welcome_text_comp = visual.TextStim(win, text=welcome_text, color='white', height=30)
@@ -104,6 +99,13 @@ win.flip()
 event.waitKeys() # wait for a key press
 #core.quit() if event.getKeys(keyList=['escape']) else None
 
+
+
+# Handy timers
+globalClock = core.Clock()
+trialClock = core.Clock()
+
+# Set up welcome screen
 
 # Set up fixation cross
 fixation = visual.TextStim(win, text='+', color='white', height=deg2pix(1,monitor=win.monitor), pos=(0, 0))
@@ -214,10 +216,6 @@ stairCaseShorter = stairCase(init_level=initLevel, init_step=initStep, method="3
                               max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=-1)
 stairCaseShorter2U1D = stairCase(init_level=initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=-1)
-
-#stairCaseLonger_b = stairCase(init_level=initLevel, init_step=initStep, method="3D1Ub", step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[1],sign_of_stair=1)
-#stairCaseShorter_b = stairCase(init_level=initLevel, init_step=initStep, method="3U1Db",step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=np.unique(rise_durs)[1],sign_of_stair=-1)
-
 
 
 stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
