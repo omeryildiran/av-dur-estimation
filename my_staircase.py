@@ -1,7 +1,7 @@
-import random
 import numpy as np
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 class stairCase():
     def __init__(self,
@@ -9,7 +9,7 @@ class stairCase():
                  init_step=0.1,
                  method="3D1U", 
                  step_factor=0.5,
-                 min_level=0,
+                 min_level=0.05,
                  max_reversals=100,
                  max_trials=50,
                  max_level=0.6,
@@ -149,10 +149,11 @@ class stairCase():
                         self.step = self.init_step * (self.step_factor ** n_stop_step_change)
 
                 # Now update the level using the (potentially) new step size
-                if abs(self.level) - np.abs(self.step) > self.min_level:
-                    self.level =self.level-self.step
-                else:
-                    self.level =self.sign_of_stair*self.min_level
+                self.level =self.level-self.step
+                # if abs(self.level) - np.abs(self.step) > self.min_level:
+                #     self.level =self.level-self.step
+                # else:
+                #     self.level =self.sign_of_stair*self.min_level
 
         # Record last response
         self.last_response = is_correct
@@ -171,9 +172,9 @@ class stairCase():
             
         
 # ##########----------------EXANPLE USAGE ------------------#########
-# stair = stairCase(init_level=0.05, 
-#                   method="3U1Db", 
-#                   min_level=0, 
+# stair = stairCase(init_level=0.95, 
+#                   method="2U1D", 
+#                   min_level=0.15, 
 #                   max_reversals=300,
 #                   max_trials=50,
 #                     step_factor=0.671,
@@ -188,7 +189,7 @@ class stairCase():
 #     levels.append(level)
 #     is_correct = random.random() >0.3 #np.abs(level)
 #     stair.update_staircase(is_correct)
-#     print(f"step: {stair.step}, c {is_correct}, rev: {stair.reversals}, trial: {trialNum}")
+#     print(f"step: {stair.step}, c {is_correct}, rev: {stair.reversals}, trial: {trialNum}, level: {level}")
 
 #     if stair.reversals>0 and stair.stair_dirs[-1]!=stair.stair_dirs[-2]:
 #         plt.plot(trialNum,levels[-1], 'o',color='black')
