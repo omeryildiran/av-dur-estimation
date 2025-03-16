@@ -1,14 +1,17 @@
 
 from sec2frame import sec2frames, frames2sec
 from ohatcher_audio_gen import AudioCueGenerator
+from generateAudio import generateAudioClass
 
 # Initialize the stimulus component
 sampleRate = 48000
-audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
+#audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
+
+genAudio = generateAudioClass(sampleRate=sampleRate)
 
 while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     """ Prepare trial routine""" 
-    #region [rgba(1, 30, 1, 0.240)] # reddish for preparation
+    #region [rgba(0, 30, 10, 0.200)] # reddish for preparation
     print(f"Trial {trialN} out of {total_trial_num}")
 
     def chose_stair(stair_n=0):
@@ -80,6 +83,10 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     print(f'fconflict half {conflictDurFramesHalf}')
 
 
+    # In this specific experiment, test is audio and standard is visual
+    # visual stimulus
+    # so that if the test is in the first place, the standard is in the second place and visual should be in the second place
+    # if the test is in the second place, the standard is in the first place and visual should be in the first place
     
     if order==1: # test in the first place, visual stimulus 1 is the test
         # Test times
@@ -110,18 +117,12 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     conflictDur=frames2sec(conflictDurFramesHalf*2, frameRate)
 
     print('break')
+    # audio stimulus (simple beep sound with duration of testDurS)
 
-    # audio stimulus
-    audio_stim= audio_cue_gen.whole_stimulus(
-            test_dur=testDurS, standard_dur=standardDur, noise_type='white',
-            order=order, 
-            pre_dur=preDur, post_dur=postDur, isi_dur=isiDur, 
-            intensity=maxIntensityBurst, rise_dur=0.005, 
-            intensity_background=riseDur)
-
+    audio_stim = genAudio.generateNoise(dur=testDurS, noise_type='white')
     audio_stim_sound=sound.Sound(value=audio_stim, sampleRate=sampleRate, stereo=True)
+    # uncomment to see the plots
     t=np.linspace(0,len(audio_stim)/sampleRate,len(audio_stim))
-
     # plt.plot(t,audio_stim)
     # plt.show()
 
@@ -129,12 +130,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     if ExpTesting:
         audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) 
 
-
-
     print(f'Current Stair: {current_stair}, Standard Dur: {standardDur}, Test Dur: {testDurS}, Rise Dur: {riseDur},Test in: {order} place,  Delta Dur: {deltaDurPercent},  deltaDurS: {deltaDurS}')
-    visualStim=visual.Circle(win, radius=visualStimSize, fillColor=True, lineColor='black', colorSpace='rgb', units='pix',
-                        pos=(0, 0))
-    visualStim.lineWidht=5
 
     total_dur_of_stim = preDur+testDurS+isiDur+standardDur+postDur
     totalDurFrames=sec2frames(total_dur_of_stim, frameRate)
@@ -336,7 +332,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     # Two interval forced choice response
 
     # Create a text stimulus with an audio symbol (Unicode)
-    modalityPostCue=np.random.choice(['A','V'])
+    modalityPostCue=None #np.random.choice(['A','V'])
     exp_data[trialN, 26] = modalityPostCue
 
     if modalityPostCue=='A':
@@ -355,7 +351,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     """ Start the response routine """
     while waitingResponse and not endExpNow:
         response_text_comp.draw()
-        postCue.draw()
+        #postCue.draw()
 
         win.flip()
 

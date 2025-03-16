@@ -15,7 +15,7 @@ n_trial_per_condition=50
 
 
 #print('given trials number',len(conds_obj.intens))
-#total_trials=(conds_obj.trial_per_condition)*2*4
+
 """
 matrix columns:
 0: Standard durations
@@ -23,12 +23,12 @@ matrix columns:
 2: Conflict A-V
 """
 conditions_matrix =create_conditions_matrix(totalTrialN=360,standards=[0.5], 
-                                             background_levels=[0.1,0.85], conflicts=[ 0.05])
+                                             background_levels=[0], conflicts=[ 0])
 numberOfTrials=len(conditions_matrix)
 print(f"Number of trials: {numberOfTrials}")
 standardDurs = conditions_matrix[:, 0] # standard durations
 riseDurs = conditions_matrix[:, 1] # Background noise level conditions should change riseDur to backgroundNoise everywhere
-conflictDurs = conditions_matrix[:, 2] # conflict durations
+conflictDurs = 0#conditions_matrix[:, 2] # conflict durations
 
 
 # total stim durations
@@ -81,7 +81,7 @@ max_level=0.9
 initLevel=0.65
 
 # Create the staircases
-max_trial_per_stair=n_trial_per_condition#total_trials//5
+max_trial_per_stair=n_trial_per_condition
 
 print(f'rise unique: {np.unique(riseDurs)}')
 stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
@@ -137,6 +137,12 @@ win.flip()
 #components for visual stimuli
 visualStimSize=dva_to_px(size_in_deg=1.5,h=screen_height,d=screen_distance,r=sizeIs)
 
-#Postcues
-audioIcon =visual.ImageStim(win, image="audio_icon.png", pos=(0, 100), size=(50, 50))
-visualIcon = visual.ImageStim(win, image="visual_icon.png", pos=(0, 100), size=(50, 50))
+
+# Create Objects for the visual stimuli
+visualStim=visual.Circle(win, radius=visualStimSize, fillColor=True, lineColor='black', colorSpace='rgb', units='pix',
+                    pos=(0, 0))
+visualStim.lineWidht=5
+
+
+
+
