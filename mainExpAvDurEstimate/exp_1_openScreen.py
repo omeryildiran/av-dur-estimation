@@ -30,7 +30,7 @@ from psychopy.sound import backend_ptb as ptb
 print(ptb.getDevices(kind='output'))
 
 prefs.hardware['audioLib'] = ['PTB']
-prefs.hardware['audioDevice'] = 4
+prefs.hardware['audioDevice'] = 5
 
 prefs.general['audioLatencyMode'] = 4
 

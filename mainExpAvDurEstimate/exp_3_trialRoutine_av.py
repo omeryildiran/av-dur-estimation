@@ -1,17 +1,14 @@
 
 from sec2frame import sec2frames, frames2sec
 from ohatcher_audio_gen import AudioCueGenerator
-from generateAudio import generateAudioClass
 
 # Initialize the stimulus component
 sampleRate = 48000
-#audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
-
-genAudio = generateAudioClass(sampleRate=sampleRate)
+audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
 
 while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     """ Prepare trial routine""" 
-    #region [rgba(0, 30, 10, 0.200)] # reddish for preparation
+    #region [rgba(1, 30, 1, 0.240)] # reddish for preparation
     print(f"Trial {trialN} out of {total_trial_num}")
 
     def chose_stair(stair_n=0):
@@ -77,30 +74,30 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     standardDurFrames=sec2frames(standardDur, frameRate)
     riseDurFrames=sec2frames(riseDur, frameRate)
     deltaDurFrames=sec2frames(deltaDurS, frameRate)
+    conflictDurFrames=sec2frames(conflictDur, frameRate)
+    conflictDurFramesHalf=sec2frames(conflictDurHalf, frameRate)
+
+    print(f'fconflict half {conflictDurFramesHalf}')
 
 
-    # In this specific experiment, test is audio and standard is visual
-    # visual stimulus
-    # so that if the test is in the first place, the standard is in the second place and visual should be in the second place
-    # if the test is in the second place, the standard is in the first place and visual should be in the first place
     
-    if order==1: # test(audio) in the first place visual stim is in the 2nd place
+    if order==1: # test in the first place, visual stimulus 1 is the test
         # Test times
-        onsetAud=preDurFrames
-        offsetAud=onsetAud+testDurFrames
+        onset1=preDurFrames+conflictDurFramesHalf
+        offset1=onset1+testDurFrames-conflictDurFramesHalf
         # standard times
-        onsetVisual=offsetAud+isiDurFrames
-        offsetVisual=onsetVisual+standardDurFrames
+        onset2=offset1+isiDurFrames
+        offset2=onset2+standardDurFrames
 
-    elif order==2: # test (audio) in the second place so visual stim is in the 1st place
+    elif order==2: # test in the second place, visual stimulus 2 is the test
         # standard times
-        onsetVisual=preDurFrames
-        offsetVisual=onsetVisual+standardDurFrames
+        onset1=preDurFrames
+        offset1=onset1+standardDurFrames
         # Test times
-        onsetAud=offsetVisual+isiDurFrames
-        offsetAud=onsetAud+testDurFrames 
+        onset2=offset1+isiDurFrames+conflictDurFramesHalf
+        offset2=onset2+testDurFrames-conflictDurFramesHalf 
 
-    print(f"Onset visual: {onsetVisual}, Offset visual: {offsetVisual}, Onset audio: {onsetAud}, Offset audio: {offsetAud}")
+    print(f'Onset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2}')
 
     #recalculate durations in seconds (frames to seconds)
     preDur=frames2sec(preDurFrames, frameRate)
@@ -110,12 +107,21 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     standardDur=frames2sec(standardDurFrames, frameRate)
     riseDur=frames2sec(riseDurFrames, frameRate)
     deltaDurS=frames2sec(deltaDurFrames, frameRate)
+    conflictDur=frames2sec(conflictDurFramesHalf*2, frameRate)
 
-    # audio stimulus (simple white noise with duration of testDurS)
-    audio_stim = genAudio.generateNoise(dur=testDurS, noise_type='white')
+    print('break')
+
+    # audio stimulus
+    audio_stim= audio_cue_gen.whole_stimulus(
+            test_dur=testDurS, standard_dur=standardDur, noise_type='white',
+            order=order, 
+            pre_dur=preDur, post_dur=postDur, isi_dur=isiDur, 
+            intensity=maxIntensityBurst, rise_dur=0.005, 
+            intensity_background=riseDur)
+
     audio_stim_sound=sound.Sound(value=audio_stim, sampleRate=sampleRate, stereo=True)
-    # uncomment to see the plots
     t=np.linspace(0,len(audio_stim)/sampleRate,len(audio_stim))
+
     # plt.plot(t,audio_stim)
     # plt.show()
 
@@ -123,7 +129,12 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     if ExpTesting:
         audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) 
 
+
+
     print(f'Current Stair: {current_stair}, Standard Dur: {standardDur}, Test Dur: {testDurS}, Rise Dur: {riseDur},Test in: {order} place,  Delta Dur: {deltaDurPercent},  deltaDurS: {deltaDurS}')
+    visualStim=visual.Circle(win, radius=visualStimSize, fillColor=True, lineColor='black', colorSpace='rgb', units='pix',
+                        pos=(0, 0))
+    visualStim.lineWidht=5
 
     total_dur_of_stim = preDur+testDurS+isiDur+standardDur+postDur
     totalDurFrames=sec2frames(total_dur_of_stim, frameRate)
@@ -175,7 +186,10 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
 
     #core.wait(0.05)
 
-
+    # timers
+    trialClock.reset()
+    globalClock.reset()
+    t_start=globalClock.getTime()
 
     win.flip(clearBuffer=True)
 
@@ -187,51 +201,61 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     tPreTrial = globalClock.getTime()
     frameStart = 0
     frameN = -1
-    # draw the fixation cross
-    core.wait(0.15) if ExpTesting==False else None
-    # fixation.draw()    
-    # win.flip()
-    # core.wait(0.033) if ExpTesting==False else None
-    # startEndAudioCue.play()
-    
-    # Timers just before the trial starts
-    trialClock.reset()
-    globalClock.reset()
-    t_start=globalClock.getTime()
-
+    visualStim.setAutoDraw(True)
     while continueRoutine:
         frameN += 1
         t = trialClock.getTime()
         # draw the fixation cross
-        # visual stimulus
-        if frameN==onsetVisual:
-            visualStim.setAutoDraw(True)
-            tVisualStimStart = t
-        elif frameN==offsetVisual:
-            visualStim.setAutoDraw(False)
-            tVisualStimEnd = t
-        
-        # audio stimulus
-        if onsetAud==frameN:
-            audio_stim_sound.play()
-            tAudStart =t
-            audio_stim_sound.status = STARTED
-        elif offsetAud==frameN:
-            audio_stim_sound.stop()
+        # Predur
+        if frameN < preDurFrames:
+            #visualStim.setAutoDraw(False)
+            visualStim.fillColor = "gray"
+
+        # First Stimulus onset1
+        elif onset1== frameN:# before
+            #visualStim.setAutoDraw(True)
+            visualStim.fillColor = "black"
+            tVisualStim1Start = t
+
+        # Interstimulus interval
+        elif offset1== frameN:#< onset2:
+            #visualStim.setAutoDraw(False)
+            visualStim.fillColor = "gray"
+            tVisualStim1End = t
             
 
+        # Second Stimulus onset2
+        elif onset2==frameN:# < offset2:
+            #visualStim.setAutoDraw(True)
+            visualStim.fillColor = "black"
+            tVisualStim2Start =t
+        
+        # Post Stimulus
+        elif offset2==frameN:# < frameN<=totalDurFrames:
+            #visualStim.setAutoDraw(False)
+            visualStim.fillColor = "gray"
+            tVisualStim2End = t
+        
+        elif frameN > totalDurFrames:
+            visualStim.setAutoDraw(False)
+            visualStim.status = FINISHED
+        # Audio stimulus
+        # audio stimulus
+        if audio_stim_sound.status == NOT_STARTED and t >= 0:
+            audio_stim_sound.play()
 
-        if audio_stim_sound.status == STARTED:
+            audio_stim_sound.status = STARTED
+            t_start = globalClock.getTime()
+        elif audio_stim_sound.status == STARTED:
             if audio_stim_sound.isPlaying == False:
-                tAudEnd = t
-                tAudDurRecorded = tAudEnd - tAudStart
+                t_dur=t-t_start
                 audio_stim_sound.status = FINISHED
-
-
         
         # check if all the stimuli are finished
-        if visualStim.status == FINISHED and audio_stim_sound.status == FINISHED and frameN > totalDurFrames:
+        if visualStim.status == FINISHED and audio_stim_sound.status == FINISHED:
             continueRoutine = False
+
+
                 #audio_stim_sound.stop()
                 #break
         
@@ -248,7 +272,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     stair_num_reversal=stair.reversals
     stair_is_reversal=stair.is_reversal
     # endregion
-    print(f"dur of visual stim: {tVisualStimEnd-tVisualStimStart}, dur of audio stim: {tAudDurRecorded}")
+
     # region [rgba(40, 10, 3, 0.80)]
 
     """ SAVE TRIAL DATA BEFORE RESPONSE"""
@@ -274,18 +298,27 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
 
     # stair data
     exp_data[trialN, 12] = current_stair
-    exp_data[trialN, 16]= stair_num_reversal # num of reversals
-    exp_data[trialN, 17]= stair_is_reversal # is this trial a reversal (1: reversal 0: not reversal)
+    exp_data[trialN,16]= stair_num_reversal # num of reversals
+    exp_data[trialN,17]= stair_is_reversal # is this trial a reversal (1: reversal 0: not reversal)
 
+    # recorded durations
+    if order==1:# test in the first place, visual stimulus 1 is the test
+        exp_data[trialN, 20] = round(tVisualStim1Start,4)
+        exp_data[trialN, 21] = round(tVisualStim1End,4)
+        exp_data[trialN, 22] = round(tVisualStim1End-tVisualStim1Start,4)
 
+        exp_data[trialN, 23] = round(tVisualStim2Start,4)
+        exp_data[trialN, 24] = round(tVisualStim2End,4)
+        exp_data[trialN, 25] = round(tVisualStim2End-tVisualStim2Start,4)
 
-    # # recorded durations
-    exp_data[trialN, 20] = tAudStart
-    exp_data[trialN, 21] = tAudEnd
-    exp_data[trialN, 22] = tAudDurRecorded
-    exp_data[trialN, 23] = tVisualStimStart
-    exp_data[trialN, 24] = tVisualStimEnd
-    exp_data[trialN, 25] = tVisualStimEnd - tVisualStimStart
+    elif order==2: # test in the second place, visual stimulus 2 is the test
+        exp_data[trialN, 20] = round(tVisualStim2Start,4)
+        exp_data[trialN, 21] = round(tVisualStim2End,4)
+        exp_data[trialN, 22] = round(tVisualStim2End-tVisualStim2Start,4)
+
+        exp_data[trialN, 23] = round(tVisualStim1Start,4)
+        exp_data[trialN, 24] = round(tVisualStim1End,4)
+        exp_data[trialN, 25] = round(tVisualStim1End-tVisualStim1Start,4)
 
 
 
@@ -303,7 +336,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     # Two interval forced choice response
 
     # Create a text stimulus with an audio symbol (Unicode)
-    modalityPostCue=None #np.random.choice(['A','V'])
+    modalityPostCue=np.random.choice(['A','V'])
     exp_data[trialN, 26] = modalityPostCue
 
     if modalityPostCue=='A':
@@ -317,13 +350,12 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     # region [rgba(40, 10, 30, 0.30)]
     core.wait(0.15) if ExpTesting==False else None
     #noise_audio.play()
-    
 
 
     """ Start the response routine """
     while waitingResponse and not endExpNow:
         response_text_comp.draw()
-        #postCue.draw()
+        postCue.draw()
 
         win.flip()
 
@@ -364,10 +396,47 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 'current_stair', 'responses', 'is_correct', 'response_rts' , 
                 'stair_num_reversal', 'stair_is_reversal', 'response_keys', 'conflictDur',
                 'recordedOnsetVisualTest', 'recordedOffsetVisualTest', 'recordedDurVisualTest',
-                'recordedOnsetAudio', 'recordedOffsetAudio', 'recordedDurAudio','modalityPostCue'
+                'recordedOnsetVisualStandard', 'recordedOffsetVisualStandard', 'recordedDurVisualStandard','modalityPostCue'
             ])            
             data_saved.to_csv(filename + '.csv')
 
+            # save as mat file with the same variable names
+        # save as mat file with the same variable names
+            sio.savemat(
+                filename + '.mat', 
+                {
+                    'standardDur': exp_data_saved[:, 0],
+                    'riseDur': exp_data_saved[:, 1],
+                    'order': exp_data_saved[:, 2],
+                    'preDur': exp_data_saved[:, 3],
+                    'postDur': exp_data_saved[:, 4],
+                    'isiDur': exp_data_saved[:, 5],
+                    'trial_num': exp_data_saved[:, 6],
+                    'totalDur': exp_data_saved[:, 7],
+                    'delta_dur_percents': exp_data_saved[:, 8],
+                    'deltaDurS': exp_data_saved[:, 9],
+                    'testDurS': exp_data_saved[:, 10],
+                    'intensities': exp_data_saved[:, 11],
+                    'current_stair': exp_data_saved[:, 12],
+                    'responses': exp_data_saved[:, 13],
+                    'is_correct': exp_data_saved[:, 14],
+                    'response_rts': exp_data_saved[:, 15],
+                    'stair_num_reversal': exp_data_saved[:, 16],
+                    'stair_is_reversal': exp_data_saved[:, 17],
+                    'response_keys': exp_data_saved[:, 18],
+                    'conflictDur': exp_data_saved[:, 19],
+
+                    'recordedOnsetVisualTest': exp_data_saved[:, 20],
+                    'recordedOffsetVisualTest': exp_data_saved[:, 21],
+                    'recordedDurVisualTest': exp_data_saved[:, 22],
+                    'recordedOnsetVisualStandard': exp_data_saved[:, 23],
+                    'recordedOffsetVisualStandard': exp_data_saved[:, 24],
+                    'recordedDurVisualStandard': exp_data_saved[:, 25]
+
+
+
+                }
+            )
 
             waitingResponse = False
 
