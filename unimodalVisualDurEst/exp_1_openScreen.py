@@ -11,6 +11,7 @@ from psychopy.constants import (NOT_STARTED, STARTED, PLAYING, PAUSED,
                                 STOPPED, FINISHED, PRESSED, RELEASED, FOREVER)
 import sys  # to get file system encoding
 #from psychopy import prefs/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/exp_auditory_dur_estimate_binnedAudio.py
+from psychopy import prefs
 import psychopy.iohub as io
 from psychopy.iohub.util import hideWindow, showWindow
 from psychopy.tools.monitorunittools import deg2pix, pix2deg
@@ -23,6 +24,15 @@ from my_staircase import stairCase
 from dva_to_pix import arcmin_to_px, dva_to_px
 
 
+# audio prefs
+#prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
+from psychopy.sound import backend_ptb as ptb
+print(ptb.getDevices(kind='output'))
+
+prefs.hardware['audioLib'] = ['PTB']
+prefs.hardware['audioDevice'] = 5
+
+prefs.general['audioLatencyMode'] = 4
 
 # Set the experiment directory
 exp_dir = os.path.dirname(os.path.abspath(__file__))

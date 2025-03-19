@@ -48,3 +48,11 @@ grouped[:2]
 
 
 
+
+
+#
+                    # if len(self.stair_dirs)>=2 and self.stair_dirs[-1]!=self.stair_dirs[-2]: # Check if this is a reversal
+                    #     self.is_reversal=1
+                    #     self.reversals+=1 # Increment the reversal counter
+                    # else:
+                    #     self.is_reversal=0

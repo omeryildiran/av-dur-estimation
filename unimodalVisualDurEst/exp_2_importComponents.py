@@ -1,8 +1,9 @@
 # Import components
+# import condition generator
+from create_conds_staircase import expConds
 # import the staircase
-
 from my_staircase import stairCase
-from conditions_av import create_conditions_matrix
+
 
 #Handy timers
 globalClock = core.Clock()
@@ -10,32 +11,52 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-rise_conds= [0.1] if ExpTraining==False else [0.1]
+rise_conds= [0.1,  0.85] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
 n_trial_per_condition=50 
+bin_dur=0.1
 
-
+conds_obj = expConds(trial_per_condition=n_trial_per_condition*8,
+                             rise_conds=rise_conds,
+                             standard_durations=[0.5],
+                             intens=maxIntensityBurst) 
 #print('given trials number',len(conds_obj.intens))
-
+#total_trials=(conds_obj.trial_per_condition)*2*4
 """
 matrix columns:
 0: Standard durations
 1: Rise conditions
-2: Conflict A-V
+2: Order of test
+3: Pre duration
+4: Post duratione
+5: ISI duration
+6: Trial number
+7: Total audio duration
+8: Response
+9: Is correct
+10: Response RT
 """
-conditions_matrix =create_conditions_matrix(totalTrialN=360,standards=[0.5], 
-                                             background_levels=[0], conflicts=[ 0])
-numberOfTrials=len(conditions_matrix)
-print(f"Number of trials: {numberOfTrials}")
-standardDurs = conditions_matrix[:, 0] # standard durations
-riseDurs = conditions_matrix[:, 1] # Background noise level conditions should change riseDur to backgroundNoise everywhere
-conflictDurs = conditions_matrix[:, 2] # conflict durations
+conditions_matrix = conds_obj.gen_duration_matrix()
 
+standardDurs = conditions_matrix[:, 0] # standard durations
+riseDurs = conditions_matrix[:, 1] # rise conditions
+orders = conditions_matrix[:, 2] # order of the test
+preDurs = conditions_matrix[:, 3] # pre duration
+postDurs = conditions_matrix[:, 4] # post duration
+isiDurs = conditions_matrix[:, 5] # ISI duration
+trial_num = conditions_matrix[:, 6] # trial number
 
 # total stim durations
 total_stim_durs=[]
 # add columns for total audio duration, response, is_correct, RT
-
+conditions_matrix = np.column_stack((conditions_matrix, np.nan * np.zeros((len(conditions_matrix), 4)))) # total_audio_dur, response, is_correct, RT
+"""
+7: 
+7: Total audio duration
+8: Response
+9: Is correct
+10: Response RT
+"""
 
 
 # Create general variables before the trial loop
@@ -47,33 +68,23 @@ trialN=-1
 # Responses
 response = None
 tolerance_trials=100
-responses=np.zeros(numberOfTrials+tolerance_trials)
-is_corrects=np.zeros(numberOfTrials+tolerance_trials)
-response_rts=np.zeros(numberOfTrials+tolerance_trials)
-response_keys=np.zeros(numberOfTrials+tolerance_trials)
+responses=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+is_corrects=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+response_rts=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+response_keys=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
 
 responseKeys = keyboard.Keyboard(backend='PTB')
 
-current_stairs=np.zeros(numberOfTrials+tolerance_trials)
-deltaDurs=np.zeros(numberOfTrials+tolerance_trials)
-testDurs=np.zeros(numberOfTrials+tolerance_trials)
-realDeltaDurs=np.zeros(numberOfTrials+tolerance_trials)
-intensities=np.zeros(numberOfTrials+tolerance_trials)
+current_stairs=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+deltaDurs=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+testDurs=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+realDeltaDurs=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
+intensities=np.zeros(conditions_matrix.shape[0]+tolerance_trials)
 
-# create an array with names of the columns
-column_names=columns=[
-                'standardDur', 'riseDur','order', 'preDur', 'postDur', 'isiDur', 'trial_num',
-                'total_audio_dur', 'delta_dur_percents', 'deltaDurS', 'testDurS', 'intensities',
-                'current_stair', 'responses', 'is_correct', 'response_rts' , 'stair_num_reversal', 'stair_is_reversal', 'response_keys'
-            'conflictDur', 
-            'recordedOnsetVisualTest', 'recordedOffsetVisualTest', 'recordedDurVisualTest',
-            'recordedOnsetVisualStandard', 'recordedOffsetVisualStandard', 'recordedDurVisualStandard','modalityPostCue']
-print(f"column names: {len(column_names)}")
 # create empty data matrix to save the data
-exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=object)
+exp_data=np.zeros((conditions_matrix.shape[0]+tolerance_trials, 19),dtype=object)
 
-""" Staircase Setup"""
-"----------------------------------------------------------------------------------------------------------------------------------------------------"
+# region [rgba(2, 40, 30, 0.30)]
 # Start the trial - response loop (there weill be)
 """ Staircase Setup"""
 stepFactor=0.67
@@ -83,7 +94,7 @@ max_level=0.9
 initLevel=0.65
 
 # Create the staircases
-max_trial_per_stair=n_trial_per_condition
+max_trial_per_stair=n_trial_per_condition#total_trials//5
 
 print(f'rise unique: {np.unique(riseDurs)}')
 stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
@@ -101,14 +112,12 @@ if ExpTraining:
     all_staircases=[stairCaseLapse]
 else:
     all_staircases=[stairCaseLapse, stairCaseLonger,stairCaseShorter,stairCaseLonger2D1U,stairCaseShorter2U1D]#, stairCaseLonger_b,stairCaseShorter_b,] 
-
-all_staircases=[stairCaseLapse ]#stairCaseLonger_b,stairCaseShorter_b,]
 #all_staircases=[stairCaseShorter,stairCaseLonger,stairCaseLapse, ]#stairCaseLonger_b,stairCaseShorter_b,]
 np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[0.05,0.20,0.10,0.40,-0.05,-0.20,-0.10,-0.40,]
+    lapse_deltas=[-0.8,0.8]
     all_conds=[]
     for i in np.unique(standardDurs): # standard durations 1.3, 1.6, 1.9
         for j in np.unique(riseDurs): # rise durations 0.05, 0.25
@@ -116,7 +125,7 @@ def lapse_rate_cond_generate():
                 all_conds.append([i,j,k])
     # in total 12 conditions
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(25,1))
+    all_conds=np.tile(all_conds,(7,1))
     np.random.shuffle(all_conds) 
     return all_conds
 lapse_rate_conds=lapse_rate_cond_generate()
@@ -126,32 +135,16 @@ total_trial_num=max_trial_per_stair*(len(all_staircases)-1)+len(lapse_rate_conds
 print(f'There are in total  {lapse_rate_conds.shape[0]} lapse rate conditions')
 print(f"there are maximum {len(standardDurs)} normal trials in total of  {max_trial_per_stair*4} staircase trials" )
 
-
-
-# region [rgba(2, 40, 30, 0.30)]
 # Convert to list the standard durs and rise durs
 standardDurs = standardDurs.tolist()
 riseDurs = riseDurs.tolist()
-conflictDurs = conflictDurs.tolist()
 lapse_ended=False
 
 
 # Set up fixation cross
 fixation = visual.TextStim(win, text='+', color='white', height=deg2pix(1,monitor=win.monitor), pos=(0, 0))
-#fixation.draw()
-#win.flip()
+fixation.draw()
+win.flip()
 
 #components for visual stimuli
 visualStimSize=dva_to_px(size_in_deg=1.5,h=screen_height,d=screen_distance,r=sizeIs)
-
-
-# Create Objects for the visual stimuli
-visualStim=visual.Circle(win, radius=visualStimSize, fillColor=True, lineColor='black', colorSpace='rgb', units='pix',
-                    pos=(0, 0))
-visualStim.lineWidht=5
-
-startEndAudioCue=sound.Sound(value='A', sampleRate=44100, stereo=True, volume=volume, name='startEndAudioCue')
-startEndAudioCue.setVolume(volume)
-startEndAudioCue.setSound('A', secs=0.033)
-
-
