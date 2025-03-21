@@ -87,6 +87,8 @@ class stairCase():
             n_up = 2
         elif self.method in ["4D1U", "4U1D"]:
             n_up = 4
+        elif self.method in ["1D1U", "1U1D"]:
+            n_up = 1
         else:
             n_up = 3  # Default fallback
 
@@ -102,6 +104,7 @@ class stairCase():
         # -----------------
         # Main staircase logic
         # -----------------
+        # doing wronggg
         if not is_correct: # if response is not correct
             # Incorrect response => go "up"
             self.correct_counter = 0
@@ -124,7 +127,12 @@ class stairCase():
             if abs(self.level + self.step) <= abs(self.max_level):
                 self.level =self.level+self.step
             else:
-                self.level = self.sign_of_stair*self.max_level
+                if self.sign_of_stair==1:
+                    self.level =self.level+self.step
+
+                # if the stair is going down, we need to check if we are at the min level and set t max level(which is the min level in this case)
+                else:
+                    self.level = self.sign_of_stair*self.max_level
 
         else: # if correct
             # Correct response => potentially go "down"
@@ -173,26 +181,26 @@ class stairCase():
         
 # ##########----------------EXANPLE USAGE ------------------#########
 # stair = stairCase(init_level=0.95, 
-#                   method="2U1D", 
+#                   method="1D1U", 
 #                   min_level=0.15, 
 #                   max_reversals=300,
 #                   max_trials=50,
 #                     step_factor=0.671,
 #                     init_step=0.2,
-#                     max_level=0.8,
-#                     sign_of_stair=1)
+#                     max_level=0.95,
+#                     sign_of_stair=-1)
 # levels = []
 # trialNum=0
 # plt.figure(figsize=(10, 6))
 # while not stair.stair_stopped:
 #     level = stair.next_trial()
 #     levels.append(level)
-#     is_correct = random.random() >0.3 #np.abs(level)
+#     is_correct = random.random() >0.01 #np.abs(level)
 #     stair.update_staircase(is_correct)
 #     print(f"step: {stair.step}, c {is_correct}, rev: {stair.reversals}, trial: {trialNum}, level: {level}")
 
-#     if stair.reversals>0 and stair.stair_dirs[-1]!=stair.stair_dirs[-2]:
-#         plt.plot(trialNum,levels[-1], 'o',color='black')
+#     # if stair.reversals>0 and stair.stair_dirs[-1]!=stair.stair_dirs[-2]:
+#     #     plt.plot(trialNum,levels[-1], 'o',color='black')
 #     if is_correct:
 #         plt.scatter(x=trialNum,y=levels[-1], color='green', s=30)
 #     else:

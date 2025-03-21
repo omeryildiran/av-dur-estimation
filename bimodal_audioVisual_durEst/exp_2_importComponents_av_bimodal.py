@@ -12,7 +12,7 @@ trialClock = core.Clock()
 
 rise_conds= [0.1] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
-n_trial_per_condition=50 
+n_trial_per_condition=35 
 
 
 #print('given trials number',len(conds_obj.intens))
@@ -86,11 +86,11 @@ initLevel=0.65
 max_trial_per_stair=n_trial_per_condition
 
 print(f'rise unique: {np.unique(riseDurs)}')
-stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
+stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="1D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
                             sigma_level=None,sign_of_stair=1)
 stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
                                 max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=1)
-stairCaseShorter = stairCase(init_level=initLevel, init_step=initStep, method="3U1D",step_factor=stepFactor,
+stairCaseShorter = stairCase(init_level=initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
                               max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=-1)
 stairCaseShorter2U1D = stairCase(init_level=initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=-1)
@@ -102,13 +102,13 @@ if ExpTraining:
 else:
     all_staircases=[stairCaseLapse, stairCaseLonger,stairCaseShorter,stairCaseLonger2D1U,stairCaseShorter2U1D]#, stairCaseLonger_b,stairCaseShorter_b,] 
 
-all_staircases=[stairCaseLapse ]#stairCaseLonger_b,stairCaseShorter_b,]
+#all_staircases=[stairCaseLapse ]#stairCaseLonger_b,stairCaseShorter_b,]
 #all_staircases=[stairCaseShorter,stairCaseLonger,stairCaseLapse, ]#stairCaseLonger_b,stairCaseShorter_b,]
 np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[0.05,0.20,0.10,0.40,-0.05,-0.20,-0.10,-0.40,]
+    lapse_deltas=[-0.9,0.9]# or the method of constant stim deltas= [0.05,0.20,0.10,0.40,-0.05,-0.20,-0.10,-0.40,]
     all_conds=[]
     for i in np.unique(standardDurs): # standard durations 1.3, 1.6, 1.9
         for j in np.unique(riseDurs): # rise durations 0.05, 0.25
