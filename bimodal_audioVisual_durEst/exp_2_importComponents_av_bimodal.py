@@ -79,8 +79,8 @@ exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=o
 stepFactor=0.67
 initStep=0.2
 maxReversals=100
-max_level=0.9
-initLevel=0.65
+max_level=0.95
+initLevel=0.9
 
 # Create the staircases
 max_trial_per_stair=n_trial_per_condition

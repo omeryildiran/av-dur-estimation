@@ -9,12 +9,11 @@ class stairCase():
                  init_step=0.1,
                  method="3D1U", 
                  step_factor=0.5,
-                 min_level=0.05,
                  max_reversals=100,
                  max_trials=50,
                  max_level=0.6,
                  sigma_level=0.1,
-                 sign_of_stair=1):
+                 ):
         """
         Parameters
         ----------
@@ -33,13 +32,17 @@ class stairCase():
         max_trials : int
             The maximum number of trials to run before stopping.
         """
-        self.level = sign_of_stair*init_level
-        self.init_step = sign_of_stair*init_step
-        self.step = sign_of_stair*init_step
+
+        #self.sign=sign_of_stair
+        self.init_level = init_level
+
+        self.level = init_level
+        self.init_step = init_step
+        self.step = init_step
         self.method = method
         self.step_factor = step_factor
-        self.min_level = min_level
-        self.max_level = max_level
+        #self.min_level = min_level
+        self.max_level = np.sign(init_level)*max_level
         self.trial_num = 0
         self.correct_counter = 0
         self.last_response = None
@@ -54,7 +57,7 @@ class stairCase():
         self.stair_dirs = []
         self.max_trials = max_trials
         self.is_reversal=False
-        self.sign_of_stair=sign_of_stair
+        #self.sign_of_stair=sign_of_stair
 
         self.lapse_levels = [-0.55, 0.55,1] *300# big number so indeed we dont care about lapse rate here but we handle it in the experiment code itself.
         np.random.shuffle(self.lapse_levels)
@@ -101,6 +104,23 @@ class stairCase():
                 self.stair_stopped = True
                 return False
 
+        correctIncrement=np.abs(self.level+self.step)<np.abs(self.level)
+        correctDecrease=np.abs(self.level-self.step)<np.abs(self.level)
+
+        incrementLevelCloseness=abs(self.level+self.step)
+        decrementLevelCloseness=abs(self.level-self.step)
+
+        #print('increment',increment)
+        
+        if incrementLevelCloseness<decrementLevelCloseness:
+            dirStep=1
+        else:
+            dirStep=-1
+        
+
+        print
+        print('dirStep',dirStep)
+
         # -----------------
         # Main staircase logic
         # -----------------
@@ -119,22 +139,23 @@ class stairCase():
             # If we have a reversal, update the step size immediately
             if self.is_reversal:
                 if self.reversals < n_stop_step_change:
-                    self.step = self.init_step * (self.step_factor ** self.reversals)
+                    self.step = self.init_step * (self.step_factor ** self.reversals) #pdate the step size
                 else:
                     self.step = self.init_step * (self.step_factor ** n_stop_step_change)
 
             # Now update the level using the (potentially) new step size
-            if abs(self.level + self.step) <= abs(self.max_level):
-                self.level =self.level+self.step
+            if self.level -dirStep*self.step >=-0.95 :
+                self.level =self.level-dirStep*self.step
             else:
-                if self.sign_of_stair==1:
-                    self.level =self.level+self.step
+                # #self.level = -1*dirStep*self.max_level
+                # if np.sign(self.init_level)==1:
+                #     self.level =self.level+dirStep*self.step
+                # # if the stair is going down, we need to check if we are at the min level and set t max level(which is the min level in this case)
+                # else:
+                print('to')
+                self.level = self.max_level
 
-                # if the stair is going down, we need to check if we are at the min level and set t max level(which is the min level in this case)
-                else:
-                    self.level = self.sign_of_stair*self.max_level
-
-        else: # if correct
+        elif is_correct: # if correct
             # Correct response => potentially go "down"
             self.correct_counter += 1
 
@@ -157,8 +178,10 @@ class stairCase():
                         self.step = self.init_step * (self.step_factor ** n_stop_step_change)
 
                 # Now update the level using the (potentially) new step size
-                self.level =self.level-self.step
-                # if abs(self.level) - np.abs(self.step) > self.min_level:
+                self.level =self.level+dirStep*self.step
+
+                # # conditional update based on min level treshold
+                # if abs(self.level) - np.abs(self.step) > 0:
                 #     self.level =self.level-self.step
                 # else:
                 #     self.level =self.sign_of_stair*self.min_level
@@ -179,42 +202,42 @@ class stairCase():
 
             
         
-# ##########----------------EXANPLE USAGE ------------------#########
-# stair = stairCase(init_level=0.95, 
-#                   method="1D1U", 
-#                   min_level=0.15, 
-#                   max_reversals=300,
-#                   max_trials=50,
-#                     step_factor=0.671,
-#                     init_step=0.2,
-#                     max_level=0.95,
-#                     sign_of_stair=-1)
-# levels = []
-# trialNum=0
-# plt.figure(figsize=(10, 6))
-# while not stair.stair_stopped:
-#     level = stair.next_trial()
-#     levels.append(level)
-#     is_correct = random.random() >0.01 #np.abs(level)
-#     stair.update_staircase(is_correct)
-#     print(f"step: {stair.step}, c {is_correct}, rev: {stair.reversals}, trial: {trialNum}, level: {level}")
+##########----------------EXANPLE USAGE ------------------#########
+stair = stairCase(init_level=0.95, 
+                  method="1D1U", 
+                  max_reversals=300,
+                  max_trials=20,
+                    step_factor=0.671,
+                    init_step=0.2,
+                    max_level=0.95,
+                    )
+levels = []
+trialNum=0
+plt.figure(figsize=(10, 6))
+while not stair.stair_stopped:
+    level = stair.next_trial()
+    levels.append(level)
+    is_correct = random.random() >0.009 #np.abs(level)
+    stair.update_staircase(is_correct)
+    print(f"step: {stair.step}, c {is_correct}, rev: {stair.reversals}, trial: {trialNum}, level: {level}")
 
-#     # if stair.reversals>0 and stair.stair_dirs[-1]!=stair.stair_dirs[-2]:
-#     #     plt.plot(trialNum,levels[-1], 'o',color='black')
-#     if is_correct:
-#         plt.scatter(x=trialNum,y=levels[-1], color='green', s=30)
-#     else:
-#         plt.scatter(x=trialNum,y=levels[-1],color='red', s=30)
-#     trialNum+=1
+    # if stair.reversals>0 and stair.stair_dirs[-1]!=stair.stair_dirs[-2]:
+    #     plt.plot(trialNum,levels[-1], 'o',color='black')
+    if is_correct:
+        plt.scatter(x=trialNum,y=levels[-1], color='green', s=30)
+    else:
+        plt.scatter(x=trialNum,y=levels[-1],color='red', s=30)
+    trialNum+=1
 
-# plt.plot(levels, '-',label='Staircase', color='blue')
-# plt.xlabel('Trial')
-# plt.ylabel('Level (Difficulty)')
-# plt.title('3-Down-1-Up Staircase Procedure')
-# plt.axhline(np.mean(levels[-100:]), color='red', linestyle='dashed', label='Convergence Level (Last 100 Trials)')
-# print(f'convergence level: {levels[-1]}')
-# plt.legend()
-# plt.show()
+plt.plot(levels, '-',label='Staircase', color='blue')
+plt.xlabel('Trial')
+plt.ylabel('Level (Difficulty)')
+plt.title('3-Down-1-Up Staircase Procedure')
+plt.axhline(np.mean(levels[-100:]), color='red', linestyle='dashed', label='Convergence Level (Last 100 Trials)')
+plt.axhline(0, color='black', linestyle='dashed', label='Zero Level')
+print(f'convergence level: {levels[-1]}')
+plt.legend()
+plt.show()
 
 
 
