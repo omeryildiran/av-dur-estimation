@@ -45,7 +45,7 @@ if ExpTesting:
 #core.quit() if dlg.OK == False else None
 # save expInfo to a file
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
-filename = exp_dir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
+filename = exp_dir + os.sep + u'dataBimodal/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
 
 
 #setup screen properties
