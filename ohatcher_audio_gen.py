@@ -271,7 +271,7 @@ test_dur = 0.5
 standard_dur = 0.5
 noise_type = "white"
 intensity = 5
-rise_dur = 0.2
+rise_dur = 0.99
 order = 1
 pre_cue_sound=0.25
 pre_post_dur=pre_cue_sound
@@ -287,11 +287,11 @@ def plot_sounds():
     plt.figure(figsize=(10, 4))
     for idx, rise in enumerate([0.05,0.05]):
         stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound,
-                                              intensity_background=0.3)
+                                              intensity_background=0.7)
 
         t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
-        # if idx in [1]:
-        #     audio_cue.play_sound(stim_sound)
+        if idx in [1]:
+            audio_cue.play_sound(stim_sound)
         
     #     plt.subplot(1, 2, idx + 1)
     #     plt.plot(t, stim_sound)

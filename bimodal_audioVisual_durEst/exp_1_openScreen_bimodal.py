@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 # Importing Libraries
 from psychopy import sound, gui, visual, core, data, event, logging, clock, colors, layout, iohub, hardware
 import os
+# print dir
+print("\n",os.getcwd())
 import numpy as np
 from numpy.random import choice as randchoice
 from numpy.random import random, randint, normal, shuffle, choice as randchoice
@@ -19,6 +21,11 @@ from psychopy.hardware import keyboard
 import random
 import scipy.io as sio
 import pandas as pd
+# import my_staircase from parent directory
+# Add parent directory to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Now you can import from the parent directory
 from my_staircase import stairCase
 from dva_to_pix import arcmin_to_px, dva_to_px
 
