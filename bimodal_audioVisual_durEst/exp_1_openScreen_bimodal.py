@@ -11,7 +11,6 @@ from numpy.random import choice as randchoice
 from numpy.random import random, randint, normal, shuffle, choice as randchoice
 from psychopy.constants import (NOT_STARTED, STARTED, PLAYING, PAUSED,
                                 STOPPED, FINISHED, PRESSED, RELEASED, FOREVER)
-import sys  # to get file system encoding
 #from psychopy import prefs/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/exp_auditory_dur_estimate_binnedAudio.py
 import psychopy.iohub as io
 from psychopy.iohub.util import hideWindow, showWindow
@@ -22,8 +21,7 @@ import random
 import scipy.io as sio
 import pandas as pd
 # import my_staircase from parent directory
-# Add parent directory to path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 # Now you can import from the parent directory
 from my_staircase import stairCase
