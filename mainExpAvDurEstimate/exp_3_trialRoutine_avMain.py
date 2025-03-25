@@ -83,19 +83,19 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     
     if order==1: # test in the first place, visual stimulus 1 is the test
         # Test times
-        onset1=preDurFrames+conflictDurFramesHalf
-        offset1=onset1+testDurFrames-conflictDurFramesHalf
-        # standard times
-        onset2=offset1+isiDurFrames
-        offset2=onset2+standardDurFrames
+        onset1=preDurFrames 
+        offset1=onset1+testDurFrames
+        # standard times +  ADD CONFLICT DURATION TO THE STANDARD DURATION
+        onset2=offset1+isiDurFrames-conflictDurFramesHalf# we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
+        offset2=onset2+standardDurFrames+conflictDurFramesHalf
 
     elif order==2: # test in the second place, visual stimulus 2 is the test
         # standard times
-        onset1=preDurFrames
-        offset1=onset1+standardDurFrames
+        onset1=preDurFrames-conflictDurFramesHalf # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
+        offset1=onset1+standardDurFrames+conflictDurFramesHalf
         # Test times
-        onset2=offset1+isiDurFrames+conflictDurFramesHalf
-        offset2=onset2+testDurFrames-conflictDurFramesHalf 
+        onset2=offset1+isiDurFrames
+        offset2=onset2+testDurFrames
 
     print(f'Onset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2}')
 
@@ -197,6 +197,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     #endregion
 
     """ Run Trial Routine """
+    audio_stim_sound.volume = volume
     continueRoutine = True
     tPreTrial = globalClock.getTime()
     frameStart = 0

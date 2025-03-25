@@ -30,6 +30,10 @@ standardDurs = conditions_matrix[:, 0] # standard durations
 riseDurs = conditions_matrix[:, 1] # Background noise level conditions should change riseDur to backgroundNoise everywhere
 conflictDurs = conditions_matrix[:, 2] # conflict durations
 
+uniqueRiseDurs=np.unique(riseDurs)
+uniqueStandardDurs=np.unique(standardDurs)
+uniqueConflictDurs=np.unique(conflictDurs)
+totalUniqueConds=uniqueStandardDurs.shape[0]*uniqueRiseDurs.shape[0]*uniqueConflictDurs.shape[0]
 
 # total stim durations
 total_stim_durs=[]
@@ -74,24 +78,24 @@ exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=o
 # region [rgba(2, 40, 30, 0.30)]
 # Start the trial - response loop (there weill be)
 """ Staircase Setup"""
-stepFactor=0.67
+stepFactor=0.6
 initStep=0.2
 maxReversals=100
-max_level=0.9
-initLevel=0.65
+max_level=0.95
+initLevel=0.9
 
 # Create the staircases
 max_trial_per_stair=n_trial_per_condition#total_trials//5
 
 print(f'rise unique: {np.unique(riseDurs)}')
-stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
-                            sigma_level=None,sign_of_stair=1)
+stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="1D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
+                            sigma_level=None)
 stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
-                                max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=1)
-stairCaseShorter = stairCase(init_level=initLevel, init_step=initStep, method="3U1D",step_factor=stepFactor,
-                              max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=-1)
+                                max_trials=max_trial_per_stair, sigma_level=None)
+stairCaseShorter = stairCase(init_level=initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
+                              max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,)
 stairCaseShorter2U1D = stairCase(init_level=initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
-                                 max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=-1)
+                                 max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,)
 
 stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
 
@@ -104,13 +108,16 @@ np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[-0.8,0.8]
+    lapse_deltas=[-0.9,0.9]
     all_conds=[]
-    for i in np.unique(standardDurs): # standard durations 1.3, 1.6, 1.9
-        for j in np.unique(riseDurs): # rise durations 0.05, 0.25
-            for k in lapse_deltas: # lapse deltas -0.55, 0.55
-                all_conds.append([i,j,k])
+    for i in uniqueStandardDurs: # standard durations 1.3, 1.6, 1.9
+        for j in uniqueRiseDurs: # rise durations 0.05, 0.25
+            for k in uniqueConflictDurs:
+                for l in lapse_deltas: # lapse deltas -0.55, 0.55
+                    all_conds.append([i,j,k])
+    
     # in total 12 conditions
+    
     # tile the lapse conditions
     all_conds=np.tile(all_conds,(7,1))
     np.random.shuffle(all_conds) 
@@ -131,11 +138,17 @@ lapse_ended=False
 
 # Set up fixation cross
 fixation = visual.TextStim(win, text='+', color='white', height=deg2pix(1,monitor=win.monitor), pos=(0, 0))
-fixation.draw()
-win.flip()
+# fixation.draw()
+# win.flip()
 
 #components for visual stimuli
 visualStimSize=dva_to_px(size_in_deg=1.5,h=screen_height,d=screen_distance,r=sizeIs)
+
+# Create Objects for the visual stimuli
+visualStim=visual.Circle(win, radius=visualStimSize, fillColor=True, lineColor='black', colorSpace='rgb', units='pix',
+                    pos=(0, 0), color='black')
+visualStim.lineWidht=5
+
 
 #Postcues
 audioIcon =visual.ImageStim(win, image="audio_icon.png", pos=(0, 100), size=(50, 50))

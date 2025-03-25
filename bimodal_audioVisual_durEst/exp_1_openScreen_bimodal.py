@@ -3,9 +3,6 @@
 import matplotlib.pyplot as plt
 # Importing Libraries
 from psychopy import sound, gui, visual, core, data, event, logging, clock, colors, layout, iohub, hardware
-import os
-# print dir
-print("\n",os.getcwd())
 import numpy as np
 from numpy.random import choice as randchoice
 from numpy.random import random, randint, normal, shuffle, choice as randchoice

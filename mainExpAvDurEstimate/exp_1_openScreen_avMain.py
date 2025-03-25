@@ -24,15 +24,6 @@ from my_staircase import stairCase
 from dva_to_pix import arcmin_to_px, dva_to_px
 
 
-# audio prefs
-#prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
-from psychopy.sound import backend_ptb as ptb
-print(ptb.getDevices(kind='output'))
-
-prefs.hardware['audioLib'] = ['PTB']
-prefs.hardware['audioDevice'] = 5
-
-prefs.general['audioLatencyMode'] = 4
 
 # Set the experiment directory
 exp_dir = os.path.dirname(os.path.abspath(__file__))
@@ -48,7 +39,7 @@ if ExpTesting:
 #core.quit() if dlg.OK == False else None
 # save expInfo to a file
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
-filename = exp_dir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
+filename = exp_dir + os.sep + u'dataAvMain/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
 
 
 #setup screen properties

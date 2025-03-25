@@ -1,0 +1,5 @@
+,standardDur,riseDur,order,preDur,postDur,isiDur,trial_num,totalDur,delta_dur_percents,deltaDurS,testDurS,intensities,current_stair,responses,is_correct,response_rts,stair_num_reversal,stair_is_reversal,response_keys,conflictDur,recordedOnsetVisualTest,recordedOffsetVisualTest,recordedDurVisualTest,recordedOnsetVisualStandard,recordedOffsetVisualStandard,recordedDurVisualStandard,modalityPostCue
+0,0.4996,0.8494,2,0.4164,0.5663,0.8494,0,3.281,0.9,0.4497,0.9493,5,2D1U,1.0,False,0.939,0,False,left,0.0666,1.2978,1.8285,0.5307,0.2278,0.4821,0.2544,A
+1,0.4996,0.0999,2,0.4164,0.5496,0.7161,1,2.7146,0.05,0.0333,0.5329,5,lapse_rate,1.0,False,5.27,0,False,left,0.0666,0.8408,1.0909,0.2501,0.2129,0.4611,0.2482,V
+2,0.4996,0.0999,1,0.4497,0.483,0.7161,2,3.0977,0.9,0.4497,0.9493,5,2U1D,2.0,False,2.379,0,False,right,0.0666,0.2417,0.696,0.4543,1.0641,1.3102,0.2461,A
+3,0.4996,0.8494,2,0.483,0.433,0.6329,3,3.0977,1.1,0.5496,1.0492,5,2D1U,2.0,True,0.155,0,False,right,0.0666,0.8562,1.52,0.6638,0.2425,0.4922,0.2496,V

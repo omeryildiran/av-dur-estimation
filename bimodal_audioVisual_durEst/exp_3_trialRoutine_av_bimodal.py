@@ -219,7 +219,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             tAudStart =t
             audio_stim_sound.status = STARTED
         elif offsetAud==frameN:
-            continue
+            #continue
             audio_stim_sound.stop()
             
 
