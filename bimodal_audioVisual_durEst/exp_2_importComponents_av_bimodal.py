@@ -136,6 +136,8 @@ riseDurs = riseDurs.tolist()
 conflictDurs = conflictDurs.tolist()
 lapse_ended=False
 
+# audio samplerate
+sampleRate = 48000
 
 # Set up fixation cross
 fixation = visual.TextStim(win, text='+', color='white', height=deg2pix(1,monitor=win.monitor), pos=(0, 0))
@@ -151,7 +153,7 @@ visualStim=visual.Circle(win, radius=visualStimSize, fillColor=True, lineColor='
                     pos=(0, 0), color='black')
 visualStim.lineWidht=5
 
-startEndAudioCue=sound.Sound(value='A', sampleRate=44100, stereo=True, volume=volume, name='startEndAudioCue')
+startEndAudioCue=sound.Sound(value='A', sampleRate=sampleRate, stereo=True, volume=volume, name='startEndAudioCue')
 startEndAudioCue.setVolume(volume)
 startEndAudioCue.setSound('A', secs=0.033)
 

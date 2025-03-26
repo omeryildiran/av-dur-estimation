@@ -4,7 +4,7 @@ from ohatcher_audio_gen import AudioCueGenerator
 from generateAudio import generateAudioClass
 
 # Initialize the stimulus component
-sampleRate = 48000
+
 #audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
 
 genAudio = generateAudioClass(sampleRate=sampleRate)
@@ -286,6 +286,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     exp_data[trialN, 20] = tAudStart
     exp_data[trialN, 21] = tAudEnd
     exp_data[trialN, 22] = tAudDurRecorded
+
     exp_data[trialN, 23] = tVisualStimStart
     exp_data[trialN, 24] = tVisualStimEnd
     exp_data[trialN, 25] = tVisualStimEnd - tVisualStimStart
@@ -366,8 +367,10 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 'totalDur', 'delta_dur_percents', 'deltaDurS', 'testDurS', 'intensities',
                 'current_stair', 'responses', 'is_correct', 'response_rts' , 
                 'stair_num_reversal', 'stair_is_reversal', 'response_keys', 'conflictDur',
+                'recordedOnsetAudioTest', 'recordedOffsetAudioTest', 'recordedDurAudioTest',
                 'recordedOnsetVisualStandard', 'recordedOffsetVisualStandard', 'recordedDurVisualStandard',
-                'recordedOnsetAudioTest', 'recordedOffsetAudioTest', 'recordedDurAudioTest','modalityPostCueTest'
+
+                'modalityPostCueTest'
             ])            
             data_saved.to_csv(filename + '.csv')
 
