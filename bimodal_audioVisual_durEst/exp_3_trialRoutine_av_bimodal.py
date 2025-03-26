@@ -367,10 +367,10 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 'totalDur', 'delta_dur_percents', 'deltaDurS', 'testDurS', 'intensities',
                 'current_stair', 'responses', 'is_correct', 'response_rts' , 
                 'stair_num_reversal', 'stair_is_reversal', 'response_keys', 'conflictDur',
-                'recordedOnsetAudioTest', 'recordedOffsetAudioTest', 'recordedDurAudioTest',
-                'recordedOnsetVisualStandard', 'recordedOffsetVisualStandard', 'recordedDurVisualStandard',
+                'recordedOnsetAudioTest', 'recordedOffsetAudioTest', 'recordedDurAudioTest',  # 20-22
+                'recordedOnsetVisualStandard', 'recordedOffsetVisualStandard', 'recordedDurVisualStandard', # 23-25
 
-                'modalityPostCueTest'
+                'modalityPostCueTest' # 26
             ])            
             data_saved.to_csv(filename + '.csv')
 

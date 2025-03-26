@@ -12,7 +12,7 @@ class stairCase():
                  max_reversals=100,
                  max_trials=50,
                  max_level=0.6,
-                 sigma_level=0.1,
+                 sigma_level=None,
                  ):
         """
         Parameters
@@ -46,7 +46,7 @@ class stairCase():
         self.trial_num = 0
         self.correct_counter = 0
         self.last_response = None
-        self.sigma_level = sigma_level
+        self.sigma_level = None
 
         self.max_reversals = max_reversals
         self.reversals = 0
@@ -203,7 +203,7 @@ class stairCase():
             
         
 # ##########----------------EXANPLE USAGE ------------------#########
-# stair = stairCase(init_level=0.95, 
+# stair = stairCase(init_level=-0.95, 
 #                   method="1D1U", 
 #                   max_reversals=300,
 #                   max_trials=20,
@@ -217,7 +217,7 @@ class stairCase():
 # while not stair.stair_stopped:
 #     level = stair.next_trial()
 #     levels.append(level)
-#     is_correct = random.random() >0.39 #np.abs(level)
+#     is_correct = random.random() >0.89 #np.abs(level)
 #     stair.update_staircase(is_correct)
 #     print(f"step: {stair.step}, c {is_correct}, rev: {stair.reversals}, trial: {trialNum}, level: {level}")
 
@@ -245,3 +245,69 @@ class stairCase():
 
 
 
+# ##########----------------EXANPLE USAGE ------------------#########
+# import matplotlib.pyplot as plt
+# import numpy as np
+# import random
+
+# # Setup the figure with 2x2 subplots
+# fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+# axs = axs.flatten()
+
+# # Define the methods to test
+# methods = ["1U1D", "1D1U", "2U1D", "2D1U"]
+
+# # Run each staircase method
+# for i, method in enumerate(methods):
+#     stair = stairCase(init_level=-0.95, 
+#                      method=method, 
+#                      max_reversals=300,
+#                      max_trials=100,  # Using more trials to see patterns better
+#                      step_factor=0.671,
+#                      init_step=0.2,
+#                      max_level=0.95)
+    
+#     levels = []
+#     trialNum = 0
+    
+#     while not stair.stair_stopped:
+#         if method 
+#         level = stair.next_trial()
+#         levels.append(level)
+#         # Adjust probability based on level to make behavior more realistic
+#         is_correct = random.random() > (0.5 - 0.001*level)  # Higher level = easier = more correct
+#         stair.update_staircase(is_correct)
+        
+#         # Plot each trial
+#         if is_correct:
+#             axs[i].scatter(x=trialNum, y=levels[-1], color='green', s=30)
+#         else:
+#             axs[i].scatter(x=trialNum, y=levels[-1], color='red', s=30)
+#         trialNum += 1
+    
+#     # Plot line connecting all levels
+#     axs[i].plot(levels, '-', color='blue', alpha=0.7)
+    
+#     # Calculate mean of last several trials for convergence estimate
+#     last_n = min(20, len(levels))
+#     convergence = np.mean(levels[-last_n:])
+    
+#     # Add reference lines
+#     axs[i].axhline(convergence, color='red', linestyle='dashed', 
+#                   label=f'Convergence: {convergence:.2f}')
+#     axs[i].axhline(0, color='black', linestyle='dashed')
+    
+#     # Set labels and title
+#     axs[i].set_xlabel('Trial')
+#     axs[i].set_ylabel('Level (Difficulty)')
+#     axs[i].set_title(f'{method} Staircase Method')
+#     axs[i].legend()
+#     axs[i].set_ylim(-1, 1)
+
+# plt.tight_layout()
+# plt.savefig('staircase_methods_comparison.png')
+# plt.show()
+
+# print("Convergence levels:")
+# for i, method in enumerate(methods):
+#     print(f"{method}: {axs[i].get_lines()[1].get_ydata()[0]:.3f}")

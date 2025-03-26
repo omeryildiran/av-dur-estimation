@@ -152,7 +152,7 @@ visualStimSize=dva_to_px(size_in_deg=1.5,h=screen_height,d=screen_distance,r=siz
 visualStim=visual.Circle(win, radius=visualStimSize, fillColor=True, lineColor='black', colorSpace='rgb', units='pix',
                     pos=(0, 0), color='black')
 visualStim.lineWidht=5
-
+visualStim.color='black'
 startEndAudioCue=sound.Sound(value='A', sampleRate=sampleRate, stereo=True, volume=volume, name='startEndAudioCue')
 startEndAudioCue.setVolume(volume)
 startEndAudioCue.setSound('A', secs=0.033)
