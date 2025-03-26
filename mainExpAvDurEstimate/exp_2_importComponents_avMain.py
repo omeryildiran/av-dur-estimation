@@ -23,7 +23,7 @@ matrix columns:
 2: Conflict A-V
 """
 conditions_matrix =create_conditions_matrix(totalTrialN=360,standards=[0.5], 
-                                             background_levels=[0.1,0.85], conflicts=[ 0.05])
+                                             background_levels=[0.1,0.85], conflicts=[0.05, 0, -0.05])
 numberOfTrials=len(conditions_matrix)
 print(f"Number of trials: {numberOfTrials}")
 standardDurs = conditions_matrix[:, 0] # standard durations
@@ -114,7 +114,7 @@ def lapse_rate_cond_generate():
         for j in uniqueRiseDurs: # rise durations 0.05, 0.25
             for k in uniqueConflictDurs:
                 for l in lapse_deltas: # lapse deltas -0.55, 0.55
-                    all_conds.append([i,j,k])
+                    all_conds.append([i,j,k,l])
     
     # in total 12 conditions
     

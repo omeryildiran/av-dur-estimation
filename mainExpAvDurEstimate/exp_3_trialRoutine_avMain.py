@@ -27,13 +27,16 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         shuffle(all_staircases)
     current_stair=stair.method
 
+    print('\n')
     # Get the current trial
     if current_stair=="lapse_rate":
         if not lapse_ended:
             if lapse_rate_conds.shape[0]>0:
                 standardDur=lapse_rate_conds[0][0]
                 riseDur=lapse_rate_conds[0][1]
-                deltaDurPercent=lapse_rate_conds[0][2]
+                conflictDur=lapse_rate_conds[0][2]
+                deltaDurPercent=lapse_rate_conds[0][3]
+                print(f'delta dur percent: {deltaDurPercent}')
                 lapse_rate_conds=lapse_rate_conds[1:]
             else:
                 stopped_stair_count+=1
@@ -77,7 +80,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     conflictDurFrames=sec2frames(conflictDur, frameRate)
     conflictDurFramesHalf=sec2frames(conflictDurHalf, frameRate)
 
-    print(f'fconflict half {conflictDurFramesHalf}')
+    print(f'conflict half {conflictDurFramesHalf}')
 
 
     
@@ -255,9 +258,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         # check if all the stimuli are finished
         if visualStim.status == FINISHED and audio_stim_sound.status == FINISHED:
             continueRoutine = False
-
-
-                #audio_stim_sound.stop()
                 #break
         
 

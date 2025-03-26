@@ -33,12 +33,12 @@ volume=0.02
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # print(f"Current directory: {current_dir}")
 
-# 1 - Inititate and welcome participants
+# 1 - Inititate and welcome participantss
 exec(open("exp_1_openScreen_avMain.py").read())
 
 # 2 - Import components
 exec(open("exp_2_importComponents_avMain.py").read()) 
  
 # 3 - Run trial and response Loop
-exec(open("exp_3_trialRoutine_avMain.py").read(),)  
+exec(open("exp_3_trialRoutine_avMain.py").read())  
   
