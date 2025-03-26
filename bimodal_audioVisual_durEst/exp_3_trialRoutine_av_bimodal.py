@@ -189,9 +189,10 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     frameStart = 0
     frameN = -1
     # draw the fixation cross
+    fixation.draw()    
+    win.flip()
     core.wait(0.15) if ExpTesting==False else None
-    # fixation.draw()    
-    # win.flip()
+
     # core.wait(0.033) if ExpTesting==False else None
     # startEndAudioCue.play()
     

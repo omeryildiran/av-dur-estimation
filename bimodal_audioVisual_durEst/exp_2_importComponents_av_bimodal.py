@@ -88,11 +88,13 @@ max_trial_per_stair=n_trial_per_condition
 print(f'rise unique: {np.unique(riseDurs)}')
 stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="1D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
                             sigma_level=None)
+
 stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
                                 max_trials=max_trial_per_stair, sigma_level=None)
-stairCaseShorter = stairCase(init_level=initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
+
+stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
                               max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,)
-stairCaseShorter2U1D = stairCase(init_level=initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
+stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,)
 
 stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
