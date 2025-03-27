@@ -154,7 +154,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     total_stim_durs.append(total_dur_of_stim) # save the total duration of the audio stimulus
 
     if ExpTraining and trialN>0:
-        # draw correct or incorrect text
+        # draw correct ors incorrect text
         if is_correct:
             feedback_text = "Correct!"
             color='green'
