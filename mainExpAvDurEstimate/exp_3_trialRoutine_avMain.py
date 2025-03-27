@@ -70,13 +70,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     postDur = np.random.uniform(0.4, 0.65)
     isiDur = np.random.uniform(0.5, 0.9)
 
-    # audiovisual pse difference from bimodal experiment
-    avPSEframes=sec2frames(avPSEseconds, frameRate)
-    avPSEframesHalf=sec2frames(avPSEseconds/2, frameRate)
-
-
-
-
     preDurFrames=sec2frames(preDur, frameRate)
     postDurFrames=sec2frames(postDur, frameRate)
     isiDurFrames=sec2frames(isiDur, frameRate)
@@ -85,7 +78,16 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     riseDurFrames=sec2frames(riseDur, frameRate)
     deltaDurFrames=sec2frames(deltaDurS, frameRate)
     conflictDurFrames=sec2frames(conflictDur, frameRate)
-    conflictDurFramesHalf=sec2frames(conflictDurHalf, frameRate)
+    #conflictDurFramesHalf=sec2frames(conflictDurHalf, frameRate)
+    conflictF1=conflictDurFrames//2
+    conflictF2=conflictDurFrames-conflictF1    
+
+
+    # audiovisual pse difference from bimodal experiment
+    avPSEframes=sec2frames(avPSEseconds, frameRate)
+    #avPSEframesHalf=sec2frames(avPSEseconds/2, frameRate)
+    avPSE1=avPSEframes//2
+    avPSE2=avPSEframes-avPSE1
 
 
 
@@ -94,19 +96,19 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     
     if order==1: # test in the first place, visual stimulus 1 is the test
         # Test times
-        onset1=preDurFrames +avPSEframesHalf 
-        offset1=preDurFrames+testDurFrames -avPSEframesHalf
+        onset1=preDurFrames +avPSE1 
+        offset1=preDurFrames+testDurFrames -avPSE2
         # standard times +  ADD CONFLICT DURATION TO THE STANDARD DURATION
-        onset2=offset1+isiDurFrames-conflictDurFramesHalf +avPSEframesHalf  # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
-        offset2=offset1+isiDurFrames+standardDurFrames+conflictDurFramesHalf-avPSEframesHalf
+        onset2=offset1+isiDurFrames-conflictF1 +avPSE1  # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
+        offset2=offset1+isiDurFrames+standardDurFrames+conflictF2-avPSE2
 
     elif order==2: # test in the second place, visual stimulus 2 is the test
         # standard times
-        onset1=preDurFrames-conflictDurFramesHalf +avPSEframesHalf # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
-        offset1=preDurFrames+standardDurFrames+conflictDurFramesHalf -avPSEframesHalf
+        onset1=preDurFrames-conflictF1 +avPSE1 # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
+        offset1=preDurFrames+standardDurFrames+conflictF2 -avPSE2
         # Test times
-        onset2=offset1+isiDurFrames+avPSEframesHalf
-        offset2=onset2+testDurFrames-avPSEframesHalf
+        onset2=offset1+isiDurFrames+avPSE1
+        offset2=onset2+testDurFrames-avPSE2
 
     print(f'Onset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2}')
 
