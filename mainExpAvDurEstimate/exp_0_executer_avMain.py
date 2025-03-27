@@ -1,6 +1,6 @@
 ExpTesting = False
 ExpTraining= False
-fullScreen=False  
+fullScreen=True  
 expName = 'mainExpAvDurEstimate'
 
 avPSEseconds=-0.07 # audiovisual PSE in seconds (negative means visual perceoved shorter
@@ -30,7 +30,7 @@ from psychopy import prefs
 from psychopy.sound import backend_ptb as ptb
 #prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
 prefs.hardware['audioLib'] = ['PTB']
-prefs.hardware['audioDevice'] = 0
+prefs.hardware['audioDevice'] = 4
 prefs.general['audioLatencyMode'] = 4
 volume=0.02
 

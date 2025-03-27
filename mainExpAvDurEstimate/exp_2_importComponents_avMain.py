@@ -79,10 +79,10 @@ exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=o
 # Start the trial - response loop (there weill be)
 """ Staircase Setup"""
 stepFactor=0.6
-initStep=0.2
+initStep=0.15
 maxReversals=100
-max_level=0.95
-initLevel=0.8
+max_level=0.80
+initLevel=0.75
 
 # Create the staircases
 max_trial_per_stair=n_trial_per_condition#total_trials//5
@@ -116,7 +116,7 @@ np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[-0.9,0.9]
+    lapse_deltas=[-0.80,0.80]
     all_conds=[]
     for i in uniqueStandardDurs: # standard durations 1.3, 1.6, 1.9
         for j in uniqueRiseDurs: # rise durations 0.05, 0.25
