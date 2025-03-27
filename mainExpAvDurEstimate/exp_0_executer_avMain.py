@@ -3,7 +3,7 @@ ExpTraining= False
 fullScreen=False  
 expName = 'mainExpAvDurEstimate'
 
-avPSEseconds=-0.65 # audiovisual PSE in seconds (negative means visual perceoved shorter
+avPSEseconds=-0.07 # audiovisual PSE in seconds (negative means visual perceoved shorter
 signPSE=avPSEseconds//avPSEseconds # sign of the PSE
 avPSEseconds=abs(avPSEseconds) # absolute value of the PSE
 # (when audio is shorter than visual, people perceive audio and visual in equal length))
