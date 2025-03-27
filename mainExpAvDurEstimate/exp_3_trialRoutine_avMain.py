@@ -206,6 +206,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     frameStart = 0
     frameN = -1
     visualStim.setAutoDraw(True)
+
     while continueRoutine:
         frameN += 1
         t = trialClock.getTime()
@@ -240,7 +241,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             visualStim.fillColor = "gray"
             tVisualStim2End = t
         
-        elif frameN > totalDurFrames:
+        elif frameN >= totalDurFrames:
             visualStim.setAutoDraw(False)
             visualStim.status = FINISHED
         # Audio stimulus

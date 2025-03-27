@@ -1,7 +1,7 @@
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
-class audioDurationGen:
+class expConds:
     def __init__(self, trial_per_condition=10, rise_conds=[0.05, 0.25], standard_durations=[0.5, 0.7],intens=3):
         self.trial_per_condition = trial_per_condition
         self.standard_durations = np.array(standard_durations)  # seconds

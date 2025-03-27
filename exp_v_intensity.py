@@ -30,7 +30,7 @@ prefs.hardware['audioDevice'] = 1
 #prefs.general['audioLatencyMode'] = 4
 
 # import condition generator
-from create_conds_staircase import audioDurationGen
+from create_conds_staircase import expConds
 # import audio generator
 from ohatcher_audio_gen import AudioCueGenerator
 # import the staircase
@@ -122,7 +122,7 @@ maxIntensityBurst=5
 n_trial_per_condition=45 
 bin_dur=0.1
 
-conds_obj = audioDurationGen(trial_per_condition=n_trial_per_condition*8,
+conds_obj = expConds(trial_per_condition=n_trial_per_condition*8,
                              rise_conds=rise_conds,
                              standard_durations=[0.5],
                              intens=maxIntensityBurst) 
@@ -166,7 +166,6 @@ conditions_matrix = np.column_stack((conditions_matrix, np.nan * np.zeros((len(c
 """
 
 # Initialize the stimulus component
-sampleRate = 48000
 audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
 
 
@@ -208,14 +207,12 @@ initLevel=0.65
 max_trial_per_stair=n_trial_per_condition#total_trials//5
 
 print(f'rise unique: {np.unique(rise_durs)}')
-stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
-                            sigma_level=None,sign_of_stair=1)
-stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
-                                max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=1)
-stairCaseShorter = stairCase(init_level=initLevel, init_step=initStep, method="3U1D",step_factor=stepFactor,
-                              max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=-1)
-stairCaseShorter2U1D = stairCase(init_level=initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
-                                 max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,sign_of_stair=-1)
+stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair,  )
+stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals,     max_trials=max_trial_per_stair, )
+
+stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="3U1D",step_factor=stepFactor,         max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, )
+
+stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor,     max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
 
 
 stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas

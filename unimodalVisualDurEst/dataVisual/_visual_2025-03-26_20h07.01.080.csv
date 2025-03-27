@@ -1,0 +1,7 @@
+,standardDur,riseDur,order,preDur,postDur,isiDur,trial_num,total_audio_dur,delta_dur_percents,deltaDurS,testDurS,intensities,current_stair,responses,is_correct,response_rts,stair_num_reversal,stair_is_reversal,response_keys
+0,0.5,0.85,1,0.5167,0.5667,0.7,0,3.1834,0.8,0.4,0.9,5,lapse_rate,2.0,False,0.904,0,False,right
+1,0.5,0.1,2,0.5,0.4,0.8333,1,2.4,-0.65,-0.3333,0.1667,5,3U1D,1.0,True,0.683,0,False,left
+2,0.5,0.85,1,0.4833,0.4667,0.7333,2,3.0166,0.65,0.3333,0.8333,5,2D1U,2.0,False,1.164,0,False,right
+3,0.5,0.1,1,0.5,0.4333,0.6333,3,2.8999,0.65,0.3333,0.8333,5,3D1U,1.0,True,0.382,0,False,left
+4,0.5,0.1,1,0.4833,0.6333,0.65,4,3.1666,0.8,0.4,0.9,5,lapse_rate,2.0,False,0.16,0,False,right
+5,0.5,0.1,2,0.55,0.4167,0.8333,5,2.4667,-0.65,-0.3333,0.1667,5,2U1D,1.0,True,0.881,0,False,left

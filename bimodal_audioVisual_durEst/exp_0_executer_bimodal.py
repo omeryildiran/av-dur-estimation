@@ -1,7 +1,7 @@
 ExpTesting = False
 ExpTraining= False
-fullScreen=False  
-expName = 'bimodal_audioVisual_durEst'
+fullScreen=True  
+expName = 'bimodalDurEst'
 
 import os
 import sys  # to get file system encoding
@@ -26,7 +26,7 @@ from psychopy.sound import backend_ptb as ptb
 prefs.hardware['audioLib'] = ['PTB']
 #prefs.hardware['audioDevice'] = 0
 prefs.general['audioLatencyMode'] = 4
-volume=0.35
+volume=0.25
 
 
 # Path to the current directory

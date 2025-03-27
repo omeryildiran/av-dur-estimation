@@ -12,7 +12,7 @@ trialClock = core.Clock()
 
 rise_conds= [0.1] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
-n_trial_per_condition=35 
+nTrialPerStair=50 
 
 
 #print('given trials number',len(conds_obj.intens))
@@ -80,17 +80,17 @@ stepFactor=0.6
 initStep=0.2
 maxReversals=100
 max_level=0.95
-initLevel=0.9
+initLevel=0.8
 
 # Create the staircases
-max_trial_per_stair=n_trial_per_condition
+max_trial_per_stair=nTrialPerStair
 
 print(f'rise unique: {np.unique(riseDurs)}')
 stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="1D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
-                            sigma_level=None)
+                           )
 
 stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
-                                max_trials=max_trial_per_stair, sigma_level=None)
+                                max_trials=max_trial_per_stair)
 
 stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
                               max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,)

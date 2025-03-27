@@ -82,7 +82,7 @@ stepFactor=0.6
 initStep=0.2
 maxReversals=100
 max_level=0.95
-initLevel=0.9
+initLevel=0.8
 
 # Create the staircases
 max_trial_per_stair=n_trial_per_condition#total_trials//5
