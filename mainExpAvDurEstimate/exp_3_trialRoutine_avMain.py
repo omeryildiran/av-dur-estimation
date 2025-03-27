@@ -70,6 +70,12 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     postDur = np.random.uniform(0.4, 0.65)
     isiDur = np.random.uniform(0.5, 0.9)
 
+    # audiovisual pse difference from bimodal experiment
+    avPSEframes=sec2frames(avPSEseconds, frameRate)
+    avPSEframesHalf=avPSEframes/2
+    pseAdditionHalf=-1*signPSE*avPSEframesHalf
+
+
     preDurFrames=sec2frames(preDur, frameRate)
     postDurFrames=sec2frames(postDur, frameRate)
     isiDurFrames=sec2frames(isiDur, frameRate)
@@ -80,25 +86,27 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     conflictDurFrames=sec2frames(conflictDur, frameRate)
     conflictDurFramesHalf=sec2frames(conflictDurHalf, frameRate)
 
+
+
     print(f'conflict half {conflictDurFramesHalf}')
 
 
     
     if order==1: # test in the first place, visual stimulus 1 is the test
         # Test times
-        onset1=preDurFrames 
-        offset1=onset1+testDurFrames
+        onset1=preDurFrames +1*signPSE*avPSEframesHalf
+        offset1=onset1+testDurFrames -1*signPSE*avPSEframesHalf
         # standard times +  ADD CONFLICT DURATION TO THE STANDARD DURATION
-        onset2=offset1+isiDurFrames-conflictDurFramesHalf# we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
-        offset2=onset2+standardDurFrames+conflictDurFramesHalf
+        onset2=offset1+isiDurFrames-conflictDurFramesHalf +1*signPSE*avPSEframesHalf # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
+        offset2=onset2+standardDurFrames+conflictDurFramesHalf-1*signPSE*avPSEframesHalf
 
     elif order==2: # test in the second place, visual stimulus 2 is the test
         # standard times
-        onset1=preDurFrames-conflictDurFramesHalf # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
-        offset1=onset1+standardDurFrames+conflictDurFramesHalf
+        onset1=preDurFrames-conflictDurFramesHalf+1*signPSE*avPSEframesHalf # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
+        offset1=onset1+standardDurFrames+conflictDurFramesHalf-1*signPSE*avPSEframesHalf
         # Test times
-        onset2=offset1+isiDurFrames
-        offset2=onset2+testDurFrames
+        onset2=offset1+isiDurFrames+1*signPSE*avPSEframesHalf
+        offset2=onset2+testDurFrames-1*signPSE*avPSEframesHalf
 
     print(f'Onset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2}')
 
@@ -108,6 +116,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDur=frames2sec(isiDurFrames, frameRate)
     testDurS=frames2sec(testDurFrames, frameRate)
     standardDur=frames2sec(standardDurFrames, frameRate)
+
+    
     riseDur=frames2sec(riseDurFrames, frameRate)
     deltaDurS=frames2sec(deltaDurFrames, frameRate)
     conflictDur=frames2sec(conflictDurFramesHalf*2, frameRate)
