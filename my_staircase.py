@@ -42,7 +42,9 @@ class stairCase():
         self.method = method
         self.step_factor = step_factor
         #self.min_level = min_level
-        self.max_level = np.sign(init_level)*max_level
+        self.max_level_signed = -1*abs(max_level)
+
+
         self.trial_num = 0
         self.correct_counter = 0
         self.last_response = None
@@ -144,16 +146,20 @@ class stairCase():
                     self.step = self.init_step * (self.step_factor ** n_stop_step_change)
 
             # Now update the level using the (potentially) new step size
-            if self.level -dirStep*self.step >=-self.max_level:
+            if dirStep<0:
+                if self.level -dirStep*self.step >=self.max_level_signed:
+                    self.level =self.level-dirStep*self.step
+                else:
+                    self.level = self.max_level_signed
+            elif dirStep>=0:
                 self.level =self.level-dirStep*self.step
-            else:
                 # #self.level = -1*dirStep*self.max_level
                 # if np.sign(self.init_level)==1:
                 #     self.level =self.level+dirStep*self.step
                 # # if the stair is going down, we need to check if we are at the min level and set t max level(which is the min level in this case)
                 # else:
-                print('to')
-                self.level = self.max_level
+                # print('to')
+                # self.level = self.max_level_signed
 
         elif is_correct: # if correct
             # Correct response => potentially go "down"
@@ -203,7 +209,7 @@ class stairCase():
             
         
 ##########----------------EXANPLE USAGE ------------------#########
-stair = stairCase(init_level=-0.75, 
+stair = stairCase(init_level=0.55, 
                   method="1D1U", 
                   max_reversals=300,
                   max_trials=20,
@@ -217,7 +223,7 @@ plt.figure(figsize=(10, 6))
 while not stair.stair_stopped:
     level = stair.next_trial()
     levels.append(level)
-    is_correct = random.random() >0.89 #np.abs(level)
+    is_correct = random.random() >0.39 #np.abs(level)
     stair.update_staircase(is_correct)
     print(f"step: {stair.step}, c {is_correct}, rev: {stair.reversals}, trial: {trialNum}, level: {level}")
 

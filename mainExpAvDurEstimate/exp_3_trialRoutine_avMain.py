@@ -75,37 +75,47 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDurFrames=sec2frames(isiDur, frameRate)
     testDurFrames=sec2frames(testDurS, frameRate)
     standardDurFrames=sec2frames(standardDur, frameRate)
-    riseDurFrames=sec2frames(riseDur, frameRate)
     deltaDurFrames=sec2frames(deltaDurS, frameRate)
+
+    #conflict duration
     conflictDurFrames=sec2frames(conflictDur, frameRate)
-    #conflictDurFramesHalf=sec2frames(conflictDurHalf, frameRate)
-    conflictF1=conflictDurFrames//2
-    conflictF2=conflictDurFrames-conflictF1    
+    conflictDurFramesAbs=abs(conflictDurFrames)
+    try:
+        conflictDurFramesSign=conflictDurFrames//conflictDurFrames
+    except:
+        conflictDurFramesSign=1
+    conflictF1=conflictDurFramesAbs//2
+    conflictF2=conflictDurFramesAbs-conflictF1    
 
 
     # audiovisual pse difference from bimodal experiment
     avPSEframes=sec2frames(avPSEseconds, frameRate)
+    avPSEFramesAbs=abs(avPSEframes)#//avPSEframes
+    try:
+        avPSESign=avPSEframes//avPSEFramesAbs
+    except:
+        avPSESign=1
     #avPSEframesHalf=sec2frames(avPSEseconds/2, frameRate)
-    avPSE1=avPSEframes//2
-    avPSE2=avPSEframes-avPSE1
+    avPSE1=avPSEFramesAbs//2
+    avPSE2=avPSEFramesAbs-avPSE1
 
 
 
-    print(f'conflict half {conflictDurFramesHalf}')
+    print(f'conflict {conflictDurFrames}')
 
     
     if order==1: # test in the first place, visual stimulus 1 is the test
         # Test times
-        onset1=preDurFrames +avPSE1 
-        offset1=preDurFrames+testDurFrames -avPSE2
+        onset1=preDurFrames +avPSESign*avPSE1 
+        offset1=preDurFrames+testDurFrames -avPSESign*avPSE2
         # standard times +  ADD CONFLICT DURATION TO THE STANDARD DURATION
-        onset2=offset1+isiDurFrames-conflictF1 +avPSE1  # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
-        offset2=offset1+isiDurFrames+standardDurFrames+conflictF2-avPSE2
+        onset2=offset1+isiDurFrames-conflictDurFramesSign*conflictF1 +avPSESign*avPSE1  # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
+        offset2=offset1+isiDurFrames+standardDurFrames+conflictDurFramesSign*conflictF2-avPSESign*avPSE2
 
     elif order==2: # test in the second place, visual stimulus 2 is the test
         # standard times
-        onset1=preDurFrames-conflictF1 +avPSE1 # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
-        offset1=preDurFrames+standardDurFrames+conflictF2 -avPSE2
+        onset1=preDurFrames-conflictDurFramesSign*conflictF1 +avPSESign*avPSE1 # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
+        offset1=preDurFrames+standardDurFrames+conflictDurFramesSign*conflictF2 -avPSESign*avPSE2
         # Test times
         onset2=offset1+isiDurFrames+avPSE1
         offset2=onset2+testDurFrames-avPSE2
@@ -120,9 +130,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     standardDur=frames2sec(standardDurFrames, frameRate)
 
     
-    riseDur=frames2sec(riseDurFrames, frameRate)
     deltaDurS=frames2sec(deltaDurFrames, frameRate)
-    conflictDur=frames2sec(conflictDurFramesHalf*2, frameRate)
+    conflictDur=frames2sec(conflictDurFrames, frameRate)
 
     print('break')
 
@@ -137,8 +146,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     audio_stim_sound=sound.Sound(value=audio_stim, sampleRate=sampleRate, stereo=True)
     t=np.linspace(0,len(audio_stim)/sampleRate,len(audio_stim))
 
-    # plt.plot(t,audio_stim)
-    # plt.show()
 
     # For testing purposes uncomment the following line
     if ExpTesting:
@@ -218,6 +225,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     frameStart = 0
     frameN = -1
     visualStim.setAutoDraw(True)
+    visualStim.fillColor = "gray"
 
     while continueRoutine:
         frameN += 1
@@ -226,34 +234,37 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         # Predur
         if frameN < preDurFrames:
             #visualStim.setAutoDraw(False)
-            visualStim.fillColor = "gray"
+            #visualStim.fillColor = "gray"
+            pass
 
         # First Stimulus onset1
-        elif onset1== frameN:# before
+        if onset1== frameN:# before
             #visualStim.setAutoDraw(True)
             visualStim.fillColor = "black"
             tVisualStim1Start = t
+            print("recorded onset1")
 
         # Interstimulus interval
-        elif offset1== frameN:#< onset2:
+        if offset1== frameN:#< onset2:
             #visualStim.setAutoDraw(False)
             visualStim.fillColor = "gray"
             tVisualStim1End = t
             
 
         # Second Stimulus onset2
-        elif onset2==frameN:# < offset2:
+        if onset2==frameN:# < offset2:
             #visualStim.setAutoDraw(True)
             visualStim.fillColor = "black"
+            print("recorded onset2")
             tVisualStim2Start =t
         
         # Post Stimulus
-        elif offset2==frameN:# < frameN<=totalDurFrames:
+        if offset2==frameN:# < frameN<=totalDurFrames:
             #visualStim.setAutoDraw(False)
             visualStim.fillColor = "gray"
             tVisualStim2End = t
         
-        elif frameN >= totalDurFrames:
+        if frameN >= totalDurFrames:
             visualStim.setAutoDraw(False)
             visualStim.status = FINISHED
         # Audio stimulus
