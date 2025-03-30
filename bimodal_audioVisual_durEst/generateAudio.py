@@ -1,12 +1,21 @@
 import numpy as np
 from psychopy import sound, core
 
+from scipy.signal import butter, filtfilt
+from scipy.signal import butter, sosfilt
+
 
 
 class generateAudioClass:
     def __init__(self, sampleRate=44100):
-        
+       
         self.sample_rate = sampleRate  # in Hz
+            
+    def broadband_filter(self, signal, low_cut, high_cut, sample_rate, order=4):
+        nyquist = 0.5 * sample_rate
+        normal_cutoffs = [low_cut / nyquist, high_cut / nyquist]
+        sos = butter(order, normal_cutoffs, btype="band", analog=False, output="sos")
+        return sosfilt(sos, signal)
     def generateNote(self, dur=2,  beep_frequency=440):
         t = np.arange(0, dur, 1.0 / self.sample_rate)
         beep_signal = np.sin(2.0 * np.pi * beep_frequency * t)
@@ -113,3 +122,24 @@ class generateAudioClass:
         beep = sound.Sound(value=sound_array, sampleRate=self.sample_rate, stereo=True)
         beep.play()
         core.wait(duration)
+
+    def genFilteredNoise(self, dur=2, low_cut=50, high_cut=700, order=4):
+        noise_signal = self.generateNoise(dur)
+        filtered_signal = self.broadband_filter(noise_signal, low_cut, high_cut, self.sample_rate, order=4)
+        return filtered_signal
+    
+    def genFilteredBackgroundedNoise(self, dur=2, low_cut=50, high_cut=700, order=4):
+        noise_signal = self.generateNoise(dur)
+        filtered_signal = self.broadband_filter(noise_signal, low_cut, high_cut, self.sample_rate, order=4)
+        backgrounded_signal = self.generateNoise(dur)
+        backgrounded_signal = backgrounded_signal
+        #filter backgrounded signal
+        filtered_backgrounded_signal = self.broadband_filter(backgrounded_signal, 10, 1000, self.sample_rate, order=4)*0.2
+        #mix the two signals
+        mixed_signal = filtered_signal + filtered_backgrounded_signal
+        #normalize the mixed signal
+        mixed_signal = mixed_signal / np.max(np.abs(mixed_signal))
+        jitterSound = np.zeros(int(0.0001 * self.sample_rate))
+        mixed_signal = np.concatenate((jitterSound, mixed_signal, jitterSound))
+        return mixed_signal
+    

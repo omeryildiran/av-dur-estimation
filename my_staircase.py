@@ -42,7 +42,7 @@ class stairCase():
         self.method = method
         self.step_factor = step_factor
         #self.min_level = min_level
-        self.max_level_signed = -1*abs(max_level)
+        self.maxLevelNegative = -1*abs(max_level)
 
 
         self.trial_num = 0
@@ -146,20 +146,23 @@ class stairCase():
                     self.step = self.init_step * (self.step_factor ** n_stop_step_change)
 
             # Now update the level using the (potentially) new step size
-            if dirStep<0:
-                if self.level -dirStep*self.step >=self.max_level_signed:
+            
+            if self.level-dirStep*self.step > self.maxLevelNegative:
+                if dirStep<0: # if the stair is going up, we need to check if we are at the max level and set t min level(which is the max level in this case
                     self.level =self.level-dirStep*self.step
-                else:
-                    self.level = self.max_level_signed
-            elif dirStep>=0:
-                self.level =self.level-dirStep*self.step
+ 
+                elif dirStep>=0: 
+                    self.level =self.level-dirStep*self.step
+            else:
+                self.level = self.maxLevelNegative
+
                 # #self.level = -1*dirStep*self.max_level
                 # if np.sign(self.init_level)==1:
                 #     self.level =self.level+dirStep*self.step
                 # # if the stair is going down, we need to check if we are at the min level and set t max level(which is the min level in this case)
                 # else:
                 # print('to')
-                # self.level = self.max_level_signed
+                # self.level = self.maxLevelNegative
 
         elif is_correct: # if correct
             # Correct response => potentially go "down"
@@ -209,8 +212,8 @@ class stairCase():
             
         
 ##########----------------EXANPLE USAGE ------------------#########
-stair = stairCase(init_level=0.55, 
-                  method="1D1U", 
+stair = stairCase(init_level=-0.55, 
+                  method="1U1D", 
                   max_reversals=300,
                   max_trials=20,
                     step_factor=0.671,

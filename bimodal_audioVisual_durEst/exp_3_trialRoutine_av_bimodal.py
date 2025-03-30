@@ -2,10 +2,18 @@
 from sec2frame import sec2frames, frames2sec
 from ohatcher_audio_gen import AudioCueGenerator
 from generateAudio import generateAudioClass
+from filterAudio import broadband_filter
+from scipy.signal import butter, filtfilt
+from scipy.signal import butter, sosfilt
 
+def broadband_filter(self, signal, low_cut, high_cut, sample_rate, order=4):
+    nyquist = 0.5 * sample_rate
+    normal_cutoffs = [low_cut / nyquist, high_cut / nyquist]
+    sos = butter(order, normal_cutoffs, btype="band", analog=False, output="sos")
+    return sosfilt(sos, signal)
 # Initialize the stimulus component
 
-#audio_cue_gen = AudioCueGenerator(sampleRate=sampleRate)
+filteredNoiseGen = AudioCueGenerator(sampleRate=sampleRate)
 
 genAudio = generateAudioClass(sampleRate=sampleRate)
 
@@ -75,10 +83,9 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDurFrames=sec2frames(isiDur, frameRate)
     testDurFrames=sec2frames(testDurS, frameRate)
     standardDurFrames=sec2frames(standardDur, frameRate)
-    riseDurFrames=sec2frames(riseDur, frameRate)
     deltaDurFrames=sec2frames(deltaDurS, frameRate)
 
-
+    print(f"\nPreDur: {preDur}, PostDur: {postDur}, ISI: {isiDur}, TestDur: {testDurS}, StandardDur: {standardDur}, DeltaDur: {deltaDurPercent}\n")
     # In this specific experiment, test is audio and standard is visual
     # visual stimulus
     # so that if the test is in the first place, the standard is in the second place and visual should be in the second place
@@ -108,11 +115,24 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDur=frames2sec(isiDurFrames, frameRate)
     testDurS=frames2sec(testDurFrames, frameRate)
     standardDur=frames2sec(standardDurFrames, frameRate)
-    riseDur=frames2sec(riseDurFrames, frameRate)
     deltaDurS=frames2sec(deltaDurFrames, frameRate)
 
     # audio stimulus (simple white noise with duration of testDurS)
     audio_stim = genAudio.generateNoise(dur=testDurS, noise_type='white')
+    audio_stim=genAudio.genFilteredBackgroundedNoise(dur=testDurS, low_cut=50, high_cut=600, order=4)
+    # background_noise=genAudio.generateNoise(dur=testDurS, noise_type='white')
+    # jitter_sound = np.zeros(int(0.0001 * sampleRate)) # 0.1 ms of silence
+    # # filter the audio stimulus
+    # background_noise = broadband_filter(background_noise,10, 850, sampleRate, order=4)*0.65
+    # audio_stim = broadband_filter(audio_stim, 50, 600, sampleRate,order=4)
+    # # add the background noise to the audio stimulus
+    # audio_stim = audio_stim + background_noise
+    # # normalize the audio stimulus
+    # audio_stim = audio_stim / np.max(np.abs(audio_stim)) 
+    # # add the jitter sound to the audio stimulus
+    # audio_stim = np.concatenate((jitter_sound, audio_stim, jitter_sound))
+    
+    
     audio_stim_sound=sound.Sound(value=audio_stim, sampleRate=sampleRate, stereo=True)
     audio_stim_sound.setVolume(volume)
     # uncomment to see the plots

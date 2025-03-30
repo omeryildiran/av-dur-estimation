@@ -207,7 +207,7 @@ class AudioCueGenerator:
         isi_sound = self.generate_noise(dur=isi_dur, noise_type=noise_type)
         # 5. generate post-cue sound noise for 0.1 seconds
         post_cue_sound = self.generate_noise(dur=post_dur, noise_type=noise_type) 
-        jitter_sound = np.zeros(int(0.02 * self.sample_rate))
+        jitter_sound = np.zeros(int(0.0001 * self.sample_rate))
 
         # concatenate all bins into one continuous signal depending on the order
         if order == 1:
@@ -305,7 +305,7 @@ def plot_sounds():
     # plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
     # plt.show()
     
-#plot_sounds()
+# plot_sounds()
 
 
 
