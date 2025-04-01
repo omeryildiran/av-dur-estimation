@@ -29,9 +29,9 @@ from psychopy import prefs
 from psychopy.sound import backend_ptb as ptb
 #prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
 prefs.hardware['audioLib'] = ['PTB']
-prefs.hardware['audioDevice'] = 4
+prefs.hardware['audioDevice'] = 3
 prefs.general['audioLatencyMode'] = 4
-volume=0.02
+volume=0.2
 
 
 # Path to the current directory
