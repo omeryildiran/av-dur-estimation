@@ -386,7 +386,7 @@ if __name__ == "__main__":
                     0.0,    # muA0 (mean for low noise, zero conflict)
                     0.1,    # muAplus50 (mean for low noise, positive conflict)
                     -0.1,   # muBminus50 (mean for high noise, negative conflict)
-                    0.0,    # muB0 (mean for high noise, zero conflict)
+                    0.0,    # muB0 (mean for high noise, zero conflict)s
                     0.1]    # muBplus50 (mean for high noise, positive conflict)
     
     # Fit the unified psychometric function model
