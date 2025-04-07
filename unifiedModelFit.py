@@ -254,67 +254,62 @@ class analyzeData():
 		
 		return result
 
-	def fitMultipleStartingPoints(self,levels, nResp, totalResp,conflictLevels,noiseLevels, multipleInitGuesses):
+	def fitMultipleStartingPoints(self, grouped_data, intensity_variable='deltaDur', multipleInitGuesses=None):
+		# initial guesses
+		nStarts = 2
+		if multipleInitGuesses == None:
+			multipleInitGuesses = []
+			# 100 random multiple starts
+			initLambdas = np.linspace(0, 0.2, nStarts)  # Different initial guesses for lambda
+			initSigmaA = np.linspace(0.05, 1, nStarts)  # Different initial guesses for sigma
+			initSigmaB = np.linspace(0.05, 1, nStarts)  # Different initial guesses for sigma
+			initMuA1 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
+			initMuA2 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
+			initMuA3 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
+			initMuB1 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
+			initMuB2 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
+			initMuB3 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
+			
+			#create combinations of the initial guesses combined in different ways
+			initLambdas = np.linspace(0, 0.2, nStarts)  # Different initial guesses for lambda
+			initMus = np.linspace(-0.15, 0.15, nStarts)  # Different initial guesses for mu
+			initSigmas = np.linspace(0.05, 1, nStarts)  # Different initial guesses for sigma
+
+			for initLambda in initLambdas:
+				for initSigma in initSigmas:
+					for initMu in initMus:
+						multipleInitGuesses.append([initLambda, initSigma, initSigma, initMu, initMu, initMu,initMu, initMu, initMu])
+
+
+		levels = grouped_data[self.intensityVar]
+		nResp = grouped_data['num_of_chose_test']
+		totalResp = grouped_data['total_responses']
+		conflictLevels = grouped_data['conflictDur']
+		noiseLevels = grouped_data['riseDur']
+		
 		groupedData=self.groupByChooseTest(self.data)
 		best_fit = None
 		best_nll = float('inf')  # Initialize with infinity
 
-		for i in range(len(multipleInitGuesses)):
-			#try:
-			fit = self.fitPsychUnified(groupedData, self.intensityVar,initGuesses=multipleInitGuesses[i])
-			nll = self.negative_log_likelihood_unified(fit.x, levels, nResp, totalResp,conflictLevels, noiseLevels)
+		from tqdm import tqdm
+		# Replace the manual progress tracking with tqdm
+		for i, init_guess in enumerate(tqdm(multipleInitGuesses, desc="Fitting models", unit="fit")):
+			fit = self.fitPsychUnified(groupedData, self.intensityVar, initGuesses=init_guess)
+			nll = self.negative_log_likelihood_unified(fit.x, levels, nResp, totalResp, conflictLevels, noiseLevels)
 
 			if nll < best_nll:
 				best_nll = nll
 				best_fit = fit
-			# except Exception as e:
-			#     print(f"Error fitting with initial guesses {multipleInitGuesses[i]}: {e}")
-
-		return best_fit
-	
-
-	# Plotting the fitted psychometric function
-	def fit_psychometric_function_unified(self, grouped_data, fit_params):
-		groupedData=self.groupByChooseTest(self.data)
-		nStarts = 2
-		multipleInitGuesses = []
-		# 100 random multiple starts
-		initLambdas = np.linspace(0, 0.2, nStarts)  # Different initial guesses for lambda
-		initSigmaA = np.linspace(0.05, 1, nStarts)  # Different initial guesses for sigma
-		initSigmaB = np.linspace(0.05, 1, nStarts)  # Different initial guesses for sigma
-		initMuA1 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
-		initMuA2 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
-		initMuA3 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
-		initMuB1 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
-		initMuB2 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
-		initMuB3 = np.linspace(-0.4, 0.4, nStarts)  # Different initial guesses for mu
-		
-		#create combinations of the initial guesses combined in different ways
-		initLambdas = np.linspace(0, 0.2, nStarts)  # Different initial guesses for lambda
-		initMus = np.linspace(-0.15, 0.15, nStarts)  # Different initial guesses for mu
-		initSigmas = np.linspace(0.05, 1, nStarts)  # Different initial guesses for sigma
-
-		for initLambda in initLambdas:
-			for initSigma in initSigmas:
-				for initMu in initMus:
-					multipleInitGuesses.append([initLambda, initSigma, initSigma, initMu, initMu, initMu,initMu, initMu, initMu])
-		
-		# Fit the psychometric function to the grouped data
-
-		levels = groupedData[self]
-		nResp = groupedData['num_of_chose_test']
-		totalResp = groupedData['total_responses']
-		conflictLevels = groupedData['conflictDur']
-		noiseLevels = groupedData['riseDur']
-		fixedLapse = None
-		fixedSigma = None
-		best_fit = self.fitMultipleStartingPoints(levels, nResp, totalResp, conflictLevels, noiseLevels,multipleInitGuesses)
 
 		# Extract fitted parameters
 		lambda_, sigmaA_fit, sigmaB_fit, muAminus50_fit, muA0_fit, muAplus50_fit, muBminus50_fit, muB0_fit, muBplus50_fit = best_fit.x
 		print(f"Fitted parameters:\n lambda: {lambda_}\n sigmaA: {sigmaA_fit}\n sigmaB: {sigmaB_fit}\n muAminus50: {muAminus50_fit}\n muA0: {muA0_fit}\n muAplus50: {muAplus50_fit}\n muBminus50: {muBminus50_fit}\n muB0: {muB0_fit}\n muBplus50: {muBplus50_fit}")
 		
 		self.best_fit = best_fit
+		
+		return best_fit
+	
+
 
 	def plotPsychometricFunctionUnified(self, grouped_data, fit_params):
 			# extract fitted parameters
@@ -391,7 +386,7 @@ if __name__ == "__main__":
     
     # Fit the unified psychometric function model
     print("Fitting unified psychometric function model...")
-    fit_result = analyzer.fitPsychUnified(grouped_data, analyzer.intensityVar)
+    fit_result = analyzer.fitMultipleStartingPoints(grouped_data, analyzer.intensityVar)
     
     # Extract fitted parameters and print them (4-decimal precision)
     fit_params = fit_result.x
