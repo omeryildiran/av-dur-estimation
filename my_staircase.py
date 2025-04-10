@@ -212,7 +212,7 @@ class stairCase():
             
         
 ##########----------------EXANPLE USAGE ------------------#########
-stair = stairCase(init_level=+0.35, 
+stair = stairCase(init_level=-0.75, 
                   method="1U1D", 
                   max_reversals=300,
                   max_trials=20,
@@ -226,7 +226,7 @@ plt.figure(figsize=(10, 6))
 while not stair.stair_stopped:
     level = stair.next_trial()
     levels.append(level)
-    is_correct = random.random() >0.29 #np.abs(level)
+    is_correct = random.random() >0.59 #np.abs(level)
     stair.update_staircase(is_correct)
     print(f"step: {stair.step}, c {is_correct}, rev: {stair.reversals}, trial: {trialNum}, level: {level}")
 

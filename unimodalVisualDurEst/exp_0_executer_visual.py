@@ -1,7 +1,8 @@
 ExpTesting = False
 ExpTraining= False
-fullScreen=True  
-expName = 'bimodalDurEst'
+fullScreen=False
+expName = 'visualDurEst'
+expCondition='visual'
 
 import os
 import sys  # to get file system encoding
@@ -24,7 +25,7 @@ from psychopy import prefs
 from psychopy.sound import backend_ptb as ptb
 #prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
 prefs.hardware['audioLib'] = ['PTB']
-prefs.hardware['audioDevice'] = 0
+prefs.hardware['audioDevice'] = 4
 prefs.general['audioLatencyMode'] = 4
 volume=0.25
 
@@ -36,11 +37,11 @@ parent_dir = os.path.dirname(current_dir)
 print(f"\nParent directory\n: {parent_dir}")
 exec(open(parent_dir+"/intervalDurs.py").read())
 # 1 - Inititate and welcome participants
-exec(open("exp_1_openScreen_bimodal.py").read())
+exec(open("exp_1_openScreen_v.py").read())
 
 # 2 - Import components
-exec(open("exp_2_importComponents_av_bimodal.py").read()) 
- 
+exec(open("exp_2_importComponents_v.py").read()) 
+
+
 # 3 - Run trial and response Loop
-exec(open("exp_3_trialRoutine_av_bimodal.py").read(),)  
-  
+exec(open("exp_3_trialRoutine_v.py").read(),)  

@@ -23,17 +23,17 @@ matrix columns:
 2: Conflict A-V
 """
 conditions_matrix =create_conditions_matrix(totalTrialN=360,standards=[0.5], 
-                                             background_levels=[0.1,0.85], conflicts=[0.05, 0, -0.05])
+                                             background_levels=[0.1,0.85], conflicts=[-0.3, -0.192, -0.1, 0.05, 0, -0.05, 0.1, 0.192, 0.3])#
 numberOfTrials=len(conditions_matrix)
 print(f"Number of trials: {numberOfTrials}")
 standardDurs = conditions_matrix[:, 0] # standard durations
-riseDurs = conditions_matrix[:, 1] # Background noise level conditions should change riseDur to backgroundNoise everywhere
+audNoises = conditions_matrix[:, 1] # Background noise level conditions should change riseDur to backgroundNoise everywhere
 conflictDurs = conditions_matrix[:, 2] # conflict durations
 
-uniqueRiseDurs=np.unique(riseDurs)
+uniqueAudNoise=np.unique(audNoises)
 uniqueStandardDurs=np.unique(standardDurs)
 uniqueConflictDurs=np.unique(conflictDurs)
-totalUniqueConds=uniqueStandardDurs.shape[0]*uniqueRiseDurs.shape[0]*uniqueConflictDurs.shape[0]
+totalUniqueConds=uniqueStandardDurs.shape[0]*uniqueAudNoise.shape[0]*uniqueConflictDurs.shape[0]
 
 # total stim durations
 total_stim_durs=[]
@@ -87,7 +87,7 @@ initLevel=0.6
 # Create the staircases
 max_trial_per_stair=n_trial_per_condition#total_trials//5
 
-print(f'rise unique: {np.unique(riseDurs)}')
+print(f'rise unique: {np.unique(audNoises)}')
 stairCaseLonger = stairCase(init_level=initLevel, 
                             init_step=initStep, 
                             method="1D1U",  
@@ -119,7 +119,7 @@ def lapse_rate_cond_generate():
     lapse_deltas=[-0.80,0.80]
     all_conds=[]
     for i in uniqueStandardDurs: # standard durations 1.3, 1.6, 1.9
-        for j in uniqueRiseDurs: # rise durations 0.05, 0.25
+        for j in uniqueAudNoise: # rise durations 0.05, 0.25
             for k in uniqueConflictDurs:
                 for l in lapse_deltas: # lapse deltas -0.55, 0.55
                     all_conds.append([i,j,k,l])
@@ -139,7 +139,7 @@ print(f"there are maximum {len(standardDurs)} normal trials in total of  {max_tr
 
 # Convert to list the standard durs and rise durs
 standardDurs = standardDurs.tolist()
-riseDurs = riseDurs.tolist()
+audNoises = audNoises.tolist()
 conflictDurs = conflictDurs.tolist()
 lapse_ended=False
 

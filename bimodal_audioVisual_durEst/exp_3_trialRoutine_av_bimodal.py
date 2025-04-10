@@ -74,9 +74,11 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
 
     # Assign values calculate directly now
     order = int(np.random.choice([1,2])) # or orders[trialN] # presentation order of test. 1: comparison first, 2: comparison second
-    preDur = np.random.uniform(0.4, 0.65)
-    postDur = np.random.uniform(0.4, 0.65)
-    isiDur = np.random.uniform(0., 0.9)
+
+    preDur = np.random.uniform(preMin, preMax)
+    isiDur = np.random.uniform(isiMin, isiMax)
+    postDur = np.random.uniform(postMin, postMax)
+
 
     preDurFrames=sec2frames(preDur, frameRate)
     postDurFrames=sec2frames(postDur, frameRate)
@@ -118,8 +120,26 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     deltaDurS=frames2sec(deltaDurFrames, frameRate)
 
     # audio stimulus (simple white noise with duration of testDurS)
-    audio_stim = genAudio.generateNoise(dur=testDurS, noise_type='white')
-    audio_stim=genAudio.genFilteredBackgroundedNoise(dur=testDurS, low_cut=50, high_cut=600, order=4)
+    #audio_stim = genAudio.generateNoise(dur=testDurS, noise_type='white')
+    
+    #audio_stim=genAudio.genFilteredBackgroundedNoise(dur=testDurS, low_cut=50, high_cut=600, order=4)
+    
+    preSound=genAudio.generateNoise(dur=preDur, noise_type='white', intensity=riseDur)
+    isiSound=genAudio.generateNoise(dur=isiDur, noise_type='white', intensity=riseDur)
+    standardSound=genAudio.generateNoise(dur=standardDur, noise_type='white',intensity=riseDur)
+    postSound=genAudio.generateNoise(dur=postDur, noise_type='white', intensity=riseDur)
+    
+    preSound=sound.Sound(value=preSound, sampleRate=sampleRate, stereo=True)
+    isiSound=sound.Sound(value=isiSound, sampleRate=sampleRate, stereo=True)
+    standardSound=sound.Sound(value=standardSound, sampleRate=sampleRate, stereo=True)
+    postSound=sound.Sound(value=postSound, sampleRate=sampleRate, stereo=True)
+
+    audio_stim= filteredNoiseGen.whole_stimulus(
+        test_dur=testDurS, standard_dur=0, noise_type='white',
+        order=order, 
+        pre_dur=preDur, post_dur=postDur+0.5, isi_dur=isiDur, 
+        intensity=maxIntensityBurst, rise_dur=0.005, 
+        intensity_background=riseDur)
     # background_noise=genAudio.generateNoise(dur=testDurS, noise_type='white')
     # jitter_sound = np.zeros(int(0.0001 * sampleRate)) # 0.1 ms of silence
     # # filter the audio stimulus
@@ -209,9 +229,9 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     frameStart = 0
     frameN = -1
     # draw the fixation cross
-    fixation.draw()    
+    #fixation.draw()    
     win.flip()
-    core.wait(0.15) if ExpTesting==False else None
+    core.wait(0.1) if ExpTesting==False else None
 
     # core.wait(0.033) if ExpTesting==False else None
     # startEndAudioCue.play()
@@ -220,7 +240,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     trialClock.reset()
     globalClock.reset()
     t_start=globalClock.getTime()
-
+    #preSound.play()
     while continueRoutine:
 
         frameN += 1
@@ -230,18 +250,20 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         if frameN==onsetVisual:
             visualStim.setAutoDraw(True)
             tVisualStimStart = t
+            #standardSound.play()
         elif frameN==offsetVisual:
             visualStim.setAutoDraw(False)
             tVisualStimEnd = t
         
         # audio stimulus
         if onsetAud==frameN:
-            audio_stim_sound.play()
+            #audio_stim_sound.play()
             tAudStart =t
-            audio_stim_sound.status = STARTED
+            #audio_stim_sound.status = STARTED
         elif offsetAud==frameN:
+            pass
             #continue
-            audio_stim_sound.stop()
+            #audio_stim_sound.stop()
             
 
 
@@ -340,7 +362,9 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     response_text_comp = visual.TextStim(win, text=response_text, color='white', height=30)
 
     # region [rgba(40, 10, 30, 0.30)]
-    core.wait(0.15) if ExpTesting==False else None
+    #fixation.draw()    
+    win.flip()
+    core.wait(0.10) if ExpTesting==False else None
     #noise_audio.play()
     
 

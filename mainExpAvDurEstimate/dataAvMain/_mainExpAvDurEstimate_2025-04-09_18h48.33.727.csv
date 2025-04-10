@@ -1,0 +1,10 @@
+,standardDur,riseDur,order,preDur,postDur,isiDur,trial_num,totalDur,delta_dur_percents,deltaDurS,testDurS,intensities,current_stair,responses,is_correct,response_rts,stair_num_reversal,stair_is_reversal,response_keys,conflictDur,recordedOnsetVisualTest,recordedOffsetVisualTest,recordedDurVisualTest,recordedOnsetVisualStandard,recordedOffsetVisualStandard,recordedDurVisualStandard,modalityCue
+0,0.5,0.85,2,0.63333,0.48333,0.88333,0,3.29999,0.6,0.3,0.8,5,1D1U,1,FALSE,0.662,0,FALSE,left,0.3,2.4783,3.4441,0.9657,0.6542,1.4785,0.8243,A
+1,0.5,0.85,2,0.63333,0.48333,0.83333,1,2.64999,-0.6,-0.3,0.2,5,1U1D,1,TRUE,0.119,0,FALSE,left,-0.3,2.584,2.7698,0.1858,0.9501,1.2326,\,A
+2,0.5,0.85,2,0.59167,0.49167,0.66667,2,2.45001,-0.6,-0.3,0.2,5,2U1D,1,TRUE,0.897,0,FALSE,left,0.05,2.7336,3.0006,0.2669,0.7173,1.5674,0.8501,A
+3,0.5,0.85,2,0.59167,0.575,0.64167,3,2.58334,-0.45,-0.225,0.275,5,1U1D,1,TRUE,1.484,0,FALSE,left,0,2.6205,3.1203,0.4998,0.5916,1.3202,0.7286,A
+4,0.5,0.85,1,0.46667,0.525,0.50833,4,2.8,0.6,0.3,0.8,5,2D1U,1,TRUE,0.767,0,FALSE,left,-0.05,0.5609,2.1449,1.5841,3.0271,3.6778,0.6507,A
+5,0.5,0.1,1,0.43333,0.43333,0.6,5,2.84166,0.75,0.375,0.875,5,1D1U,1,TRUE,0.198,0,FALSE,left,0.3,0.6034,2.2541,1.6507,2.8688,4.2036,1.3348,A
+6,0.5,0.1,1,0.64167,0.5,0.60833,6,3.15,0.8,0.4,0.9,5,lapse_rate,1,TRUE,0.113,0,FALSE,left,-0.3,0.7824,2.0874,1.305,2.9873,3.2157,0.2284,A
+7,0.5,0.1,2,0.49167,0.55,0.51667,7,2.89167,0.66,0.33333,0.83333,5,1D1U,1,FALSE,1.618,1,TRUE,left,0.05,2.5363,3.6519,1.1157,0.6527,1.5693,0.9166,A
+8,0.5,0.1,1,0.60833,0.55,0.76667,8,2.775,-0.3,-0.15,0.35,5,1U1D,1,FALSE,0.147,0,FALSE,left,0,0.889,1.622,0.733,2.8724,3.7392,0.8668,A

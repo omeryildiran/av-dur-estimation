@@ -25,7 +25,7 @@ from psychopy import prefs
 from psychopy.sound import backend_ptb as ptb
 #prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
 prefs.hardware['audioLib'] = ['PTB']
-#prefs.hardware['audioDevice'] = 0
+prefs.hardware['audioDevice'] = 4
 prefs.general['audioLatencyMode'] = 4
 volume=0.25
 
@@ -33,7 +33,9 @@ volume=0.25
 # Path to the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # print(f"Current directory: {current_dir}")
-
+parent_dir = os.path.dirname(current_dir)
+print(f"\nParent directory\n: {parent_dir}")
+exec(open(parent_dir+"/intervalDurs.py").read())
 # 1 - Inititate and welcome participants
 exec(open("exp_1_openScreen_a.py").read())
 

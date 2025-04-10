@@ -58,9 +58,11 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
 
     # Assign values calculate directly now
     order = int(np.random.choice([1,2])) # or orders[trialN] # presentation order of test. 1: comparison first, 2: comparison second
-    preDur = np.random.uniform(0.4, 0.65)
-    postDur = np.random.uniform(0.4, 0.65)
-    isiDur = np.random.uniform(0.6, 0.85)
+
+    preDur = np.random.uniform(preMin, preMax)
+    isiDur = np.random.uniform(isiMin, isiMax)
+    postDur = np.random.uniform(postMin, postMax)
+
 
     preDurFrames=sec2frames(preDur, frameRate)
     postDurFrames=sec2frames(postDur, frameRate)

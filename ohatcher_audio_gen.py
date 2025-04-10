@@ -108,15 +108,7 @@ class AudioCueGenerator:
 
     # Raised cosine envelope for precise transition and perceptual salience
     def raised_cosine_envelope(self,t_start, rise_dur, peak_dur, t_total, sample_rate=44100):
-        """
-        Generate a raised-cosine envelope in the time domain.
-        :param t_start: Start time of the event (seconds).
-        :param rise_dur: Duration of the rising phase (seconds).
-        :param peak_dur: Duration of the event peak (seconds).
-        :param t_total: Total duration of the total envelope (seconds).
-        :param sample_rate: Sampling rate (Hz).
-        :return: Raised-cosine envelope as a numpy array.
-        """
+
         def time_to_samples(t, sample_rate=44100):
             return int(t * sample_rate)
 
@@ -162,16 +154,6 @@ class AudioCueGenerator:
 
     def low_reliability_test_sound(self, total_dur=2.5, noise_type="pink", 
                                 rise_dur=0.2, intensity=3.0):
-        """
-        Generate a low-reliability noise signal with a raised-cosine envelope.
-        :param total_dur: Total duration of the noise (seconds).
-        :param signal_start: Start time of the event (seconds).
-        :param noise_type: Type of noise ('white', 'pink', etc.).
-        :param rise_dur: Duration of the rising phase of the envelope (seconds).
-        :param peak_dur: Duration of the peak phase of the envelope (seconds).
-        :param intensity: Peak amplitude of the envelope.
-        :return: Modulated noise signal as a numpy array.
-        """
         peak_dur = total_dur - 2*rise_dur  # Ensure the peak phase does not exceed the total duration
         # Generate the raised-cosine envelope
         envelope = self.raised_cosine_envelope(0, rise_dur, peak_dur, total_dur, self.sample_rate)
@@ -223,8 +205,8 @@ class AudioCueGenerator:
         # scale background noise to match the amplitude of the stimulus
         background_noise = np.random.normal(0, 1, len(stim_sound))
         background_noise = background_noise * (np.max(abs(stim_sound)) / np.max(abs(background_noise))) * intensity_background
-        print(max(background_noise))
-        print(max(stim_sound))
+        #print(max(background_noise))
+        #print(max(stim_sound))
 
         # smooth the sound waveform
         background_noise = self.broadband_filter(background_noise,10, 850, self.sample_rate, order=4)

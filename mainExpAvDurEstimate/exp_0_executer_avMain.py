@@ -2,6 +2,7 @@ ExpTesting = False
 ExpTraining= False
 fullScreen=True  
 expName = 'mainExpAvDurEstimate'
+modalityCue='A'
 
 avPSEseconds=-0.025 # audiovisual PSE in seconds (negative means visual perceoved shorter
 signPSE=avPSEseconds//avPSEseconds # sign of the PSE
@@ -29,14 +30,18 @@ from psychopy import prefs
 from psychopy.sound import backend_ptb as ptb
 #prefs.general['audioLib'] = ['sounddevice', 'pyo', 'pygame']
 prefs.hardware['audioLib'] = ['PTB']
-prefs.hardware['audioDevice'] = 3
+prefs.hardware['audioDevice'] = 0
 prefs.general['audioLatencyMode'] = 4
 volume=0.2
 
 
 # Path to the current directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
-# print(f"Current directory: {current_dir}")
+print(f"\nCurrent directory\n: {current_dir}")
+#parent directory
+parent_dir = os.path.dirname(current_dir)
+print(f"\nParent directory\n: {parent_dir}")
+exec(open(parent_dir+"/intervalDurs.py").read())
 
 # 1 - Inititate and welcome participantss
 exec(open("exp_1_openScreen_avMain.py").read())
