@@ -12,12 +12,14 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-rise_conds= [0.1,  0.85] if ExpTraining==False else [0.1]
+rise_conds= [0.1] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
-n_trial_per_condition=50 
+nTrialPerStairPerCondition=70
+nTrialPerStair=nTrialPerStairPerCondition
+#totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+1)*len(conflicts)
 bin_dur=0.1
 
-conds_obj = expConds(trial_per_condition=n_trial_per_condition*8,
+conds_obj = expConds(trial_per_condition=nTrialPerStairPerCondition*8,
                              rise_conds=rise_conds,
                              standard_durations=[0.5],
                              intens=maxIntensityBurst) 
@@ -95,7 +97,7 @@ max_level=0.9
 initLevel=0.65
 
 # Create the staircases
-max_trial_per_stair=n_trial_per_condition#total_trials//5
+max_trial_per_stair=nTrialPerStair#total_trials//5
 
 print(f'rise unique: {np.unique(riseDurs)}')
 stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 

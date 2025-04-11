@@ -9,9 +9,13 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-audNoiseConds= [0.1,0.85] if ExpTraining==False else [0.1]
+audNoiseConds= [0.1,0.80] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
-n_trial_per_condition=50 
+nTrialPerStairPerCondition=70
+nTrialPerStair=len(audNoiseConds)*len(conflicts)*nTrialPerStairPerCondition
+totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+1)*len(conflicts)
+
+
 
 
 #print('given trials number',len(conds_obj.intens))
@@ -22,7 +26,7 @@ matrix columns:
 1: Rise conditions
 2: Conflict A-V
 """
-conditions_matrix =create_conditions_matrix(totalTrialN=360,standards=[0.5], 
+conditions_matrix =create_conditions_matrix(totalTrialN=totalTrialN,standards=[0.5], 
                                              background_levels=audNoiseConds, conflicts=conflicts)#
 numberOfTrials=len(conditions_matrix)
 print(f"Number of trials: {numberOfTrials}")
@@ -85,22 +89,23 @@ max_level=0.80
 initLevel=0.6
 
 # Create the staircases
-max_trial_per_stair=n_trial_per_condition#total_trials//5
+max_trial_per_stair=nTrialPerStair#total_trials//5
 
 print(f'rise unique: {np.unique(audNoises)}')
-stairCaseLonger = stairCase(init_level=initLevel, 
-                            init_step=initStep, 
-                            method="1D1U",  
-                            step_factor=stepFactor, 
-                            max_level=max_level+1, 
-                            max_reversals=maxReversals, 
-                            max_trials=max_trial_per_stair,)
+
+# stairCaseLonger = stairCase(init_level=initLevel, 
+#                             init_step=initStep, 
+#                             method="1D1U",  
+#                             step_factor=stepFactor, 
+#                             max_level=max_level+1, 
+#                             max_reversals=maxReversals, 
+#                             max_trials=max_trial_per_stair,)
                             
 stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
                                 max_trials=max_trial_per_stair,)
 
-stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
-                              max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
+# stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
+#                               max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
 stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
 
@@ -110,7 +115,7 @@ stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rat
 if ExpTraining:
     all_staircases=[stairCaseLapse]
 else:
-    all_staircases=[stairCaseLapse, stairCaseLonger,stairCaseShorter,stairCaseLonger2D1U,stairCaseShorter2U1D]#, stairCaseLonger_b,stairCaseShorter_b,] 
+    all_staircases=[stairCaseLapse,stairCaseLonger2D1U,stairCaseShorter2U1D]#, stairCaseLonger_b,stairCaseShorter_b,] 
 #all_staircases=[stairCaseShorter,stairCaseLonger,stairCaseLapse, ]#stairCaseLonger_b,stairCaseShorter_b,]
 np.random.shuffle(all_staircases)
 stopped_stair_count=0
@@ -135,7 +140,7 @@ lapse_rate_conds=lapse_rate_cond_generate()
 total_trial_num=max_trial_per_stair*(len(all_staircases)-1)+len(lapse_rate_conds)
 
 print(f'There are in total  {lapse_rate_conds.shape[0]} lapse rate conditions')
-print(f"there are maximum {len(standardDurs)} normal trials in total of  {max_trial_per_stair*4} staircase trials" )
+print(f"there are maximum {len(standardDurs)} normal trials in total of  {max_trial_per_stair*len(all_staircases)} staircase trials" )
 
 # Convert to list the standard durs and rise durs
 standardDurs = standardDurs.tolist()

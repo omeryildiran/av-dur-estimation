@@ -227,7 +227,15 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     t_start=globalClock.getTime()
 
     win.flip(clearBuffer=True)
+    ## Defaults for the timing
+    tVisualStim1End=999
+    tVisualStim2End=999
+    tVisualStim1Start=999
+    t_dur=999
+    t_start=999
+    tVisualStim2Start=999
 
+    
    
     #endregion
     """ Run Trial Routine """
@@ -239,7 +247,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     visualStim.setAutoDraw(True)
     visualStim.fillColor = "gray"
 
-    while continueRoutine:
+    while continueRoutine and not ExpTesting:
         frameN += 1
         t = trialClock.getTime()
         # draw the fixation cross
