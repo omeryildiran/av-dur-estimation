@@ -9,10 +9,11 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-audNoiseConds= [0.1, 0.85] if ExpTraining==False else [0.1]
+audNoiseConds= [0.1, 0.8] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
-nTrialPerStair=35 
 conflicts=[0]
+nTrialPerStairPerCondition=35
+nTrialPerStair=len(audNoiseConds)*len(conflicts)*nTrialPerStairPerCondition
 totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+1)*len(conflicts)
 
 #print('given trials number',len(conds_obj.intens))
@@ -24,7 +25,7 @@ matrix columns:
 2: Conflict A-V
 """
 conditions_matrix =create_conditions_matrix(totalTrialN=totalTrialN,standards=[0.5], 
-                                             background_levels=[0.1,0.85], conflicts=conflicts)
+                                             background_levels=audNoiseConds, conflicts=conflicts)
 numberOfTrials=len(conditions_matrix)
 print(f"Number of trials: {numberOfTrials}")
 standardDurs = conditions_matrix[:, 0] # standard durations
@@ -91,7 +92,7 @@ max_trial_per_stair=nTrialPerStair#total_trials//5
 print(f'aud Noises: {np.unique(audNoises)}')
 stairCaseLonger = stairCase(init_level=initLevel, 
                             init_step=initStep, 
-                            method="1D1U",  
+                            method="3D1U",  
                             step_factor=stepFactor, 
                             max_level=max_level+1, 
                             max_reversals=maxReversals, 
@@ -100,7 +101,7 @@ stairCaseLonger = stairCase(init_level=initLevel,
 stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
                                 max_trials=max_trial_per_stair,)
 
-stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
+stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="3U1D",step_factor=stepFactor,
                              max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
 stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
@@ -130,7 +131,7 @@ def lapse_rate_cond_generate():
     # in total 12 conditions
     
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(4,1))
+    all_conds=np.tile(all_conds,(7,1))
     np.random.shuffle(all_conds) 
     return all_conds
 lapse_rate_conds=lapse_rate_cond_generate()

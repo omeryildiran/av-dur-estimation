@@ -76,7 +76,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDurFrames=sec2frames(isiDur, frameRate)
     testDurFrames=sec2frames(testDurS, frameRate)
     standardDurFrames=sec2frames(standardDur, frameRate)
-    audNoiseFrames=sec2frames(audNoise, frameRate)
     deltaDurFrames=sec2frames(deltaDurS, frameRate)
     conflictDurFrames=sec2frames(conflictDur, frameRate)
     conflictDurFramesHalf=sec2frames(conflictDurHalf, frameRate)
@@ -109,7 +108,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDur=frames2sec(isiDurFrames, frameRate)
     testDurS=frames2sec(testDurFrames, frameRate)
     standardDur=frames2sec(standardDurFrames, frameRate)
-    audNoise=frames2sec(audNoiseFrames, frameRate)
     deltaDurS=frames2sec(deltaDurFrames, frameRate)
     conflictDur=frames2sec(conflictDurFramesHalf*2, frameRate)
 
