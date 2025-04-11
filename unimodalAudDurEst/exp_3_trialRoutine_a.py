@@ -180,25 +180,24 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         core.quit()
 
 
-    # clear the screen and wait for 100 ms
-    # #time to record refresh rate
-    # t0 = trialClock.getTime()
-    # win.flip()
-    # t1 = trialClock.getTime()
-    # print(f"Time to flip: {t1-t0}")
-    # print(f"Frame Rate: {1/(t1-t0)}")
-
-    #core.wait(0.05)
-
+    core.wait(0.1) if ExpTesting==False else None
     # timers
     trialClock.reset()
     globalClock.reset()
     t_start=globalClock.getTime()
 
     win.flip(clearBuffer=True)
-
-   
     #endregion
+    
+    ## Defaults for the timing
+    tVisualStim1End=999
+    tVisualStim2End=999
+    tVisualStim1Start=999
+    tVisualStim2Start=999
+    t_start=999
+    t_dur=999
+    
+
 
     """ Run Trial Routine """
     audio_stim_sound.volume = volume
@@ -207,8 +206,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     frameStart = 0
     frameN = -1
     visualStim.setAutoDraw(True) if expCondition=="audiovisual" else visualStim.setAutoDraw(False)
-
-    while continueRoutine:
+    
+    while continueRoutine and not ExpTesting:
         frameN += 1
         t = trialClock.getTime()
         # draw the fixation cross
@@ -351,7 +350,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     response_text_comp = visual.TextStim(win, text=response_text, color='white', height=30)
 
     # region [rgba(40, 10, 30, 0.30)]
-    core.wait(0.15) if ExpTesting==False else None
+    core.wait(0.1) if ExpTesting==False else None
     #noise_audio.play()
 
 

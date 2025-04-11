@@ -10,7 +10,7 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-rise_conds= [0.1] if ExpTraining==False else [0.1]
+rise_conds= [0.1,0.9] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
 nTrialPerStair=50 
 
@@ -28,7 +28,7 @@ conditions_matrix =create_conditions_matrix(totalTrialN=360,standards=[0.5],
 numberOfTrials=len(conditions_matrix)
 print(f"Number of trials: {numberOfTrials}")
 standardDurs = conditions_matrix[:, 0] # standard durations
-riseDurs = conditions_matrix[:, 1] # Background noise level conditions should change riseDur to backgroundNoise everywhere
+audNoises = conditions_matrix[:, 1] # Background noise level conditions should change audNoise to backgroundNoise everywhere
 conflictDurs = conditions_matrix[:, 2] # conflict durations
 
 
@@ -62,7 +62,7 @@ intensities=np.zeros(numberOfTrials+tolerance_trials)
 
 # create an array with names of the columns
 column_names=columns=[
-                'standardDur', 'riseDur','order', 'preDur', 'postDur', 'isiDur', 'trial_num',
+                'standardDur', 'audNoise','order', 'preDur', 'postDur', 'isiDur', 'trial_num',
                 'total_audio_dur', 'delta_dur_percents', 'deltaDurS', 'testDurS', 'intensities',
                 'current_stair', 'responses', 'is_correct', 'response_rts' , 'stair_num_reversal', 'stair_is_reversal', 'response_keys'
             'conflictDur', 
@@ -85,7 +85,7 @@ initLevel=0.8
 # Create the staircases
 max_trial_per_stair=nTrialPerStair
 
-print(f'rise unique: {np.unique(riseDurs)}')
+print(f'rise unique: {np.unique(audNoises)}')
 stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="1D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
                            )
 
@@ -113,7 +113,7 @@ def lapse_rate_cond_generate():
     lapse_deltas=[-0.9,0.9]# or the method of constant stim deltas= [0.05,0.20,0.10,0.40,-0.05,-0.20,-0.10,-0.40,]
     all_conds=[]
     for i in np.unique(standardDurs): # standard durations 1.3, 1.6, 1.9
-        for j in np.unique(riseDurs): # rise durations 0.05, 0.25
+        for j in np.unique(audNoises): # rise durations 0.05, 0.25
             for k in lapse_deltas: # lapse deltas -0.55, 0.55
                 all_conds.append([i,j,k])
 
@@ -134,7 +134,7 @@ print(f"there are maximum {len(standardDurs)} normal trials in total of  {max_tr
 # region [rgba(2, 40, 30, 0.30)]
 # Convert to list the standard durs and rise durs
 standardDurs = standardDurs.tolist()
-riseDurs = riseDurs.tolist()
+audNoises = audNoises.tolist()
 conflictDurs = conflictDurs.tolist()
 lapse_ended=False
 

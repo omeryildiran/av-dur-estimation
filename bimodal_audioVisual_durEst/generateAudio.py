@@ -220,9 +220,9 @@ class generateAudioClass:
                                                     intensity=5)  
         # Filter the sounds
 
-        if testOrder==1:
+        if testOrder==2:
             stimSound=np.concatenate((jitterSound,preSound, standardSound,  isiSound, testSound, postSound, jitterSound))
-        elif testOrder==2:
+        elif testOrder==1:
             stimSound=np.concatenate((jitterSound,preSound, testSound, isiSound, standardSound, postSound,jitterSound))
         
         stimSound=stimSound/np.max(np.abs(stimSound))
@@ -243,25 +243,25 @@ class generateAudioClass:
 
 
         
-# example for wholeAudioStimulus
-audio_gen = generateAudioClass()
-preDur = 0.5
-isiDur = 0.5
-postDur = 0.5
-testDur = 0.5
-standardDur = 0.5
-lowCut = 50
-order = 1
-audNoise = 0.2
-mixedSound = audio_gen.wholeAudioStimulus(preDur, isiDur, postDur, testDur, standardDur, order, audNoise)
-# play the sound
-#audio_gen.play_sound(mixedSound)
+# # example for wholeAudioStimulus
+# audio_gen = generateAudioClass()
+# preDur = 0.5
+# isiDur = 0.5
+# postDur = 0.5
+# testDur = 0.5
+# standardDur = 0.5
+# lowCut = 50
+# order = 1
+# audNoise = 0.2
+# mixedSound = audio_gen.wholeAudioStimulus(preDur, isiDur, postDur, testDur, standardDur, order, audNoise)
+# # play the sound
+# #audio_gen.play_sound(mixedSound)
 
-# plot the sound
-import matplotlib.pyplot as plt
-plt.plot(mixedSound)
-plt.title("Mixed Sound Waveform")
-plt.xlabel("Samples")
-plt.ylabel("Amplitude")
-plt.show()
+# # plot the sound
+# import matplotlib.pyplot as plt
+# plt.plot(mixedSound)
+# plt.title("Mixed Sound Waveform")
+# plt.xlabel("Samples")
+# plt.ylabel("Amplitude")
+# plt.show()
 

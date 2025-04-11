@@ -9,10 +9,11 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-rise_conds= [0.1] if ExpTraining==False else [0.1]
+rise_conds= [0.1, 0.85] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
-nTrialPerStair=50 
-
+nTrialPerStair=35 
+conflicts=[0]
+totalTrialN=len(rise_conds)*nTrialPerStair*(2+1)*len(conflicts)
 
 #print('given trials number',len(conds_obj.intens))
 #total_trials=(conds_obj.trial_per_condition)*2*4
@@ -22,8 +23,8 @@ matrix columns:
 1: Rise conditions
 2: Conflict A-V
 """
-conditions_matrix =create_conditions_matrix(totalTrialN=360,standards=[0.5], 
-                                             background_levels=[0.1,0.85], conflicts=[0,])
+conditions_matrix =create_conditions_matrix(totalTrialN=totalTrialN,standards=[0.5], 
+                                             background_levels=[0.1,0.85], conflicts=conflicts)
 numberOfTrials=len(conditions_matrix)
 print(f"Number of trials: {numberOfTrials}")
 standardDurs = conditions_matrix[:, 0] # standard durations
@@ -100,7 +101,7 @@ stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method
                                 max_trials=max_trial_per_stair,)
 
 stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
-                              max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
+                             max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
 stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
 
@@ -110,7 +111,9 @@ stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rat
 if ExpTraining:
     all_staircases=[stairCaseLapse]
 else:
-    all_staircases=[stairCaseLapse, stairCaseLonger,stairCaseShorter,stairCaseLonger2D1U,stairCaseShorter2U1D]#, stairCaseLonger_b,stairCaseShorter_b,] 
+    all_staircases=[stairCaseLapse,stairCaseLonger2D1U,stairCaseShorter2U1D,stairCaseLonger,stairCaseShorter]#, stairCaseLonger_b,stairCaseShorter_b,] 
+
+
 #all_staircases=[stairCaseShorter,stairCaseLonger,stairCaseLapse, ]#stairCaseLonger_b,stairCaseShorter_b,]
 np.random.shuffle(all_staircases)
 stopped_stair_count=0

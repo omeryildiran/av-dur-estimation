@@ -43,7 +43,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         if not lapse_ended:
             if lapse_rate_conds.shape[0]>0:
                 standardDur=lapse_rate_conds[0][0]
-                riseDur=lapse_rate_conds[0][1]
+                audNoise=lapse_rate_conds[0][1]
                 deltaDurPercent=lapse_rate_conds[0][2]
                 lapse_rate_conds=lapse_rate_conds[1:]
             else:
@@ -58,7 +58,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     else:
         # Pop the last elemnt and assign it to the current trial
         standardDur = standardDurs.pop()
-        riseDur = riseDurs.pop()
+        audNoise = audNoises.pop()
 
         deltaDurPercent = round(stair.next_trial(),4) # delta dur in terms of percentage of the standard duration (0.1, 0.2, 0.3, 0.4, 0.5)
 
@@ -124,22 +124,12 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     
     #audio_stim=genAudio.genFilteredBackgroundedNoise(dur=testDurS, low_cut=50, high_cut=600, order=4)
     
-    preSound=genAudio.generateNoise(dur=preDur, noise_type='white', intensity=riseDur)
-    isiSound=genAudio.generateNoise(dur=isiDur, noise_type='white', intensity=riseDur)
-    standardSound=genAudio.generateNoise(dur=standardDur, noise_type='white',intensity=riseDur)
-    postSound=genAudio.generateNoise(dur=postDur, noise_type='white', intensity=riseDur)
-    
-    preSound=sound.Sound(value=preSound, sampleRate=sampleRate, stereo=True)
-    isiSound=sound.Sound(value=isiSound, sampleRate=sampleRate, stereo=True)
-    standardSound=sound.Sound(value=standardSound, sampleRate=sampleRate, stereo=True)
-    postSound=sound.Sound(value=postSound, sampleRate=sampleRate, stereo=True)
 
-    audio_stim= filteredNoiseGen.whole_stimulus(
-        test_dur=testDurS, standard_dur=0, noise_type='white',
-        order=order, 
-        pre_dur=preDur, post_dur=postDur+0.5, isi_dur=isiDur, 
-        intensity=maxIntensityBurst, rise_dur=0.005, 
-        intensity_background=riseDur)
+    audio_stim= genAudio.wholeAudioStimulus(
+        preDur=preDur, postDur=postDur, isiDur=isiDur,testDur=testDurS, standardDur=standardDur,
+        testOrder=order, audNoise=audNoise)
+    
+    
     # background_noise=genAudio.generateNoise(dur=testDurS, noise_type='white')
     # jitter_sound = np.zeros(int(0.0001 * sampleRate)) # 0.1 ms of silence
     # # filter the audio stimulus
@@ -164,7 +154,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     if ExpTesting:
         audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) 
 
-    print(f'Current Stair: {current_stair}, Standard Dur: {standardDur}, Test Dur: {testDurS}, Rise Dur: {riseDur},Test in: {order} place,  Delta Dur: {deltaDurPercent},  deltaDurS: {deltaDurS}')
+    print(f'Current Stair: {current_stair}, Standard Dur: {standardDur}, Test Dur: {testDurS}, Rise Dur: {audNoise},Test in: {order} place,  Delta Dur: {deltaDurPercent},  deltaDurS: {deltaDurS}')
 
     total_dur_of_stim = preDur+testDurS+isiDur+standardDur+postDur
     totalDurFrames=sec2frames(total_dur_of_stim, frameRate)
@@ -241,6 +231,11 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     globalClock.reset()
     t_start=globalClock.getTime()
     #preSound.play()
+    #audio_stim_sound.play()
+    visualStim.setAutoDraw(True)
+    visualStim.fillColor='gray'
+
+
     while continueRoutine:
 
         frameN += 1
@@ -248,40 +243,36 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         # draw the fixation cross
         # visual stimulus
         if frameN==onsetVisual:
-            visualStim.setAutoDraw(True)
+            #visualStim.setAutoDraw(True)
+            visualStim.fillColor='black'
             tVisualStimStart = t
             #standardSound.play()
         elif frameN==offsetVisual:
-            visualStim.setAutoDraw(False)
+            #visualStim.setAutoDraw(False)
+            visualStim.fillColor='gray'
             tVisualStimEnd = t
         
+        if frameN >= totalDurFrames:
+            visualStim.setAutoDraw(False)
+            visualStim.status = FINISHED
+
+
         # audio stimulus
-        if onsetAud==frameN:
-            #audio_stim_sound.play()
-            tAudStart =t
-            #audio_stim_sound.status = STARTED
-        elif offsetAud==frameN:
-            pass
-            #continue
-            #audio_stim_sound.stop()
-            
+        if audio_stim_sound.status == NOT_STARTED and t >= 0:
+            audio_stim_sound.play()
 
-
-        if audio_stim_sound.status == STARTED:
+            audio_stim_sound.status = STARTED
+            tAudStart = globalClock.getTime()
+        elif audio_stim_sound.status == STARTED:
             if audio_stim_sound.isPlaying == False:
                 tAudEnd = t
                 tAudDurRecorded = tAudEnd - tAudStart
                 audio_stim_sound.status = FINISHED
 
-
-        
         # check if all the stimuli are finished
-        if visualStim.status == FINISHED and audio_stim_sound.status == FINISHED and frameN > totalDurFrames:
+        if visualStim.status == FINISHED and audio_stim_sound.status == FINISHED:
             continueRoutine = False
-                #audio_stim_sound.stop()
                 #break
-        
-
 
         # check for quit (typically the Esc key)
         if event.getKeys(keyList=["escape"]):
@@ -290,6 +281,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             break
         win.flip()
 
+    visualStim.setAutoDraw(False)
     print('trial ended')
     stair_num_reversal=stair.reversals
     stair_is_reversal=stair.is_reversal
@@ -300,7 +292,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     """ SAVE TRIAL DATA BEFORE RESPONSE"""
     # independent variables
     exp_data[trialN, 0] = standardDur
-    exp_data[trialN, 1] = riseDur
+    exp_data[trialN, 1] = audNoise
     exp_data[trialN, 19] = conflictDur
 
     # free variables
@@ -408,7 +400,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             exp_data_saved = exp_data[:trialN+1, :]
             # save exp_data as DataFrame
             data_saved = pd.DataFrame(exp_data_saved, columns=[
-                'standardDur', 'riseDur', 'order', 'preDur', 'postDur', 'isiDur', 'trial_num',
+                'standardDur', 'audNoise', 'order', 'preDur', 'postDur', 'isiDur', 'trial_num',
                 'totalDur', 'delta_dur_percents', 'deltaDurS', 'testDurS', 'intensities',
                 'current_stair', 'responses', 'is_correct', 'response_rts' , 
                 'stair_num_reversal', 'stair_is_reversal', 'response_keys', 'conflictDur',
