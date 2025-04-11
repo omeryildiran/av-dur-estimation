@@ -1,4 +1,4 @@
-ExpTesting = False
+ExpTesting = True
 ExpTraining= False
 fullScreen=True  
 expName = 'mainExpAvDurEstimate'
@@ -6,8 +6,9 @@ modalityCue='A'
 
 avPSEseconds=-0.025 # audiovisual PSE in seconds (negative means visual perceoved shorter
 signPSE=avPSEseconds//avPSEseconds # sign of the PSE
-# (when audio is shorter than visual, people perceive audio and visual in equal length))
-# so to handle this, we need to add this value to the visual duration
+
+# (when audio is shorter than visual, people perceive audio and visual in equal length) so to handle this, we need to add this value to the visual duration
+conflicts=[ -0.25, -0.167, 0.083, 0, -0.083, 0.167, 0.25,]
 
 import os
 import sys  # to get file system encoding

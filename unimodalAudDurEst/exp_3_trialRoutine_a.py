@@ -33,7 +33,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         if not lapse_ended:
             if lapse_rate_conds.shape[0]>0:
                 standardDur=lapse_rate_conds[0][0]
-                riseDur=lapse_rate_conds[0][1]
+                audNoise=lapse_rate_conds[0][1]
                 conflictDur=lapse_rate_conds[0][2]
                 deltaDurPercent=lapse_rate_conds[0][3]
                 print(f'delta dur percent: {deltaDurPercent}')
@@ -50,7 +50,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     else:
         # Pop the last elemnt and assign it to the current trial
         standardDur = standardDurs.pop()
-        riseDur = riseDurs.pop()
+        audNoise = audNoises.pop()
 
         deltaDurPercent = round(stair.next_trial(),4) # delta dur in terms of percentage of the standard duration (0.1, 0.2, 0.3, 0.4, 0.5)
 
@@ -76,7 +76,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDurFrames=sec2frames(isiDur, frameRate)
     testDurFrames=sec2frames(testDurS, frameRate)
     standardDurFrames=sec2frames(standardDur, frameRate)
-    riseDurFrames=sec2frames(riseDur, frameRate)
+    audNoiseFrames=sec2frames(audNoise, frameRate)
     deltaDurFrames=sec2frames(deltaDurS, frameRate)
     conflictDurFrames=sec2frames(conflictDur, frameRate)
     conflictDurFramesHalf=sec2frames(conflictDurHalf, frameRate)
@@ -109,7 +109,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDur=frames2sec(isiDurFrames, frameRate)
     testDurS=frames2sec(testDurFrames, frameRate)
     standardDur=frames2sec(standardDurFrames, frameRate)
-    riseDur=frames2sec(riseDurFrames, frameRate)
+    audNoise=frames2sec(audNoiseFrames, frameRate)
     deltaDurS=frames2sec(deltaDurFrames, frameRate)
     conflictDur=frames2sec(conflictDurFramesHalf*2, frameRate)
 
@@ -121,7 +121,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             order=order, 
             pre_dur=preDur, post_dur=postDur, isi_dur=isiDur, 
             intensity=maxIntensityBurst, rise_dur=0.005, 
-            intensity_background=riseDur)
+            intensity_background=audNoise)
 
     audio_stim_sound=sound.Sound(value=audio_stim, sampleRate=sampleRate, stereo=True)
     t=np.linspace(0,len(audio_stim)/sampleRate,len(audio_stim))
@@ -135,7 +135,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
 
 
 
-    print(f'Current Stair: {current_stair}, Standard Dur: {standardDur}, Test Dur: {testDurS}, Rise Dur: {riseDur},Test in: {order} place,  Delta Dur: {deltaDurPercent},  deltaDurS: {deltaDurS}')
+    print(f'Current Stair: {current_stair}, Standard Dur: {standardDur}, Test Dur: {testDurS}, Aud noise: {audNoise},Test in: {order} place,  Delta Dur: {deltaDurPercent},  deltaDurS: {deltaDurS}')
     visualStim=visual.Circle(win, radius=visualStimSize, fillColor=True, lineColor='black', colorSpace='rgb', units='pix',
                         pos=(0, 0))
     visualStim.lineWidht=5
@@ -280,7 +280,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     """ SAVE TRIAL DATA BEFORE RESPONSE"""
     # independent variables
     exp_data[trialN, 0] = standardDur
-    exp_data[trialN, 1] = riseDur
+    exp_data[trialN, 1] = audNoise
     exp_data[trialN, 19] = conflictDur
 
     # free variables
@@ -393,7 +393,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             exp_data_saved = exp_data[:trialN+1, :]
             # save exp_data as DataFrame
             data_saved = pd.DataFrame(exp_data_saved, columns=[
-                'standardDur', 'riseDur', 'order', 'preDur', 'postDur', 'isiDur', 'trial_num',
+                'standardDur', 'audNoise', 'order', 'preDur', 'postDur', 'isiDur', 'trial_num',
                 'totalDur', 'delta_dur_percents', 'deltaDurS', 'testDurS', 'intensities',
                 'current_stair', 'responses', 'is_correct', 'response_rts' , 
                 'stair_num_reversal', 'stair_is_reversal', 'response_keys', 'conflictDur',
@@ -408,7 +408,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 filename + '.mat', 
                 {
                     'standardDur': exp_data_saved[:, 0],
-                    'riseDur': exp_data_saved[:, 1],
+                    'audNoise': exp_data_saved[:, 1],
                     'order': exp_data_saved[:, 2],
                     'preDur': exp_data_saved[:, 3],
                     'postDur': exp_data_saved[:, 4],

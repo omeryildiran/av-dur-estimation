@@ -9,7 +9,7 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-rise_conds= [0.1] if ExpTraining==False else [0.1]
+audNoiseConds= [0.1,0.85] if ExpTraining==False else [0.1]
 maxIntensityBurst=5
 n_trial_per_condition=50 
 
@@ -23,7 +23,7 @@ matrix columns:
 2: Conflict A-V
 """
 conditions_matrix =create_conditions_matrix(totalTrialN=360,standards=[0.5], 
-                                             background_levels=[0.1,0.85], conflicts=[-0.3, -0.192, -0.1, 0.05, 0, -0.05, 0.1, 0.192, 0.3])#
+                                             background_levels=audNoiseConds, conflicts=conflicts)#
 numberOfTrials=len(conditions_matrix)
 print(f"Number of trials: {numberOfTrials}")
 standardDurs = conditions_matrix[:, 0] # standard durations
