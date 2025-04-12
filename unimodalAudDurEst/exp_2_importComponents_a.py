@@ -9,7 +9,7 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-audNoiseConds= [0.1, 0.8] if ExpTraining==False else [0.1]
+audNoiseConds= [0.1, 1.2] 
 maxIntensityBurst=5
 conflicts=[0]
 nTrialPerStairPerCondition=35

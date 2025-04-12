@@ -210,7 +210,7 @@ class AudioCueGenerator:
 
         # smooth the sound waveform
         background_noise = self.broadband_filter(background_noise,10, 600, self.sample_rate, order=4)
-        stim_sound = self.broadband_filter(stim_sound, 150, 700, self.sample_rate, order=4)
+        stim_sound = self.broadband_filter(stim_sound, 150, 730, self.sample_rate, order=4)
         
         
         
@@ -288,7 +288,7 @@ def plot_sounds():
     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
     plt.show()
     
-plot_sounds()
+#plot_sounds()
 
 
 

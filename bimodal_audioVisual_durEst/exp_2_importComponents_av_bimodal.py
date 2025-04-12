@@ -10,9 +10,12 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-rise_conds= [0.1,0.9] if ExpTraining==False else [0.1]
+audNoiseConds= [0.1,1.2] 
 maxIntensityBurst=5
-nTrialPerStair=50 
+nTrialPerStairPerCondition=35
+nTrialPerStair=len(audNoiseConds)*len(conflicts)*nTrialPerStairPerCondition
+totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+1)*len(conflicts)
+
 
 
 #print('given trials number',len(conds_obj.intens))
@@ -23,12 +26,12 @@ matrix columns:
 1: Rise conditions
 2: Conflict A-V
 """
-conditions_matrix =create_conditions_matrix(totalTrialN=360,standards=[0.5], 
-                                             background_levels=[0], conflicts=[ 0])
+conditions_matrix =create_conditions_matrix(totalTrialN=totalTrialN,standards=[0.5], 
+                                             background_levels=audNoiseConds, conflicts=conflicts)#
 numberOfTrials=len(conditions_matrix)
 print(f"Number of trials: {numberOfTrials}")
 standardDurs = conditions_matrix[:, 0] # standard durations
-audNoises = conditions_matrix[:, 1] # Background noise level conditions should change audNoise to backgroundNoise everywhere
+audNoises = conditions_matrix[:, 1] # Background noise level conditions should change riseDur to backgroundNoise everywhere
 conflictDurs = conditions_matrix[:, 2] # conflict durations
 
 

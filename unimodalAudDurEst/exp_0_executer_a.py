@@ -1,5 +1,5 @@
-ExpTesting = True
-ExpTraining= False
+ExpTesting = False
+ExpTraining= True
 fullScreen=False
 expName = 'auditoryDurEst'
 expCondition='auditory'

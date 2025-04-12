@@ -12,10 +12,12 @@ trialClock = core.Clock()
 
 # Retrieve the conditions
 
-rise_conds= [0.1] if ExpTraining==False else [0.1]
+audNoiseConds= [0.1] 
 maxIntensityBurst=5
 nTrialPerStairPerCondition=70
-nTrialPerStair=nTrialPerStairPerCondition
+nTrialPerStair=len(audNoiseConds)*len(conflicts)*nTrialPerStairPerCondition
+totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+1)*len(conflicts)
+
 #totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+1)*len(conflicts)
 bin_dur=0.1
 
