@@ -3,7 +3,8 @@ ExpTraining= False
 fullScreen=False
 expName = 'visualDurEst'
 expCondition='visual'
-
+conflicts=[0]
+#riseDurs=[1]
 import os
 import sys  # to get file system encoding
 
