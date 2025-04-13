@@ -80,7 +80,7 @@ exp_data=np.zeros((conditions_matrix.shape[0]+tolerance_trials, 19),dtype=object
 # region [rgba(2, 40, 30, 0.30)]
 # Start the trial - response loop (there weill be)
 """ Staircase Setup"""
-stepFactor=0.67
+stepFactor=0.60
 initStep=0.2
 maxReversals=100
 max_level=0.9
@@ -90,13 +90,15 @@ initLevel=0.65
 max_trial_per_stair=nTrialPerStair#total_trials//5
 
 print(f'rise unique: {np.unique(audNoises)}')
-stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="3D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
-                            sigma_level=None,)
+stairCaseLonger = stairCase(init_level=initLevel, init_step=initStep, method="1D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, max_trials=max_trial_per_stair, 
+                           )
+
 stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
-                                max_trials=max_trial_per_stair, sigma_level=None,)
-stairCaseShorter = stairCase(init_level=initLevel, init_step=initStep, method="3U1D",step_factor=stepFactor,
+                                max_trials=max_trial_per_stair)
+
+stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
                               max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,)
-stairCaseShorter2U1D = stairCase(init_level=initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
+stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair, sigma_level=None,)
 
 stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
