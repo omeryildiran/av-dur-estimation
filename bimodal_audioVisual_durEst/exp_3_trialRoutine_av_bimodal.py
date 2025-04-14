@@ -241,6 +241,9 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     visualStim.setAutoDraw(True)
     visualStim.fillColor='gray'
 
+    audio_stim_sound.play()
+    tAudStart = globalClock.getTime()
+    audio_stim_sound.status = STARTED
 
     while continueRoutine:
 
@@ -262,14 +265,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             visualStim.setAutoDraw(False)
             visualStim.status = FINISHED
 
-
-        # audio stimulus
-        if audio_stim_sound.status == NOT_STARTED and t >= 0:
-            audio_stim_sound.play()
-
-            audio_stim_sound.status = STARTED
-            tAudStart = globalClock.getTime()
-        elif audio_stim_sound.status == STARTED:
+        if audio_stim_sound.status == STARTED:
             if audio_stim_sound.isPlaying == False:
                 tAudEnd = t
                 tAudDurRecorded = tAudEnd - tAudStart
