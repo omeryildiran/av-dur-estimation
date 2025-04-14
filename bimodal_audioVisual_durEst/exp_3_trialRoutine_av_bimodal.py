@@ -91,8 +91,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     testDurS = standardDur + deltaDurS
 
 
-    deltaDurs[trialN] = deltaDurPercent
-    testDurs[trialN] = testDurS
+    deltaDurS[trialN] = deltaDurPercent
+    testDurS[trialN] = testDurS
     realDeltaDurs[trialN] = deltaDurS
     conflictDur=conflictDurs[trialN]    
     conflictDurHalf=conflictDur/2
