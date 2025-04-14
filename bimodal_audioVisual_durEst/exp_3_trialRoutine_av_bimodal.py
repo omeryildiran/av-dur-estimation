@@ -16,8 +16,33 @@ def broadband_filter(self, signal, low_cut, high_cut, sample_rate, order=4):
 filteredNoiseGen = AudioCueGenerator(sampleRate=sampleRate)
 
 genAudio = generateAudioClass(sampleRate=sampleRate)
+order=1
 
 while not endExpNow and stopped_stair_count!=(len(all_staircases)):
+    
+    trialN += 1
+    # have a rest screen
+    if trialN % 30 == 0:
+        order=3-order # change the order of the test and standard
+        avOrder="A -> V" if order==1 else "V -> A"
+        block_num = trialN // 30
+        total_blocks = total_trial_num // 30
+        rest_text = f"""This is going to be the {block_num+1} block out of {total_blocks}\n
+        In this block order of modalities will be
+        \n {avOrder}\n
+        Press any key to continue."""
+
+        rest_text_comp = visual.TextStim(win, text=rest_text, color='white', height=30)
+        rest_text_comp.draw()
+        win.flip()
+        # comment for testing
+        event.waitKeys() if ExpTesting==False else None
+
+
+    # Check if the experiment is over
+    if endExpNow or event.getKeys(keyList=['escape']):
+        core.quit()
+
     """ Prepare trial routine""" 
     #region [rgba(0, 30, 10, 0.200)] # reddish for preparation
     print(f"Trial {trialN} out of {total_trial_num}")
@@ -73,8 +98,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     conflictDurHalf=conflictDur/2
 
     # Assign values calculate directly now
-    order = int(np.random.choice([1,2])) # or orders[trialN] # presentation order of test. 1: comparison first, 2: comparison second
-
+    #order = int(np.random.choice([1,2])) # or orders[trialN] # presentation order of test. 1: comparison first, 2: comparison second
     preDur = np.random.uniform(preMin, preMax)
     isiDur = np.random.uniform(isiMin, isiMax)
     postDur = np.random.uniform(postMin, postMax)
@@ -176,24 +200,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         core.wait(0.5) if ExpTesting==False else None
 
 
-    trialN += 1
-    # have a rest screen
-    if trialN % 30 == 0 and trialN > 0:
-        block_num = trialN // 30
-        total_blocks = total_trial_num // 30
-        rest_text = f"""You can have a break now.
-        You are in block {block_num} out of {total_blocks}.
-        Press any key to continue."""
-        rest_text_comp = visual.TextStim(win, text=rest_text, color='white', height=30)
-        rest_text_comp.draw()
-        win.flip()
-        # comment for testing
-        event.waitKeys() if ExpTesting==False else None
-
-
-    # Check if the experiment is over
-    if endExpNow or event.getKeys(keyList=['escape']):
-        core.quit()
 
 
     # clear the screen and wait for 100 ms
