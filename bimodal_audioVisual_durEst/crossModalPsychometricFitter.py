@@ -1,770 +1,467 @@
+# import necessary libraries
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-from scipy.stats import norm, linregress
-from scipy.optimize import minimize
 import seaborn as sns
-from typing import Union, Tuple, List, Optional, Dict
-
+import pandas as pd
+import os
+from scipy.optimize import minimize
+from scipy.stats import norm
 class PsychometricFitter:
-    """
-    A class for fitting psychometric functions to psychophysical data.
-    
-    Features:
-    - Fitting cumulative Gaussian psychometric functions
-    - Maximum likelihood estimation
-    - Parameter estimation with multiple starting points
-    - Confidence intervals via parametric bootstrapping
-    - Visualization of fitted curves and binned data
-    """
-    
-    def __init__(self, use_lapse_rate: bool = True):
+    def __init__(self, condition_vars=None):
         """
-        Initialize the PsychometricFitter.
+        Initialize the fitter with condition variables.
         
         Parameters:
         -----------
-        use_lapse_rate : bool
-            Whether to include a lapse rate parameter in the model
+        condition_vars : dict
+            Dictionary mapping condition variable names to their unique values
+            e.g., {'sensoryVar': [0.1, 0.5], 'conflictVar': [-0.5, 0, 0.5]}
         """
-        self.use_lapse_rate = use_lapse_rate
+        self.condition_vars = condition_vars or {}
+        self.param_structure = {}
         self.fitted_params = None
-        self.confidence_intervals = None
-        self.bootstrap_results = None
+        self.param_indices = {}
         
-    def psychometric_function(self, intensities: np.ndarray, 
-                             lapse_rate: float, 
-                             mu: float, 
-                             sigma: float) -> np.ndarray:
+    def set_conditions(self, data, condition_vars):
         """
-        Cumulative normal psychometric function with optional lapse rate.
+        Set the condition variables and their unique values from data.
         
         Parameters:
         -----------
-        intensities : np.ndarray
-            Stimulus intensities or deltas
-        lapse_rate : float
-            Lapse rate parameter (0-1)
-        mu : float
-            Mean of the cumulative Gaussian (PSE)
-        sigma : float
-            Standard deviation of the cumulative Gaussian (JND)
-            
-        Returns:
-        --------
-        np.ndarray
-            Probability of choosing test stimulus
+        data : pandas.DataFrame
+            Data frame containing the condition variables
+        condition_vars : list
+            List of condition variable names
         """
-        # Cumulative distribution function with mean mu and standard deviation sigma
-        cdf = norm.cdf(intensities, loc=mu, scale=sigma)
-        # Take into account lapse rate
-        return lapse_rate * 0.5 + (1 - lapse_rate) * cdf
+        self.condition_vars = {var: sorted(data[var].unique()) for var in condition_vars}
+        self._build_param_structure()
+        return self
     
-    def derivative_psychometric_function(self, intensities: np.ndarray,
-                                        lapse_rate: float,
-                                        mu: float,
-                                        sigma: float) -> np.ndarray:
-        """
-        Derivative of the psychometric function.
+    def _build_param_structure(self):
+        """Build parameter structure based on condition variables."""
+        # Default structure with lapse rate(s)
+        self.param_structure = {'lambda': 1}
         
-        Parameters:
-        -----------
-        intensities : np.ndarray
-            Stimulus intensities or deltas
-        lapse_rate : float
-            Lapse rate parameter (0-1)
-        mu : float
-            Mean of the cumulative Gaussian (PSE)
-        sigma : float
-            Standard deviation of the cumulative Gaussian (JND)
+        # Add sigma parameters (one per sensory noise level)
+        if 'sensoryVar' in self.condition_vars:
+            self.param_structure['sigma'] = len(self.condition_vars['sensoryVar'])
+        else:
+            self.param_structure['sigma'] = 1
             
-        Returns:
-        --------
-        np.ndarray
-            Derivative values
-        """
-        return (1 - lapse_rate) * (1 / (np.sqrt(2 * np.pi) * sigma)) * \
-               np.exp(-((intensities - mu) ** 2) / (2 * sigma ** 2))
+        # Add mu parameters (one per combination of sensory noise and conflict)
+        if 'sensoryVar' in self.condition_vars and 'conflictVar' in self.condition_vars:
+            self.param_structure['mu'] = len(self.condition_vars['sensoryVar']) * len(self.condition_vars['conflictVar'])
+        elif 'conflictVar' in self.condition_vars:
+            self.param_structure['mu'] = len(self.condition_vars['conflictVar'])
+        else:
+            self.param_structure['mu'] = 1
+        
+        # Build parameter indices
+        self._build_param_indices()
     
-    def _negative_log_likelihood(self, params: np.ndarray,
-                               levels: np.ndarray,
-                               responses: np.ndarray,
-                               total_responses: np.ndarray,
-                               fixed_lapse: Optional[float] = None,
-                               fixed_sigma: Optional[float] = None) -> float:
-        """
-        Negative log-likelihood function for optimization.
+    def _build_param_indices(self):
+        """Build mapping between condition values and parameter indices."""
+        self.param_indices = {}
         
-        Parameters:
-        -----------
-        params : np.ndarray
-            Parameters to optimize
-        levels : np.ndarray
-            Stimulus levels
-        responses : np.ndarray
-            Number of "test chosen" responses at each level
-        total_responses : np.ndarray
-            Total number of responses at each level
-        fixed_lapse : float or None
-            Fixed lapse rate value (if None, lapse rate is optimized)
-        fixed_sigma : float or None
-            Fixed sigma value (if None, sigma is optimized)
+        # Lambda indices
+        lambda_start = 0
+        for i in range(self.param_structure['lambda']):
+            self.param_indices[f'lambda_{i}'] = lambda_start + i
             
-        Returns:
-        --------
-        float
-            Negative log-likelihood value
-        """
-        if fixed_lapse is None and fixed_sigma is None:
-            lambda_, mu, sigma = params  # Unpack parameters
-        elif fixed_lapse is not None and fixed_sigma is None:
-            lambda_ = fixed_lapse
-            mu, sigma = params
-        elif fixed_sigma is not None and fixed_lapse is not None:
-            mu = params[0]
-            sigma = fixed_sigma
-            lambda_ = fixed_lapse
-        else:  # fixed_sigma is not None and fixed_lapse is None
-            mu, lambda_ = params
-            sigma = fixed_sigma
+        # Sigma indices
+        sigma_start = lambda_start + self.param_structure['lambda']
+        if 'sensoryVar' in self.condition_vars:
+            for i, sensory_val in enumerate(self.condition_vars['sensoryVar']):
+                self.param_indices[f'sigma_{sensory_val}'] = sigma_start + i
+        else:
+            self.param_indices['sigma'] = sigma_start
             
-        p = self.psychometric_function(levels, lambda_, mu, sigma)
-        epsilon = 1e-9  # Add a small number to avoid log(0)
-        p = np.clip(p, epsilon, 1 - epsilon)
-        log_likelihood = np.sum(responses * np.log(p) + 
-                              (total_responses - responses) * np.log(1 - p))
-        return -log_likelihood
+        # Mu indices
+        mu_start = sigma_start + self.param_structure['sigma']
+        if 'sensoryVar' in self.condition_vars and 'conflictVar' in self.condition_vars:
+            for i, sensory_val in enumerate(self.condition_vars['sensoryVar']):
+                for j, conflict_val in enumerate(self.condition_vars['conflictVar']):
+                    idx = i * len(self.condition_vars['conflictVar']) + j
+                    self.param_indices[f'mu_{sensory_val}_{conflict_val}'] = mu_start + idx
+        elif 'conflictVar' in self.condition_vars:
+            for j, conflict_val in enumerate(self.condition_vars['conflictVar']):
+                self.param_indices[f'mu_{conflict_val}'] = mu_start + j
+        else:
+            self.param_indices['mu'] = mu_start
     
-    def _estimate_initial_guesses(self, levels: np.ndarray,
-                               responses: np.ndarray,
-                               total_responses: np.ndarray,
-                               max_sigma_ratio: float = 0.2) -> List[float]:
+    def get_param(self, params, param_type, *condition_values):
         """
-        Estimate initial parameter values using linear regression.
+        Get parameter value for specific conditions.
         
         Parameters:
         -----------
-        levels : np.ndarray
-            Stimulus levels
-        responses : np.ndarray
-            Number of "test chosen" responses at each level
-        total_responses : np.ndarray
-            Total number of responses at each level
-        max_sigma_ratio : float
-            Maximum sigma as a proportion of the range of intensities
-            
-        Returns:
-        --------
-        List[float]
-            Initial guesses for [lambda, mu, sigma]
-        """
-        proportions = responses / total_responses
-        
-        # Linear regression to estimate slope and intercept
-        slope, intercept, _, _, _ = linregress(levels, proportions)
-        mu_guess = (0.5 - intercept) / slope
-        
-        lapse_rate_guess = 0.03  # 3% as a reasonable guess
-        sigma_guess = self._compute_sigma_from_slope(slope, lapse_rate_guess)
-        
-        # Regularize sigma to avoid overestimation
-        intensity_range = np.abs(max(levels) - min(levels))
-        max_sigma = intensity_range * max_sigma_ratio
-        sigma_guess = min(sigma_guess, max_sigma)
-        
-        return [lapse_rate_guess, mu_guess, sigma_guess]
-    
-    def _compute_sigma_from_slope(self, slope: float, lapse_rate: float = 0.02) -> float:
-        """
-        Compute sigma value from the slope of a linear fit.
-        
-        Parameters:
-        -----------
-        slope : float
-            Slope of the linear regression
-        lapse_rate : float
-            Lapse rate parameter
+        params : array-like
+            Parameter vector
+        param_type : str
+            Parameter type ('lambda', 'sigma', or 'mu')
+        *condition_values : values
+            Values for condition variables (order matters)
             
         Returns:
         --------
         float
-            Sigma value
+            Parameter value
         """
-        sigma = (1 - lapse_rate) / (np.sqrt(2 * np.pi) * slope) * np.exp(-0.5)
-        return sigma
+        if param_type == 'lambda':
+            # For now, assume single lapse rate
+            return params[0]
+            
+        elif param_type == 'sigma':
+            if not condition_values or 'sensoryVar' not in self.condition_vars:
+                return params[self.param_indices['sigma']]
+            else:
+                sensory_val = condition_values[0]
+                return params[self.param_indices[f'sigma_{sensory_val}']]
+                
+        elif param_type == 'mu':
+            if 'sensoryVar' in self.condition_vars and 'conflictVar' in self.condition_vars:
+                if len(condition_values) >= 2:
+                    sensory_val, conflict_val = condition_values[:2]
+                    return params[self.param_indices[f'mu_{sensory_val}_{conflict_val}']]
+            elif 'conflictVar' in self.condition_vars:
+                if condition_values:
+                    conflict_val = condition_values[0]
+                    return params[self.param_indices[f'mu_{conflict_val}']]
+            return params[self.param_indices['mu']]
     
-    def fit(self, levels: np.ndarray,
-           responses: np.ndarray,
-           total_responses: np.ndarray,
-           init_guesses: Optional[List[float]] = None,
-           fixed_lapse: Optional[float] = None,
-           fixed_sigma: Optional[float] = None,
-           use_multiple_starts: bool = True,
-           n_starts: int = 5) -> np.ndarray:
+    def create_initial_params(self):
         """
-        Fit the psychometric function to the data.
+        Create initial parameter vector.
+        
+        Returns:
+        --------
+        numpy.ndarray
+            Initial parameter vector
+        """
+        total_params = sum(self.param_structure.values())
+        params = np.zeros(total_params)
+        
+        # Set default initial values
+        lambda_start = 0
+        for i in range(self.param_structure['lambda']):
+            params[lambda_start + i] = 0.03  # Default lapse rate
+            
+        sigma_start = lambda_start + self.param_structure['lambda']
+        for i in range(self.param_structure['sigma']):
+            params[sigma_start + i] = 0.1  # Default sigma
+            
+        mu_start = sigma_start + self.param_structure['sigma']
+        for i in range(self.param_structure['mu']):
+            params[mu_start + i] = 0.0  # Default mu
+            
+        return params
+    
+    def negative_log_likelihood_unified(self, params, delta_dur, chose_tests, total_responses, 
+                                        conflicts=None, noise_levels=None):
+        """
+        Compute negative log-likelihood for unified model.
         
         Parameters:
         -----------
-        levels : np.ndarray
+        params : array-like
+            Parameter vector
+        delta_dur : array-like
             Stimulus levels
-        responses : np.ndarray
-            Number of "test chosen" responses at each level
-        total_responses : np.ndarray
-            Total number of responses at each level
-        init_guesses : List[float] or None
-            Initial parameter values [lambda, mu, sigma]
-        fixed_lapse : float or None
-            Fixed lapse rate value (if None, lapse rate is optimized)
-        fixed_sigma : float or None
-            Fixed sigma value (if None, sigma is optimized)
+        chose_tests : array-like
+            Number of "test chosen" responses
+        total_responses : array-like
+            Total number of responses
+        conflicts : array-like or None
+            Conflict levels (if None, use default)
+        noise_levels : array-like or None
+            Noise levels (if None, use default)
+            
+        Returns:
+        --------
+        float
+            Negative log-likelihood
+        """
+        nll = 0
+        
+        for i in range(len(delta_dur)):
+            x = delta_dur[i]
+            
+            # Select appropriate parameters based on conditions
+            lambda_ = self.get_param(params, 'lambda')
+            
+            if noise_levels is not None:
+                sigma = self.get_param(params, 'sigma', noise_levels[i])
+            else:
+                sigma = self.get_param(params, 'sigma')
+                
+            if conflicts is not None and noise_levels is not None:
+                mu = self.get_param(params, 'mu', noise_levels[i], conflicts[i])
+            elif conflicts is not None:
+                mu = self.get_param(params, 'mu', conflicts[i])
+            else:
+                mu = self.get_param(params, 'mu')
+            
+            # Calculate probability
+            p = self.psychometric_function(x, lambda_, mu, sigma)
+            
+            # Handle numerical issues
+            epsilon = 1e-9
+            p = np.clip(p, epsilon, 1 - epsilon)
+            
+            # Add to negative log-likelihood
+            nll += -1 * (chose_tests[i] * np.log(p) + (total_responses[i] - chose_tests[i]) * np.log(1 - p))
+            
+        return nll
+    
+    def fit(self, levels, responses, total_responses, conflicts=None, noise_levels=None, 
+            init_params=None, use_multiple_starts=False):
+        """
+        Fit the psychometric function.
+        
+        Parameters:
+        -----------
+        levels : array-like
+            Stimulus levels
+        responses : array-like
+            Number of "test chosen" responses
+        total_responses : array-like
+            Total number of responses
+        conflicts : array-like or None
+            Conflict levels
+        noise_levels : array-like or None
+            Noise levels
+        init_params : array-like or None
+            Initial parameter values
         use_multiple_starts : bool
             Whether to use multiple starting points
-        n_starts : int
-            Number of starting points if use_multiple_starts is True
-        
+            
         Returns:
         --------
-        np.ndarray
-            Fitted parameters [lambda, mu, sigma]
+        scipy.optimize.OptimizeResult
+            Optimization result
         """
-        if init_guesses is None:
-            init_guesses = self._estimate_initial_guesses(levels, responses, total_responses)
+        if init_params is None:
+            init_params = self.create_initial_params()
+            
+        total_params = sum(self.param_structure.values())
+        bounds = [(0, 0.2)] * self.param_structure['lambda']  # Lambda bounds
+        bounds += [(0.01, 1)] * self.param_structure['sigma']  # Sigma bounds
+        bounds += [(-0.4, 0.4)] * self.param_structure['mu']  # Mu bounds
         
         if use_multiple_starts:
-            multi_start_guesses = self._generate_multiple_starts(n_starts)
-            best_fit = self._fit_multiple_starting_points(
-                levels, responses, total_responses, multi_start_guesses,
-                fixed_lapse, fixed_sigma
-            )
+            return self._fit_multiple_starts(levels, responses, total_responses, 
+                                           conflicts, noise_levels, bounds)
         else:
-            bounds = self._get_bounds(fixed_lapse, fixed_sigma)
-            params = self._get_params_to_optimize(init_guesses, fixed_lapse, fixed_sigma)
-            
             result = minimize(
-                self._negative_log_likelihood, 
-                x0=params,
-                args=(levels, responses, total_responses, fixed_lapse, fixed_sigma),
+                self.negative_log_likelihood_unified,
+                x0=init_params,
+                args=(levels, responses, total_responses, conflicts, noise_levels),
                 bounds=bounds,
                 method='L-BFGS-B'
             )
-            
-            best_fit = self._reconstruct_params(result.x, fixed_lapse, fixed_sigma)
-        
-        self.fitted_params = best_fit
-        return best_fit
+            self.fitted_params = result.x
+            return result
     
-    def _generate_multiple_starts(self, n_starts: int = 5) -> List[List[float]]:
-        """
-        Generate multiple starting points for optimization.
-        
-        Parameters:
-        -----------
-        n_starts : int
-            Number of points for each parameter
-            
-        Returns:
-        --------
-        List[List[float]]
-            List of starting points [lambda, mu, sigma]
-        """
-        multi_start_guesses = []
-        
-        # Create grid of starting points
-        init_lambdas = np.linspace(0.001, 0.1, n_starts)
-        init_mus = np.linspace(-0.2, 0.2, n_starts)
-        init_sigmas = np.linspace(0.05, 0.5, n_starts)
-        
-        for init_lambda in init_lambdas:
-            for init_mu in init_mus:
-                for init_sigma in init_sigmas:
-                    multi_start_guesses.append([init_lambda, init_mu, init_sigma])
-        
-        return multi_start_guesses
+    def _fit_multiple_starts(self, levels, responses, total_responses, 
+                           conflicts, noise_levels, bounds, n_starts=5):
+        """Fit with multiple starting points."""
+        # Implementation depends on your specific needs
+        # You could generate multiple starting points and select the best fit
+        pass
     
-    def _fit_multiple_starting_points(self, levels: np.ndarray,
-                                    responses: np.ndarray,
-                                    total_responses: np.ndarray,
-                                    multi_start_guesses: List[List[float]],
-                                    fixed_lapse: Optional[float] = None,
-                                    fixed_sigma: Optional[float] = None) -> np.ndarray:
+    def plot_fit(self, ax=None, data=None, sensory_val=None, conflict_val=None, 
+                color=None, label=None, show_params=True):
         """
-        Fit using multiple starting points and select the best fit.
+        Plot fitted psychometric function for specific conditions.
         
         Parameters:
         -----------
-        levels : np.ndarray
-            Stimulus levels
-        responses : np.ndarray
-            Number of "test chosen" responses at each level
-        total_responses : np.ndarray
-            Total number of responses at each level
-        multi_start_guesses : List[List[float]]
-            List of starting points [lambda, mu, sigma]
-        fixed_lapse : float or None
-            Fixed lapse rate value
-        fixed_sigma : float or None
-            Fixed sigma value
-            
-        Returns:
-        --------
-        np.ndarray
-            Best fitted parameters [lambda, mu, sigma]
-        """
-        best_fit = None
-        best_nll = float('inf')
-        
-        for init_guesses in multi_start_guesses:
-            try:
-                bounds = self._get_bounds(fixed_lapse, fixed_sigma)
-                params = self._get_params_to_optimize(init_guesses, fixed_lapse, fixed_sigma)
-                
-                result = minimize(
-                    self._negative_log_likelihood, 
-                    x0=params,
-                    args=(levels, responses, total_responses, fixed_lapse, fixed_sigma),
-                    bounds=bounds,
-                    method='L-BFGS-B'
-                )
-                
-                fit = self._reconstruct_params(result.x, fixed_lapse, fixed_sigma)
-                nll = self._negative_log_likelihood(
-                    fit, levels, responses, total_responses,
-                    fixed_lapse=None, fixed_sigma=None  # Always evaluate full model
-                )
-                
-                if nll < best_nll:
-                    best_nll = nll
-                    best_fit = fit
-            except Exception as e:
-                continue
-        
-        return best_fit
-    
-    def _get_bounds(self, fixed_lapse: Optional[float] = None,
-                  fixed_sigma: Optional[float] = None) -> List[Tuple[float, float]]:
-        """
-        Get optimization bounds based on fixed parameters.
-        
-        Parameters:
-        -----------
-        fixed_lapse : float or None
-            Fixed lapse rate value
-        fixed_sigma : float or None
-            Fixed sigma value
-            
-        Returns:
-        --------
-        List[Tuple[float, float]]
-            Bounds for optimization
-        """
-        if fixed_lapse is None and fixed_sigma is None:
-            return [(0, 0.2), (-0.4, 0.4), (0.01, 1)]
-        elif fixed_lapse is not None and fixed_sigma is None:
-            return [(-0.4, 0.4), (0.01, 1)]
-        elif fixed_sigma is not None and fixed_lapse is None:
-            return [(0, 0.2), (-0.4, 0.4)]
-        else:  # both fixed
-            return [(-0.4, 0.4)]
-    
-    def _get_params_to_optimize(self, init_guesses: List[float],
-                              fixed_lapse: Optional[float] = None,
-                              fixed_sigma: Optional[float] = None) -> np.ndarray:
-        """
-        Get parameters to optimize based on which are fixed.
-        
-        Parameters:
-        -----------
-        init_guesses : List[float]
-            Initial parameter values [lambda, mu, sigma]
-        fixed_lapse : float or None
-            Fixed lapse rate value
-        fixed_sigma : float or None
-            Fixed sigma value
-            
-        Returns:
-        --------
-        np.ndarray
-            Parameters to optimize
-        """
-        if fixed_lapse is None and fixed_sigma is None:
-            return init_guesses
-        elif fixed_lapse is not None and fixed_sigma is None:
-            return init_guesses[1:]
-        elif fixed_sigma is not None and fixed_lapse is None:
-            return [init_guesses[0], init_guesses[1]]
-        else:  # both fixed
-            return [init_guesses[1]]
-    
-    def _reconstruct_params(self, opt_params: np.ndarray,
-                          fixed_lapse: Optional[float] = None,
-                          fixed_sigma: Optional[float] = None) -> np.ndarray:
-        """
-        Reconstruct full parameter array from optimized parameters.
-        
-        Parameters:
-        -----------
-        opt_params : np.ndarray
-            Optimized parameters
-        fixed_lapse : float or None
-            Fixed lapse rate value
-        fixed_sigma : float or None
-            Fixed sigma value
-            
-        Returns:
-        --------
-        np.ndarray
-            Full parameter array [lambda, mu, sigma]
-        """
-        if fixed_lapse is None and fixed_sigma is None:
-            return opt_params
-        elif fixed_lapse is not None and fixed_sigma is None:
-            return np.array([fixed_lapse, opt_params[0], opt_params[1]])
-        elif fixed_sigma is not None and fixed_lapse is None:
-            return np.array([opt_params[0], opt_params[1], fixed_sigma])
-        else:  # both fixed
-            return np.array([fixed_lapse, opt_params[0], fixed_sigma])
-            
-    def bootstrap(self, levels: np.ndarray,
-                 responses: np.ndarray,
-                 total_responses: np.ndarray,
-                 n_bootstrap: int = 1000) -> np.ndarray:
-        """
-        Perform parametric bootstrapping to estimate confidence intervals.
-        
-        Parameters:
-        -----------
-        levels : np.ndarray
-            Stimulus levels
-        responses : np.ndarray
-            Number of "test chosen" responses at each level
-        total_responses : np.ndarray
-            Total number of responses at each level
-        n_bootstrap : int
-            Number of bootstrap samples
-            
-        Returns:
-        --------
-        np.ndarray
-            Bootstrap parameter estimates (n_bootstrap x 3)
-        """
-        if self.fitted_params is None:
-            raise ValueError("Must fit the model before bootstrapping")
-            
-        bootstrap_params = []
-        
-        for _ in range(n_bootstrap):
-            # Generate synthetic data based on fitted parameters
-            p = self.psychometric_function(levels, *self.fitted_params)
-            simulated_responses = np.random.binomial(n=total_responses, p=p)
-            
-            # Fit the psychometric function to synthetic data
-            init_guesses = self._estimate_initial_guesses(
-                levels, simulated_responses, total_responses
-            )
-            
-            try:
-                bootstrap_fit = self.fit(
-                    levels, simulated_responses, total_responses, 
-                    init_guesses=init_guesses, use_multiple_starts=False
-                )
-                bootstrap_params.append(bootstrap_fit)
-            except:
-                # If fitting fails, use the original parameters
-                bootstrap_params.append(self.fitted_params)
-        
-        self.bootstrap_results = np.array(bootstrap_params)
-        
-        # Calculate confidence intervals
-        self.confidence_intervals = np.percentile(
-            self.bootstrap_results, [2.5, 97.5], axis=0
-        )
-        
-        return self.bootstrap_results
-    
-    def plot_fit(self, levels: np.ndarray,
-                responses: np.ndarray,
-                total_responses: np.ndarray,
-                bin_data: bool = True,
-                n_bins: int = 8,
-                plot_ci: bool = False,
-                ax: Optional[plt.Axes] = None,
-                color: str = 'blue',
-                label: Optional[str] = None,
-                show_params: bool = True) -> plt.Axes:
-        """
-        Plot the fitted psychometric function with data points.
-        
-        Parameters:
-        -----------
-        levels : np.ndarray
-            Stimulus levels
-        responses : np.ndarray
-            Number of "test chosen" responses at each level
-        total_responses : np.ndarray
-            Total number of responses at each level
-        bin_data : bool
-            Whether to bin the data points
-        n_bins : int
-            Number of bins if bin_data is True
-        plot_ci : bool
-            Whether to plot confidence intervals
-        ax : plt.Axes or None
-            Matplotlib axes to plot on
-        color : str
-            Color for the fitted curve
+        ax : matplotlib.axes.Axes or None
+            Axes to plot on
+        data : pandas.DataFrame or None
+            Data to plot
+        sensory_val : float or None
+            Sensory noise level
+        conflict_val : float or None
+            Conflict level
+        color : str or None
+            Line color
         label : str or None
-            Label for the plot legend
+            Line label
         show_params : bool
-            Whether to show parameter values on plot
+            Whether to show parameters on the plot
             
         Returns:
         --------
-        plt.Axes
-            Matplotlib axes with the plot
+        matplotlib.axes.Axes
+            Axes with the plot
         """
-        if self.fitted_params is None:
-            raise ValueError("Must fit the model before plotting")
-            
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, 6))
             
-        # Prepare smooth curve for plotting
-        x = np.linspace(min(levels) - 0.1, max(levels) + 0.1, 100)
-        y = self.psychometric_function(x, *self.fitted_params)
-        
-        # Plot the fitted curve
-        ax.plot(x, y, color=color, lw=2, label=label)
-        
-        # Plot confidence interval if requested
-        if plot_ci and self.confidence_intervals is not None:
-            ci_low = np.percentile(self.bootstrap_results, 2.5, axis=0)
-            ci_high = np.percentile(self.bootstrap_results, 97.5, axis=0)
+        if self.fitted_params is None:
+            raise ValueError("Must fit model before plotting")
             
-            y_low = self.psychometric_function(x, *ci_low)
-            y_high = self.psychometric_function(x, *ci_high)
+        # Get parameters for these conditions
+        lambda_ = self.get_param(self.fitted_params, 'lambda')
+        sigma = self.get_param(self.fitted_params, 'sigma', sensory_val)
+        mu = self.get_param(self.fitted_params, 'mu', sensory_val, conflict_val)
+        
+        # Plot curve
+        x = np.linspace(-1, 1, 100)
+        y = self.psychometric_function(x, lambda_, mu, sigma)
+        line = ax.plot(x, y, color=color, label=label)
+        
+        # Show parameters if requested
+        if show_params:
+            param_text = f"λ = {lambda_:.3f}\nμ = {mu:.3f}\nσ = {sigma:.3f}"
+            ax.text(0.05, 0.05, param_text, transform=ax.transAxes,
+                   bbox=dict(facecolor='white', alpha=0.5))
             
-            ax.fill_between(x, y_low, y_high, alpha=0.2, color=color)
-        
-        # Plot raw or binned data
-        if bin_data:
-            binned_data = self._bin_data(levels, responses, total_responses, n_bins)
-            ax.scatter(
-                binned_data['x_mean'], 
-                binned_data['p_choose_test'],
-                s=binned_data['total_resp']/np.max(binned_data['total_resp'])*200,
-                color=color, 
-                alpha=0.6, 
-                edgecolor='black'
-            )
-        else:
-            proportions = responses / total_responses
-            ax.scatter(levels, proportions, color=color, alpha=0.6, edgecolor='black')
-        
         # Add reference lines
         ax.axhline(y=0.5, color='gray', linestyle='--', alpha=0.5)
         ax.axvline(x=0, color='gray', linestyle='--', alpha=0.5)
         
-        # Show parameter values
-        if show_params:
-            param_text = (
-                f"λ = {self.fitted_params[0]:.3f}\n"
-                f"μ = {self.fitted_params[1]:.3f}\n"
-                f"σ = {self.fitted_params[2]:.3f}"
-            )
-            
-            ax.text(
-                0.05, 0.05, param_text, 
-                transform=ax.transAxes,
-                bbox=dict(facecolor='white', alpha=0.7, boxstyle='round')
-            )
-        
-        # Set labels and title
-        ax.set_xlabel('Stimulus Level')
-        ax.set_ylabel('Proportion "Test" Responses')
-        ax.set_ylim(-0.05, 1.05)
-        
-        if label is not None:
-            ax.legend()
-            
         return ax
     
-    def _bin_data(self, levels: np.ndarray,
-                responses: np.ndarray,
-                total_responses: np.ndarray,
-                n_bins: int) -> Dict:
-        """
-        Bin data points for visualization.
-        
-        Parameters:
-        -----------
-        levels : np.ndarray
-            Stimulus levels
-        responses : np.ndarray
-            Number of "test chosen" responses at each level
-        total_responses : np.ndarray
-            Total number of responses at each level
-        n_bins : int
-            Number of bins
-            
-        Returns:
-        --------
-        Dict
-            Dictionary with binned data
-        """
-        # Create a DataFrame for binning
-        df = pd.DataFrame({
-            'level': levels,
-            'responses': responses,
-            'total_resp': total_responses
-        })
-        
-        # Create bins
-        df['bin'] = pd.cut(df['level'], bins=n_bins, labels=False)
-        
-        # Group by bin
-        binned = df.groupby('bin').agg(
-            x_mean=('level', 'mean'),
-            sum_responses=('responses', 'sum'),
-            total_resp=('total_resp', 'sum')
-        ).reset_index()
-        
-        # Calculate proportions
-        binned['p_choose_test'] = binned['sum_responses'] / binned['total_resp']
-        
-        return binned
-    
-    def plot_bootstrap_distributions(self) -> Tuple[plt.Figure, List[plt.Axes]]:
-        """
-        Plot distributions of bootstrapped parameters.
-        
-        Returns:
-        --------
-        Tuple[plt.Figure, List[plt.Axes]]
-            Figure and axes with the plots
-        """
-        if self.bootstrap_results is None:
-            raise ValueError("Must run bootstrap before plotting distributions")
-            
-        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-        param_names = ['Lambda (Lapse Rate)', 'Mu (PSE)', 'Sigma (JND)']
-        
-        for i, (name, ax) in enumerate(zip(param_names, axes)):
-            sns.histplot(self.bootstrap_results[:, i], ax=ax, kde=True)
-            ax.axvline(x=self.fitted_params[i], color='red', linestyle='--')
-            ax.set_title(name)
-            ax.set_xlabel('Parameter Value')
-            
-            # Add confidence interval
-            if self.confidence_intervals is not None:
-                low, high = self.confidence_intervals[:, i]
-                ax.axvline(x=low, color='gray', linestyle=':')
-                ax.axvline(x=high, color='gray', linestyle=':')
-                ax.text(
-                    0.05, 0.95, 
-                    f"95% CI: [{low:.3f}, {high:.3f}]",
-                    transform=ax.transAxes,
-                    va='top',
-                    bbox=dict(facecolor='white', alpha=0.7)
-                )
-        
-        plt.tight_layout()
-        return fig, axes
-        
-    def get_pse(self) -> float:
-        """Get the Point of Subjective Equality (PSE)"""
-        if self.fitted_params is None:
-            raise ValueError("Must fit the model before getting PSE")
-        return self.fitted_params[1]
-    
-    def get_jnd(self) -> float:
-        """Get the Just Noticeable Difference (JND)"""
-        if self.fitted_params is None:
-            raise ValueError("Must fit the model before getting JND")
-        return self.fitted_params[2]
-    
-    def get_lapse_rate(self) -> float:
-        """Get the lapse rate"""
-        if self.fitted_params is None:
-            raise ValueError("Must fit the model before getting lapse rate")
-        return self.fitted_params[0]
-    
-    def get_threshold(self, p: float = 0.75) -> float:
-        """
-        Get the threshold value for a specific performance level.
-        
-        Parameters:
-        -----------
-        p : float
-            Performance level (0-1)
-            
-        Returns:
-        --------
-        float
-            Threshold value
-        """
-        if self.fitted_params is None:
-            raise ValueError("Must fit the model before getting threshold")
-            
-        lapse, mu, sigma = self.fitted_params
-        
-        # Adjust p for lapse rate
-        p_adj = (p - lapse * 0.5) / (1 - lapse)
-        
-        # Inverse of CDF
-        return norm.ppf(p_adj, loc=mu, scale=sigma)
+    def psychometric_function(self, x, lambda_, mu, sigma):
+        """Psychometric function implementation."""
+        p = lambda_/2 + (1-lambda_) * norm.cdf((x - mu) / sigma)
+        return p
     
 
 
-# example usage data
-dataName="ek_bimodalDurEst_2025-04-14_17h29.23.677.csv"
-dataPath = f"bimodal_audioVisual_durEst/dataBimodal/{dataName}"
-noiseVar='audNoise'
-data = pd.read_csv(dataPath)
-data = data[data['audNoise'] != 0]
+def bin_and_plot(data, bin_method='cut', bins=10, bin_range=None, plot=True,color="blue"):
+    if bin_method == 'cut':
+        data['bin'] = pd.cut(data[intensityVariable], bins=bins, labels=False, include_lowest=True, retbins=False)
+    elif bin_method == 'manual':
+        data['bin'] = np.digitize(data[intensityVariable], bins=bin_range) - 1
+    
+    grouped = data.groupby('bin').agg(
+        x_mean=(intensityVariable, 'mean'),
+        y_mean=('p_choose_test', 'mean'),
+        total_resp=('total_responses', 'sum')
+    )
+
+    if plot:
+        plt.scatter(grouped['x_mean'], grouped['y_mean'], s=grouped['total_resp']/data['total_responses'].sum()*900, color=color)
+
+
+
+
+#load data
+dataName="_mainExpAvDurEstimate_2025-04-15_10h10.47.483.csv"
+#"_mainExpAvDurEstimate_2025-03-27_15h13.32.171.csv"
+#"_visualDurEstimate_2025-03-12_20h35.26.573.csv"
+
+data = pd.read_csv("mainExpAvDurEstimate/dataAvMain/"+dataName)
+data['avgAVDeltaS'] = (data['deltaDurS'] + (data['recordedDurVisualTest'] - data['recordedDurVisualStandard'])) / 2
+# Calculate deltaDurPercentVisual just as the difference between the test and standard visual durations over the standard visual duration
+data['deltaDurPercentVisual'] = ((data['recordedDurVisualTest'] - data['recordedDurVisualStandard']) / data['recordedDurVisualStandard'] 
+)
+data['avgAVDeltaPercent'] = data[['delta_dur_percents', 'deltaDurPercentVisual']].mean(axis=1)
+data
+
 # Define columns for chosing test or standard
 data['chose_test'] = (data['responses'] == data['order']).astype(int)
 data['chose_standard'] = (data['responses'] != data['order']).astype(int)
 try:
-    print(data[noiseVar]>1)
+    data["riseDur"]>1
 except:
-    data[noiseVar]=1
+    data["riseDur"]=1
 
 data['standard_dur']=data['standardDur']
+data[:3]
+data = data[data['audNoise'] != 0]
+data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+data=data[data['recordedDurVisualStandard'] <=998]
+# print column names
+print(data.columns)
+intensityVariable = "delta_dur_percents"
+sensoryVar="audNoise"
+standardVar="standardDur"
+conflictVar="conflictDur"
 
+uniqueSensory = data[sensoryVar].unique()
+uniqueStandard = data[standardVar].unique()
+uniqueConflict = data[conflictVar].unique()
+print(f"uniqueSensory: {uniqueSensory} \n uniqueStandard: {uniqueStandard} \n uniqueConflict: {uniqueConflict}")
 
 def groupByChooseTest(x):
-    grouped = x.groupby(['delta_dur_percents', noiseVar, 'standard_dur']).agg(
+    grouped = x.groupby([intensityVariable, sensoryVar, standardVar,conflictVar]).agg(
         num_of_chose_test=('chose_test', 'sum'),
         total_responses=('responses', 'count'),
-        num_of_chose_standard=('chose_standard', 'sum')
+        num_of_chose_standard=('chose_standard', 'sum'),
     ).reset_index()
     grouped['p_choose_test'] = grouped['num_of_chose_test'] / grouped['total_responses']
 
     return grouped
 
-def groupByStandardDur(x):
-    grouped = x.groupby(['delta_dur_percents', noiseVar, 'standard_dur']).agg(
-        num_of_chose_test=('chose_test', 'sum'),
-        total_responses=('responses', 'count'),
-        num_of_chose_standard=('chose_standard', 'sum')
-    ).reset_index()
-    grouped['pChooseStandard'] = grouped['num_of_chose_standard'] / grouped['total_responses']
+groupedData = groupByChooseTest(data)
+groupedData['p_chose_test'] = groupedData['num_of_chose_test'] / groupedData['total_responses']
+groupedData['p_chose_test'] = groupedData['num_of_chose_test'] / groupedData['total_responses']
+groupedData['delta_dur_percents'] = groupedData['delta_dur_percents'].astype(float)
+groupedData['delta_dur_percents'] = groupedData['delta_dur_percents'].astype(float)
 
-    return grouped
+# Define columns for chosing test or standard
+data['chose_test'] = (data['responses'] == data['order']).astype(int)
+data['chose_standard'] = (data['responses'] != data['order']).astype(int)
+try:
+    data["riseDur"]>1
+except:
+    data["riseDur"]=1
 
-grouped=groupByChooseTest(data)
-# p_choose_test
-#sort the group
-grouped = grouped.sort_values([ 'standard_dur'])
+data['standard_dur']=data['standardDur']
+data[:3]
+data = data[data['audNoise'] != 0]
+data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+data=data[data['recordedDurVisualStandard'] <=998]
 
-analyzer = PsychometricFitter(use_lapse_rate=True)
-# Extract data from the DataFrame
-levels = grouped['delta_dur_percents'].to_numpy()
-responses = grouped['num_of_chose_test'].to_numpy()
-total_responses = grouped['total_responses'].to_numpy()
-# Fit the psychometric function
-fitted_params = analyzer.fit(levels, responses, total_responses)
-# Print fitted parameters
-print(f"Fitted parameters: {fitted_params}")
 
+# 1. Initialize the fitter with your condition structure
+fitter = PsychometricFitter()
+fitter.set_conditions(data, [sensoryVar, conflictVar, standardVar])
+
+# 2. Create initial parameter vector
+init_params = fitter.create_initial_params()
+
+# 3. Fit the model
+result = fitter.fit(
+    levels=groupedData[intensityVariable],
+    responses=groupedData['num_of_chose_test'],
+    total_responses=groupedData['total_responses'],
+    conflicts=groupedData['conflictDur'],
+    noise_levels=groupedData['audNoise'],
+    init_params=init_params
+)
+
+# 4. Plot results for specific conditions
+fig, axes = plt.subplots(len(uniqueSensory), len(uniqueConflict), figsize=(12, 8))
+
+for i, sensory_val in enumerate(uniqueSensory):
+    for j, conflict_val in enumerate(uniqueConflict):
+        ax = axes[i, j]
+        
+        # Filter data for these conditions
+        df = data[(data['audNoise'] == sensory_val) & (data['conflictDur'] == conflict_val)]
+        filtered_df = groupByChooseTest(df)
+        
+        # Plot data points
+        bin_and_plot(filtered_df)
+        
+        # Plot fitted curve
+        fitter.plot_fit(
+            ax=ax, 
+            sensory_val=sensory_val, 
+            conflict_val=conflict_val,
+            color='blue', 
+            label=f'Noise: {sensory_val}, Conflict: {conflict_val}'
+        )
+        
+        # Set title and labels
+        ax.set_title(f'Noise: {sensory_val}, Conflict: {conflict_val}')
+        ax.set_xlabel('Delta Duration')
+        ax.set_ylabel('P(Choose Test)')
+
+plt.tight_layout()
+plt.show()
