@@ -80,11 +80,7 @@ exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=o
 "----------------------------------------------------------------------------------------------------------------------------------------------------"
 # Start the trial - response loop (there weill be)
 """ Staircase Setup"""
-stepFactor=0.6
-initStep=0.2
-maxReversals=100
-max_level=0.9
-initLevel=0.8
+
 
 # Create the staircases
 max_trial_per_stair=nTrialPerStair

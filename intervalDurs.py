@@ -9,3 +9,8 @@ postMax=0.45
 # Backgroun Noise Conditions
 #riseDurs=[0.5, ]
 
+stepFactor=0.6
+initStep=0.15
+maxReversals=100
+max_level=0.90
+initLevel=0.6

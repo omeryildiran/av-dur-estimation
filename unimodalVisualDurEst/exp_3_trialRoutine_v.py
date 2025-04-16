@@ -162,7 +162,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     frameStart = 0
     frameN = -1
     visualStim.setAutoDraw(True)
-    while continueRoutine:
+    while continueRoutine and not ExpTesting and not endExpNow:
         frameN += 1
         t = trialClock.getTime()
         # draw the fixation cross

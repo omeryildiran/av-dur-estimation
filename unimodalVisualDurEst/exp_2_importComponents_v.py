@@ -14,9 +14,9 @@ trialClock = core.Clock()
 
 audNoiseConds= [0.1] 
 maxIntensityBurst=5
-nTrialPerStairPerCondition=70
+nTrialPerStairPerCondition=35
 nTrialPerStair=len(audNoiseConds)*len(conflicts)*nTrialPerStairPerCondition
-totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+1)*len(conflicts)
+totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+2)*len(conflicts)
 
 bin_dur=0.1
 
@@ -80,11 +80,6 @@ exp_data=np.zeros((conditions_matrix.shape[0]+tolerance_trials, 19),dtype=object
 # region [rgba(2, 40, 30, 0.30)]
 # Start the trial - response loop (there weill be)
 """ Staircase Setup"""
-stepFactor=0.60
-initStep=0.2
-maxReversals=100
-max_level=0.9
-initLevel=0.65
 
 # Create the staircases
 max_trial_per_stair=nTrialPerStair#total_trials//5
