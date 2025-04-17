@@ -232,7 +232,7 @@ class generateAudioClass:
 
         #smooth the sound wave
         backgroundNoise = self.broadband_filter(backgroundNoise,10, 600, self.sample_rate, order=4)
-        stimSound = self.broadband_filter(stimSound, 150, 750, self.sample_rate, order=4)
+        stimSound = self.broadband_filter(stimSound, 150, 730, self.sample_rate, order=4)
 
         # mix the two sounds
         mixedSound = stimSound + backgroundNoise
