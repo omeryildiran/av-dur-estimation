@@ -212,27 +212,8 @@ class AudioCueGenerator:
         background_noise = self.broadband_filter(background_noise,10, 600, self.sample_rate, order=4)
         stim_sound = self.broadband_filter(stim_sound, 150, 750, self.sample_rate, order=4)
         
-        
-        
-        # #plt.show()
-        # t=np.linspace(0, len(stim_sound[:1*self.sample_rate]) / self.sample_rate, len(stim_sound[:1*self.sample_rate]))
-        # plt.plot(t,background_noise[:1*self.sample_rate], alpha=0.7, color="#008631", label="Background Noise")  
-        # plt.plot(t,stim_sound[:1*self.sample_rate], alpha=0.8, color="black", label="Bursts")
-        # plt.xlabel("Time (s)")
-        # plt.ylabel("Amplitude")
-        # # remove axspines
-        # plt.gca().spines['top'].set_visible(False)
-        # plt.gca().spines['right'].set_visible(False)
-        # plt.legend()
-        # plt.title("High Reliability Stimulus")
-        # #plt.tight_layout()
-        # plt.show()
-
-        #stim_sound=self.lowpass_filter(stim_sound,400,self.sample_rate,4)
-        #stim_sound = self.broadband_filter(stim_sound, 10, 10000, self.sample_rate, order=4)
         # #Background noise of same totaal duration
 
-        # #background_noise= self.lowpass_filter(background_noise,700,self.sample_rate,2)
         # # mix the sounds
         stim_sound = stim_sound + background_noise
         stim_sound = stim_sound / np.max(np.abs(stim_sound))

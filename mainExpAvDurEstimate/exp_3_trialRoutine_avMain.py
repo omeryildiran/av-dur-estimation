@@ -27,7 +27,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         shuffle(all_staircases)
     current_stair=stair.method
 
-    print('\n')
     # Get the current trial
     if current_stair=="lapse_rate":
         if not lapse_ended:
@@ -92,7 +91,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     #     conflictDurFramesSign=conflictDurFrames//conflictDurFrames
     # except:
     conflictDurFramesSign=np.sign(conflictDurFrames)
-    print(f'conflict sign: {conflictDurFramesSign}')
     
     conflictF1=conflictDurFramesAbs//2 # first half of the conflict duration
     conflictF2=conflictDurFramesAbs-conflictF1   # second half of the conflict duration
@@ -112,7 +110,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
 
 
 
-    print(f'conflict {conflictDurFrames}')
 
     
     if order==1: # test in the first place, visual stimulus 1 is the test
@@ -131,7 +128,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         onset2=offset1+isiDurFrames+avPSE1
         offset2=onset2+testDurFrames-avPSE2
 
-    print(f'\nOnset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2}, dur 1: {frames2sec(offset1-onset1)}, dur 2: {frames2sec(offset2-onset2)}')
+    print(f'Onset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2}, dur 1: {frames2sec(offset1-onset1)}, dur 2: {frames2sec(offset2-onset2)}')
     print(f'Test is in {order} and standard is in {2 if order==1 else 1} place')
 
     #recalculate durations in seconds (frames to seconds)
@@ -164,7 +161,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
 
 
 
-    print(f'Current Stair: {current_stair}, Standard Dur: {standardDur}, Test Dur: {testDurS},\n Auditory noise : {audNoise},Test in: {order} place,  Delta Dur: {deltaDurPercent},  deltaDurS: {deltaDurS}, Conflict Dur: {conflictDur},')
+    print(f'Current Stair: {current_stair}, Standard Dur: {standardDur}, Test Dur: {testDurS},\n Auditory noise : {audNoise},Test in: {order} place,  \n Delta Dur %: {deltaDurPercent},  deltaDurS: {deltaDurS}, Conflict Dur: {conflictDur}, Visual PSE: {avPSEseconds}')
     visualStim=visual.Circle(win, radius=visualStimSize, fillColor=True, lineColor='black', colorSpace='rgb', units='pix',
                         pos=(0, 0))
     visualStim.lineWidht=5
@@ -269,7 +266,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             #visualStim.setAutoDraw(True)
             visualStim.fillColor = "black"
             tVisualStim1Start = t
-            print("recorded onset1")
+            #print("recorded onset1")
 
         # Interstimulus interval
         if offset1== frameN:#< onset2:
@@ -282,7 +279,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         if onset2==frameN:# < offset2:
             #visualStim.setAutoDraw(True)
             visualStim.fillColor = "black"
-            print("recorded onset2")
+            #print("recorded onset2")
             tVisualStim2Start =t
         
         # Post Stimulus
@@ -320,7 +317,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             break
         win.flip()
 
-    print('trial ended')
+    #print('trial ended')
     stair_num_reversal=stair.reversals
     stair_is_reversal=stair.is_reversal
     # endregion
