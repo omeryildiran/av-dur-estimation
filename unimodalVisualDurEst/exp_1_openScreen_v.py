@@ -44,7 +44,7 @@ expInfo = {'participant': '', 'session number': '001'}
 if ExpTesting:
     expInfo['participant'] = 'test'
 # present a dialogue to change params
-#dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
+dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 #core.quit() if dlg.OK == False else None
 # save expInfo to a file
 expInfo['date'] = data.getDateStr()  # add a simple timestamp
