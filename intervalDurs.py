@@ -13,7 +13,7 @@ stepFactor=0.6
 initStep=0.15
 maxReversals=100
 max_level=0.90
-initLevel=0.6
+initLevel=0.7
 
 volume=0.12
 deviceIndex=0
