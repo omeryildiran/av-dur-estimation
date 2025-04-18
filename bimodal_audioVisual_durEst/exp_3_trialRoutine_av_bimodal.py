@@ -22,11 +22,11 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     
     trialN += 1
     # have a rest screen
-    if trialN % 30 == 0:
+    if trialN % 10 == 0:
         order=3-order # change the order of the test and standard
         avOrder="A -> V" if order==1 else "V -> A"
-        block_num = trialN // 30
-        total_blocks = total_trial_num // 30
+        block_num = trialN // 10
+        total_blocks = total_trial_num // 10
         rest_text = f"""This is going to be the {block_num+1} block out of {total_blocks}\n
         In this block order of modalities will be
         \n {avOrder}\n
