@@ -1,5 +1,5 @@
 ExpTesting = False
-ExpTraining= True
+ExpTraining= 0
 fullScreen=False
 expName = 'auditoryDurEst'
 expCondition='auditory'
@@ -36,7 +36,7 @@ parent_dir = os.path.dirname(current_dir)
 print(f"\nParent directory\n: {parent_dir}")
 exec(open(parent_dir+"/intervalDurs.py").read())
 volume=volume
-prefs.hardware['audioDevice'] = [deviceIndex,1,2,3,4,5]
+#prefs.hardware['audioDevice'] = [deviceIndex,1,2,3,4,5]
 # 1 - Inititate and welcome participants
 exec(open("exp_1_openScreen_a.py").read())
 

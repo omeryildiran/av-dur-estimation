@@ -6,8 +6,8 @@ modalityCue='A'
 
 #avPSEseconds=-0.025 # audiovisual PSE in seconds (negative means visual perceived shorter
 standardDur=0.5 # standard duration in seconds
-avPSEsecondsHigh=-0.15*standardDur # audiovisual PSE in seconds (negative means visual perceived shorter
-avPSEsecondsLow=+0.28*standardDur # audiovisual PSE in seconds (negative means visual perceived shorter
+avPSEsecondsHigh=-0.13*standardDur # audiovisual PSE in seconds (negative means visual perceived shorter
+avPSEsecondsLow=+0.54*standardDur # audiovisual PSE in seconds (negative means visual perceived shorter
 # (when audio is shorter than visual, people perceive audio and visual in equal length) so to handle this, we need to add this value to the visual duration
 
 conflicts=[ -0.25, -0.167, 0.083, 0, -0.083, 0.167, 0.25,]
@@ -16,7 +16,7 @@ conflictsBatch1=[ 0, -0.167,  0.25]
 conflictsBatch2=[ -0.083, 0.167]
 conflictsBatch3=[ -0.25,  0.083]
 
-conflicts=conflictsBatch1
+conflicts=conflictsBatch3
 
 import os
 import sys  # to get file system encoding
