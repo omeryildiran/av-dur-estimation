@@ -177,8 +177,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     if (dur1<=0 or dur2<=0):
         print("dur1 ",dur1)
         print("dur2 ",dur2)
-        breakpoint()
-        endExpNow=True
+        #breakpoint()
+        #endExpNow=True
 
 
     # if training show feedback
@@ -205,11 +205,21 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         total_blocks = total_trial_num // 30
         rest_text = f"""You can have a break now.
         You are in block {block_num} out of {total_blocks}.
-        Press any key to continue."""
-        rest_text_comp = visual.TextStim(win, text=rest_text, color='white', height=30)
+        Please wait a few seconds."""
+
+        rest_text_comp = visual.TextStim(win, text=rest_text, color='red', height=30)
         rest_text_comp.draw()
         win.flip()
         # comment for testing
+        core.wait(5)
+        goText="Now you can press any key to continue!"
+        goTextObj= visual.TextStim(win, text=rest_text, color='green', height=30,  pos=(0, -100))
+        goTextObj.draw()
+        rest_text_comp.color='green'
+        rest_text_comp.draw()
+        win.flip()
+
+        
         event.waitKeys() if ExpTesting==False else None
 
 

@@ -80,7 +80,7 @@ print(f"column names: {len(column_names)}")
 exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=object)
 
 # region [rgba(2, 40, 30, 0.30)]
-# Start the trial - response loop (there weill be)
+# Start the trial - response loop (there weill be
 """ Staircase Setup"""
 
 
