@@ -87,6 +87,13 @@ exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=o
 # Create the staircases
 max_trial_per_stair=nTrialPerStair#total_trials//5
 
+
+if max([avPSEsecondsLow,avPSEsecondsHigh])>0:
+    minLapse=-1*max_level+2*max([avPSEsecondsLow,avPSEsecondsHigh])
+    print("min lapse rate:", minLapse)
+else:
+    minLapse=-0.9
+max_level=minLapse
 print(f'rise unique: {np.unique(audNoises)}')
 
 # stairCaseLonger = stairCase(init_level=initLevel, 
@@ -116,8 +123,9 @@ else:
 np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
+
 def lapse_rate_cond_generate():
-    lapse_deltas=[-0.70,0.70]
+    lapse_deltas=[minLapse,+0.9]
     all_conds=[]
     for i in uniqueStandardDurs: # standard durations 1.3, 1.6, 1.9
         for j in uniqueAudNoise: # rise durations 0.05, 0.25

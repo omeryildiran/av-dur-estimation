@@ -128,7 +128,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         onset2=offset1+isiDurFrames+avPSE1
         offset2=onset2+testDurFrames-avPSE2
 
-    print(f'Onset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2}, dur 1: {frames2sec(offset1-onset1)}, dur 2: {frames2sec(offset2-onset2)}')
+    print(f'Onset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2},  dur 1: {frames2sec(offset1-onset1)}, dur 2: {frames2sec(offset2-onset2)}')
+
     print(f'Test is in {order} and standard is in {2 if order==1 else 1} place')
 
     #recalculate durations in seconds (frames to seconds)
@@ -155,9 +156,9 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     t=np.linspace(0,len(audio_stim)/sampleRate,len(audio_stim))
 
 
-    # For testing purposes uncomment the following line
-    if ExpTesting:
-        audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) 
+    # # For testing purposes uncomment the following line
+    # if ExpTesting:
+    #     audio_stim_sound=sound.Sound('A', sampleRate=sampleRate, stereo=False,secs=0.0001) 
 
 
 
@@ -169,6 +170,16 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     total_dur_of_stim = preDur+testDurS+isiDur+standardDur+postDur
     totalDurFrames=sec2frames(total_dur_of_stim, frameRate)
     total_stim_durs.append(total_dur_of_stim) # save the total duration of the audio stimulus
+    
+
+    dur1=frames2sec(offset1-onset1)
+    dur2=frames2sec(offset2-onset2)
+    if (dur1<=0 or dur2<=0):
+        print("dur1 ",dur1)
+        print("dur2 ",dur2)
+        breakpoint()
+        endExpNow=True
+
 
     # if training show feedback
     if ExpTraining and trialN>0:

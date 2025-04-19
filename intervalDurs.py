@@ -12,7 +12,7 @@ postMax=0.45
 stepFactor=0.6
 initStep=0.1
 maxReversals=100
-max_level=0.70
+max_level=0.90
 initLevel=0.65
 
 volume=0.12
