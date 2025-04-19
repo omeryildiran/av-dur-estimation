@@ -117,7 +117,7 @@ np.random.shuffle(all_staircases)
 stopped_stair_count=0
 
 def lapse_rate_cond_generate():
-    lapse_deltas=[-0.80,0.80]
+    lapse_deltas=[-0.70,0.70]
     all_conds=[]
     for i in uniqueStandardDurs: # standard durations 1.3, 1.6, 1.9
         for j in uniqueAudNoise: # rise durations 0.05, 0.25
