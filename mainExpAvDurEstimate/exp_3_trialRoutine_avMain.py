@@ -216,10 +216,10 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         goTextObj= visual.TextStim(win, text=rest_text, color='green', height=30,  pos=(0, -100))
         goTextObj.draw()
         rest_text_comp.color='green'
-        rest_text_comp.draw()
+        #rest_text_comp.draw()
         win.flip()
 
-        
+
         event.waitKeys() if ExpTesting==False else None
 
 
