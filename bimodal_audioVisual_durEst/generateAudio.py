@@ -231,8 +231,8 @@ class generateAudioClass:
         backgroundNoise = backgroundNoise * (np.max(abs(stimSound)) / np.max(abs(backgroundNoise))) * audNoise
 
         #smooth the sound wave
-        backgroundNoise = self.broadband_filter(backgroundNoise,10, 600, self.sample_rate, order=4)
-        stimSound = self.broadband_filter(stimSound, 150, 765, self.sample_rate, order=4)
+        backgroundNoise = self.broadband_filter(backgroundNoise,10, 610, self.sample_rate, order=4)
+        stimSound = self.broadband_filter(stimSound, 150, 775, self.sample_rate, order=4)
 
         # mix the two sounds
         mixedSound = stimSound + backgroundNoise
