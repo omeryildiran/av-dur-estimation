@@ -204,7 +204,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     frameStart = 0
     frameN = -1
     visualStim.setAutoDraw(True) if expCondition=="audiovisual" else visualStim.setAutoDraw(False)
-    
+    fixation.setAutoDraw(True)
+
     while continueRoutine and not ExpTesting:
         frameN += 1
         t = trialClock.getTime()

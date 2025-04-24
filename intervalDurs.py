@@ -1,3 +1,7 @@
+import random
+
+# Setting the seed
+random.seed(42)
 # Interval Durations
 preMin=0.2
 preMax=0.45

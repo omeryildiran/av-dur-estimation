@@ -209,7 +209,7 @@ class AudioCueGenerator:
         #print(max(stim_sound))
 
         # smooth the sound waveform
-        background_noise = self.broadband_filter(background_noise,10, 600, self.sample_rate, order=4)
+        background_noise = self.broadband_filter(background_noise,10, 610, self.sample_rate, order=4)
         stim_sound = self.broadband_filter(stim_sound, 150, 785, self.sample_rate, order=4)
         
         # #Background noise of same totaal duration
