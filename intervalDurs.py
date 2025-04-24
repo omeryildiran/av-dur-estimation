@@ -15,5 +15,5 @@ maxReversals=100
 max_level=0.90
 initLevel=0.65
 
-volume=0.12
+volume=0.1
 deviceIndex=0
