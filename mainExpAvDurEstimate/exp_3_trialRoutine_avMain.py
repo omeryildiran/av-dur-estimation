@@ -233,6 +233,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     # Pre trial fixation and precue
     modalityCue = modalityCue if modalityCue is not None else np.random.choice(['A', 'V']) 
     exp_data[trialN, 26] = modalityCue
+    exp_data[trialN, 27] = -avPSEseconds
 
     if modalityCue=='A':
         modalityCueObj = audioIcon 
@@ -462,7 +463,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 'current_stair', 'responses', 'is_correct', 'response_rts' , 
                 'stair_num_reversal', 'stair_is_reversal', 'response_keys', 'conflictDur',
                 'recordedOnsetVisualTest', 'recordedOffsetVisualTest', 'recordedDurVisualTest',
-                'recordedOnsetVisualStandard', 'recordedOffsetVisualStandard', 'recordedDurVisualStandard','modalityCue'
+                'recordedOnsetVisualStandard', 'recordedOffsetVisualStandard', 'recordedDurVisualStandard','modalityCue', 'VisualPSE'
             ])            
             data_saved.to_csv(filename + '.csv')
 

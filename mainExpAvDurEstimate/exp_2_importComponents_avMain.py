@@ -74,7 +74,7 @@ column_names=columns=[
                 'current_stair', 'responses', 'is_correct', 'response_rts' , 'stair_num_reversal', 'stair_is_reversal', 'response_keys'
             'conflictDur', 
             'recordedOnsetVisualTest', 'recordedOffsetVisualTest', 'recordedDurVisualTest',
-            'recordedOnsetVisualStandard', 'recordedOffsetVisualStandard', 'recordedDurVisualStandard','modalityPostCue']
+            'recordedOnsetVisualStandard', 'recordedOffsetVisualStandard', 'recordedDurVisualStandard','modalityPostCue','AVPSEbias']
 print(f"column names: {len(column_names)}")
 # create empty data matrix to save the data
 exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=object)
