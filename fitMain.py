@@ -6,7 +6,9 @@ import pandas as pd
 import os
 
 # function for loading data
-def loadData(dataName):
+def loadData(dataName, isShared):
+    global data, sharedSigma, intensityVariable, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu
+    sharedSigma = isShared  # Set to True if you want to use shared sigma across noise levels
     intensityVariable="delta_dur_percents"
 
     sensoryVar="audNoise"
@@ -18,6 +20,8 @@ def loadData(dataName):
     data = pd.read_csv("data/"+dataName)
     data= data[data['audNoise'] != 0]
     data=data[data['standardDur'] != 0]
+    data[standardVar] = data[standardVar].round(2)
+    data[conflictVar] = data[conflictVar].round(3)
     uniqueSensory = data[sensoryVar].unique()
     uniqueStandard = data[standardVar].unique()
     uniqueConflict = sorted(data[conflictVar].unique())
@@ -31,7 +35,7 @@ def loadData(dataName):
     data['chose_test'] = (data['responses'] == data['order']).astype(int)
     data['chose_standard'] = (data['responses'] != data['order']).astype(int)
     data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
-    data['conflictDur'] = data['conflictDur'].round(2)
+    data['conflictDur'] = data['conflictDur'].round(3)
     data['standard_dur']=data['standardDur']
 
     try:
@@ -43,20 +47,23 @@ def loadData(dataName):
 
     data['standard_dur']=round(data['standardDur'],2)
     data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
-    data['conflictDur']=round(data['conflictDur'],2)
 
     data=data[data['recordedDurVisualStandard'] <=998]
     data=data[data['recordedDurVisualStandard'] >=0]
     nLambda=len(uniqueStandard)
     nSigma=len(uniqueSensory)
     nMu=len(uniqueConflict)*nSigma
+    
     return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
 
 intensityVariable="delta_dur_percents"
 
-
+sensoryVar="audNoise"
+standardVar="standardDur"
+conflictVar="conflictDur"
 
 def groupByChooseTest(x):
+    print(f"Grouping by {intensityVariable}, {sensoryVar}, {standardVar}, {conflictVar}")
     grouped = x.groupby([intensityVariable, sensoryVar, standardVar,conflictVar]).agg(
         num_of_chose_test=('chose_test', 'sum'),
         total_responses=('responses', 'count'),
@@ -117,49 +124,72 @@ from tqdm import tqdm
 
 def getParams(params, conflict, audio_noise, nLambda, nSigma):
 
-    # Get lambda (lapse rate)
-    lambda_ = params[0]    
-    # Get sigma based on noise level
-    
-    # Get noise index safely
-    noise_idx_array = np.where(uniqueSensory == audio_noise)[0]
-    if len(noise_idx_array) == 0:
-        raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
-    
-    # Get conflict index safely
-    conflict_idx_array = np.where(uniqueConflict==conflict)[0]
-    if len(conflict_idx_array) == 0:
-        raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
-    conflict_idx = conflict_idx_array[0]
-    
-    noise_idx = noise_idx_array[0]
-#    print(f"noise_idx: {noise_idx}, conflict_idx: {conflict_idx}, noise_offset: {noise_offset}, lenParams: {len(params)}")
+    if sharedSigma==False:
+        # Get lambda (lapse rate)
+        lambda_ = params[0]    
+        # Get sigma based on noise level
+        
+        # Get noise index safely
+        noise_idx_array = np.where(uniqueSensory == round(audio_noise,3))[0]
+        if len(noise_idx_array) == 0:
+            raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
+        
+        # Get conflict index safely
+        conflict_idx_array = np.where(uniqueConflict==conflict)[0]
+        if len(conflict_idx_array) == 0:
+            raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
+        conflict_idx = conflict_idx_array[0]
+        
+        noise_idx = noise_idx_array[0]
+    #    print(f"noise_idx: {noise_idx}, conflict_idx: {conflict_idx}, noise_offset: {noise_offset}, lenParams: {len(params)}")
 
-    # sigma is after lambda, so we need to find its index
-    sigma_idx = nLambda-1  + ((conflict_idx+1)*(noise_idx+1))#+ nSigma + noise_offset + conflict_idx
-    sigma = params[sigma_idx]  # +1 because lambda is first
+        # sigma is after lambda, so we need to find its index
+        sigma_idx = nLambda-1  + ((conflict_idx+1)*(noise_idx+1))#+ nSigma + noise_offset + conflict_idx
+        sigma = params[sigma_idx]  # +1 because lambda is first
 
-    noise_offset = noise_idx * len(uniqueConflict)
-    # mu is after lambda and sigma, so we need to find its index
-    #mu_idx = nLambda+ nSigma + noise_offset + conflict_idx
-    mu_idx = nLambda-1 +((len(params)-1)//2) + ((conflict_idx+1)*(noise_idx+1))#+ nSigma + noise_offset + conflict_idx
-    
-    mu = params[mu_idx]
-    
+        noise_offset = noise_idx * len(uniqueConflict)
+        # mu is after lambda and sigma, so we need to find its index
+        #mu_idx = nLambda+ nSigma + noise_offset + conflict_idx
+        mu_idx = nLambda-1 +((len(params)-1)//2) + ((conflict_idx+1)*(noise_idx+1))#+ nSigma + noise_offset + conflict_idx
+        
+        mu = params[mu_idx]
+
+    else:
+        # Get lambda (lapse rate)
+        lambda_ = params[0]    
+        # Get sigma based on noise level
+        # Get noise index safely
+        noise_idx_array = np.where(uniqueSensory == audio_noise)[0]
+        if len(noise_idx_array) == 0:
+            raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
+        noise_idx = noise_idx_array[0]
+        sigma = params[noise_idx + 1]  # +1 because lambda is first
+        
+        # Get conflict index safely
+        conflict_idx_array = np.where(np.isclose(uniqueConflict, conflict, atol=1e-1))[0]
+        if len(conflict_idx_array) == 0:
+            raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
+        conflict_idx = conflict_idx_array[0]
+        noise_offset = noise_idx * len(uniqueConflict)
+        mu_idx = nLambda + nSigma + noise_offset + conflict_idx
+        mu = params[mu_idx]
+
+
     return lambda_, mu, sigma
+    
 
 def getParamIndexes(params, conflict, audio_noise, nLambda, nSigma):
     # Get lambda (lapse rate)
     lambda_ = params[0]    
     # Get sigma based on noise level
     # Get noise index safely
-    noise_idx_array = np.where(uniqueSensory == audio_noise)[0]
+    noise_idx_array = np.where(uniqueSensory == round(audio_noise,3))[0]
     if len(noise_idx_array) == 0:
         raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
     noise_idx = noise_idx_array[0]
     
     # Get conflict index safely
-    conflict_idx_array = np.where(uniqueConflict==conflict)[0]
+    conflict_idx_array = np.where(uniqueConflict==round(conflict,3))[0]
     if len(conflict_idx_array) == 0:
         raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
     conflict_idx = conflict_idx_array[0]
@@ -176,6 +206,7 @@ def getParamIndexes(params, conflict, audio_noise, nLambda, nSigma):
 
 from scipy.stats import norm
 from scipy.optimize import minimize
+import argparse
 
 def psychometric_function(x, lambda_, mu, sigma):
     # Cumulative distribution function with mean mu and standard deviation sigma
@@ -208,7 +239,7 @@ def fit_psychometric_function(levels,nResp, totalResp,init_guesses=[0,0,0]):
     # fitting is done here
     result = minimize(
         negative_log_likelihood, x0=init_guesses, 
-        args=(levels, nResp, totalResp),  # Pass the data and fixed parameters
+        args=(levels, nResp, totalResp),  #       Pass the data and fixed parameters
         bounds=bounds,
         method='L-BFGS-B' 
     )
@@ -248,38 +279,64 @@ def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_lev
 
 # fitting function for joint model
 def fitJoint(grouped_data,  initGuesses):
-    
-    # Initialize guesses for parameters 
-    # lambda, sigma, mu
-    initGuesses= [initGuesses[0]]*nLambda + [initGuesses[2]]*nSensoryVar*nConflictVar+ [initGuesses[1]]*nSensoryVar*nConflictVar
-    
-    intensities = grouped_data[intensityVariable]
-    chose_tests = grouped_data['num_of_chose_test']
-    total_responses = grouped_data['total_responses']
-    conflicts = grouped_data[conflictVar]
-    noise_levels = grouped_data[sensoryVar]
-    
-    
-    # Set bounds for parameters
-    bounds = [(0, 0.25)]*nLambda + [(0.01, +1)]*nSensoryVar*nConflictVar + [(-1, +1)]*nSensoryVar*nConflictVar
+    if sharedSigma==True:
+        # Initialize guesses for parameters 
+        # lambda, mu,sigma
+        initGuesses= [initGuesses[0]]*nLambda +  [initGuesses[1]]*nSensoryVar+[initGuesses[2]]*nSensoryVar*nConflictVar
+        
+        intensities = grouped_data[intensityVariable]
+        chose_tests = grouped_data['num_of_chose_test']
+        total_responses = grouped_data['total_responses']
+        conflicts = grouped_data[conflictVar]
+        noise_levels = grouped_data[sensoryVar]
+        
+        
+        # Set bounds for parameters
+        # array of parameters in order of lambda, mu, sigma
+        bounds = [(0, 0.25)]*nLambda +  [(0.01, +1)]*nSensoryVar+[(-1, +1)]*nSensoryVar*nConflictVar 
 
 
-    # Minimize negative log-likelihood
-    result = minimize(
-        nLLJoint,
-        x0=initGuesses,
-        args=(intensities, chose_tests, total_responses, conflicts, noise_levels),
-        bounds=bounds,
-        method='L-BFGS-B'  # Use L-BFGS-B for bounded optimization
-    )
-    
+        # Minimize negative log-likelihood
+        result = minimize(
+            nLLJoint,
+            x0=initGuesses,
+            args=(intensities, chose_tests, total_responses, conflicts, noise_levels),
+            bounds=bounds,
+            method='L-BFGS-B'  # Use L-BFGS-B for bounded optimization
+        )
+    else:
+        # Initialize guesses for parameters 
+        # lambda, sigma, mu
+        initGuesses= [initGuesses[0]]*nLambda + [initGuesses[2]]*nSensoryVar*nConflictVar+ [initGuesses[1]]*nSensoryVar*nConflictVar
+        
+        intensities = grouped_data[intensityVariable]
+        chose_tests = grouped_data['num_of_chose_test']
+        total_responses = grouped_data['total_responses']
+        conflicts = grouped_data[conflictVar]
+        noise_levels = grouped_data[sensoryVar]
+        
+        
+        # Set bounds for parameters
+        # array of parameters in order of lambda, mu, sigma
+        bounds = [(0, 0.25)]*nLambda + + [(-1, +1)]*nSensoryVar*nConflictVar+[(0.01, +1)]*nSensoryVar*nConflictVar 
+
+
+        # Minimize negative log-likelihood
+        result = minimize(
+            nLLJoint,
+            x0=initGuesses,
+            args=(intensities, chose_tests, total_responses, conflicts, noise_levels),
+            bounds=bounds,
+            method='L-BFGS-B'  # Use L-BFGS-B for bounded optimization
+        )
+        
     return result
 
 # Fit the psychometric function to the grouped data
 def multipleInitGuessesWEstimate(singleInitGuesses, nStart):
     initLambdas=np.linspace(0.01, 0.1, nStart)
     initMus=np.linspace(-0.73, 0.73, nStart)
-    initSigmas=np.linspace(0.01, 0.9, nStart)
+    initSigmas=np.linspace(0.01, 0.95, nStart)
     multipleInitGuesses = []
     if nStart == 1:
         # estimate initial guesses
@@ -302,7 +359,7 @@ def fitMultipleStartingPoints(data,nStart=3):
     nSensoryVar = len(uniqueSensory)  # Number of sensory variables
     nConflictVar = len(uniqueConflict)  # Number of conflict variables
     uniqueSensory = data['audNoise'].unique()
-    uniqueConflict = data['conflictDur'].unique()
+    uniqueConflict = sorted(data[conflictVar].unique())
     
     levels = groupedData[intensityVariable].values
     responses = groupedData['num_of_chose_test'].values
@@ -336,9 +393,10 @@ def fitMultipleStartingPoints(data,nStart=3):
 
 def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable):
     colors = sns.color_palette("viridis", n_colors=len(uniqueSensory))  # Use Set2 palette for different noise levels
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(12*2.5, 6*2))
     for i, standardLevel in enumerate(uniqueStandard):
         for j, audioNoiseLevel in enumerate(uniqueSensory):
+            print(f"standardLevel: {standardLevel}, audioNoiseLevel: {audioNoiseLevel}, uniqueConflict: {uniqueConflict}")
             for k, conflictLevel in enumerate(uniqueConflict):
                 lambda_, mu, sigma = getParams(best_fit.x, conflictLevel, audioNoiseLevel, nLambda, nSigma)
                 # Filter the data for the current standard and audio noise levels
@@ -351,30 +409,133 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                     continue
                 responses = dfFiltered['num_of_chose_test'].values
                 totalResponses = dfFiltered['total_responses'].values
+                
+                # Fit the psychometric function
+                plt.subplot(1, 2, j+1)
                 maxX = max(levels) + 0.1
                 minX = min(levels) - 0.1
                 x = np.linspace(minX, maxX, 500)
                 y = psychometric_function(x, lambda_, mu, sigma)
-                color = colors[j]
-                plt.plot(x, y, color=color, label=f"Noise: {audioNoiseLevel}\n $\\mu$: {mu:.2f}, $\\sigma$: {sigma:.2f}", linewidth=4)
+                color=sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))  # Use a colormap for different conflict levels
+                plt.plot(x, y, color=color, label=f"Conflict: {int(conflictLevel*1000)}, PSE: {int(mu*1000)}", linewidth=4)
                 plt.axvline(x=0, color='gray', linestyle='--')
                 plt.axhline(y=0.5, color='gray', linestyle='--')
-                plt.xlabel(f"({intensityVariable}) Test(stair)-Standard(0.5s) Duration Difference Ratio")
+                plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
                 plt.ylabel("P(chose test)")
-                plt.title(f"Unimodal auditory duration comparison", fontsize=16)
+                plt.title(f"Multimodal auditory duration comparison", fontsize=16)
                 plt.legend(fontsize=14, title_fontsize=14)
                 plt.grid()
                 bin_and_plot(dfFiltered, bin_method='cut', bins=10, plot=True, color=color)
+
                 plt.text(0.05, 0.8, f"Shared $\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
                 plt.tight_layout()
                 plt.grid(True)
     plt.show()
 
+
+def simulate_dataset(params, gdf):
+    """
+    Produce one synthetic data set that has the SAME predictors
+    (delta, conflict, noise, total_responses) as 'gdf' but with
+    binomially simulated response counts.
+    """
+    sim_gdf = gdf.copy()
+
+    # vectorised computation to avoid Python loop
+    lam   = np.empty(len(gdf))
+    mu    = np.empty(len(gdf))
+    sigma = np.empty(len(gdf))
+
+    # Map each row's (conflict, noise) to its λ, μ, σ
+    for idx, row in gdf.iterrows():
+        lam_i, mu_i, sig_i = getParams(params,
+                                        row[conflictVar],
+                                        row[sensoryVar],
+                                        nLambda,
+                                        nSigma)
+        lam[idx], mu[idx], sigma[idx] = lam_i, mu_i, sig_i
+
+    p_choose_test = psychometric_function(sim_gdf[intensityVariable].values,
+                                          lam, mu, sigma)
+
+    # Binomial draw
+    sim_gdf['num_of_chose_test'] = np.random.binomial(
+        n = sim_gdf['total_responses'].values.astype(int),
+        p = p_choose_test)
+
+    return sim_gdf
+
+def paramBootstrap(fitParams, nBoots):
+    
+    groupedData = groupByChooseTest(data)
+    nBootParams = []
+    # Add tqdm progress bar
+    for _ in tqdm(range(nBoots), desc="Bootstrapping", unit="iteration"):
+        #1- do simulation
+        simData = simulate_dataset(fitParams, groupedData)
+        # simulate data by taking binomials at this
+        initGuessEstimate = estimate_initial_guesses(simData[intensityVariable].values, 
+                                                    simData['num_of_chose_test'], 
+                                                    simData['total_responses'])
+        # fit the data to boot
+        bootFit = fitJoint(grouped_data=simData, initGuesses=initGuessEstimate)
+
+        # save
+        nBootParams.append(bootFit.x)
+
+    return np.vstack(nBootParams)
+
+def plot_conflict_vs_pse(best_fit, allBootedFits):
+    """
+    Plot the relation between conflict and PSE (mu) with confidence intervals.
+    """
+    plt.figure(figsize=(12, 6))
+    m = 0
+    for i, standardLevel in enumerate(uniqueStandard):
+        for j, audioNoiseLevel in enumerate(uniqueSensory):
+            for k, conflictLevel in enumerate(uniqueConflict):
+                lambda_, mu, sigma = getParams(best_fit.x, conflictLevel, audioNoiseLevel, nLambda, nSigma)
+                m += 1        
+                plt.subplot(1, 2, j + 1)
+                color = sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))
+                plt.scatter(conflictLevel * 1000, mu * 1000 / 2, color=color, s=100)
+                plt.xlabel("Visual Conflict(ms)")
+                plt.ylabel("PSE (ms)")
+                plt.title(f"Standard: {standardLevel}, Noise: {audioNoiseLevel}")
+                plt.grid()
+                plt.axhline(y=0, color='gray', linestyle='--')
+                plt.axvline(x=0, color='gray', linestyle='--')
+
+                mu_idx = nLambda + nSigma + ((j) * len(uniqueConflict)) + k
+                mu_all = allBootedFits[:, mu_idx]
+                mu_ci = np.percentile(mu_all, [2.5, 97.5])
+                lower_err = np.maximum(mu*1000/2-mu_ci[0]*1000/2, 0)
+                upper_err = np.maximum(mu_ci[1]*1000/2-mu*1000/2, 0)
+                plt.errorbar(conflictLevel*1000, mu*1000/2, yerr=[[lower_err], [upper_err]], fmt='o', color=color, capsize=10
+                            , label=f"95% CI for mu: {mu_ci[0]*1000/2:.2f} - {mu_ci[1]*1000/2:.2f}", linewidth=2)
+                plt.ylim(-350, 350)
+    plt.show()
+
+
+
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Fit joint psychometric model.")
+    parser.add_argument("--dataName", type=str, help="CSV file name in data/ directory")
+    parser.add_argument("--sharedSigma", action="store_true", help="Use shared sigma across noise levels")
+    args = parser.parse_args()
+
+    dataName = args.dataName
+    global sharedSigma
+
+    sharedSigma = args.sharedSigma
+
+    if not dataName:
+        dataName = "LN_main_all.csv"  # Default data file if not provided
+        
+    sharedSigma = True  # Set to True if you want to use shared sigma across noise levels
     # Example usage
-    data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData("LC_bimodalDurEst_2025-05-26_15h05.08.777.csv")
-    grouped_data = groupByChooseTest(data)
-    fit = fitMultipleStartingPoints(data, nStart=3)
+    data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
+    fit = fitMultipleStartingPoints(data, nStart=1)
     # print the fitted parameters
     print(f"Fitted parameters: {fit.x}")
 
@@ -384,7 +545,12 @@ if __name__ == "__main__":
         standardVar, sensoryVar, conflictVar, intensityVariable
     )
 
+    # Plot the relation between conflict and PSE (mu) with confidence intervals
+    allBootedFits = paramBootstrap(fit.x, nBoots=10)
+    plot_conflict_vs_pse(fit, allBootedFits)
 
+# example usage on how to run the code on terminal
+# python jointSharedSigma.py --dataName "LN_main_all.csv" --sharedSigma True
 
 # # run the code to test the functions
 # if __name__ == "__main__":
