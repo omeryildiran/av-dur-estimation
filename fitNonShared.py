@@ -186,6 +186,9 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 def psychometric_function(x, lambda_, mu, sigma):
+    if fixedMu:
+        mu = 0
+    
     # Cumulative distribution function with mean mu and standard deviation sigma
     cdf = norm.cdf(x, loc=mu, scale=sigma) 
     # take into account of lapse rate and return the probability of choosing test
@@ -380,7 +383,8 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
     plt.show()
 
 if __name__ == "__main__":
-    dataName = "hh_bimodalDurEst_2025-05-23_12h07.33.994.csv"
+    fixedMu = True  # Set to True to ignore the bias in the model
+    dataName = "LC_auditoryDurEst_2025-05-23_16h37.43.184.csv"
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]
