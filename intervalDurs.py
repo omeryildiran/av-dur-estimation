@@ -14,7 +14,7 @@ postMax=0.45
 #riseDurs=[0.5, ]
 
 stepFactor=0.6
-initStep=0.1
+initStep=0.2
 maxReversals=100
 max_level=0.90
 initLevel=0.65

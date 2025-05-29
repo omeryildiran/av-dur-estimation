@@ -16,6 +16,7 @@ def loadData(dataName):
 
 
     data = pd.read_csv("data/"+dataName)
+    # ignore firts 3 rows
     data= data[data['audNoise'] != 0]
     data=data[data['standardDur'] != 0]
     uniqueSensory = data[sensoryVar].unique()
@@ -215,7 +216,7 @@ def fit_psychometric_function(levels,nResp, totalResp,init_guesses=[0,0,0]):
     # then fits the psychometric function
     # order is lambda mu sigma
     #initial_guess = [0, -0.2, 0.05]  # Initial guess for [lambda, mu, sigma]
-    bounds = [(0, 0.25), (-0.53, +0.53), (0.01, 1)]  # Reasonable bounds
+    bounds = [(0, 0.25), (-0.73, +0.73), (0.01, 1)]  # Reasonable bounds
     # fitting is done here
     result = minimize(
         negative_log_likelihood, x0=init_guesses, 
@@ -382,23 +383,51 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 plt.grid(True)
     plt.show()
 
+
+def plotStairCases(data):
+
+    # select the current stair
+    uniqueStairs = data['current_stair'].unique()
+    uniqueStairs= sorted(uniqueStairs)[:-1]
+    plt.figure(figsize=(20, 10))
+    for idx, stair in enumerate(uniqueStairs):
+        df= data[data['current_stair'] == stair]. reset_index(drop=True)
+        plt.subplot(2, 2, idx+1)
+        for trialN in range(df.shape[0]):
+            color = 'green' if df['is_correct'][trialN] == 1 or df['is_correct'][trialN] == "True" else 'red'            
+            #print(f"Trial {trialN}, delta_dur_percents: {df['delta_dur_percents'][trialN]}, is_correct: {df['is_correct'][trialN]}")
+            plt.scatter(trialN,df['delta_dur_percents'][trialN], color=color, s=60, alpha=0.5)
+            plt.plot(df['delta_dur_percents'], color='blue')
+
+            plt.title(f"Stair {stair}")
+            plt.xlabel("Test(stair)-Standard(0.5s) Duration Difference Ratio")
+            plt.ylabel("Recorded Visual Test Duration")
+            plt.axhline(y=0, color='gray', linestyle='--')
+            #plt.axvline(x=0, color='gray', linestyle='--')
+            plt.ylim(-0.9, 0.9)
+            plt.grid()
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == "__main__":
-    fixedMu = True  # Set to True to ignore the bias in the model
-    dataName = "LC_auditoryDurEst_2025-05-23_16h37.43.184.csv"
+    fixedMu = 0  # Set to True to ignore the bias in the model
+    dataName = "IP_visualDurEst_2025-05-27_14h45.22.732.csv"
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
     grouped_data = groupByChooseTest(data)
-    fit = fitMultipleStartingPoints(data, nStart=3)
+    #fit = fitMultipleStartingPoints(data, nStart=2)
     # print the fitted parameters
-    print(f"Fitted parameters: {fit.x}")
+    #print(f"Fitted parameters: {fit.x}")
 
     # Plot the fitted psychometric functions
-    plot_fitted_psychometric(
-        data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
-        standardVar, sensoryVar, conflictVar, intensityVariable
-    )
+    # plot_fitted_psychometric(
+    #     data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
+    #     standardVar, sensoryVar, conflictVar, intensityVariable)
+    plotStairCases(data)
+
 
 
 

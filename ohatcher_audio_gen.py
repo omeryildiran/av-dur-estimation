@@ -205,12 +205,26 @@ class AudioCueGenerator:
         # scale background noise to match the amplitude of the stimulus
         background_noise = np.random.normal(0, 1, len(stim_sound))
         background_noise = background_noise * (np.max(abs(stim_sound)) / np.max(abs(background_noise))) * intensity_background
+
         #print(max(background_noise))
         #print(max(stim_sound))
 
         # smooth the sound waveform
         background_noise = self.broadband_filter(background_noise,10, 610, self.sample_rate, order=4)
         stim_sound = self.broadband_filter(stim_sound, 150, 775, self.sample_rate, order=4)
+
+        # plot the sound waveforms
+        time= np.linspace(0, len(stim_sound) / self.sample_rate, len(stim_sound))
+
+        plt.plot(time,stim_sound, label='Signal Sound', color='forestgreen', alpha=0.7)
+        plt.plot(time,background_noise, label='Background Noise', color='black', alpha=0.7)
+        plt.title("Stimulus Sound Waveform")
+        plt.xlabel("Time (s)")
+        plt.xlim(0, len(stim_sound) / self.sample_rate)
+        plt.xticks(np.arange(0, len(stim_sound) / self.sample_rate, 0.1))
+        plt.legend()
+        plt.ylabel("Amplitude")
+        plt.show()
         
         # #Background noise of same totaal duration
 
@@ -234,7 +248,7 @@ test_dur = 0.4
 standard_dur = 0.6
 noise_type = "white"
 intensity = 5
-rise_dur = 0.99
+rise_dur = 1.2
 order = 1
 pre_cue_sound=0.25
 pre_post_dur=pre_cue_sound
@@ -255,7 +269,7 @@ def plot_sounds():
 
         t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
         #if idx in [1]:
-        audio_cue.play_sound(stim_sound)
+        #audio_cue.play_sound(stim_sound)
         
         plt.subplot(1, 2, idx + 1)
         plt.plot(t, stim_sound)
@@ -269,7 +283,7 @@ def plot_sounds():
     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
     plt.show()
     
-#plot_sounds()
+plot_sounds()
 
 
 
