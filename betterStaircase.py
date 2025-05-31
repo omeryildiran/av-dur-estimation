@@ -18,6 +18,7 @@ class stairCase():
             self.level = abs(max_level)
         else:
             self.level = -1*abs(max_level)
+        self.level=-0.9
         #self.sign=sign_of_stair
         self.method = method
 
@@ -30,6 +31,7 @@ class stairCase():
 
         self.trial_num = 0
         self.correct_counter = 0
+        self.notChooseTestCounter = 0
         self.last_response = None
         self.sigma_level = None
 
@@ -81,6 +83,7 @@ class stairCase():
                 return False
         elif self.method != "lapse_rate":
             n_up=int(self.method[0])
+            n_down=int(self.method[2])
             isUp = self.method[1] == 'U'  # True if the method is "Up"
 
             if isUp==True:
@@ -94,36 +97,47 @@ class stairCase():
         # -----------------
         # doing wronggg
         if not isChooseTest: # if response is not correct
-            # Incorrect response => 
+
+            # count down trials
             self.correct_counter = 0
-            self.stair_dirs.append(1)  # +1 indicates direction up
 
-            # Check if we have a reversal
-            self.is_reversal = False
-            if len(self.stair_dirs) >= 2 and self.stair_dirs[-1] != self.stair_dirs[-2]:
-                self.is_reversal = True
-                self.reversals += 1
+            self.notChooseTestCounter +=1
+            if self.notChooseTestCounter == n_down:
+                self.notChooseTestCounter = 0
+                self.stair_dirs.append(1)  # +1 indicates direction up
 
-            # If we have a reversal, update the step size immediately
-            if self.is_reversal:
-                if self.reversals < n_stop_step_change:
-                    self.step = self.init_step * (self.step_factor ** self.reversals) #pdate the step size
+                # Incorrect response => 
+
+                # Check if we have a reversal
+                self.is_reversal = False
+                if len(self.stair_dirs) >= 2 and self.stair_dirs[-1] != self.stair_dirs[-2]:
+                    self.is_reversal = True
+                    self.reversals += 1
+
+                # If we have a reversal, update the step size immediately
+                if self.is_reversal:
+                    if self.reversals < n_stop_step_change:
+                        self.step = self.init_step * (self.step_factor ** self.reversals) #pdate the step size
+                    else:
+                        self.step = self.init_step * (self.step_factor ** n_stop_step_change)
+                
+                # Update the level based on the direction
+                if self.level-dirStep*self.step > self.maxLevelNegative:
+                    # if we are at the max positive level
+                    if self.level-dirStep*self.step >= 1:
+                        self.level = 1
+                    # if we are at the max level negative
+                    else:
+                        self.level =self.level-dirStep*self.step
                 else:
-                    self.step = self.init_step * (self.step_factor ** n_stop_step_change)
-
-            # Now update the level using the (potentially) new step size
-            
-            if self.level-dirStep*self.step > self.maxLevelNegative:
-                    self.level =self.level-dirStep*self.step
-            else:
-                self.level = self.maxLevelNegative
+                    self.level = self.maxLevelNegative
 
 
-        elif isChooseTest: # if correct
-            # Correct response => potentially go "down"
+        elif isChooseTest: 
             self.correct_counter += 1
+            self.notChooseTestCounter = 0
 
-            # Only move "down" after n_up consecutive correct answers
+            # count up
             if self.correct_counter == n_up:
                 self.correct_counter = 0
                 self.stair_dirs.append(-1)  # -1 indicates direction down
@@ -140,9 +154,14 @@ class stairCase():
                         self.step = self.init_step * (self.step_factor ** self.reversals)
                     else:
                         self.step = self.init_step * (self.step_factor ** n_stop_step_change)
-
-                # Now update the level using the (potentially) new step size
-                self.level =self.level+dirStep*self.step
+                
+                # Update the level based on the direction
+                if self.level+dirStep*self.step >= 1: # if we are at the max positive level
+                    self.level = 1  # Reset to the maximum level
+                elif self.level+dirStep*self.step < self.maxLevelNegative: # if we are at the max level negative
+                    self.level = self.maxLevelNegative  # Reset to the maximum level negative
+                else:
+                    self.level =self.level+dirStep*self.step
 
 
         # Record last response
@@ -151,23 +170,24 @@ class stairCase():
         # Check stopping conditions: 
         # 1) If we've hit the max number of trials
         if self.trial_num == (self.max_trials):
-            print('stair final trial ',self.trial_num)
+            #print('stair final trial ',self.trial_num)
             self.stair_stopped = True
-            print("End of staircase: max trials reached.")
+            #print("End of staircase: max trials reached.")
             return False
 
         # Otherwise, continue
         return True
 
-            
+method='2D1U'  # '1D2U', '2D1U'
+      
         
 ##########----------------EXANPLE USAGE ------------------#########
 stair = stairCase(max_reversals=300,
-                  max_trials=20,
+                  max_trials=50,
                     step_factor=0.671,
                     init_step=0.2,
                     max_level=0.90,
-                    method='2U1D'  
+                    method=method  # '1D2U', '2D1U'
                     )
 levels = []
 trialNum=0
@@ -175,9 +195,10 @@ plt.figure(figsize=(10, 6))
 while not stair.stair_stopped:
     level = stair.next_trial()
     levels.append(level)
-    isChooseTest =  level - random.random() >0.1
+    isChooseTest =  level - random.random() >0
+    
     stair.update_staircase(isChooseTest)
-    print(f"step: {stair.step}, c {isChooseTest}, rev: {stair.reversals}, trial: {trialNum}, level: {level}")
+    #print(f"step: {stair.step}, c {isChooseTest}, rev: {stair.reversals}, trial: {trialNum}, level: {level: .2f}")
 
     # if stair.reversals>0 and stair.stair_dirs[-1]!=stair.stair_dirs[-2]:
     #     plt.plot(trialNum,levels[-1], 'o',color='black')
@@ -191,7 +212,8 @@ while not stair.stair_stopped:
 plt.plot(levels, '-',label='Staircase', color='blue')
 plt.xlabel('Trial')
 plt.ylabel('Level (Difficulty)')
-plt.title('3-Down-1-Up Staircase Procedure')
+#method='1D2U'  # '1D2U', '2D1U'
+plt.title(f'{method} Staircase Procedure')
 plt.axhline(np.mean(levels[-100:]), color='red', linestyle='dashed', label='Convergence Level (Last 100 Trials)')
 plt.axhline(0, color='black', linestyle='dashed', label='Zero Level')
 print(f'convergence level: {levels[-1]}')
@@ -200,7 +222,24 @@ plt.ylim(-1, 1)
 plt.show()
 
 
+# Simulate and return average convergence level for a staircase method
+def simulate_staircase(method, n_sim=100, max_trials=50, **kwargs):
+    final_levels = []
+    for _ in range(n_sim):
+        stair = stairCase(method=method, max_trials=max_trials, **kwargs)
+        while not stair.stair_stopped:
+            level = stair.next_trial()
+            # Simulate: higher level = easier = more likely correct
+            isChooseTest =  level - random.random() >0.5
+            stair.update_staircase(isChooseTest)
+        final_levels.append(stair.level)
+    return np.mean(final_levels)
 
+# Example usage:
+avg = simulate_staircase('1D2U', n_sim=100, step_factor=0.671, init_step=0.2, max_level=0.90)
+avg2 = simulate_staircase('2D1U', n_sim=100, step_factor=0.671, init_step=0.2, max_level=0.90)
+
+print(f"Average convergence level for 1D2U: {avg:.3f} | 2D1U: {avg2:.3f}")
 
 
 
