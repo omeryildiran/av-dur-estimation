@@ -401,7 +401,7 @@ def plotStairCases(data):
 
             plt.title(f"Stair {stair}")
             plt.xlabel("Test(stair)-Standard(0.5s) Duration Difference Ratio")
-            plt.ylabel("Recorded Visual Test Duration")
+            plt.ylabel("Delta Duration %")
             plt.axhline(y=0, color='gray', linestyle='--')
             #plt.axvline(x=0, color='gray', linestyle='--')
             plt.ylim(-0.9, 0.9)
@@ -412,15 +412,15 @@ def plotStairCases(data):
 
 if __name__ == "__main__":
     fixedMu = 0  # Set to True to ignore the bias in the model
-    dataName = "IP_visualDurEst_2025-05-27_14h45.22.732.csv"
+    dataName = "IP_mainExpAvDurEstimate_2025-05-30_11h21.09.224.csv" 
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
     grouped_data = groupByChooseTest(data)
-    #fit = fitMultipleStartingPoints(data, nStart=2)
-    # print the fitted parameters
-    #print(f"Fitted parameters: {fit.x}")
+    fit = fitMultipleStartingPoints(data, nStart=2)
+    #print the fitted parameters
+    print(f"Fitted parameters: {fit.x}")
 
     # Plot the fitted psychometric functions
     # plot_fitted_psychometric(
