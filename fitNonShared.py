@@ -54,8 +54,14 @@ def loadData(dataName):
     data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
     data['conflictDur']=round(data['conflictDur'],2)
 
+    print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
+    print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
+
+
     data=data[data['recordedDurVisualStandard'] <=998]
     data=data[data['recordedDurVisualStandard'] >=0]
+    data=data[data['recordedDurVisualTest'] <=998]
+    data=data[data['recordedDurVisualTest'] >=0]
     nLambda=len(uniqueStandard)
     nSigma=len(uniqueSensory)
     nMu=len(uniqueConflict)*nSigma
@@ -394,7 +400,7 @@ def plotStairCases(data):
         df= data[data['current_stair'] == stair]. reset_index(drop=True)
         plt.subplot(2, 2, idx+1)
         for trialN in range(df.shape[0]):
-            color = 'green' if df['is_correct'][trialN] == 1 or df['is_correct'][trialN] == "True" else 'red'            
+            color = 'green' if df['chose_test'][trialN] == 1 or df['chose_test'][trialN] == "True" else 'red'            
             #print(f"Trial {trialN}, delta_dur_percents: {df['delta_dur_percents'][trialN]}, is_correct: {df['is_correct'][trialN]}")
             plt.scatter(trialN,df['delta_dur_percents'][trialN], color=color, s=60, alpha=0.5)
             plt.plot(df['delta_dur_percents'], color='blue')
@@ -412,15 +418,15 @@ def plotStairCases(data):
 
 if __name__ == "__main__":
     fixedMu = 0  # Set to True to ignore the bias in the model
-    dataName = "IP_mainExpAvDurEstimate_2025-05-30_11h21.09.224.csv" 
+    dataName = "oyTestStair_mainExpAvDurEstimate_2025-06-01_19h29.39.738.csv" 
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
     grouped_data = groupByChooseTest(data)
-    fit = fitMultipleStartingPoints(data, nStart=2)
+    #fit = fitMultipleStartingPoints(data, nStart=2)
     #print the fitted parameters
-    print(f"Fitted parameters: {fit.x}")
+    #print(f"Fitted parameters: {fit.x}")
 
     # Plot the fitted psychometric functions
     # plot_fitted_psychometric(

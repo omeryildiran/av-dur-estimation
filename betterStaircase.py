@@ -17,7 +17,7 @@ class stairCase():
             self.level = abs(max_level)
         else:
             self.level = -1*abs(max_level)
-        self.level=-0.9
+        self.level=-1*abs(max_level)
         #self.sign=sign_of_stair
         self.method = method
 
