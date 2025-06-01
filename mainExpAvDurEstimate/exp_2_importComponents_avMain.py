@@ -112,11 +112,7 @@ stairCaseLonger2D1U=stairCase( max_level=max_level, max_trials=max_trial_per_sta
 
 stairCaseShorter2U1D=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="1D2U" ) # '1D2U', '2D1U'                    )
 
-# stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="1U1D",step_factor=stepFactor,
-#                               max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
-# stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
-#                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
-
+print(f"max level: {max_level}, init step: {initStep}, init level: {max_level}" )
 
 stairCaseLapse = stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="lapse_rate" ) # '1D2U', '2D1U'                    )
 

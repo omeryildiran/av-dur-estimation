@@ -207,16 +207,16 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         You are in block {block_num} out of {total_blocks}.
         Please wait a few seconds."""
 
-        rest_text_comp = visual.TextStim(win, text=rest_text, color='red', height=30)
+        rest_text_comp = visual.TextStim(win, text=rest_text, color='maroon', height=30)
         rest_text_comp.draw()
         win.flip()
         # comment for testing
         core.wait(5) if ExpTesting==False else None
+        response_text_comp.setAutoDraw(False)
+
         goText="Now you can press any key to continue!"
-        goTextObj= visual.TextStim(win, text=rest_text, color='green', height=30,  pos=(0, -100))
+        goTextObj= visual.TextStim(win, text=goText, color='teal', height=30,  pos=(0, -100))
         goTextObj.draw()
-        rest_text_comp.color='green'
-        #rest_text_comp.draw()
         win.flip()
 
 
