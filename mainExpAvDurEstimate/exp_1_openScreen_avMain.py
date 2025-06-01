@@ -33,6 +33,7 @@ os.chdir(exp_dir)
 # ask for participant and session number
 expInfo = {'participant': '', 'session number': '001'}
 if ExpTesting:
+    fullScreen = False
     expInfo['participant'] = 'test'
 # present a dialogue to change params
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)

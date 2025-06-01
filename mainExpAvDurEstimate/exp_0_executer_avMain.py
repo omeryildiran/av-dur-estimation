@@ -1,4 +1,4 @@
-ExpTesting = False
+ExpTesting = 1
 ExpTraining= False
 fullScreen=True  
 expName = 'mainExpAvDurEstimate'

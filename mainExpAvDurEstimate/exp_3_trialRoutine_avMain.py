@@ -211,7 +211,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         rest_text_comp.draw()
         win.flip()
         # comment for testing
-        core.wait(5)
+        core.wait(5) if ExpTesting==False else None
         goText="Now you can press any key to continue!"
         goTextObj= visual.TextStim(win, text=rest_text, color='green', height=30,  pos=(0, -100))
         goTextObj.draw()

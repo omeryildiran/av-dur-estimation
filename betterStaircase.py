@@ -8,7 +8,6 @@ class stairCase():
                  init_step=0.1,
                  method='3D1U',  # Options: '1U1D', '1D1U', '2U1D', '2D1U', 'lapse_rate'
                  step_factor=0.5,
-                 max_reversals=100,
                  max_trials=50,
                  max_level=0.6,
                  ):
@@ -35,7 +34,6 @@ class stairCase():
         self.last_response = None
         self.sigma_level = None
 
-        self.max_reversals = max_reversals
         self.reversals = 0
         self.history = []
         self.reversal_points = []
@@ -182,8 +180,7 @@ method='2D1U'  # '1D2U', '2D1U'
       
         
 ##########----------------EXANPLE USAGE ------------------#########
-stair = stairCase(max_reversals=300,
-                  max_trials=50,
+stair = stairCase(                  max_trials=50,
                     step_factor=0.671,
                     init_step=0.2,
                     max_level=0.90,
