@@ -125,7 +125,7 @@ class stairCase():
                 if self.level-dirStep*self.step > self.maxLevelNegative:
                     # if we are at the max positive level
                     if self.level-dirStep*self.step >= 1:
-                        self.level = 1
+                        self.level = 0.9
                     # if we are at the max level negative
                     else:
                         self.level =self.level-dirStep*self.step
@@ -157,7 +157,7 @@ class stairCase():
                 
                 # Update the level based on the direction
                 if self.level+dirStep*self.step >= 1: # if we are at the max positive level
-                    self.level = 1  # Reset to the maximum level
+                    self.level = 0.9  # Reset to the maximum level
                 elif self.level+dirStep*self.step < self.maxLevelNegative: # if we are at the max level negative
                     self.level = self.maxLevelNegative  # Reset to the maximum level negative
                 else:
