@@ -1,4 +1,4 @@
-ExpTesting = 0
+ExpTesting = 1
 ExpTraining= 0
 fullScreen=1
 expName = 'visualDurEst'

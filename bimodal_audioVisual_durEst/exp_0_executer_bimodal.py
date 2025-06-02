@@ -1,6 +1,6 @@
-ExpTesting = False
+ExpTesting = 1
 ExpTraining= 0
-fullScreen=True  
+fullScreen=0  
 expName = 'bimodalDurEst'
 
 import os

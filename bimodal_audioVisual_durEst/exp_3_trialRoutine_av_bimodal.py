@@ -245,7 +245,12 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     tAudStart = globalClock.getTime()
     audio_stim_sound.status = STARTED
 
-    while continueRoutine:
+    tVisualStimEnd=999
+    tVisualStimStart=999
+    tAudEnd=999
+    tAudDurRecorded=999
+    
+    while continueRoutine and not ExpTesting and not endExpNow:
 
         frameN += 1
         t = trialClock.getTime()
