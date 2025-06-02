@@ -20,7 +20,6 @@ from psychopy.hardware import keyboard
 import random
 import scipy.io as sio
 import pandas as pd
-from my_staircase import stairCase
 from dva_to_pix import arcmin_to_px, dva_to_px
 
 
@@ -43,6 +42,7 @@ os.chdir(exp_dir)
 expInfo = {'participant': '', 'session number': '001'}
 if ExpTesting:
     expInfo['participant'] = 'test'
+    fullScreen = 0
 # present a dialogue to change params
 dlg = gui.DlgFromDict(dictionary=expInfo, title=expName)
 #core.quit() if dlg.OK == False else None

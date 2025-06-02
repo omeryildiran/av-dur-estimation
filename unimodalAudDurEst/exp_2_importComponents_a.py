@@ -85,22 +85,6 @@ exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=o
 max_trial_per_stair=nTrialPerStair#total_trials//5
 
 print(f'aud Noises: {np.unique(audNoises)}')
-# stairCaseLonger = stairCase(init_level=initLevel, 
-#                             init_step=initStep, 
-#                             method="3D1U",  
-#                             step_factor=stepFactor, 
-#                             max_level=max_level+1, 
-#                             max_reversals=maxReversals, 
-#                             max_trials=max_trial_per_stair,)
-                            
-
-# stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
-#                                 max_trials=max_trial_per_stair,)
-
-# stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="3U1D",step_factor=stepFactor,
-#                              max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
-# stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
-#                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
 
 
 ## 2 up or 2 down staircases
