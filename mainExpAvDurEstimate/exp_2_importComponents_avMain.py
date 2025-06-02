@@ -90,7 +90,7 @@ max_trial_per_stair=nTrialPerStair#total_trials//5
 
 if max([avPSEsecondsLow,avPSEsecondsHigh])>0:
     minLapse=-1*max_level+2*max([avPSEsecondsLow,avPSEsecondsHigh])
-    print("min lapse rate:", minLapse)
+    print("min lapse rate: ", minLapse)
 else:
     minLapse=-0.9
 max_level=minLapse

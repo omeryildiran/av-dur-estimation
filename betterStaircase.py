@@ -8,15 +8,13 @@ class stairCase():
                  init_step=0.1,
                  method='3D1U',  # Options: '1U1D', '1D1U', '2U1D', '2D1U', 'lapse_rate'
                  step_factor=0.5,
+                 max_reversals=100,
                  max_trials=50,
                  max_level=0.6,
                  ):
         
         # level at which the staircase starts
-        if method[1]== 'U':
-            self.level = abs(max_level)
-        else:
-            self.level = -1*abs(max_level)
+
         self.level=-1*abs(max_level)
         #self.sign=sign_of_stair
         self.method = method
@@ -34,6 +32,7 @@ class stairCase():
         self.last_response = None
         self.sigma_level = None
 
+        self.max_reversals = max_reversals
         self.reversals = 0
         self.history = []
         self.reversal_points = []
@@ -176,67 +175,68 @@ class stairCase():
         # Otherwise, continue
         return True
 
-method='2D1U'  # '1D2U', '2D1U'
+# method='2D1U'  # '1D2U', '2D1U'
       
         
-##########----------------EXANPLE USAGE ------------------#########
-stair = stairCase(                  max_trials=50,
-                    step_factor=0.671,
-                    init_step=0.2,
-                    max_level=0.90,
-                    method=method  # '1D2U', '2D1U'
-                    )
-levels = []
-trialNum=0
-plt.figure(figsize=(10, 6))
-while not stair.stair_stopped:
-    level = stair.next_trial()
-    levels.append(level)
-    isChooseTest =  level - random.random() >0
+# ##########----------------EXANPLE USAGE ------------------#########
+# stair = stairCase(max_reversals=300,
+#                   max_trials=50,
+#                     step_factor=0.671,
+#                     init_step=0.2,
+#                     max_level=0.90,
+#                     method=method  # '1D2U', '2D1U'
+#                     )
+# levels = []
+# trialNum=0
+# plt.figure(figsize=(10, 6))
+# while not stair.stair_stopped:
+#     level = stair.next_trial()
+#     levels.append(level)
+#     isChooseTest =  level - random.random() >0
     
-    stair.update_staircase(isChooseTest)
-    #print(f"step: {stair.step}, c {isChooseTest}, rev: {stair.reversals}, trial: {trialNum}, level: {level: .2f}")
+#     stair.update_staircase(isChooseTest)
+#     #print(f"step: {stair.step}, c {isChooseTest}, rev: {stair.reversals}, trial: {trialNum}, level: {level: .2f}")
 
-    # if stair.reversals>0 and stair.stair_dirs[-1]!=stair.stair_dirs[-2]:
-    #     plt.plot(trialNum,levels[-1], 'o',color='black')
-    if isChooseTest:
-        plt.scatter(x=trialNum,y=levels[-1], color='green', s=30)
-    else:
-        plt.scatter(x=trialNum,y=levels[-1],color='red', s=30)
-    trialNum+=1
+#     # if stair.reversals>0 and stair.stair_dirs[-1]!=stair.stair_dirs[-2]:
+#     #     plt.plot(trialNum,levels[-1], 'o',color='black')
+#     if isChooseTest:
+#         plt.scatter(x=trialNum,y=levels[-1], color='green', s=30)
+#     else:
+#         plt.scatter(x=trialNum,y=levels[-1],color='red', s=30)
+#     trialNum+=1
     
 
-plt.plot(levels, '-',label='Staircase', color='blue')
-plt.xlabel('Trial')
-plt.ylabel('Level (Difficulty)')
-#method='1D2U'  # '1D2U', '2D1U'
-plt.title(f'{method} Staircase Procedure')
-plt.axhline(np.mean(levels[-100:]), color='red', linestyle='dashed', label='Convergence Level (Last 100 Trials)')
-plt.axhline(0, color='black', linestyle='dashed', label='Zero Level')
-print(f'convergence level: {levels[-1]}')
-plt.legend()
-plt.ylim(-1, 1)
-plt.show()
+# plt.plot(levels, '-',label='Staircase', color='blue')
+# plt.xlabel('Trial')
+# plt.ylabel('Level (Difficulty)')
+# #method='1D2U'  # '1D2U', '2D1U'
+# plt.title(f'{method} Staircase Procedure')
+# plt.axhline(np.mean(levels[-100:]), color='red', linestyle='dashed', label='Convergence Level (Last 100 Trials)')
+# plt.axhline(0, color='black', linestyle='dashed', label='Zero Level')
+# print(f'convergence level: {levels[-1]}')
+# plt.legend()
+# plt.ylim(-1, 1)
+# plt.show()
 
 
-# Simulate and return average convergence level for a staircase method
-def simulate_staircase(method, n_sim=100, max_trials=50, **kwargs):
-    final_levels = []
-    for _ in range(n_sim):
-        stair = stairCase(method=method, max_trials=max_trials, **kwargs)
-        while not stair.stair_stopped:
-            level = stair.next_trial()
-            # Simulate: higher level = easier = more likely correct
-            isChooseTest =  level - random.random() >0.5
-            stair.update_staircase(isChooseTest)
-        final_levels.append(stair.level)
-    return np.mean(final_levels)
+# # Simulate and return average convergence level for a staircase method
+# def simulate_staircase(method, n_sim=100, max_trials=50, **kwargs):
+#     final_levels = []
+#     for _ in range(n_sim):
+#         stair = stairCase(method=method, max_trials=max_trials, **kwargs)
+#         while not stair.stair_stopped:
+#             level = stair.next_trial()
+#             # Simulate: higher level = easier = more likely correct
+#             isChooseTest =  level - random.random() >0.5
+#             stair.update_staircase(isChooseTest)
+#         final_levels.append(stair.level)
+#     return np.mean(final_levels)
 
-# Example usage:
-avg = simulate_staircase('1D2U', n_sim=100, step_factor=0.671, init_step=0.2, max_level=0.90)
-avg2 = simulate_staircase('2D1U', n_sim=100, step_factor=0.671, init_step=0.2, max_level=0.90)
+# # Example usage:
+# avg = simulate_staircase('1D2U', n_sim=100, step_factor=0.671, init_step=0.2, max_level=0.90)
+# avg2 = simulate_staircase('2D1U', n_sim=100, step_factor=0.671, init_step=0.2, max_level=0.90)
 
-print(f"Average convergence level for 1D2U: {avg:.3f} | 2D1U: {avg2:.3f}")
+# print(f"Average convergence level for 1D2U: {avg:.3f} | 2D1U: {avg2:.3f}")
 
 
 
