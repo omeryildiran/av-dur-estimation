@@ -1,6 +1,6 @@
 # Import components
 # import the staircase
-from my_staircase import stairCase
+from betterStaircase import stairCase
 from conditions_av import create_conditions_matrix
 
 #Handy timers
@@ -85,24 +85,37 @@ exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=o
 max_trial_per_stair=nTrialPerStair#total_trials//5
 
 print(f'aud Noises: {np.unique(audNoises)}')
-stairCaseLonger = stairCase(init_level=initLevel, 
-                            init_step=initStep, 
-                            method="3D1U",  
-                            step_factor=stepFactor, 
-                            max_level=max_level+1, 
-                            max_reversals=maxReversals, 
-                            max_trials=max_trial_per_stair,)
+# stairCaseLonger = stairCase(init_level=initLevel, 
+#                             init_step=initStep, 
+#                             method="3D1U",  
+#                             step_factor=stepFactor, 
+#                             max_level=max_level+1, 
+#                             max_reversals=maxReversals, 
+#                             max_trials=max_trial_per_stair,)
                             
-stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
-                                max_trials=max_trial_per_stair,)
 
-stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="3U1D",step_factor=stepFactor,
-                             max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
-stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
-                                 max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
+# stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
+#                                 max_trials=max_trial_per_stair,)
+
+# stairCaseShorter = stairCase(init_level=-initLevel, init_step=initStep, method="3U1D",step_factor=stepFactor,
+#                              max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
+# stairCaseShorter2U1D = stairCase(init_level=-initLevel, init_step=initStep, method="2U1D",step_factor=stepFactor, 
+#                                  max_level=max_level, max_reversals=maxReversals, max_trials=max_trial_per_stair,)
 
 
-stairCaseLapse = stairCase(init_level=0.6, init_step=initStep, method="lapse_rate", step_factor=stepFactor, max_level=max_level, max_reversals=maxReversals) # no need for it just decide on deltas
+## 2 up or 2 down staircases
+stairCaseLonger2D1U=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="2D1U" ) # '1D2U', '2D1U'                    )
+
+stairCaseShorter2U1D=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="1D2U" ) # '1D2U', '2D1U'                    )
+
+## 3 up or 3 down 
+stairCaseLonger=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="3D1U" ) # '1D2U', '2D1U'                    )
+
+stairCaseShorter=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="1D3U" ) # '1D2U', '2D1U'                    )
+
+
+
+stairCaseLapse = stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="lapse_rate" ) # '1D2U', '2D1U'                    )
 
 if ExpTraining:
     all_staircases=[stairCaseLapse]

@@ -418,7 +418,7 @@ def plotStairCases(data):
 
 if __name__ == "__main__":
     fixedMu = 0  # Set to True to ignore the bias in the model
-    dataName = "oyTestStair_mainExpAvDurEstimate_2025-06-01_19h29.39.738.csv" 
+    dataName = "HH_mainExpAvDurEstimate_2025-06-02_11h26.04.896.csv"
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]
