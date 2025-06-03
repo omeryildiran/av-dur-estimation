@@ -269,6 +269,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         if response:
             #noise_audio.stop()
             responses[trialN] = 1 if response[0].name=='left' else 2  # 1 for first longer, 2 for second longer
+            isChooseTest = 1 if responses[trialN]==order else 0 # 1 for first longer, 2 for second longer
             is_correct=(testDurS>standardDur and responses[trialN]==order) or (testDurS<standardDur and responses[trialN]!=order) # 1 for correct, 0 for incorrect
             is_corrects[trialN] = is_correct
             print(f"Response: {response[0].name}, Order: {order}, is_correct: {is_correct}")
@@ -320,7 +321,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             waitingResponse = False
 
             # update staircase
-            stair.update_staircase(is_correct)
+            stair.update_staircase(isChooseTest)
 
             if stair.stair_stopped:
                 stopped_stair_count+=1

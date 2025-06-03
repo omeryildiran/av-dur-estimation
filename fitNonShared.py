@@ -54,14 +54,17 @@ def loadData(dataName):
     data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
     data['conflictDur']=round(data['conflictDur'],2)
 
-    print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
-    print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
+    try:
+        print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
+        print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
 
 
-    data=data[data['recordedDurVisualStandard'] <=998]
-    data=data[data['recordedDurVisualStandard'] >=0]
-    data=data[data['recordedDurVisualTest'] <=998]
-    data=data[data['recordedDurVisualTest'] >=0]
+        data=data[data['recordedDurVisualStandard'] <=998]
+        data=data[data['recordedDurVisualStandard'] >=0]
+        data=data[data['recordedDurVisualTest'] <=998]
+        data=data[data['recordedDurVisualTest'] >=0]
+    except:
+        pass
     nLambda=len(uniqueStandard)
     nSigma=len(uniqueSensory)
     nMu=len(uniqueConflict)*nSigma
@@ -160,7 +163,8 @@ def getParams(params, conflict, audio_noise, nLambda, nSigma):
     mu_idx = nLambda-1 +((len(params)-1)//2) + ((conflict_idx+1)*(noise_idx+1))#+ nSigma + noise_offset + conflict_idx
     
     mu = params[mu_idx]
-    
+    if fixedMu:
+        mu = 0
     return lambda_, mu, sigma
 
 def getParamIndexes(params, conflict, audio_noise, nLambda, nSigma):
@@ -195,10 +199,12 @@ from scipy.optimize import minimize
 def psychometric_function(x, lambda_, mu, sigma):
     if fixedMu:
         mu = 0
-    
-    # Cumulative distribution function with mean mu and standard deviation sigma
-    cdf = norm.cdf(x, loc=mu, scale=sigma) 
-    # take into account of lapse rate and return the probability of choosing test
+        cdf = norm.cdf(x, scale=sigma)
+        p= lambda_/2 + (1-lambda_) * norm.cdf(x / sigma)
+    else:
+        # Cumulative distribution function with mean mu and standard deviation sigma
+        cdf = norm.cdf(x, loc=mu, scale=sigma) 
+        # take into account of lapse rate and return the probability of choosing test
     p = lambda_/2 + (1-lambda_) * norm.cdf((x - mu) / sigma)
     #return lapse_rate * 0.5 + (1 - lapse_rate) * cdf 
     return p
@@ -208,6 +214,8 @@ def psychometric_function(x, lambda_, mu, sigma):
 # Negative log-likelihood
 def negative_log_likelihood(params, delta_dur, chose_test, total_responses):
     lambda_, mu, sigma = params # Unpack parameters
+    if fixedMu:
+        mu = 0
     
     p = psychometric_function(delta_dur, lambda_, mu, sigma) # Compute probability of choosing test
     epsilon = 1e-9 # Add a small number to avoid log(0) when calculating thxe log-likelihood
@@ -223,6 +231,9 @@ def fit_psychometric_function(levels,nResp, totalResp,init_guesses=[0,0,0]):
     # order is lambda mu sigma
     #initial_guess = [0, -0.2, 0.05]  # Initial guess for [lambda, mu, sigma]
     bounds = [(0, 0.25), (-0.73, +0.73), (0.01, 1)]  # Reasonable bounds
+    if fixedMu:
+        bounds = [(0, 0.25), (0.01, 1)]
+        init_guesses = [init_guesses[0],  init_guesses[2]]  # Set mu to 0 if fixed
     # fitting is done here
     result = minimize(
         negative_log_likelihood, x0=init_guesses, 
@@ -353,12 +364,14 @@ def fitMultipleStartingPoints(data,nStart=3):
     return best_fit
 
 def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable):
+    print(f"Fitted parameters: {best_fit.x}")
     colors = sns.color_palette("viridis", n_colors=len(uniqueSensory))  # Use Set2 palette for different noise levels
     plt.figure(figsize=(10, 10))
     for i, standardLevel in enumerate(uniqueStandard):
         for j, audioNoiseLevel in enumerate(uniqueSensory):
             for k, conflictLevel in enumerate(uniqueConflict):
                 lambda_, mu, sigma = getParams(best_fit.x, conflictLevel, audioNoiseLevel, nLambda, nSigma)
+                print(f"Standard: {standardLevel}, Audio Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Lambda: {lambda_}, Mu: {mu}, Sigma: {sigma}")
                 # Filter the data for the current standard and audio noise levels
                 df = data[round(data[standardVar], 2) == round(standardLevel,2)]
                 df = df[df[sensoryVar] == audioNoiseLevel]
@@ -417,21 +430,21 @@ def plotStairCases(data):
 
 
 if __name__ == "__main__":
-    fixedMu = 0  # Set to True to ignore the bias in the model
-    dataName = "HH_mainExpAvDurEstimate_2025-06-02_11h26.04.896.csv"
+    fixedMu =1  # Set to True to ignore the bias in the model
+    dataName = "ML_auditoryDurEst_2025-06-03_14h01.06.520.csv"
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
     grouped_data = groupByChooseTest(data)
-    #fit = fitMultipleStartingPoints(data, nStart=2)
+    fit = fitMultipleStartingPoints(data, nStart=1)
     #print the fitted parameters
-    #print(f"Fitted parameters: {fit.x}")
+    print(f"Fitted parameters: {fit.x}")
 
-    # Plot the fitted psychometric functions
-    # plot_fitted_psychometric(
-    #     data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
-    #     standardVar, sensoryVar, conflictVar, intensityVariable)
+    #Plot the fitted psychometric functions
+    plot_fitted_psychometric(
+        data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
+        standardVar, sensoryVar, conflictVar, intensityVariable)
     plotStairCases(data)
 
 

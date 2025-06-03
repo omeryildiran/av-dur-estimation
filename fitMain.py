@@ -521,6 +521,32 @@ def plot_conflict_vs_pse(best_fit, allBootedFits):
     plt.show()
 
 
+def plotStairCases(data):
+
+    # select the current stair
+    uniqueStairs = data['current_stair'].unique()
+    uniqueStairs= sorted(uniqueStairs)[:-1]
+    plt.figure(figsize=(20, 10))
+    for idx, stair in enumerate(uniqueStairs):
+        df= data[data['current_stair'] == stair]. reset_index(drop=True)
+        plt.subplot(2, 2, idx+1)
+        for trialN in range(df.shape[0]):
+            color = 'green' if df['chose_test'][trialN] == 1 or df['chose_test'][trialN] == "True" else 'red'            
+            #print(f"Trial {trialN}, delta_dur_percents: {df['delta_dur_percents'][trialN]}, is_correct: {df['is_correct'][trialN]}")
+            plt.scatter(trialN,df['delta_dur_percents'][trialN], color=color, s=60, alpha=0.5)
+            plt.plot(df['delta_dur_percents'], color='blue')
+
+            plt.title(f"Stair {stair}")
+            plt.xlabel("Test(stair)-Standard(0.5s) Duration Difference Ratio")
+            plt.ylabel("Delta Duration %")
+            plt.axhline(y=0, color='gray', linestyle='--')
+            #plt.axvline(x=0, color='gray', linestyle='--')
+            plt.ylim(-0.9, 0.9)
+            plt.grid()
+    plt.tight_layout()
+    plt.show()
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fit joint psychometric model.")
@@ -534,7 +560,7 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "IP_mainExpAvDurEstimate_2025-05-30_11h21.09.224.csv"  # Default data file if not provided
+        dataName = "HH_mainExpAvDurEstimate_2025-06-02_11h26.04.896.csv"  # Default data file if not provided
         
     sharedSigma = False  # Set to True if you want to use shared sigma across noise levels
     # Example usage
@@ -548,6 +574,8 @@ if __name__ == "__main__":
         data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
         standardVar, sensoryVar, conflictVar, intensityVariable
     )
+    plotStairCases(data)
+
 
     # Plot the relation between conflict and PSE (mu) with confidence intervals
     #allBootedFits = paramBootstrap(fit.x, nBoots=10)
