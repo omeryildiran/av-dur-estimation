@@ -35,6 +35,8 @@ def loadData(dataName, isShared):
     data['chose_test'] = (data['responses'] == data['order']).astype(int)
     data['chose_standard'] = (data['responses'] != data['order']).astype(int)
     data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+    data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
+    data['biasCheckTest'] = (data['visualPSEBiasTest'] - data['VisualPSE'] < 0.01)
     data['conflictDur'] = data['conflictDur'].round(3)
     data['standard_dur']=data['standardDur']
 

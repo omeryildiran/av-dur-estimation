@@ -230,9 +230,9 @@ def fit_psychometric_function(levels,nResp, totalResp,init_guesses=[0,0,0]):
     # then fits the psychometric function
     # order is lambda mu sigma
     #initial_guess = [0, -0.2, 0.05]  # Initial guess for [lambda, mu, sigma]
-    bounds = [(0, 0.25), (-0.73, +0.73), (0.01, 1)]  # Reasonable bounds
+    bounds = [(0, 0.25), (-0.73, +0.73), (0.01, 1.5)]  # Reasonable bounds
     if fixedMu:
-        bounds = [(0, 0.25), (0.01, 1)]
+        bounds = [(0, 0.25), (0.01, 1.5)]
         init_guesses = [init_guesses[0],  init_guesses[2]]  # Set mu to 0 if fixed
     # fitting is done here
     result = minimize(
@@ -290,7 +290,7 @@ def fitJoint(grouped_data,  initGuesses):
     
     
     # Set bounds for parameters
-    bounds = [(0, 0.25)]*nLambda + [(0.01, +1)]*nSensoryVar*nConflictVar + [(-1, +1)]*nSensoryVar*nConflictVar
+    bounds = [(0, 0.25)]*nLambda + [(0.01, +1.5)]*nSensoryVar*nConflictVar + [(-1, +1)]*nSensoryVar*nConflictVar
 
 
     # Minimize negative log-likelihood
@@ -430,8 +430,8 @@ def plotStairCases(data):
 
 
 if __name__ == "__main__":
-    fixedMu =1  # Set to True to ignore the bias in the model
-    dataName = "ML_auditoryDurEst_2025-06-03_14h01.06.520.csv"
+    fixedMu =0  # Set to True to ignore the bias in the model
+    dataName = "LN_visualDurEst_2025-06-03_16h55.40.649.csv"
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]

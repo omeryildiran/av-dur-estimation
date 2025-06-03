@@ -125,8 +125,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         onset1=preDurFrames-conflictDurFramesSign*conflictF1 +avPSESign*avPSE1 # we subsctract the conflict duration half thus the test will start earlier if conflict is positive and later if conflict is negative
         offset1=preDurFrames+standardDurFrames+conflictDurFramesSign*conflictF2 -avPSESign*avPSE2
         # Test times
-        onset2=offset1+isiDurFrames+avPSE1
-        offset2=onset2+testDurFrames-avPSE2
+        onset2=offset1+isiDurFrames+avPSESign*avPSE1
+        offset2=onset2+testDurFrames-avPSESign*avPSE2
 
     print(f'Onset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2},  dur 1: {frames2sec(offset1-onset1)}, dur 2: {frames2sec(offset2-onset2)}')
 
