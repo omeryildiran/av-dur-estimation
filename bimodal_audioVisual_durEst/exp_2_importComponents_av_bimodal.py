@@ -99,7 +99,7 @@ stairCaseShorter2U1D=stairCase( max_level=max_level, max_trials=max_trial_per_st
 ## 3 up or 3 down 
 stairCaseLonger=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="1D1U" ) # '1D2U', '2D1U'                    )
 
-stairCaseShorter=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="1D1U" ) # '1D2U', '2D1U'                    )
+stairCaseShorter=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="1U1D" ) # '1D2U', '2D1U'                    )
 
 
 

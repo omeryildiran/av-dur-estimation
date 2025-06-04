@@ -77,6 +77,14 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDur = np.random.uniform(isiMin, isiMax)
     postDur = np.random.uniform(postMin, postMax)
 
+
+    # Recalculate pre and post durations if necessary
+    if (-1*avPSEseconds+conflictDur)/2>postDur:
+        postDur=(-1*avPSEseconds+conflictDur)/2+postDur
+        preDur=(-1*avPSEseconds+conflictDur)/2+preDur
+        isiDur=isiDur+isiDur/3
+
+
     preDurFrames=sec2frames(preDur, frameRate)
     postDurFrames=sec2frames(postDur, frameRate)
     isiDurFrames=sec2frames(isiDur, frameRate)
@@ -87,13 +95,13 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     #conflict duration
     conflictDurFrames=sec2frames(conflictDur, frameRate)
     conflictDurFramesAbs=abs(conflictDurFrames)
-    # try:
-    #     conflictDurFramesSign=conflictDurFrames//conflictDurFrames
-    # except:
+
     conflictDurFramesSign=np.sign(conflictDurFrames)
     
     conflictF1=conflictDurFramesAbs//2 # first half of the conflict duration
     conflictF2=conflictDurFramesAbs-conflictF1   # second half of the conflict duration
+
+
 
 
     # audiovisual pse difference from bimodal experiment
@@ -138,6 +146,9 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDur=frames2sec(isiDurFrames, frameRate)
     testDurS=frames2sec(testDurFrames, frameRate)
     standardDur=frames2sec(standardDurFrames, frameRate)
+
+
+
 
     
     deltaDurS=frames2sec(deltaDurFrames, frameRate)

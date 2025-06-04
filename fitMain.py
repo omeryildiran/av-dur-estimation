@@ -36,7 +36,10 @@ def loadData(dataName, isShared):
     data['chose_standard'] = (data['responses'] != data['order']).astype(int)
     data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
     data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
-    data['biasCheckTest'] = (data['visualPSEBiasTest'] - data['VisualPSE'] < 0.01)
+    try: 
+        data['biasCheckTest'] = (data['visualPSEBiasTest'] - data['VisualPSE'] < 0.01)
+    except:
+        pass
     data['conflictDur'] = data['conflictDur'].round(3)
     data['standard_dur']=data['standardDur']
 
@@ -425,7 +428,7 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 plt.axhline(y=0.5, color='gray', linestyle='--')
                 plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
                 plt.ylabel("P(chose test)")
-                plt.title(f"Multimodal auditory duration comparison", fontsize=16)
+                plt.title(f"AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
                 plt.legend(fontsize=14, title_fontsize=14)
                 plt.grid()
                 bin_and_plot(dfFiltered, bin_method='cut', bins=10, plot=True, color=color)
