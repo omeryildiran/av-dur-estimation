@@ -250,31 +250,22 @@ def fit_psychometric_function(levels,nResp, totalResp,init_guesses=[0,0,0]):
 # Update nLLJoint to use getParams
 def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_levels):
     """
-    Compute negative log likelihood for all conditions.
+    Vectorized negative log likelihood for all conditions.
     """
-    nll = 0
-    
-    # Loop through each data point 
+    # Precompute parameter arrays for each data point
+    lam = np.empty(len(delta_dur))
+    mu = np.empty(len(delta_dur))
+    sigma = np.empty(len(delta_dur))
     for i in range(len(delta_dur)):
-        x = delta_dur[i]
-        conflict = conflicts[i]
-        audio_noise = noise_levels[i]
-        total_response = total_responses[i]
-        chose_test = responses[i]
-        
-        # Get appropriate parameters for this condition
-        lambda_, mu, sigma = getParams(params, conflict, audio_noise, nLambda, nSigma)
-        
-        # Calculate probability of choosing test
-        p = psychometric_function(x, lambda_, mu, sigma)
-        
-        # Avoid numerical issues
-        epsilon = 1e-9
-        p = np.clip(p, epsilon, 1 - epsilon)
-        
-        # Add to negative log-likelihood
-        nll += -1 * (chose_test * np.log(p) + (total_response - chose_test) * np.log(1 - p))
-    
+        lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
+
+    # Vectorized psychometric function
+    p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
+    epsilon = 1e-9
+    p = np.clip(p, epsilon, 1 - epsilon)
+
+    # Vectorized negative log-likelihood
+    nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
     return nll
 
 # fitting function for joint model
@@ -556,7 +547,7 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "hh_mainExpAvDurEstimate_2025-06-05_11h27.28.881.csv"
+        dataName = "HH_all.csv"
     global pltTitle
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
