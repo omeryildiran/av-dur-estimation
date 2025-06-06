@@ -14,7 +14,9 @@ def loadData(dataName, isShared):
     sensoryVar="audNoise"
     standardVar="standardDur"
     conflictVar="conflictDur"
-    
+    global pltTitle
+    pltTitle=dataName.split("_")[1]
+    pltTitle=dataName.split("_")[0]+str(" ")+pltTitle    
 
 
     data = pd.read_csv("data/"+dataName)
@@ -130,36 +132,29 @@ from tqdm import tqdm
 def getParams(params, conflict, audio_noise, nLambda, nSigma):
 
     if sharedSigma==False:
-        # Get lambda (lapse rate)
-        lambda_ = params[0]    
-        # Get sigma based on noise level
-        
-        # Get noise index safely
-        noise_idx_array = np.where(uniqueSensory == round(audio_noise,3))[0]
+        lambda_ = params[0]
+
+        # Get indices
+        noise_idx_array = np.where(uniqueSensory == round(audio_noise, 3))[0]
         if len(noise_idx_array) == 0:
             raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
-        
-        # Get conflict index safely
-        conflict_idx_array = np.where(uniqueConflict==conflict)[0]
+
+        conflict_idx_array = np.where(uniqueConflict == conflict)[0]
         if len(conflict_idx_array) == 0:
             raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
-        conflict_idx = conflict_idx_array[0]
-        
+
         noise_idx = noise_idx_array[0]
-    #    print(f"noise_idx: {noise_idx}, conflict_idx: {conflict_idx}, noise_offset: {noise_offset}, lenParams: {len(params)}")
+        conflict_idx = conflict_idx_array[0]
 
-        # sigma is after lambda, so we need to find its index
-        sigma_idx = nLambda-1  + ((len(params)-1)//2) + ((conflict_idx+1)*(noise_idx+1))#+ nSigma + noise_offset + conflict_idx
-        sigma = params[sigma_idx]  # +1 because lambda is first
+        nConditions = len(uniqueConflict) * len(uniqueSensory)
+        cond_idx = conflict_idx * len(uniqueSensory) + noise_idx
 
-        noise_offset = noise_idx * len(uniqueConflict)
-        # mu is after lambda and sigma, so we need to find its index
-        #mu_idx = nLambda+ nSigma + noise_offset + conflict_idx
-        mu_idx = nLambda-1 +((conflict_idx+1)*(noise_idx+1))#+ nSigma + noise_offset + conflict_idx
-        
-        mu = params[mu_idx]
+        mu = params[nLambda + cond_idx]
+        sigma = params[nLambda + nConditions + cond_idx]
 
-    else:
+        return lambda_, mu, sigma
+
+    else: #  if sigma is shared
         # Get lambda (lapse rate)
         lambda_ = params[0]    
         # Get sigma based on noise level
@@ -300,15 +295,6 @@ def fitJoint(grouped_data,  initGuesses):
         # array of parameters in order of lambda, mu, sigma
         bounds = [(0,0.25)]*nLambda +  [(0.01, +1)]*nSensoryVar+[(-1, +1)]*nSensoryVar*nConflictVar 
 
-
-        # Minimize negative log-likelihood
-        result = minimize(
-            nLLJoint,
-            x0=initGuesses,
-            args=(intensities, chose_tests, total_responses, conflicts, noise_levels),
-            bounds=bounds,
-            method='L-BFGS-B'  # Use L-BFGS-B for bounded optimization
-        )
     else:
         # Initialize guesses for parameters 
         # lambda, mu, sigma
@@ -423,12 +409,14 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 x = np.linspace(-0.9, 0.9, 500)
                 y = psychometric_function(x, lambda_, mu, sigma)
                 color=sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))  # Use a colormap for different conflict levels
-                plt.plot(x, y, color=color, label=f"Conflict: {int(conflictLevel*1000)}, PSE: {int(mu*1000)}, $\sigma$: {sigma:.3f}", linewidth=4,)
+                plt.plot(x, y, color=color, label=f"Conflict: {int(conflictLevel*1000)}, mu: {mu:.3f}, $\sigma$: {sigma:.3f}", linewidth=4,)
                 plt.axvline(x=0, color='gray', linestyle='--')
                 plt.axhline(y=0.5, color='gray', linestyle='--')
                 plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
                 plt.ylabel("P(chose test)")
-                plt.title(f"AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
+                #plt.title(f" {pltTitle} ", fontsize=16)
+
+                plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
                 plt.legend(fontsize=14, title_fontsize=14)
                 plt.grid()
                 bin_and_plot(dfFiltered, bin_method='cut', bins=10, plot=True, color=color)
@@ -439,7 +427,7 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
 
                 # print the fitted parameters
                 print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Mu: {mu:.3f}, Sigma: {sigma:.3f}")
-    plt.show()
+    #plt.show()
 
 
 def simulate_dataset(params, gdf):
@@ -515,8 +503,10 @@ def plot_conflict_vs_pse(best_fit, allBootedFits):
                 plt.axhline(y=0, color='gray', linestyle='--')
                 plt.axvline(x=0, color='gray', linestyle='--')
 
-                mu_idx = nLambda + nSigma + ((j) * len(uniqueConflict)) + k
-                mu_all = allBootedFits[:, mu_idx]
+                mu_all = []
+                for fit in allBootedFits:
+                    lambda_, muBooted, sigma = getParams(fit, conflictLevel, audioNoiseLevel, nLambda, nSigma)
+                    mu_all.append(muBooted)
                 mu_ci = np.percentile(mu_all, [2.5, 97.5])
                 lower_err = np.maximum(mu*1000/2-mu_ci[0]*1000/2, 0)
                 upper_err = np.maximum(mu_ci[1]*1000/2-mu*1000/2, 0)
@@ -524,6 +514,7 @@ def plot_conflict_vs_pse(best_fit, allBootedFits):
                             , label=f"95% CI for mu: {mu_ci[0]*1000/2:.2f} - {mu_ci[1]*1000/2:.2f}", linewidth=2)
                 plt.ylim(-350, 350)
     plt.show()
+
 
 
 def plotStairCases(data):
@@ -565,7 +556,10 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "HH_mainExpAvDurEstimate_2025-06-02_11h26.04.896.csv"  # Default data file if not provided
+        dataName = "hh_mainExpAvDurEstimate_2025-06-05_11h27.28.881.csv"
+    global pltTitle
+    pltTitle=dataName.split("_")[1]
+    pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
         
     sharedSigma = False  # Set to True if you want to use shared sigma across noise levels
     # Example usage

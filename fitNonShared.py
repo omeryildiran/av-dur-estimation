@@ -54,6 +54,8 @@ def loadData(dataName):
     data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
     data['conflictDur']=round(data['conflictDur'],2)
 
+    # delete data[stair]=1U1D
+    #data = data[data['current_stair'] != '1U1D']
     try:
         print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
         print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
@@ -431,7 +433,7 @@ def plotStairCases(data):
 
 if __name__ == "__main__":
     fixedMu =0   # Set to True to ignore the bias in the model
-    dataName = "ip_mainExpAvDurEstimate_2025-06-04_12h35.40.324.csv"
+    dataName = "sx_bimodalDurEst_2025-06-04_15h37.48.842.csv"
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]

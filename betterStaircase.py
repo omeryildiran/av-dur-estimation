@@ -16,6 +16,7 @@ class stairCase():
         # level at which the staircase starts
 
         self.level=-1*abs(max_level)
+
         #self.sign=sign_of_stair
         self.method = method
 
@@ -175,7 +176,7 @@ class stairCase():
         # Otherwise, continue
         return True
 
-# method='2D1U'  # '1D2U', '2D1U'
+# method='1U1D'  # '1D2U', '2D1U'
       
         
 # ##########----------------EXANPLE USAGE ------------------#########
