@@ -67,6 +67,8 @@ def loadData(dataName):
         data=data[data['recordedDurVisualTest'] >=0]
     except:
         pass
+
+    #data = data[3:]  # Ignore first 3 rows
     nLambda=len(uniqueStandard)
     nSigma=len(uniqueSensory)
     nMu=len(uniqueConflict)*nSigma
@@ -432,8 +434,8 @@ def plotStairCases(data):
 
 
 if __name__ == "__main__":
-    fixedMu =0   # Set to True to ignore the bias in the model
-    dataName = "sx_bimodalDurEst_2025-06-04_15h37.48.842.csv"
+    fixedMu =0  # Set to True to ignore the bias in the model
+    dataName = "IP_bimodalDurEst_2025-05-27_15h03.01.323.csv"
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]

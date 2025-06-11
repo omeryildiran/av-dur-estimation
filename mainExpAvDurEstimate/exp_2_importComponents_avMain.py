@@ -89,13 +89,13 @@ max_trial_per_stair=nTrialPerStair#total_trials//5
 
 
 if max([avPSEsecondsLow,avPSEsecondsHigh])>0:
-    minLapse=-1*max_level+2*max([avPSEsecondsLow,avPSEsecondsHigh])
+    minLapse=-0.95+2*max([avPSEsecondsLow,avPSEsecondsHigh])-2*min(conflicts)
     print("min lapse rate: ", minLapse)
 else:
-    minLapse=-0.9
+    minLapse=-0.95-2*min(conflicts)
 max_level=minLapse
 print(f'rise unique: {np.unique(audNoises)}')
-
+print("min lapse rate\n: ", minLapse)    
 # stairCaseLonger = stairCase(init_level=initLevel, 
 #                             init_step=initStep, 
 #                             method="1D1U",  

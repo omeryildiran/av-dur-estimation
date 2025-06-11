@@ -77,9 +77,10 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDur = np.random.uniform(isiMin, isiMax)
     postDur = np.random.uniform(postMin, postMax)
 
-
     # Recalculate pre and post durations if necessary
     if (-1*avPSEseconds+conflictDur)/2>postDur:
+
+        print(f"too large bias ({(-1*avPSEseconds+conflictDur)}) correcting now")
         postDur=(-1*avPSEseconds+conflictDur)/2+postDur
         preDur=(-1*avPSEseconds+conflictDur)/2+preDur
         isiDur=isiDur+isiDur/3
@@ -95,13 +96,13 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     #conflict duration
     conflictDurFrames=sec2frames(conflictDur, frameRate)
     conflictDurFramesAbs=abs(conflictDurFrames)
-
+    # try:
+    #     conflictDurFramesSign=conflictDurFrames//conflictDurFrames
+    # except:
     conflictDurFramesSign=np.sign(conflictDurFrames)
     
     conflictF1=conflictDurFramesAbs//2 # first half of the conflict duration
     conflictF2=conflictDurFramesAbs-conflictF1   # second half of the conflict duration
-
-
 
 
     # audiovisual pse difference from bimodal experiment
@@ -134,7 +135,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         offset1=preDurFrames+standardDurFrames+conflictDurFramesSign*conflictF2 -avPSESign*avPSE2
         # Test times
         onset2=offset1+isiDurFrames+avPSESign*avPSE1
-        offset2=onset2+testDurFrames-avPSESign*avPSE2
+        offset2=offset1+isiDurFrames+testDurFrames-avPSESign*avPSE2
 
     print(f'Onset1: {onset1}, Offset1: {offset1}, Onset2: {onset2}, Offset2: {offset2},  dur 1: {frames2sec(offset1-onset1)}, dur 2: {frames2sec(offset2-onset2)}')
 
@@ -146,9 +147,6 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDur=frames2sec(isiDurFrames, frameRate)
     testDurS=frames2sec(testDurFrames, frameRate)
     standardDur=frames2sec(standardDurFrames, frameRate)
-
-
-
 
     
     deltaDurS=frames2sec(deltaDurFrames, frameRate)
@@ -222,7 +220,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         rest_text_comp.draw()
         win.flip()
         # comment for testing
-        core.wait(5) if ExpTesting==False else None
+        #core.wait(5) if ExpTesting==False else None
         response_text_comp.setAutoDraw(False)
 
         goText="Now you can press any key to continue!"
@@ -444,7 +442,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 self.rt = np.random.choice(np.linspace(rtRange[0], rtRange[1])/1000)
 
         #  for testing purposesSimulate a key press
-        if not response and ExpTesting:
+        if not response: #and ExpTesting:
             #fake a response responseKeys 
             response=[simKeys(keyList=['left', 'right'], rtRange=[200,1000])]
 

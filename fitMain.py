@@ -20,6 +20,7 @@ def loadData(dataName, isShared):
 
 
     data = pd.read_csv("data/"+dataName)
+    print(f"total trials before cleaning: {len(data)}")
     data= data[data['audNoise'] != 0]
     data=data[data['standardDur'] != 0]
     data[standardVar] = data[standardVar].round(2)
@@ -39,7 +40,21 @@ def loadData(dataName, isShared):
     data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
     data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
     try: 
-        data['biasCheckTest'] = (data['visualPSEBiasTest'] - data['VisualPSE'] < 0.01)
+        data['biasCheckTest'] = (abs(data['visualPSEBiasTest'] - data['VisualPSE']) < 0.01)
+        data['biasCheckStandard'] = (abs(data['visualPSEBias'] - data['VisualPSE']) < 0.01)
+        data["testDurSCheck"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.03)
+        data["standardDurCheck"] = (abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur']) < 0.03)
+        data["testDurSCompare"] = abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"])
+        data["standardDurCompare"] = abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur'])
+
+        #print len of testDurSCheck and standardDurCheck false
+        print("")
+        print(len(data[data['testDurSCheck'] == False]), " trials with testDurSCheck False")
+        print(len(data[data['standardDurCheck'] == False]), " trials with standardDurCheck False\n")
+        # print number of abs(testDurSCompare
+        print(len(data[abs(data['testDurSCompare']) > 0.05]), " trials with abs(testDurSCompare) > 0.05")
+        print(len(data[abs(data['standardDurCompare']) > 0.05]), " trials with abs(standardDurCompare) > 0.05")
+
     except:
         pass
     data['conflictDur'] = data['conflictDur'].round(3)
@@ -54,9 +69,25 @@ def loadData(dataName, isShared):
 
     data['standard_dur']=round(data['standardDur'],2)
     data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
+    try:
+        print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
+        print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
+    except:
+        print("No negative visual test or standard duration found.")
 
-    #data=data[data['recordedDurVisualStandard'] <=998]
-    #data=data[data['recordedDurVisualStandard'] >=0]
+    # try:
+    #     print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
+    #     print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
+
+
+    #     data=data[data['recordedDurVisualStandard'] <=998]
+    #     data=data[data['recordedDurVisualStandard'] >=0]
+    #     data=data[data['recordedDurVisualTest'] <=998]
+    #     data=data[data['recordedDurVisualTest'] >=0]
+    # except:
+    #     pass
+
+    print(f"total trials after cleaning: {len(data)}")
     nLambda=len(uniqueStandard)
     nSigma=len(uniqueSensory)
     nMu=len(uniqueConflict)*nSigma
@@ -547,7 +578,7 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "HH_all.csv"
+        dataName = "mh_mainExpAvDurEstimate_2025-06-11_16h47.50.793.csv"
     global pltTitle
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
