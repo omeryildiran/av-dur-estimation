@@ -42,8 +42,8 @@ def loadData(dataName, isShared):
     try: 
         data['biasCheckTest'] = (abs(data['visualPSEBiasTest'] - data['VisualPSE']) < 0.01)
         data['biasCheckStandard'] = (abs(data['visualPSEBias'] - data['VisualPSE']) < 0.01)
-        data["testDurSCheck"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.03)
-        data["testDurSCheckBias"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) <0.2)
+        data["testDurSCheck"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.05)
+        data["testDurSCheckBias"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) <0.1)
 
         data["standardDurCheck"] = (abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur']) < 0.03)
         data["testDurSCompare"] = abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"])
@@ -56,6 +56,7 @@ def loadData(dataName, isShared):
         # print number of abs(testDurSCompare
         print(len(data[abs(data['testDurSCompare']) > 0.05]), " trials with abs(testDurSCompare) > 0.05")
         print(len(data[abs(data['standardDurCompare']) > 0.05]), " trials with abs(standardDurCompare) > 0.05")
+        print("")
         print(len(data[data['testDurSCheckBias'] == False]), " trials with testDurSCheckBias False")
 
     except:
