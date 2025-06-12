@@ -220,7 +220,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         rest_text_comp.draw()
         win.flip()
         # comment for testing
-        #core.wait(5) if ExpTesting==False else None
+        core.wait(5) if ExpTesting==False else None
         response_text_comp.setAutoDraw(False)
 
         goText="Now you can press any key to continue!"
@@ -442,7 +442,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
                 self.rt = np.random.choice(np.linspace(rtRange[0], rtRange[1])/1000)
 
         #  for testing purposesSimulate a key press
-        if not response: #and ExpTesting:
+        if not response and ExpTesting:
             #fake a response responseKeys 
             response=[simKeys(keyList=['left', 'right'], rtRange=[200,1000])]
 

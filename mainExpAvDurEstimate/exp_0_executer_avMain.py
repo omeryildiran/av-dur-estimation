@@ -3,6 +3,7 @@ ExpTraining= False
 fullScreen=True  
 expName = 'mainExpAvDurEstimate'
 modalityCue='A'
+recollectingData = False # if True, it will not run the full experiment, 
 
 #avPSEseconds=-0.025 # audiovisual PSE in seconds (negative means visual perceived shorter
 standardDur=0.5 # standard duration in seconds
@@ -18,7 +19,7 @@ conflictsBatch2=[ -0.083, 0.167]
 
 conflictsBatch3=[ -0.25,  0.083]
 
-conflicts=conflictsBatch3
+conflicts=conflicts#conflictsBatch3
 
 import os
 import sys  # to get file system encoding

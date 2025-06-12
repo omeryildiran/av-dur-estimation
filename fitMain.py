@@ -43,6 +43,8 @@ def loadData(dataName, isShared):
         data['biasCheckTest'] = (abs(data['visualPSEBiasTest'] - data['VisualPSE']) < 0.01)
         data['biasCheckStandard'] = (abs(data['visualPSEBias'] - data['VisualPSE']) < 0.01)
         data["testDurSCheck"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.03)
+        data["testDurSCheckBias"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) <0.2)
+
         data["standardDurCheck"] = (abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur']) < 0.03)
         data["testDurSCompare"] = abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"])
         data["standardDurCompare"] = abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur'])
@@ -54,6 +56,7 @@ def loadData(dataName, isShared):
         # print number of abs(testDurSCompare
         print(len(data[abs(data['testDurSCompare']) > 0.05]), " trials with abs(testDurSCompare) > 0.05")
         print(len(data[abs(data['standardDurCompare']) > 0.05]), " trials with abs(standardDurCompare) > 0.05")
+        print(len(data[data['testDurSCheckBias'] == False]), " trials with testDurSCheckBias False")
 
     except:
         pass
@@ -75,17 +78,23 @@ def loadData(dataName, isShared):
     except:
         print("No negative visual test or standard duration found.")
 
-    # try:
-    #     print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
-    #     print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
 
 
-    #     data=data[data['recordedDurVisualStandard'] <=998]
-    #     data=data[data['recordedDurVisualStandard'] >=0]
-    #     data=data[data['recordedDurVisualTest'] <=998]
-    #     data=data[data['recordedDurVisualTest'] >=0]
-    # except:
-    #     pass
+
+    try:
+        print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
+        print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
+
+
+        data=data[data['recordedDurVisualStandard'] <=998]
+        data=data[data['recordedDurVisualStandard'] >=0]
+        data=data[data['recordedDurVisualTest'] <=998]
+        data=data[data['recordedDurVisualTest'] >=0]
+        # clean trials where standardDurCheck and testDurSCheck are false
+        data=data[data['testDurSCheck'] == True]
+        data=data[data['standardDurCheck'] == True]
+    except:
+        pass
 
     print(f"total trials after cleaning: {len(data)}")
     nLambda=len(uniqueStandard)

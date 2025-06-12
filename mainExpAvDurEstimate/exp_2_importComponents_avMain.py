@@ -12,7 +12,14 @@ trialClock = core.Clock()
 audNoiseConds= [0.1,1.2] 
 maxIntensityBurst=5
 nTrialPerStairPerCondition=70
+
+
+if recollectingData:
+    nTrialPerStairPerCondition=nTrialPerStair/2.3
+
 nTrialPerStair=len(audNoiseConds)*len(conflicts)*nTrialPerStairPerCondition
+
+
 totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+1)*len(conflicts)
 
 
