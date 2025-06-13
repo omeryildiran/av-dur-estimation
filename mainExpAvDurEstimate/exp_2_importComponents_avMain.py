@@ -11,15 +11,7 @@ trialClock = core.Clock()
 
 audNoiseConds= [0.1,1.2] 
 maxIntensityBurst=5
-nTrialPerStairPerCondition=70
-
-
-if recollectingData:
-    nTrialPerStairPerCondition=nTrialPerStair/2.3
-
 nTrialPerStair=len(audNoiseConds)*len(conflicts)*nTrialPerStairPerCondition
-
-
 totalTrialN=len(audNoiseConds)*nTrialPerStair*(2+1)*len(conflicts)
 
 
@@ -94,13 +86,14 @@ exp_data=np.zeros((numberOfTrials+tolerance_trials, len(column_names)+1),dtype=o
 # Create the staircases
 max_trial_per_stair=nTrialPerStair#total_trials//5
 
-
 if max([avPSEsecondsLow,avPSEsecondsHigh])>0:
-    minLapse=-0.95+2*max([avPSEsecondsLow,avPSEsecondsHigh])-2*min(conflicts)
+    minLapse=-0.95+2*max([avPSEsecondsLow,avPSEsecondsHigh])
     print("min lapse rate: ", minLapse)
 else:
-    minLapse=-0.95-2*min(conflicts)
+    minLapse=-0.95
+
 max_level=minLapse
+
 print(f'rise unique: {np.unique(audNoises)}')
 print("min lapse rate\n: ", minLapse)    
 # stairCaseLonger = stairCase(init_level=initLevel, 
@@ -115,9 +108,11 @@ print("min lapse rate\n: ", minLapse)
 # stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
 #                                 max_trials=max_trial_per_stair,)
 
-stairCaseLonger2D1U=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="2D1U" ) # '1D2U', '2D1U'                    )
+stairCaseLonger2D1U=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    
+method="2D1U", init_level=None ) # '1D2U', '2D1U'                    )
 
-stairCaseShorter2U1D=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    method="1D2U" ) # '1D2U', '2D1U'                    )
+stairCaseShorter2U1D=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    
+method="1D2U", init_level=None ) # '1D2U', '2D1U'                    )
 
 print(f"max level: {max_level}, init step: {initStep}, init level: {max_level}" )
 
@@ -146,7 +141,7 @@ def lapse_rate_cond_generate():
     # in total 12 conditions
     
     # tile the lapse conditions
-    all_conds=np.tile(all_conds,(7,1))
+    all_conds=np.tile(all_conds,(nLAPSE,1))
     np.random.shuffle(all_conds) 
     return all_conds
 lapse_rate_conds=lapse_rate_cond_generate()
