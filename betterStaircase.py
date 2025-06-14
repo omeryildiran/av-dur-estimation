@@ -11,12 +11,13 @@ class stairCase():
                  max_reversals=100,
                  max_trials=50,
                  max_level=0.6,
+                 init_level=None
                  ):
         
         # level at which the staircase starts
 
-        self.level=-1*abs(max_level)
-
+        self.level=-1*abs(max_level) if init_level is None else init_level
+        print(f"initial level of {method} is {init_level}")
         #self.sign=sign_of_stair
         self.method = method
 
@@ -176,7 +177,7 @@ class stairCase():
         # Otherwise, continue
         return True
 
-# method='1U1D'  # '1D2U', '2D1U'
+# method='2D1U'  # '1D2U', '2D1U'
       
         
 # ##########----------------EXANPLE USAGE ------------------#########

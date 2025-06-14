@@ -20,6 +20,8 @@ def loadData(dataName, isShared):
 
 
     data = pd.read_csv("data/"+dataName)
+    data = data.round({'standardDur': 2, 'conflictDur': 2})
+
     print(f"total trials before cleaning: {len(data)}")
     data= data[data['audNoise'] != 0]
     data=data[data['standardDur'] != 0]
@@ -40,10 +42,10 @@ def loadData(dataName, isShared):
     data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
     data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
     try: 
-        data['biasCheckTest'] = (abs(data['visualPSEBiasTest'] - data['VisualPSE']) < 0.01)
-        data['biasCheckStandard'] = (abs(data['visualPSEBias'] - data['VisualPSE']) < 0.01)
+        data['biasCheckTest'] = np.isclose(data['visualPSEBiasTest'], data['VisualPSE'], atol=0.012)
+        data['biasCheckStandard'] = np.isclose(data['visualPSEBias'], data['VisualPSE'], atol=0.012)
         data["testDurSCheck"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.05)
-        data["testDurSCheckBias"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) <0.1)
+        data["testDurSCheckBias"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.05)
 
         data["standardDurCheck"] = (abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur']) < 0.03)
         data["testDurSCompare"] = abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"])
@@ -83,6 +85,8 @@ def loadData(dataName, isShared):
 
 
     try:
+        print(f'testdurCompare > 0.05: {len(data[data["testDurSCompare"] > 0.05])} trials')
+
         print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
         print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
 
@@ -91,9 +95,9 @@ def loadData(dataName, isShared):
         data=data[data['recordedDurVisualStandard'] >=0]
         data=data[data['recordedDurVisualTest'] <=998]
         data=data[data['recordedDurVisualTest'] >=0]
-        # clean trials where standardDurCheck and testDurSCheck are false
-        data=data[data['testDurSCheck'] == True]
+        #clean trials where standardDurCheck and testDurSCheck are false
         data=data[data['standardDurCheck'] == True]
+        data=data[data['testDurSCompare']< 0.05]
     except:
         pass
 
@@ -418,8 +422,9 @@ def fitMultipleStartingPoints(data,nStart=3):
 def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable):
     colors = sns.color_palette("viridis", n_colors=len(uniqueSensory))  # Use Set2 palette for different noise levels
     plt.figure(figsize=(12*2.5, 6*2))
+
     for i, standardLevel in enumerate(uniqueStandard):
-        for j, audioNoiseLevel in enumerate(uniqueSensory):
+        for j, audioNoiseLevel in enumerate(sorted(uniqueSensory)):
             print(f"standardLevel: {standardLevel}, audioNoiseLevel: {audioNoiseLevel}, uniqueConflict: {uniqueConflict}")
             for k, conflictLevel in enumerate(uniqueConflict):
                 lambda_, mu, sigma = getParams(best_fit.x, conflictLevel, audioNoiseLevel, nLambda, nSigma)
@@ -588,7 +593,7 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "mh_mainExpAvDurEstimate_2025-06-11_16h47.50.793.csv"
+        dataName = "dt_mainExpAvDurEstimate_2025-06-12_13h19.10.816.csv"
     global pltTitle
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle

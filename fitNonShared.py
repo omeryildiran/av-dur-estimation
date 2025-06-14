@@ -19,6 +19,9 @@ def loadData(dataName):
     # ignore firts 3 rows
     data= data[data['audNoise'] != 0]
     data=data[data['standardDur'] != 0]
+    #round standardDur to 2 decimal places
+    data = data.round({'standardDur': 2, 'audNoise': 2, 'conflictDur': 2, 'delta_dur_percents': 2})
+    
     uniqueSensory = data[sensoryVar].unique()
     uniqueStandard = data[standardVar].unique()
  
@@ -435,7 +438,7 @@ def plotStairCases(data):
 
 if __name__ == "__main__":
     fixedMu =0  # Set to True to ignore the bias in the model
-    dataName = "IP_bimodalDurEst_2025-05-27_15h03.01.323.csv"
+    dataName = "DT_all_bimodal.csv"
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]

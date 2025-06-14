@@ -77,13 +77,14 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
     isiDur = np.random.uniform(isiMin, isiMax)
     postDur = np.random.uniform(postMin, postMax)
 
+    addedBiasConflict=(-1*avPSEseconds+conflictDur)/2
     # Recalculate pre and post durations if necessary
-    if (-1*avPSEseconds+conflictDur)/2>postDur:
+    if addedBiasConflict>postDur or addedBiasConflict>preDur or addedBiasConflict>isiDur:
 
         print(f"too large bias ({(-1*avPSEseconds+conflictDur)}) correcting now")
-        postDur=(-1*avPSEseconds+conflictDur)/2+postDur
-        preDur=(-1*avPSEseconds+conflictDur)/2+preDur
-        isiDur=isiDur+isiDur/3
+        postDur=postDur*1.5
+        preDur=preDur*1.5
+        isiDur=isiDur*1.5
 
 
     preDurFrames=sec2frames(preDur, frameRate)
@@ -319,7 +320,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
             visualStim.fillColor = "gray"
             tVisualStim2End = t
         
-        if frameN >= totalDurFrames:
+        if frameN >= offset2+postDurFrames:
             visualStim.setAutoDraw(False)
             visualStim.status = FINISHED
         # Audio stimulus
