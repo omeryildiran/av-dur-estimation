@@ -44,8 +44,8 @@ def loadData(dataName, isShared):
     try: 
         data['biasCheckTest'] = np.isclose(data['visualPSEBiasTest'], data['VisualPSE'], atol=0.012)
         data['biasCheckStandard'] = np.isclose(data['visualPSEBias'], data['VisualPSE'], atol=0.012)
-        data["testDurSCheck"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.05)
-        data["testDurSCheckBias"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.05)
+        data["testDurSCheck"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.03)
+        data["testDurSCheckBias"] = (abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"]) < 0.03)
 
         data["standardDurCheck"] = (abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur']) < 0.03)
         data["testDurSCompare"] = abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"])
@@ -56,8 +56,8 @@ def loadData(dataName, isShared):
         print(len(data[data['testDurSCheck'] == False]), " trials with testDurSCheck False")
         print(len(data[data['standardDurCheck'] == False]), " trials with standardDurCheck False\n")
         # print number of abs(testDurSCompare
-        print(len(data[abs(data['testDurSCompare']) > 0.05]), " trials with abs(testDurSCompare) > 0.05")
-        print(len(data[abs(data['standardDurCompare']) > 0.05]), " trials with abs(standardDurCompare) > 0.05")
+        print(len(data[abs(data['testDurSCompare']) > 0.03]), " trials with abs(testDurSCompare) > 0.05")
+        print(len(data[abs(data['standardDurCompare']) > 0.03]), " trials with abs(standardDurCompare) > 0.05")
         print("")
         print(len(data[data['testDurSCheckBias'] == False]), " trials with testDurSCheckBias False")
 
@@ -96,8 +96,8 @@ def loadData(dataName, isShared):
         data=data[data['recordedDurVisualTest'] <=998]
         data=data[data['recordedDurVisualTest'] >=0]
         #clean trials where standardDurCheck and testDurSCheck are false
-        data=data[data['standardDurCheck'] == True]
-        data=data[data['testDurSCompare']< 0.05]
+        data=data[data['standardDurCompare'] < 0.03]
+        data=data[data['testDurSCompare']< 0.03]
     except:
         pass
 
@@ -199,7 +199,7 @@ def getParams(params, conflict, audio_noise, nLambda, nSigma):
 
         return lambda_, mu, sigma
 
-    else: #  if sigma is shared
+    elif sharedSigma: #  if sigma is shared
         # Get lambda (lapse rate)
         lambda_ = params[0]    
         # Get sigma based on noise level
@@ -219,9 +219,8 @@ def getParams(params, conflict, audio_noise, nLambda, nSigma):
         mu_idx = nLambda + nSigma + noise_offset + conflict_idx
         mu = params[mu_idx]
 
-
     return lambda_, mu, sigma
-    
+
 
 def getParamIndexes(params, conflict, audio_noise, nLambda, nSigma):
     # Get lambda (lapse rate)
@@ -593,7 +592,7 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "dt_mainExpAvDurEstimate_2025-06-12_13h19.10.816.csv"
+        dataName = "dt_all.csv"
     global pltTitle
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
