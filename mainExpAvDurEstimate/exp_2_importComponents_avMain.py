@@ -96,6 +96,17 @@ max_level=minLapse
 
 print(f'rise unique: {np.unique(audNoises)}')
 print("min lapse rate\n: ", minLapse)    
+# stairCaseLonger = stairCase(init_level=initLevel, 
+#                             init_step=initStep, 
+#                             method="1D1U",  
+#                             step_factor=stepFactor, 
+#                             max_level=max_level+1, 
+#                             max_reversals=maxReversals, 
+#                             max_trials=max_trial_per_stair,)
+                            
+
+# stairCaseLonger2D1U = stairCase(init_level=initLevel, init_step=initStep, method="2D1U",  step_factor=stepFactor, max_level=max_level+1, max_reversals=maxReversals, 
+#                                 max_trials=max_trial_per_stair,)
 
 stairCaseLonger2D1U=stairCase( max_level=max_level, max_trials=max_trial_per_stair, step_factor=stepFactor,  init_step=initStep,    
 method="2D1U", init_level=None ) # '1D2U', '2D1U'                    )
