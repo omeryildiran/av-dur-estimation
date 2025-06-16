@@ -175,8 +175,36 @@ def estimate_initial_guesses(levels,chooseTest,totalResp):
 from tqdm import tqdm
 
 def getParams(params, conflict, audio_noise, nLambda, nSigma):
-
-    if sharedSigma==False:
+    if allIndependent and not sharedSigma:  # if all parameters are independent
+        # Each (noise, conflict) pair has its own lambda, mu, sigma
+        noise_idx = np.where(uniqueSensory == round(audio_noise, 3))[0][0]
+        conflict_idx = np.where(uniqueConflict == round(conflict, 3))[0][0]
+        nCond = len(uniqueSensory) * len(uniqueConflict)
+        cond_idx = noise_idx * len(uniqueConflict) + conflict_idx
+        lambda_ = params[cond_idx * 3 + 0]
+        mu     = params[cond_idx * 3 + 1]
+        sigma  = params[cond_idx * 3 + 2]
+        return lambda_, mu, sigma
+    elif allIndependent==False and sharedSigma: #  if sigma is shared
+        # Get lambda (lapse rate)
+        lambda_ = params[0]    
+        # Get sigma based on noise level
+        # Get noise index safely
+        noise_idx_array = np.where(uniqueSensory == audio_noise)[0]
+        if len(noise_idx_array) == 0:
+            raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
+        noise_idx = noise_idx_array[0]
+        sigma = params[noise_idx + 1]  # +1 because lambda is first
+        
+        # Get conflict index safely
+        conflict_idx_array = np.where(np.isclose(uniqueConflict, conflict, atol=1e-1))[0]
+        if len(conflict_idx_array) == 0:
+            raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
+        conflict_idx = conflict_idx_array[0]
+        noise_offset = noise_idx * len(uniqueConflict)
+        mu_idx = nLambda + nSigma + noise_offset + conflict_idx
+        mu = params[mu_idx]
+    elif allIndependent==False and sharedSigma==False:
         lambda_ = params[0]
 
         # Get indices
@@ -198,26 +226,6 @@ def getParams(params, conflict, audio_noise, nLambda, nSigma):
         sigma = params[nLambda + nConditions + cond_idx]
 
         return lambda_, mu, sigma
-
-    elif sharedSigma: #  if sigma is shared
-        # Get lambda (lapse rate)
-        lambda_ = params[0]    
-        # Get sigma based on noise level
-        # Get noise index safely
-        noise_idx_array = np.where(uniqueSensory == audio_noise)[0]
-        if len(noise_idx_array) == 0:
-            raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
-        noise_idx = noise_idx_array[0]
-        sigma = params[noise_idx + 1]  # +1 because lambda is first
-        
-        # Get conflict index safely
-        conflict_idx_array = np.where(np.isclose(uniqueConflict, conflict, atol=1e-1))[0]
-        if len(conflict_idx_array) == 0:
-            raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
-        conflict_idx = conflict_idx_array[0]
-        noise_offset = noise_idx * len(uniqueConflict)
-        mu_idx = nLambda + nSigma + noise_offset + conflict_idx
-        mu = params[mu_idx]
 
     return lambda_, mu, sigma
 
@@ -296,25 +304,54 @@ def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_lev
     """
     Vectorized negative log likelihood for all conditions.
     """
-    # Precompute parameter arrays for each data point
-    lam = np.empty(len(delta_dur))
-    mu = np.empty(len(delta_dur))
-    sigma = np.empty(len(delta_dur))
-    for i in range(len(delta_dur)):
-        lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
+    if allIndependent:
+        lam = np.empty(len(delta_dur))
+        mu = np.empty(len(delta_dur))
+        sigma = np.empty(len(delta_dur))
+        for i in range(len(delta_dur)):
+            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
 
-    # Vectorized psychometric function
-    p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
-    epsilon = 1e-9
-    p = np.clip(p, epsilon, 1 - epsilon)
+        # Vectorized psychometric function
+        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
+        epsilon = 1e-9
+        p = np.clip(p, epsilon, 1 - epsilon)
 
-    # Vectorized negative log-likelihood
-    nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
-    return nll
+        # Vectorized negative log-likelihood
+        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
+        return nll
+    else:
+        # Precompute parameter arrays for each data point
+        lam = np.empty(len(delta_dur))
+        mu = np.empty(len(delta_dur))
+        sigma = np.empty(len(delta_dur))
+        for i in range(len(delta_dur)):
+            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
+
+        # Vectorized psychometric function
+        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
+        epsilon = 1e-9
+        p = np.clip(p, epsilon, 1 - epsilon)
+
+        # Vectorized negative log-likelihood
+        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
+        return nll
 
 # fitting function for joint model
 def fitJoint(grouped_data,  initGuesses):
-    if sharedSigma==True:
+    if allIndependent:
+        nCond = nSensoryVar * nConflictVar
+        # Repeat initial guesses for each condition
+        initGuesses = (initGuesses * nCond)[:nCond*3]
+        intensities = grouped_data[intensityVariable]
+        chose_tests = grouped_data['num_of_chose_test']
+        total_responses = grouped_data['total_responses']
+        conflicts = grouped_data[conflictVar]
+        noise_levels = grouped_data[sensoryVar]
+        # Bounds for each parameter: lambda, mu, sigma per condition
+        bounds = []
+        for _ in range(nCond):
+            bounds.extend([(0, 0.25), (-2, 2), (0.01, 2)])
+    elif sharedSigma==True:
         # Initialize guesses for parameters 
         # lambda, mu,sigma
         initGuesses= [initGuesses[0]]*nLambda +  [initGuesses[1]]*nSensoryVar+[initGuesses[2]]*nSensoryVar*nConflictVar
@@ -329,7 +366,6 @@ def fitJoint(grouped_data,  initGuesses):
         # Set bounds for parameters
         # array of parameters in order of lambda, mu, sigma
         bounds = [(0,0.25)]*nLambda +  [(0.01, +1)]*nSensoryVar+[(-1, +1)]*nSensoryVar*nConflictVar 
-
     else:
         # Initialize guesses for parameters 
         # lambda, mu, sigma
@@ -358,6 +394,39 @@ def fitJoint(grouped_data,  initGuesses):
     )
     
     return result
+
+def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_levels):
+    if allIndependent:
+        lam = np.empty(len(delta_dur))
+        mu = np.empty(len(delta_dur))
+        sigma = np.empty(len(delta_dur))
+        for i in range(len(delta_dur)):
+            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
+
+        # Vectorized psychometric function
+        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
+        epsilon = 1e-9
+        p = np.clip(p, epsilon, 1 - epsilon)
+
+        # Vectorized negative log-likelihood
+        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
+        return nll
+    else:
+        # Precompute parameter arrays for each data point
+        lam = np.empty(len(delta_dur))
+        mu = np.empty(len(delta_dur))
+        sigma = np.empty(len(delta_dur))
+        for i in range(len(delta_dur)):
+            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
+
+        # Vectorized psychometric function
+        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
+        epsilon = 1e-9
+        p = np.clip(p, epsilon, 1 - epsilon)
+
+        # Vectorized negative log-likelihood
+        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
+        return nll
 
 # Fit the psychometric function to the grouped data
 def multipleInitGuessesWEstimate(singleInitGuesses, nStart):
@@ -445,7 +514,7 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 x = np.linspace(-0.9, 0.9, 500)
                 y = psychometric_function(x, lambda_, mu, sigma)
                 color=sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))  # Use a colormap for different conflict levels
-                plt.plot(x, y, color=color, label=f"Conflict: {int(conflictLevel*1000)}, mu: {mu:.3f}, $\sigma$: {sigma:.3f}", linewidth=4,)
+                plt.plot(x, y, color=color, label=f"C: {int(conflictLevel*1000)}, $\lambda$: {lambda_:.2f} $\mu$: {mu:.2f}, $\sigma$: {sigma:.2f}", linewidth=4,)
                 plt.axvline(x=0, color='gray', linestyle='--')
                 plt.axhline(y=0.5, color='gray', linestyle='--')
                 plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
@@ -588,7 +657,8 @@ if __name__ == "__main__":
 
     dataName = args.dataName
     global sharedSigma
-
+    global allIndependent
+    allIndependent= 1
     sharedSigma = args.sharedSigma
 
     if not dataName:
@@ -613,8 +683,8 @@ if __name__ == "__main__":
 
 
     # Plot the relation between conflict and PSE (mu) with confidence intervals
-    #allBootedFits = paramBootstrap(fit.x, nBoots=10)
-    #plot_conflict_vs_pse(fit, allBootedFits)
+    allBootedFits = paramBootstrap(fit.x, nBoots=100)
+    plot_conflict_vs_pse(fit, allBootedFits)
 
 # example usage on how to run the code on terminal
 # python jointSharedSigma.py --dataName "LN_main_all.csv" --sharedSigma True
