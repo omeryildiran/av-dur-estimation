@@ -662,7 +662,7 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "dt_all.csv"
+        dataName = "ip_mainExpAvDurEstimate_2025-06-18_11h25.30.066.csv"
     global pltTitle
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
@@ -683,8 +683,8 @@ if __name__ == "__main__":
 
 
     # Plot the relation between conflict and PSE (mu) with confidence intervals
-    allBootedFits = paramBootstrap(fit.x, nBoots=100)
-    plot_conflict_vs_pse(fit, allBootedFits)
+    #allBootedFits = paramBootstrap(fit.x, nBoots=100)
+    #plot_conflict_vs_pse(fit, allBootedFits)
 
 # example usage on how to run the code on terminal
 # python jointSharedSigma.py --dataName "LN_main_all.csv" --sharedSigma True
