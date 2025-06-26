@@ -6,9 +6,10 @@ import pandas as pd
 import os
 
 # function for loading data
-def loadData(dataName, isShared):
-    global data, sharedSigma, intensityVariable, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu
+def loadData(dataName, isShared, isAllIndependent):
+    global data, sharedSigma, intensityVariable, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu, allIndependent
     sharedSigma = isShared  # Set to True if you want to use shared sigma across noise levels
+    allIndependent = isAllIndependent  # Set to 1 if you want to use independent parameters for each condition
     intensityVariable="delta_dur_percents"
 
     sensoryVar="audNoise"
@@ -19,10 +20,19 @@ def loadData(dataName, isShared):
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle    
 
 
-    data = pd.read_csv("data/"+dataName)
-    data = data.round({'standardDur': 2, 'conflictDur': 2})
 
-    print(f"total trials before cleaning: {len(data)}")
+    data = pd.read_csv("data/"+dataName)
+
+    data = data.round({'standardDur': 2, 'conflictDur': 2})
+    # if nan in conflictDur remove those rows
+    data = data[~data['conflictDur'].isna()]
+
+    # if nan in audNoise remove those rows
+    data = data[~data['audNoise'].isna()]
+    if "VisualPSE" not in data.columns:
+        data["VisualPSE"]=data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+
+    print(f"\n Total trials before cleaning\n: {len(data)}")
     data= data[data['audNoise'] != 0]
     data=data[data['standardDur'] != 0]
     data[standardVar] = data[standardVar].round(2)
@@ -41,6 +51,7 @@ def loadData(dataName, isShared):
     data['chose_standard'] = (data['responses'] != data['order']).astype(int)
     data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
     data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
+
     try: 
         data['biasCheckTest'] = np.isclose(data['visualPSEBiasTest'], data['VisualPSE'], atol=0.012)
         data['biasCheckStandard'] = np.isclose(data['visualPSEBias'], data['VisualPSE'], atol=0.012)
@@ -62,6 +73,7 @@ def loadData(dataName, isShared):
         print(len(data[data['testDurSCheckBias'] == False]), " trials with testDurSCheckBias False")
 
     except:
+        print("Bias check failed!!!! No bias check columns found. Skipping bias check.")
         pass
     data['conflictDur'] = data['conflictDur'].round(3)
     data['standard_dur']=data['standardDur']
@@ -662,14 +674,14 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "ip_mainExpAvDurEstimate_2025-06-18_11h25.30.066.csv"
+        dataName = "all_all.csv"
     global pltTitle
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
         
     sharedSigma = False  # Set to True if you want to use shared sigma across noise levels
     # Example usage
-    data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName, sharedSigma)
+    data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName, sharedSigma,isAllIndependent=allIndependent)
     fit = fitMultipleStartingPoints(data, nStart=1)
     # print the fitted parameters
     print(f"Fitted parameters: {fit.x}")
