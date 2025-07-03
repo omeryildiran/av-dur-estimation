@@ -22,6 +22,10 @@ def loadData(dataName, isShared, isAllIndependent):
 
 
     data = pd.read_csv("data/"+dataName)
+    data["testDurMs"]= data["testDurS"]*1000
+    data["standardDurMs"]= data["standardDur"]*1000
+    data["conflictDurMs"]= data["conflictDur"]*1000
+    data["DeltaDurMs"]= data["testDurMs"] - data["standardDurMs"]
 
     data = data.round({'standardDur': 2, 'conflictDur': 2})
     # if nan in conflictDur remove those rows
@@ -118,6 +122,11 @@ def loadData(dataName, isShared, isAllIndependent):
     nSigma=len(uniqueSensory)
     nMu=len(uniqueConflict)*nSigma
     
+    data["logStandardDur"] = np.log(data[standardVar])
+    data["logConflictDur"] = np.log(data[conflictVar])
+    data["logTestDur"] = np.log(data["testDurS"])
+    data["logDeltaDur"] = data["logTestDur"] - data["logStandardDur"]
+
     return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
 
 intensityVariable="delta_dur_percents"
