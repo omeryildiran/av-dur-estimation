@@ -746,15 +746,6 @@ def unimodalMeasurements(sigma, S, n=500):
 
 # Log-normal implementation for duration estimation
 def unimodalMeasurementsLogNormal(sigma_log, S, n=500):
-    """
-    Generate measurements using log-normal distribution
-    Args:
-        sigma_log: standard deviation in log space
-        S: true duration (in linear space)
-        n: number of measurements
-    Returns:
-        measurements: array of measurements following log-normal distribution
-    """
     # Generate log-normal measurements
     # lognorm.rvs(s=sigma_log, scale=S) where s is the shape parameter (sigma in log space)
     measurements = lognorm.rvs(s=sigma_log, scale=S, size=n)
@@ -817,23 +808,11 @@ def likelihood_C2(m_a, m_v, S_a, conflict, sigma_av_a, sigma_av_v):
     return norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
 
 def posterior_C1(likelihood_c1, likelihood_c2, p_c):
-    """
-    Compute posterior probability of common cause using Bayes' rule.
-    
-    Args:
-        likelihood_c1: likelihood under common cause
-        likelihood_c2: likelihood under independent causes  
-        p_c: prior probability of common cause
-        
-    Returns:
-        posterior probability of common cause
-    """
     return (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
 
 def causalInference(sigmaAV_A, sigmaAV_V, S_a, p_c, visualConflict):
     """
     Perform causal inference for a single trial.
-    
     Args:
         sigmaAV_A: auditory noise standard deviation
         sigmaAV_V: visual noise standard deviation  
@@ -1029,72 +1008,25 @@ def demonstrate_causal_inference():
     print("- When P(C=1) is high → estimate closer to fusion")
     print("- When P(C=1) is low → estimate closer to auditory measurement")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Fit joint psychometric model.")
-    parser.add_argument("--dataName", type=str, help="CSV file name in data/ directory")
-    parser.add_argument("--sharedSigma", action="store_true", help="Use shared sigma across noise levels")
-    args = parser.parse_args()
-
-    dataName = args.dataName
-
-    allIndependent= 1
-
-    if not dataName:
-        dataName = "all_all.csv"
-    pltTitle=dataName.split("_")[1]
-    pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
-        
-    sharedSigma = False  # Set to True if you want to use shared sigma across noise levels
-    # Example usage
-    data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName, sharedSigma,isAllIndependent=allIndependent)
-    fit = fitMultipleStartingPoints(data, nStart=1)
-    # print the fitted parameters
-    print(f"Fitted parameters: {fit.x}")
-
-    # Plot the fitted psychometric functions
-    plot_fitted_psychometric(
-        data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
-        standardVar, sensoryVar, conflictVar, intensityVariable
-    )
-    plotStairCases(data)
-
-
-    # Plot the relation between conflict and PSE (mu) with confidence intervals
-    #allBootedFits = paramBootstrap(fit.x, nBoots=100)
-    #plot_conflict_vs_pse(fit, allBootedFits)
-
-    # Add demonstration
-    demonstrate_causal_inference()
 
 # ===============================
-
-# ===============================
-# 4-PARAMETER CAUSAL INFERENCE MODEL
+# CAUSAL INFERENCE MODEL Fitting
 # ===============================
 
-def causal_inference_negative_log_likelihood_4param(params, delta_dur, chose_test, total_responses, conflicts):
+def causal_inference_negative_log_likelihood(params, delta_dur, chose_test, total_responses, conflicts):
     """
-    Negative log-likelihood for 4-parameter causal inference model.
-    
+    Negative log-likelihood for  causal inference model.
     Parameters:
     -----------
-    params : array
-        [lambda_, sigma_av_a, sigma_av_v, p_common_prior] (NO mu parameter)
-    delta_dur : array
-        Duration differences
-    chose_test : array
-        Number of times test was chosen
-    total_responses : array
-        Total responses per condition
-    conflicts : array
-        Visual conflict levels
-        
+    params : array;       [lambda_, sigma_av_a, sigma_av_v, p_common_prior] (NO mu parameter)
+    delta_dur : array;       Duration differences
+    chose_test : array;     Number of times test was chosen
+    total_responses : array;        Total responses per condition
+    conflicts : array:     Visual conflict levels
     Returns:
-    --------
-    nll : float
-        Negative log-likelihood
+    nll : float   Negative log-likelihood
     """
-    lambda_, sigma_av_a, sigma_av_v, p_common_prior = params  # Only 4 parameters!
+    lambda_, sigma_av_a, sigma_av_v, p_common_prior = params 
     
     # Compute probabilities for each data point
     p_choose_test = np.zeros_like(delta_dur, dtype=float)
@@ -1116,9 +1048,9 @@ def causal_inference_negative_log_likelihood_4param(params, delta_dur, chose_tes
     
     return -log_likelihood
 
-def fit_causal_inference_4param(grouped_data, init_guesses=None):
+def fit_causal_inference(grouped_data, init_guesses=None):
     """
-    Fit the 4-parameter causal inference model to grouped data.
+    Fit the causal inference model to grouped data.
     
     Parameters:
     -----------
@@ -1151,7 +1083,7 @@ def fit_causal_inference_4param(grouped_data, init_guesses=None):
     
     # Fit the model
     result = minimize(
-        causal_inference_negative_log_likelihood_4param,
+        causal_inference_negative_log_likelihood,
         x0=init_guesses,
         args=(delta_dur, chose_test, total_responses, conflicts),
         bounds=bounds,
@@ -1160,9 +1092,9 @@ def fit_causal_inference_4param(grouped_data, init_guesses=None):
     
     return result
 
-def plot_causal_inference_4param(data, fitted_params, title_suffix=""):
+def plot_causal_inference(data, fitted_params, title_suffix=""):
     """
-    Plot fitted 4-parameter causal inference psychometric functions.
+    Plot fitted  causal inference psychometric functions.
     
     Parameters:
     -----------
@@ -1224,9 +1156,9 @@ def plot_causal_inference_4param(data, fitted_params, title_suffix=""):
     plt.tight_layout()
     plt.show()
 
-def compare_4param_vs_standard(data, n_starts=3):
+def compare_causalInference_vs_standard(data, n_starts=3):
     """
-    Compare 4-parameter causal inference model with standard psychometric model.
+    Compare  causal inference model with standard psychometric model.
     
     Parameters:
     -----------
@@ -1243,7 +1175,7 @@ def compare_4param_vs_standard(data, n_starts=3):
     print("Fitting standard psychometric model...")
     standard_fit = fitMultipleStartingPoints(data, nStart=n_starts)
     
-    print("\nFitting 4-parameter causal inference model...")
+    print("\nFitting causal inference model...")
     grouped_data = groupByChooseTest(data)
     
     # Try multiple starting points for causal inference model
@@ -1251,7 +1183,7 @@ def compare_4param_vs_standard(data, n_starts=3):
     best_ci_nll = float('inf')
     
     for i in range(n_starts):
-        # Random initial guesses for 4 parameters
+        # Random initial guesses for
         init_guesses = [
             np.random.uniform(0.01, 0.1),    # lambda_
             np.random.uniform(0.1, 0.5),     # sigma_av_a
@@ -1260,7 +1192,7 @@ def compare_4param_vs_standard(data, n_starts=3):
         ]
         
         try:
-            ci_fit = fit_causal_inference_4param(grouped_data, init_guesses)
+            ci_fit = fit_causal_inference(grouped_data, init_guesses)
             
             # Compute negative log-likelihood for comparison
             delta_dur = grouped_data[intensityVariable].values
@@ -1268,7 +1200,7 @@ def compare_4param_vs_standard(data, n_starts=3):
             total_responses = grouped_data['total_responses'].values
             conflicts = grouped_data[conflictVar].values
             
-            ci_nll = causal_inference_negative_log_likelihood_4param(
+            ci_nll = causal_inference_negative_log_likelihood(
                 ci_fit.x, delta_dur, chose_test, total_responses, conflicts
             )
             
@@ -1281,7 +1213,7 @@ def compare_4param_vs_standard(data, n_starts=3):
             continue
     
     if best_ci_fit is None:
-        print("Warning: 4-parameter causal inference model fitting failed!")
+        print("Warning: causal inference model fitting failed!")
         return {"standard_fit": standard_fit, "causal_inference_fit": None}
     
     # Compute standard model NLL for comparison
@@ -1304,7 +1236,7 @@ def compare_4param_vs_standard(data, n_starts=3):
     else:
         n_params_standard = len(standard_fit.x)
     
-    # Causal inference model has exactly 4 parameters
+    # Causal inference model has exactly 
     n_params_ci = 4
     
     # AIC = 2k - 2ln(L) = 2k + 2NLL
