@@ -35,8 +35,8 @@ def demonstrate_4_vs_5_parameters():
     
     # Model parameters
     lambda_ = 0.05
-    sigma_a = 0.2
-    sigma_v = 0.3
+    sigma_av_a = 0.2
+    sigma_av_v = 0.3
     p_common = 0.7
     
     # Test different conflict levels
@@ -45,8 +45,8 @@ def demonstrate_4_vs_5_parameters():
     
     print("Simulation Parameters:")
     print(f"  λ (lapse): {lambda_}")
-    print(f"  σ_a (aud noise): {sigma_a}")
-    print(f"  σ_v (vis noise): {sigma_v}")
+    print(f"  σ_av_a (aud noise): {sigma_av_a}")
+    print(f"  σ_av_v (vis noise): {sigma_av_v}")
     print(f"  P(common): {p_common}")
     print()
     
@@ -60,7 +60,7 @@ def demonstrate_4_vs_5_parameters():
         # Find PSE by finding where P(choose test) ≈ 0.5
         p_values = []
         for delta in delta_durs:
-            p = causalInferencePsychometric(delta, lambda_, sigma_a, sigma_v, p_common, conflict)
+            p = causalInferencePsychometric(delta, lambda_, sigma_av_a, sigma_av_v, p_common, conflict)
             p_values.append(p)
         
         # Interpolate to find PSE
@@ -93,7 +93,7 @@ def demonstrate_4_vs_5_parameters():
     for pc in p_common_values:
         p_values = []
         for delta in delta_durs:
-            p = causalInferencePsychometric(delta, lambda_, sigma_a, sigma_v, pc, 0.2)
+            p = causalInferencePsychometric(delta, lambda_, sigma_av_a, sigma_av_v, pc, 0.2)
             p_values.append(p)
         
         p_values = np.array(p_values)
@@ -121,8 +121,8 @@ def plot_4_parameter_behavior():
     
     # Parameters
     lambda_ = 0.05
-    sigma_a = 0.2
-    sigma_v = 0.3
+    sigma_av_a = 0.2
+    sigma_av_v = 0.3
     
     delta_durs = np.linspace(-0.5, 0.5, 101)
     conflicts = [0.0, 0.1, 0.2, 0.3]
@@ -134,7 +134,7 @@ def plot_4_parameter_behavior():
         for conflict in conflicts:
             p_values = []
             for delta in delta_durs:
-                p = causalInferencePsychometric(delta, lambda_, sigma_a, sigma_v, p_common, conflict)
+                p = causalInferencePsychometric(delta, lambda_, sigma_av_a, sigma_av_v, p_common, conflict)
                 p_values.append(p)
             
             plt.plot(delta_durs, p_values, linewidth=2, label=f'Conflict: {conflict}')
@@ -154,7 +154,7 @@ def plot_4_parameter_behavior():
         for conflict in np.linspace(0, 0.4, 21):
             p_values = []
             for delta in delta_durs:
-                p = causalInferencePsychometric(delta, lambda_, sigma_a, sigma_v, p_common, conflict)
+                p = causalInferencePsychometric(delta, lambda_, sigma_av_a, sigma_av_v, p_common, conflict)
                 p_values.append(p)
             
             p_values = np.array(p_values)

@@ -873,7 +873,7 @@ def causalInference(sigmaAV_A, sigmaAV_V, S_a, p_c, visualConflict):
     
     return hat_S_AV_A, posterior_c1, m_a, m_v
 
-def calculate_decision_noise_causal_inference(sigmaAV_A, sigmaAV_V, p_common):
+def calculate_decision_noise_causal_inference(sigma_av_a, sigma_av_v, p_common):
     """
     Calculate theoretically correct decision noise for causal inference model.
     
@@ -884,18 +884,18 @@ def calculate_decision_noise_causal_inference(sigmaAV_A, sigmaAV_V, p_common):
     4. The sqrt(2) factor for comparing two independent estimates
     
     Args:
-        sigmaAV_A: auditory noise standard deviation
-        sigmaAV_V: visual noise standard deviation
+        sigma_av_a: auditory noise standard deviation in AV condition
+        sigma_av_v: visual noise standard deviation in AV condition
         p_common: prior probability of common cause
         
     Returns:
         sigma_decision: standard deviation of decision variable
     """
     # Variance under common cause (optimal fusion)
-    var_fusion = 1 / (1/sigmaAV_A**2 + 1/sigmaAV_V**2)
+    var_fusion = 1 / (1/sigma_av_a**2 + 1/sigma_av_v**2)
     
     # Variance under separate causes (auditory only in duration task)
-    var_segregated = sigmaAV_A**2
+    var_segregated = sigma_av_a**2
     
     # Expected variance of causal inference estimate
     # This is a simplified approximation assuming p_posterior ≈ p_common
@@ -906,15 +906,15 @@ def calculate_decision_noise_causal_inference(sigmaAV_A, sigmaAV_V, p_common):
     
     return sigma_decision
 
-def causalInferencePsychometric(delta_dur, lambda_, sigmaAV_A, sigmaAV_V, p_c, conflict):
+def causalInferencePsychometric(delta_dur, lambda_, sigma_av_a, sigma_av_v, p_c, conflict):
     """
     Psychometric function using causal inference model.
     
     Args:
         delta_dur: duration difference (test - standard)
         lambda_: lapse rate
-        sigmaAV_A: auditory noise in AV condition
-        sigmaAV_V: visual noise in AV condition
+        sigma_av_a: auditory noise in AV condition
+        sigma_av_v: visual noise in AV condition
         p_c: prior probability of common cause
         conflict: visual conflict level
         
@@ -928,15 +928,15 @@ def causalInferencePsychometric(delta_dur, lambda_, sigmaAV_A, sigmaAV_V, p_c, c
     S_test = S_standard + delta_dur  # No mu bias - let causal inference handle it
     
     # Generate causal inference estimates for both intervals
-    hat_S_test, _, _, _ = causalInference(sigmaAV_A, sigmaAV_V, S_test, p_c, conflict)
-    hat_S_standard, _, _, _ = causalInference(sigmaAV_A, sigmaAV_V, S_standard, p_c, conflict)
+    hat_S_test, _, _, _ = causalInference(sigma_av_a, sigma_av_v, S_test, p_c, conflict)
+    hat_S_standard, _, _, _ = causalInference(sigma_av_a, sigma_av_v, S_standard, p_c, conflict)
     
     # Decision variable based on causal inference estimates
     decision_diff = hat_S_test - hat_S_standard
     
     # Convert to probability using cumulative normal
     # Calculate theoretically correct decision noise
-    sigma_decision = calculate_decision_noise_causal_inference(sigmaAV_A, sigmaAV_V, p_c)
+    sigma_decision = calculate_decision_noise_causal_inference(sigma_av_a, sigma_av_v, p_c)
     
     p_choose_test = lambda_/2 + (1 - lambda_) * norm.cdf(decision_diff / sigma_decision)
     
@@ -1079,7 +1079,7 @@ def causal_inference_negative_log_likelihood_4param(params, delta_dur, chose_tes
     Parameters:
     -----------
     params : array
-        [lambda_, sigma_a, sigma_v, p_common_prior] (NO mu parameter)
+        [lambda_, sigma_av_a, sigma_av_v, p_common_prior] (NO mu parameter)
     delta_dur : array
         Duration differences
     chose_test : array
@@ -1094,14 +1094,14 @@ def causal_inference_negative_log_likelihood_4param(params, delta_dur, chose_tes
     nll : float
         Negative log-likelihood
     """
-    lambda_, sigma_a, sigma_v, p_common_prior = params  # Only 4 parameters!
+    lambda_, sigma_av_a, sigma_av_v, p_common_prior = params  # Only 4 parameters!
     
     # Compute probabilities for each data point
     p_choose_test = np.zeros_like(delta_dur, dtype=float)
     
     for i in range(len(delta_dur)):
         p_choose_test[i] = causalInferencePsychometric(
-            delta_dur[i], lambda_, sigma_a, sigma_v, p_common_prior, conflicts[i]
+            delta_dur[i], lambda_, sigma_av_a, sigma_av_v, p_common_prior, conflicts[i]
         )
     
     # Clip probabilities to avoid log(0)
@@ -1125,7 +1125,7 @@ def fit_causal_inference_4param(grouped_data, init_guesses=None):
     grouped_data : DataFrame
         Grouped experimental data
     init_guesses : list, optional
-        Initial parameter guesses [lambda_, sigma_a, sigma_v, p_common_prior]
+        Initial parameter guesses [lambda_, sigma_av_a, sigma_av_v, p_common_prior]
         
     Returns:
     --------
@@ -1133,7 +1133,7 @@ def fit_causal_inference_4param(grouped_data, init_guesses=None):
         Fitted parameters and optimization result
     """
     if init_guesses is None:
-        init_guesses = [0.05, 0.2, 0.2, 0.5]  # Default: [lambda_, sigma_a, sigma_v, p_common]
+        init_guesses = [0.05, 0.2, 0.2, 0.5]  # Default: [lambda_, sigma_av_a, sigma_av_v, p_common]
     
     # Extract data
     delta_dur = grouped_data[intensityVariable].values
@@ -1141,11 +1141,11 @@ def fit_causal_inference_4param(grouped_data, init_guesses=None):
     total_responses = grouped_data['total_responses'].values
     conflicts = grouped_data[conflictVar].values
     
-    # Set bounds: [lambda_, sigma_a, sigma_v, p_common_prior]
+    # Set bounds: [lambda_, sigma_av_a, sigma_av_v, p_common_prior]
     bounds = [
         (0, 0.25),    # lambda_: lapse rate
-        (0.01, 2),    # sigma_a: auditory noise
-        (0.01, 2),    # sigma_v: visual noise
+        (0.01, 2),    # sigma_av_a: auditory noise in AV condition
+        (0.01, 2),    # sigma_av_v: visual noise in AV condition
         (0, 1)        # p_common_prior: prior probability of common cause
     ]
     
@@ -1169,11 +1169,11 @@ def plot_causal_inference_4param(data, fitted_params, title_suffix=""):
     data : DataFrame
         Experimental data
     fitted_params : array
-        Fitted parameters [lambda_, sigma_a, sigma_v, p_common_prior]
+        Fitted parameters [lambda_, sigma_av_a, sigma_av_v, p_common_prior]
     title_suffix : str
         Additional text for plot title
     """
-    lambda_, sigma_a, sigma_v, p_common_prior = fitted_params
+    lambda_, sigma_av_a, sigma_av_v, p_common_prior = fitted_params
     
     plt.figure(figsize=(12, 6))
     
@@ -1198,7 +1198,7 @@ def plot_causal_inference_4param(data, fitted_params, title_suffix=""):
         
         for j, delta in enumerate(x):
             y[j] = causalInferencePsychometric(
-                delta, lambda_, sigma_a, sigma_v, p_common_prior, conflict_level
+                delta, lambda_, sigma_av_a, sigma_av_v, p_common_prior, conflict_level
             )
         
         plt.plot(x, y, color=colors[i], linewidth=3, 
@@ -1214,8 +1214,8 @@ def plot_causal_inference_4param(data, fitted_params, title_suffix=""):
     
     # Add parameter text
     param_text = (f'λ={lambda_:.3f}\n'
-                 f'σ_a={sigma_a:.3f}\n' 
-                 f'σ_v={sigma_v:.3f}\n'
+                 f'σ_av_a={sigma_av_a:.3f}\n' 
+                 f'σ_av_v={sigma_av_v:.3f}\n'
                  f'P(common)={p_common_prior:.3f}')
     plt.text(0.02, 0.98, param_text, transform=plt.gca().transAxes, 
              verticalalignment='top', fontsize=12,
@@ -1254,9 +1254,9 @@ def compare_4param_vs_standard(data, n_starts=3):
         # Random initial guesses for 4 parameters
         init_guesses = [
             np.random.uniform(0.01, 0.1),    # lambda_
-            np.random.uniform(0.1, 0.5),    # sigma_a
-            np.random.uniform(0.1, 0.5),    # sigma_v
-            np.random.uniform(0.2, 0.8)     # p_common_prior
+            np.random.uniform(0.1, 0.5),     # sigma_av_a
+            np.random.uniform(0.1, 0.5),     # sigma_av_v
+            np.random.uniform(0.2, 0.8)      # p_common_prior
         ]
         
         try:
@@ -1343,8 +1343,8 @@ def compare_4param_vs_standard(data, n_starts=3):
     print(f"\n4-Parameter Causal Inference Model:")
     print(f"  Parameters: {n_params_ci}")
     print(f"  λ (lapse): {best_ci_fit.x[0]:.3f}")
-    print(f"  σ_a (aud noise): {best_ci_fit.x[1]:.3f}")
-    print(f"  σ_v (vis noise): {best_ci_fit.x[2]:.3f}")
+    print(f"  σ_av_a (aud noise AV): {best_ci_fit.x[1]:.3f}")
+    print(f"  σ_av_v (vis noise AV): {best_ci_fit.x[2]:.3f}")
     print(f"  P(common): {best_ci_fit.x[3]:.3f}")
     print(f"  NLL: {best_ci_nll:.2f}")
     print(f"  AIC: {aic_ci:.2f}")

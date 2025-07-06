@@ -54,13 +54,13 @@ def example_causal_inference_analysis():
         
         if results["causal_inference_fit"] is not None:
             ci_params = results["causal_inference_fit"].x
-            lambda_, mu, sigma_a, sigma_v, p_common = ci_params
+            lambda_, mu, sigma_av_a, sigma_av_v, p_common = ci_params
             
             print(f"Causal Inference Model Parameters:")
             print(f"  Lapse Rate (λ): {lambda_:.3f}")
             print(f"  PSE (μ): {mu:.3f}")
-            print(f"  Auditory Noise (σ_a): {sigma_a:.3f}")
-            print(f"  Visual Noise (σ_v): {sigma_v:.3f}")
+            print(f"  Auditory Noise (σ_av_a): {sigma_av_a:.3f}")
+            print(f"  Visual Noise (σ_av_v): {sigma_av_v:.3f}")
             print(f"  Prior P(Common Cause): {p_common:.3f}")
             
             # Interpret the results
@@ -72,10 +72,10 @@ def example_causal_inference_analysis():
                 print(f"  - Observers tend to assume independent causes (P={p_common:.3f})")
                 print(f"  - Weak audiovisual integration expected")
                 
-            if sigma_a > sigma_v:
-                print(f"  - Visual modality more reliable (σ_v={sigma_v:.3f} < σ_a={sigma_a:.3f})")
+            if sigma_av_a > sigma_av_v:
+                print(f"  - Visual modality more reliable (σ_av_v={sigma_av_v:.3f} < σ_av_a={sigma_av_a:.3f})")
             else:
-                print(f"  - Auditory modality more reliable (σ_a={sigma_a:.3f} < σ_v={sigma_v:.3f})")
+                print(f"  - Auditory modality more reliable (σ_av_a={sigma_av_a:.3f} < σ_av_v={sigma_av_v:.3f})")
                 
             # Model comparison
             if results["delta_aic"] < -2:
@@ -116,7 +116,7 @@ def example_manual_fitting():
         grouped_data = groupByChooseTest(data)
         
         # Set initial guesses for causal inference model
-        # [lambda_, mu, sigma_a, sigma_v, p_common_prior]
+        # [lambda_, mu, sigma_av_a, sigma_av_v, p_common_prior]
         initial_guesses = [0.05, 0.0, 0.2, 0.2, 0.5]
         
         print("Fitting causal inference model with custom parameters...")
@@ -158,13 +158,13 @@ def example_parameter_exploration():
     ]):
         plt.subplot(1, 2, i+1)
         
-        lambda_, mu, sigma_a, sigma_v, p_common = params
+        lambda_, mu, sigma_av_a, sigma_av_v, p_common = params
         
         for conflict in conflicts:
             y = np.zeros_like(delta_dur)
             for j, delta in enumerate(delta_dur):
                 y[j] = causal_inference_psychometric_function(
-                    delta, lambda_, mu, sigma_a, sigma_v, p_common, conflict
+                    delta, lambda_, mu, sigma_av_a, sigma_av_v, p_common, conflict
                 )
             plt.plot(delta_dur, y, label=f'Conflict: {conflict}', linewidth=2)
         
@@ -218,15 +218,15 @@ if __name__ == "__main__":
 # CAUSAL INFERENCE MODEL IMPLEMENTATION
 # ===============================
 
-def fusionAV(sigma_a, sigma_v, S_a, conflict):
+def fusionAV(sigma_av_a, sigma_av_v, S_a, conflict):
     """
     Compute reliability-weighted fusion of auditory and visual estimates.
     
     Parameters:
     -----------
-    sigma_a : float
+    sigma_av_a : float
         Auditory noise (standard deviation)
-    sigma_v : float  
+    sigma_av_v : float  
         Visual noise (standard deviation)
     S_a : float
         True auditory duration
@@ -241,15 +241,15 @@ def fusionAV(sigma_a, sigma_v, S_a, conflict):
         Uncertainty of fused estimate
     """
     S_v = S_a + conflict
-    J_a = 1 / sigma_a**2  # Auditory precision
-    J_v = 1 / sigma_v**2  # Visual precision
+    J_a = 1 / sigma_av_a**2  # Auditory precision
+    J_v = 1 / sigma_av_v**2  # Visual precision
     w_a = J_a / (J_a + J_v)  # Auditory weight
     w_v = 1 - w_a  # Visual weight
     fused_mean = w_a * S_a + w_v * S_v
     fused_sigma = np.sqrt(1 / (J_a + J_v))
     return fused_mean, fused_sigma
 
-def compute_likelihood_C1(m_a, m_v, sigma_a, sigma_v):
+def compute_likelihood_C1(m_a, m_v, sigma_av_a, sigma_av_v):
     """
     Compute likelihood of measurements under common cause (C=1).
     
@@ -259,9 +259,9 @@ def compute_likelihood_C1(m_a, m_v, sigma_a, sigma_v):
         Auditory measurement(s)
     m_v : float or array
         Visual measurement(s)
-    sigma_a : float
+    sigma_av_a : float
         Auditory noise
-    sigma_v : float
+    sigma_av_v : float
         Visual noise
         
     Returns:
@@ -269,10 +269,10 @@ def compute_likelihood_C1(m_a, m_v, sigma_a, sigma_v):
     likelihood : float or array
         Likelihood under common cause
     """
-    var_sum = sigma_a ** 2 + sigma_v ** 2
+    var_sum = sigma_av_a ** 2 + sigma_av_v ** 2
     return (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-((m_a - m_v) ** 2) / (2 * var_sum))
 
-def compute_likelihood_C2(m_a, m_v, S_a, S_v, sigma_a, sigma_v):
+def compute_likelihood_C2(m_a, m_v, S_a, S_v, sigma_av_a, sigma_av_v):
     """
     Compute likelihood of measurements under independent causes (C=2).
     
@@ -296,9 +296,9 @@ def compute_likelihood_C2(m_a, m_v, S_a, S_v, sigma_a, sigma_v):
     likelihood : float or array
         Likelihood under independent causes
     """
-    return norm.pdf(m_a, S_a, sigma_a) * norm.pdf(m_v, S_v, sigma_v)
+    return norm.pdf(m_a, S_a, sigma_av_a) * norm.pdf(m_v, S_v, sigma_av_v)
 
-def compute_posterior_common_cause(m_a, m_v, S_a, S_v, sigma_a, sigma_v, p_common_prior):
+def compute_posterior_common_cause(m_a, m_v, S_a, S_v, sigma_av_a, sigma_av_v, p_common_prior):
     """
     Compute posterior probability of common cause given measurements.
     
