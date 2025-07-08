@@ -978,11 +978,11 @@ def nLL_causal_inference_fully_vectorized(params, rawData):
 	# Vectorized parameter assignment
 	sigma_av_a_arr[snr_01_mask] = params[1]  # sigma_a for high SNR (0.1)
 	sigma_av_v_arr[snr_01_mask] = params[2]  # sigma_v for high SNR (0.1)
-	p_c_arr[snr_01_mask] = params[3]         # p_c for high SNR (0.1)
+	p_c_arr[snr_01_mask] = params[3]         # p_c_high (base) for high SNR
 	
 	sigma_av_a_arr[snr_12_mask] = params[4]  # sigma_a for low SNR (1.2)
 	sigma_av_v_arr[snr_12_mask] = params[5]  # sigma_v for low SNR (1.2)
-	p_c_arr[snr_12_mask] = params[6]         # p_c for low SNR (1.2)
+	p_c_arr[snr_12_mask] = params[6]  # p_c for low SNR (1.2)
 	
 	# Work in original scale, not log scale for causal inference
 	S_a_s = 0.5  # Standard duration in seconds
@@ -1042,14 +1042,14 @@ def multipleInitGuessesCausal(singleInitGuesses, nStart):
 		lambda_ = np.random.uniform(0.001, 0.2)
 		sigma_a_high = np.random.uniform(0.01, 0.5)  # High SNR (0.1)
 		sigma_v_high = np.random.uniform(0.01, 0.5)  # High SNR (0.1)
-		p_c_high = np.random.uniform(0.05, 0.8)     # P(C=1) for high SNR (independent)
+		p_c_high = np.random.uniform(0.05, 0.5)     # Base P(C=1) for high SNR (should be lower)
 		sigma_a_low = np.random.uniform(0.01, 0.5)   # Low SNR (1.2)
 		sigma_v_low = np.random.uniform(0.01, 0.5)   # Low SNR (1.2)
-		p_c_low = np.random.uniform(0.05, 0.9)       # P(C=1) for low SNR (independent)
+		p_c_offset = np.random.uniform(0.1, 0.6)     # Positive offset to ensure P(C=1) increases for low SNR
 		
 		guesses.append([
 			lambda_, sigma_a_high, sigma_v_high, p_c_high,
-			sigma_a_low, sigma_v_low, p_c_low
+			sigma_a_low, sigma_v_low, p_c_offset
 		])
 	print(f"Generated {len(guesses)} initial guesses for causal inference model.")
 	return guesses
@@ -1118,7 +1118,7 @@ def fitCausalInferenceWrapper(data, initGuesses=None, nStart=1, use_vectorized=T
 	# Default initial guesses if none provided
 	# [lambda, sigma_a_high, sigma_v_high, p_c_high, sigma_a_low, sigma_v_low, p_c_low]
 	if initGuesses is None:
-		initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.6]  # Let data determine the relationship
+		initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.3]  # Positive offset ensures P(C=1) increases for low SNR
 	
 	if nStart == 1:
 		# Single starting point
@@ -1216,14 +1216,14 @@ def debug_data_issues(data):
 # Example usage:
 if __name__ == "__main__":
 	# Load data
-	loadDataVars = loadData("all_all.csv", 1, 1)
+	loadDataVars = loadData("hh_all.csv", 1, 1)
 	data = loadDataVars[0]
 	
 	# Debug data issues
 	debug_data_issues(data)
 	
 	# Initial guesses for [lambda, sigma_av_a_high, sigma_av_v_high, p_c_high, sigma_av_a_low, sigma_av_v_low, p_c_low]
-	initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.6]  # Let data determine the relationship
+	initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.3]  # Positive offset ensures P(C=1) increases for low SNR
 	
 	# Test with a single starting point first to debug
 	print("=== Testing Single Starting Point ===")
@@ -1323,4 +1323,20 @@ plt.title('Posterior P(C=1) vs Conflict (Noisy SNR)')
 plt.axhline(y=0.5, color='gray', linestyle='--', label='P(C=1) = 0.5')
 plt.legend()
 plt.grid()
+plt.show()
+
+
+# also plot for the 0.1
+noisy_snr_value = 0.1  # Adjust if your noisy SNR value is different
+mask_noisy = np.isclose(snr_values, noisy_snr_value)
+conflicts_noisy = conflict_values[mask_noisy]
+posteriors_noisy = np.array(posterior_values)[mask_noisy]
+
+plt.figure(figsize=(8, 5))
+plt.scatter(conflicts_noisy * 1000, posteriors_noisy, alpha=0.6, label='Posterior P(C=1) (Noisy SNR)')
+plt.xlabel('Conflict (ms)')
+plt.ylabel('Posterior Probability of Common Cause')
+plt.title('Posterior P(C=1) vs Conflict (Noisy SNR)')
+plt.axhline(y=0.5, color='gray', linestyle='--', label='P(C=1) = 0.5')
+plt.legend()
 plt.show()
