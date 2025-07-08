@@ -124,9 +124,9 @@ def loadData(dataName, isShared, isAllIndependent):
 	nSigma=len(uniqueSensory)
 	nMu=len(uniqueConflict)*nSigma
 	
-	data["logStandardDur"] = np.log(data[standardVar])
-	data["logConflictDur"] = np.log(data[conflictVar])
-	data["logTestDur"] = np.log(data["testDurS"])
+	data["logStandardDur"] = np.log(1000*data[standardVar])
+	data["logConflictDur"] = np.log(1000*data[conflictVar])
+	data["logTestDur"] = np.log(1000*data["testDurS"])
 	data["logDeltaDur"] = data["logTestDur"] - data["logStandardDur"]
 
 	return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
@@ -700,14 +700,14 @@ def getParamsCausal(params, conflict, SNR):
 	"""Extract causal inference parameters for a specific condition (conflict, noise)."""
 
 	lambda_=params[0]
-	if np.isclose(SNR, 0.1):
+	if np.isclose(SNR, 0.1):  # High SNR (SNR=0.1 means 1/0.1=10, clean, more reliable)
 		sigma_av_a=params[1]
 		sigma_av_v=params[2]
-		p_c=params[3]
-	elif np.isclose(SNR,1.2):
+		p_c=params[3]  # P(C=1) for high SNR
+	elif np.isclose(SNR,1.2):  # Low SNR (SNR=1.2 means low reliability, noisy)
 		sigma_av_a=params[4]
 		sigma_av_v=params[5]
-		p_c=params[6]
+		p_c=params[6]  # P(C=1) for low SNR
 
 	return lambda_,sigma_av_a,sigma_av_v,p_c
 
@@ -818,16 +818,23 @@ def nLL_causal_inference(params, rawData):
 	return -ll
 def fitCausalInferenceModel(data, initGuesses, use_vectorized=True, show_progress=0):
 	"""Fit the causal inference model to the data."""
-	# parameters should be lambda, sigma_a_1,sigma_v_1, p_c_1, sigma_a_2,sigma_v_2, p_c_2
+	# parameters: lambda, sigma_a_high, sigma_v_high, p_c_high, sigma_a_low, sigma_v_low, p_c_low
 	bounds = [
 		(0, 0.25),      # lambda_
-		(0.01, 2),      # sigma_a_1
-		(0.01, 2),      # sigma_v_1
-		(0.01, 0.95),   # p_c_1
-		(0.01, 2),      # sigma_a_2
-		(0.01, 2),      # sigma_v_2
-		(0.01, 0.95)    # p_c_2
+		(0.01, 1.0),    # sigma_a (high SNR = 0.1)
+		(0.01, 1.0),    # sigma_v (high SNR = 0.1)
+		(0.01, 0.95),   # p_c (high SNR = 0.1) - independent parameter
+		(0.01, 1.0),    # sigma_a (low SNR = 1.2)
+		(0.01, 1.0),    # sigma_v (low SNR = 1.2)
+		(0.01, 0.95)    # p_c (low SNR = 1.2) - independent parameter
 	]
+	
+	# Add bounds checking for initial guesses
+	initGuesses = np.array(initGuesses)
+	for i, (guess, (lower, upper)) in enumerate(zip(initGuesses, bounds)):
+		if guess < lower or guess > upper:
+			print(f"Warning: Initial guess {i} ({guess}) outside bounds [{lower}, {upper}]. Clipping.")
+			initGuesses[i] = np.clip(guess, lower + 1e-6, upper - 1e-6)
 	
 	class TqdmMinimizeCallback:
 		def __init__(self, total=100, show_progress=show_progress):
@@ -855,16 +862,32 @@ def fitCausalInferenceModel(data, initGuesses, use_vectorized=True, show_progres
 		nll_function = nLL_causal_inference
 		#print("\nUsing original (slower) causal inference fitting...\n")
 
-	result = minimize(
-		nll_function,
-		x0=initGuesses,
-		args=(data,),
-		bounds=bounds,
-		method='L-BFGS-B',
-		callback=callback
-	)
-	callback.close()
-	return result.x
+	try:
+		# Test the function once before optimization
+		test_nll = nll_function(initGuesses, data)
+		if not np.isfinite(test_nll):
+			print(f"Warning: Initial NLL is not finite: {test_nll}")
+			return None
+		
+		result = minimize(
+			nll_function,
+			x0=initGuesses,
+			args=(data,),
+			bounds=bounds,
+			method='L-BFGS-B',
+			callback=callback
+		)
+		callback.close()
+		
+		if not result.success:
+			print(f"Optimization failed: {result.message}")
+		
+		return result.x
+		
+	except Exception as e:
+		print(f"Error during fitting: {e}")
+		callback.close()
+		return None
 
 # ===============================
 # VECTORIZED CAUSAL INFERENCE FUNCTIONS
@@ -935,9 +958,9 @@ def probTestLonger_vectorized(deltaDur, conflict, lambda_, sigma_av_a, sigma_av_
 
 def nLL_causal_inference_fully_vectorized(params, rawData):
 	"""Fully vectorized version - even faster by avoiding parameter loops."""
-	# Extract data arrays
+	# Extract data arrays - using correct columns
 	snr_values = rawData["audNoise"].values
-	conflict_values = rawData["conflictDur"].values
+	conflict_values = rawData["conflictDur"].values  # Use conflictDur, not conflictDurMs
 	responses = rawData["chose_test"].values
 	delta_dur_values = rawData["deltaDurS"].values
 	
@@ -953,22 +976,23 @@ def nLL_causal_inference_fully_vectorized(params, rawData):
 	p_c_arr = np.empty(n_trials)
 	
 	# Vectorized parameter assignment
-	sigma_av_a_arr[snr_01_mask] = params[1]
-	sigma_av_v_arr[snr_01_mask] = params[2]
-	p_c_arr[snr_01_mask] = params[3]
+	sigma_av_a_arr[snr_01_mask] = params[1]  # sigma_a for high SNR (0.1)
+	sigma_av_v_arr[snr_01_mask] = params[2]  # sigma_v for high SNR (0.1)
+	p_c_arr[snr_01_mask] = params[3]         # p_c for high SNR (0.1)
 	
-	sigma_av_a_arr[snr_12_mask] = params[4]
-	sigma_av_v_arr[snr_12_mask] = params[5]
-	p_c_arr[snr_12_mask] = params[6]
+	sigma_av_a_arr[snr_12_mask] = params[4]  # sigma_a for low SNR (1.2)
+	sigma_av_v_arr[snr_12_mask] = params[5]  # sigma_v for low SNR (1.2)
+	p_c_arr[snr_12_mask] = params[6]         # p_c for low SNR (1.2)
 	
-	# Vectorized causal inference computation
-	S_a_s = 0.5
-	S_a_t = S_a_s + delta_dur_values
+	# Work in original scale, not log scale for causal inference
+	S_a_s = 0.5  # Standard duration in seconds
+	S_a_t = S_a_s + delta_dur_values  # Test durations
 	
 	# Standard estimates (vectorized)
-	S_v_s = S_a_s + conflict_values
+	S_v_s = S_a_s + conflict_values  # Visual standard duration
 	m_a_s = S_a_s
 	m_v_s = S_v_s
+	
 	# Common cause likelihood for standard
 	var_sum_s = sigma_av_a_arr**2 + sigma_av_v_arr**2
 	likelihood_c1_s = (1 / np.sqrt(2 * np.pi * var_sum_s)) * np.exp(-(m_a_s - m_v_s)**2 / (2 * var_sum_s))
@@ -989,8 +1013,9 @@ def nLL_causal_inference_fully_vectorized(params, rawData):
 	# Final estimate for standard (model averaging)
 	est_standard = posterior_c1_s * fused_S_av_s + (1 - posterior_c1_s) * S_a_s
 	
-	# Test estimates (fusion only, no conflict)
-	est_test = w_a * S_a_t + (1 - w_a) * S_a_t  # Simplifies to S_a_t
+	# Test estimates (fusion only, no conflict for test)
+	est_test = S_a_t  # No conflict for test duration
+	
 	# Decision noise
 	var_fusion = 1 / (1/sigma_av_a_arr**2 + 1/sigma_av_v_arr**2)
 	var_segregated = sigma_av_a_arr**2
@@ -1015,16 +1040,16 @@ def multipleInitGuessesCausal(singleInitGuesses, nStart):
 	guesses = []
 	for _ in range(nStart):
 		lambda_ = np.random.uniform(0.001, 0.2)
-		sigma_a_1 = np.random.uniform(0.05, 1.5)
-		sigma_v_1 = np.random.uniform(0.05, 1.5)
-		p_c_1 = np.random.uniform(0.05, 1)
-		sigma_a_2 = np.random.uniform(0.05, 1.5)
-		sigma_v_2 = np.random.uniform(0.05, 1.5)
-		p_c_2 = np.random.uniform(0.05, 1)
-
+		sigma_a_high = np.random.uniform(0.01, 0.5)  # High SNR (0.1)
+		sigma_v_high = np.random.uniform(0.01, 0.5)  # High SNR (0.1)
+		p_c_high = np.random.uniform(0.05, 0.8)     # P(C=1) for high SNR (independent)
+		sigma_a_low = np.random.uniform(0.01, 0.5)   # Low SNR (1.2)
+		sigma_v_low = np.random.uniform(0.01, 0.5)   # Low SNR (1.2)
+		p_c_low = np.random.uniform(0.05, 0.9)       # P(C=1) for low SNR (independent)
+		
 		guesses.append([
-			lambda_, sigma_a_1, sigma_v_1, p_c_1,
-			sigma_a_2, sigma_v_2, p_c_2
+			lambda_, sigma_a_high, sigma_v_high, p_c_high,
+			sigma_a_low, sigma_v_low, p_c_low
 		])
 	print(f"Generated {len(guesses)} initial guesses for causal inference model.")
 	return guesses
@@ -1041,6 +1066,7 @@ def fitCausalInferenceMultipleStarts(data, singleInitGuesses, nStart=5, use_vect
 	best_fit = None
 	best_nll = float('inf')
 	best_params = None
+	successful_fits = 0
 	
 	disable_progress = (len(multipleInitGuesses) == 1)
 	
@@ -1051,11 +1077,21 @@ def fitCausalInferenceMultipleStarts(data, singleInitGuesses, nStart=5, use_vect
 			# Fit with current initial guess - disable individual progress bars
 			fitted_params = fitCausalInferenceModel(data, multipleInitGuesses[i], use_vectorized=use_vectorized, show_progress=False)
 			
+			if fitted_params is None:
+				print(f"Start {i+1}: Failed during optimization")
+				continue
+				
 			# Calculate negative log-likelihood for this fit
 			if use_vectorized:
 				nll = nLL_causal_inference_fully_vectorized(fitted_params, data)
 			else:
 				nll = nLL_causal_inference(fitted_params, data)
+			
+			if not np.isfinite(nll):
+				print(f"Start {i+1}: Non-finite NLL = {nll}")
+				continue
+				
+			successful_fits += 1
 			
 			# Check if this is the best fit so far
 			if nll < best_nll:
@@ -1063,24 +1099,26 @@ def fitCausalInferenceMultipleStarts(data, singleInitGuesses, nStart=5, use_vect
 				best_params = fitted_params
 				best_fit = i
 			
-			#print(f"Start {i+1}: NLL = {nll:.4f}")
+			print(f"Start {i+1}: NLL = {nll:.4f}")
 			
 		except Exception as e:
 			print(f"Start {i+1}: Failed with error: {e}")
 			continue
 	
 	if best_params is None:
-		raise ValueError("All fitting attempts failed!")
+		raise ValueError(f"All fitting attempts failed! Successful fits: {successful_fits}/{len(multipleInitGuesses)}")
 	
 	print(f"\nBest fit found at starting point {best_fit+1} with NLL = {best_nll:.4f}")
+	print(f"Successful fits: {successful_fits}/{len(multipleInitGuesses)}")
 	print(f"Best parameters: {best_params}")
 	
 	return best_params, best_nll
 
 def fitCausalInferenceWrapper(data, initGuesses=None, nStart=1, use_vectorized=True, verbose=True):
 	# Default initial guesses if none provided
+	# [lambda, sigma_a_high, sigma_v_high, p_c_high, sigma_a_low, sigma_v_low, p_c_low]
 	if initGuesses is None:
-		initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.6]
+		initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.6]  # Let data determine the relationship
 	
 	if nStart == 1:
 		# Single starting point
@@ -1111,16 +1149,102 @@ def fitCausalInferenceWrapper(data, initGuesses=None, nStart=1, use_vectorized=T
 		
 		return fitted_params, nll
 
+def validate_causal_inference_params(fitted_params, verbose=True):
+	"""
+	Validate that the fitted causal inference parameters satisfy theoretical constraints.
+	Specifically, P(C=1) should decrease as SNR increases (sensory reliability improves).
+	In your experiment: SNR=0.1 means HIGH SNR (reliable), SNR=1.2 means LOW SNR (noisy).
+	"""
+	# Extract P(C=1) for both SNR conditions
+	_, _, _, p_c_high = getParamsCausal(fitted_params, 0, 0.1)   # High SNR (reliable)
+	_, _, _, p_c_low = getParamsCausal(fitted_params, 0, 1.2)    # Low SNR (noisy)
+	
+	if verbose:
+		print(f"\nValidating causal inference parameters:")
+		print(f"P(C=1) for high SNR (0.1): {p_c_high:.3f}")
+		print(f"P(C=1) for low SNR (1.2): {p_c_low:.3f}")
+		print(f"Difference (low - high): {p_c_low - p_c_high:.3f}")
+	
+	# Check if P(C=1) decreases with higher SNR (i.e., P(C=1) should be lower for SNR=0.1 than for SNR=1.2)
+	if p_c_low > p_c_high:
+		if verbose:
+			print("✓ VALID: P(C=1) decreases with increasing SNR (as expected)")
+		return True
+	else:
+		if verbose:
+			print("✗ INVALID: P(C=1) does NOT decrease with increasing SNR")
+			print("  This violates causal inference theory!")
+		return False
+
+def debug_data_issues(data):
+	"""Debug function to check for common data issues."""
+	print("=== Data Debugging ===")
+	print(f"Data shape: {data.shape}")
+	print(f"Columns: {list(data.columns)}")
+	
+	# Check for missing values
+	missing_cols = data.isnull().sum()
+	if missing_cols.sum() > 0:
+		print(f"Missing values:\n{missing_cols[missing_cols > 0]}")
+	
+	# Check key columns
+	key_cols = ['audNoise', 'conflictDur', 'deltaDurS', 'chose_test']
+	for col in key_cols:
+		if col in data.columns:
+			print(f"{col}: min={data[col].min():.4f}, max={data[col].max():.4f}, "
+			      f"mean={data[col].mean():.4f}, unique_count={data[col].nunique()}")
+		else:
+			print(f"WARNING: {col} not found in data!")
+	
+	# Check for infinite values
+	for col in key_cols:
+		if col in data.columns:
+			inf_count = np.isinf(data[col]).sum()
+			if inf_count > 0:
+				print(f"WARNING: {col} has {inf_count} infinite values!")
+	
+	# Check conflict values specifically
+	if 'conflictDur' in data.columns:
+		conflict_vals = data['conflictDur'].unique()
+		print(f"Unique conflict values: {sorted(conflict_vals)}")
+		if any(val <= 0 for val in conflict_vals):
+			print("WARNING: Conflict values include zero or negative values!")
+			print("This will cause issues with log() operations!")
+	
+	print("=== End Debug ===\n")
+
 # Example usage:
 if __name__ == "__main__":
 	# Load data
-	loadDataVars = loadData("ml_all.csv", 1, 1)
+	loadDataVars = loadData("all_all.csv", 1, 1)
 	data = loadDataVars[0]
-	# Initial guesses for [lambda, sigma_av_a_1, sigma_av_v_1, p_c_1, sigma_av_a_2, sigma_av_v_2, p_c_2]
-	initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.3]
-	# Option 2: Multiple starting points (more robust)
+	
+	# Debug data issues
+	debug_data_issues(data)
+	
+	# Initial guesses for [lambda, sigma_av_a_high, sigma_av_v_high, p_c_high, sigma_av_a_low, sigma_av_v_low, p_c_low]
+	initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.6]  # Let data determine the relationship
+	
+	# Test with a single starting point first to debug
+	print("=== Testing Single Starting Point ===")
+	try:
+		fitted_params_single, nll_single = fitCausalInferenceWrapper(data, initGuesses, nStart=1, verbose=True)
+		print(f"Single fit successful: NLL = {nll_single:.4f}")
+		
+		# Validate the single fit
+		validate_causal_inference_params(fitted_params_single, verbose=True)
+		
+	except Exception as e:
+		print(f"Single fit failed: {e}")
+		import traceback
+		traceback.print_exc()
+	
+	# Option 2: Multiple starting points (more robust) - only if single works
 	print("\n=== Multiple Starting Points ===")
-	fitted_params_multi, nll_multi = fitCausalInferenceWrapper(data, initGuesses, nStart=100, use_vectorized=True)
+	fitted_params_multi, nll_multi = fitCausalInferenceWrapper(data, initGuesses, nStart=10, use_vectorized=True)
+	
+	# Validate the multiple fits
+	validate_causal_inference_params(fitted_params_multi, verbose=True)
 	
 	# Option 1: Single starting point (faster, but less robust)
 	print("\n=== Single Starting Point ===")
@@ -1128,6 +1252,10 @@ if __name__ == "__main__":
 	
 	# Use the best fit for plotting
 	fitted_params = fitted_params_multi if nll_multi < nll_single else fitted_params_single
+	
+	# Final validation
+	print("\n=== Final Model Validation ===")
+	is_valid = validate_causal_inference_params(fitted_params, verbose=True)
 	
 	# Plot results (existing plotting code continues from here...)
 	plt.figure(figsize=(16, 6))
@@ -1165,18 +1293,18 @@ best_params = fitted_params  # Use the best fitted parameters from the previous 
 
 posterior_values = []
 for delta, conflict, snr in zip(delta_dur_values, conflict_values, snr_values):
-    λ, σa, σv, pc = getParamsCausal(best_params, conflict, snr)
-    S_std = 0.5
-    S_test = S_std + delta
-    S_v = S_std + conflict
+	λ, σa, σv, pc = getParamsCausal(best_params, conflict, snr)
+	S_std = 0.5
+	S_test = S_std + delta
+	S_v = S_std + conflict
 
-    m_a = S_std
-    m_v = S_v
+	m_a = S_std
+	m_v = S_v
 
-    L1 = likelihood_C1(m_a, m_v, σa, σv)
-    L2 = likelihood_C2(m_a, m_v, S_std, S_v, σa, σv)
-    posterior = posterior_C1(L1, L2, pc)
-    posterior_values.append(posterior)
+	L1 = likelihood_C1(m_a, m_v, σa, σv)
+	L2 = likelihood_C2(m_a, m_v, S_std, S_v, σa, σv)
+	posterior = posterior_C1(L1, L2, pc)
+	posterior_values.append(posterior)
 
 
 

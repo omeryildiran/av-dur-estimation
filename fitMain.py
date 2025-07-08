@@ -124,9 +124,9 @@ def loadData(dataName, isShared, isAllIndependent):
     nSigma=len(uniqueSensory)
     nMu=len(uniqueConflict)*nSigma
     
-    data["logStandardDur"] = np.log(data[standardVar])
-    data["logConflictDur"] = np.log(data[conflictVar])
-    data["logTestDur"] = np.log(data["testDurS"])
+    data["logStandardDur"] = np.log(1000*data[standardVar])
+    data["logConflictDur"] = np.log(1000*data[conflictVar])
+    data["logTestDur"] = np.log(1000*data["testDurS"])
     data["logDeltaDur"] = data["logTestDur"] - data["logStandardDur"]
 
 
