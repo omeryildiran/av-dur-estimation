@@ -453,7 +453,7 @@ def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_lev
 		return nll
 
 # Fit the psychometric function to the grouped data
-def multipleInitGuessesWEstimate(singleInitGuesses, nStart):
+def multipleInitGuesses(singleInitGuesses, nStart):
 	initLambdas=np.linspace(0.01, 0.1, nStart)
 	initMus=np.linspace(-0.83, 0.83, nStart)
 	initSigmas=np.linspace(0.01, 1.5, nStart)
@@ -471,6 +471,24 @@ def multipleInitGuessesWEstimate(singleInitGuesses, nStart):
 					multipleInitGuesses.append([initLambda, initMu, initSigma])
 	return multipleInitGuesses
 
+# Regular psychometric function fitting with multiple starting points
+def multipleInitGuessesWEstimate(singleInitGuesses, nStart):
+	initLambdas=np.linspace(0.01, 0.1, nStart)
+	initMus=np.linspace(-0.83, 0.83, nStart)
+	initSigmas=np.linspace(0.01, 1.5, nStart)
+	multipleInitGuesses = []
+	if nStart == 1:
+		# estimate initial guesses
+		initLambdas = [singleInitGuesses[0]]
+		initMus = [singleInitGuesses[1]]
+		initSigmas = [singleInitGuesses[2]]
+		multipleInitGuesses.append([initLambdas[0], initMus[0], initSigmas[0]])
+	else:
+		for i, initLambda in enumerate(initLambdas):
+			for j, initMu in enumerate(initMus):
+				for k, initSigma in enumerate(initSigmas):
+					multipleInitGuesses.append([initLambda, initMu, initSigma])
+	return multipleInitGuesses
 
 def fitMultipleStartingPoints(data,nStart=3):
 	# group data and prepare for fitting
@@ -786,7 +804,7 @@ def nLL_causal_inference(params, rawData):
 		currSNR = rawData["audNoise"][i]
 		currConflict = rawData["conflictDur"][i]  # Using the same name as in the rest of the code
 		currResp = rawData["chose_test"][i]
-		currDeltaDur = rawData["delta_dur_percents"][i]  # Using the consistent naming
+		currDeltaDur = rawData["deltaDurS"][i]  # Using the consistent naming
 		y[i] = currResp
 		lambda_, sigma_av_a, sigma_av_v, p_c = getParamsCausal(params, currConflict, currSNR)
 		P = probTestLonger(currDeltaDur, currConflict, lambda_, sigma_av_a, sigma_av_v, p_c)
@@ -798,9 +816,9 @@ def nLL_causal_inference(params, rawData):
 		ll += y[i] * np.log(P) + (1 - y[i]) * np.log(1 - P)
 	
 	return -ll
-def fitCausalInferenceModel(data, initGuesses, use_vectorized=True):
+def fitCausalInferenceModel(data, initGuesses, use_vectorized=True, show_progress=0):
 	"""Fit the causal inference model to the data."""
-	# parameters should be lambda, sigma_a_1,sigma_v_1,p_c_!,sigma_a_2,sigma_v_2,p_c_2
+	# parameters should be lambda, sigma_a_1,sigma_v_1, p_c_1, sigma_a_2,sigma_v_2, p_c_2
 	bounds = [
 		(0, 0.25),      # lambda_
 		(0.01, 2),      # sigma_a_1
@@ -812,26 +830,30 @@ def fitCausalInferenceModel(data, initGuesses, use_vectorized=True):
 	]
 	
 	class TqdmMinimizeCallback:
-		def __init__(self, total=100):
-			self.pbar = tqdm(total=total, desc="Fitting Causal Inference", leave=True)
+		def __init__(self, total=100, show_progress=0):
+			self.show_progress = show_progress
+			if self.show_progress:
+				self.pbar = tqdm(total=total, desc="Fitting Causal Inference", leave=True)
 			self.last_nfev = 0
 
 		def __call__(self, xk):
 			# This callback is called after each iteration
-			self.pbar.update(1)
+			if self.show_progress:
+				self.pbar.update(1)
 
 		def close(self):
-			self.pbar.close()
+			if self.show_progress:
+				self.pbar.close()
 
-	callback = TqdmMinimizeCallback(total=100)
+	callback = TqdmMinimizeCallback(total=100, show_progress=show_progress)
 	
 	# Choose which negative log-likelihood function to use
 	if use_vectorized:
 		nll_function = nLL_causal_inference_fully_vectorized
-		print("Using fully vectorized causal inference fitting...")
+		print("\nUsing fully vectorized causal inference fitting...\n")
 	else:
 		nll_function = nLL_causal_inference
-		print("Using original (slower) causal inference fitting...")
+		print("\nUsing original (slower) causal inference fitting...\n")
 
 	result = minimize(
 		nll_function,
@@ -847,6 +869,7 @@ def fitCausalInferenceModel(data, initGuesses, use_vectorized=True):
 # ===============================
 # VECTORIZED CAUSAL INFERENCE FUNCTIONS
 # ===============================
+
 
 def causalInference_vectorized(S_a, conflict, sigma_av_a, sigma_av_v, p_c):
 	"""Vectorized version of causal inference computation."""
@@ -910,47 +933,13 @@ def probTestLonger_vectorized(deltaDur, conflict, lambda_, sigma_av_a, sigma_av_
 	
 	return p_choose_test
 
-def nLL_causal_inference_vectorized(params, rawData):
-	"""Vectorized negative log-likelihood for causal inference model."""
-	# Extract data arrays
-	snr_values = rawData["audNoise"].values
-	conflict_values = rawData["conflictDur"].values
-	responses = rawData["chose_test"].values
-	delta_dur_values = rawData["delta_dur_percents"].values
-	
-	# Pre-allocate parameter arrays
-	n_trials = len(rawData)
-	lambda_arr = np.empty(n_trials)
-	sigma_av_a_arr = np.empty(n_trials)
-	sigma_av_v_arr = np.empty(n_trials)
-	p_c_arr = np.empty(n_trials)
-	
-	# Vectorized parameter assignment
-	for i in range(n_trials):
-		lambda_arr[i], sigma_av_a_arr[i], sigma_av_v_arr[i], p_c_arr[i] = getParamsCausal(
-			params, conflict_values[i], snr_values[i]
-		)
-	
-	# Vectorized probability computation
-	P = probTestLonger_vectorized(delta_dur_values, conflict_values, lambda_arr, 
-								  sigma_av_a_arr, sigma_av_v_arr, p_c_arr)
-	
-	# Clip probabilities to avoid log(0)
-	epsilon = 1e-9
-	P = np.clip(P, epsilon, 1 - epsilon)
-	
-	# Vectorized log-likelihood computation
-	ll = np.sum(responses * np.log(P) + (1 - responses) * np.log(1 - P))
-	
-	return -ll
-
 def nLL_causal_inference_fully_vectorized(params, rawData):
 	"""Fully vectorized version - even faster by avoiding parameter loops."""
 	# Extract data arrays
 	snr_values = rawData["audNoise"].values
 	conflict_values = rawData["conflictDur"].values
 	responses = rawData["chose_test"].values
-	delta_dur_values = rawData["delta_dur_percents"].values
+	delta_dur_values = rawData["deltaDurS"].values
 	
 	# Create boolean masks for different SNR conditions
 	snr_01_mask = np.isclose(snr_values, 0.1)
@@ -976,12 +965,10 @@ def nLL_causal_inference_fully_vectorized(params, rawData):
 	S_a_s = 0.5
 	S_a_t = S_a_s + delta_dur_values
 	
-	
 	# Standard estimates (vectorized)
 	S_v_s = S_a_s + conflict_values
 	m_a_s = S_a_s
 	m_v_s = S_v_s
-	
 	# Common cause likelihood for standard
 	var_sum_s = sigma_av_a_arr**2 + sigma_av_v_arr**2
 	likelihood_c1_s = (1 / np.sqrt(2 * np.pi * var_sum_s)) * np.exp(-(m_a_s - m_v_s)**2 / (2 * var_sum_s))
@@ -996,14 +983,14 @@ def nLL_causal_inference_fully_vectorized(params, rawData):
 	J_AV_A = 1 / sigma_av_a_arr**2
 	J_AV_V = 1 / sigma_av_v_arr**2
 	w_a = J_AV_A / (J_AV_A + J_AV_V)
-	fused_S_av_s = w_a * S_a_s + (1 - w_a) * S_v_s
+	w_v = 1 - w_a
+	fused_S_av_s = w_a * S_a_s + w_v * S_v_s
 	
 	# Final estimate for standard (model averaging)
 	est_standard = posterior_c1_s * fused_S_av_s + (1 - posterior_c1_s) * S_a_s
 	
 	# Test estimates (fusion only, no conflict)
 	est_test = w_a * S_a_t + (1 - w_a) * S_a_t  # Simplifies to S_a_t
-	
 	# Decision noise
 	var_fusion = 1 / (1/sigma_av_a_arr**2 + 1/sigma_av_v_arr**2)
 	var_segregated = sigma_av_a_arr**2
@@ -1017,19 +1004,222 @@ def nLL_causal_inference_fully_vectorized(params, rawData):
 	# Clip probabilities to avoid log(0)
 	epsilon = 1e-9
 	P = np.clip(P, epsilon, 1 - epsilon)
-	
 	# Vectorized log-likelihood computation
 	ll = np.sum(responses * np.log(P) + (1 - responses) * np.log(1 - P))
-	
 	return -ll
 
-loadDataVars= loadData("as_all.csv",1,1)
-data= loadDataVars[0]
+def multipleInitGuessesCausal(singleInitGuesses, nStart):
+	"""
+	Generate multiple initial guesses for causal inference model.
+	Parameters order: [lambda, sigma_av_a_1, sigma_av_v_1, p_c_1, sigma_av_a_2, sigma_av_v_2, p_c_2]
+	"""
+	if nStart == 1:
+		return [singleInitGuesses]
+	
+	# Define ranges for each parameter
+	initLambdas = np.linspace(0.01, 0.1, max(2, int(np.ceil(nStart**(1/7)))))
+	initSigmaA1 = np.linspace(0.05, 0.5, max(2, int(np.ceil(nStart**(1/7)))))
+	initSigmaV1 = np.linspace(0.05, 0.5, max(2, int(np.ceil(nStart**(1/7)))))
+	initPC1 = np.linspace(0.1, 0.8, max(2, int(np.ceil(nStart**(1/7)))))
+	initSigmaA2 = np.linspace(0.05, 0.5, max(2, int(np.ceil(nStart**(1/7)))))
+	initSigmaV2 = np.linspace(0.05, 0.5, max(2, int(np.ceil(nStart**(1/7)))))
+	initPC2 = np.linspace(0.1, 0.8, max(2, int(np.ceil(nStart**(1/7)))))
+	
+	multipleInitGuesses = []
+	
+	# Generate combinations but limit to nStart
+	count = 0
+	for lambda_ in initLambdas:
+		for sigma_a1 in initSigmaA1:
+			for sigma_v1 in initSigmaV1:
+				for p_c1 in initPC1:
+					for sigma_a2 in initSigmaA2:
+						for sigma_v2 in initSigmaV2:
+							for p_c2 in initPC2:
+								if count >= nStart:
+									break
+								multipleInitGuesses.append([lambda_, sigma_a1, sigma_v1, p_c1, sigma_a2, sigma_v2, p_c2])
+								count += 1
+							if count >= nStart:
+								break
+						if count >= nStart:
+							break
+					if count >= nStart:
+						break
+				if count >= nStart:
+					break
+			if count >= nStart:
+				break
+		if count >= nStart:
+			break
+	
+	# If we didn't generate enough, add some random variations
+	while len(multipleInitGuesses) < nStart:
+		# Add some random noise to the single initial guess
+		noisy_guess = []
+		for i, param in enumerate(singleInitGuesses):
+			if i == 0:  # lambda
+				noise = np.random.uniform(-0.02, 0.02)
+				noisy_guess.append(np.clip(param + noise, 0.01, 0.1))
+			elif i in [1, 2, 4, 5]:  # sigma parameters
+				noise = np.random.uniform(-0.1, 0.1)
+				noisy_guess.append(np.clip(param + noise, 0.05, 0.5))
+			else:  # p_c parameters
+				noise = np.random.uniform(-0.2, 0.2)
+				noisy_guess.append(np.clip(param + noise, 0.1, 0.8))
+		multipleInitGuesses.append(noisy_guess)
+	
+	return multipleInitGuesses[:nStart]
 
-initGuesses= [0.03, 0.1, 0.1, 0.7, 0.1, 0.1, 0.6]  # Initial guesses for lambda, sigma_av_a_1, sigma_av_v_1, p_c_1, sigma_av_a_2, sigma_av_v_2, p_c_2
+def fitCausalInferenceMultipleStarts(data, singleInitGuesses, nStart=5, use_vectorized=True):
+	"""
+	Fit the causal inference model with multiple starting points.
+	"""
+	# Generate multiple initial guesses
+	multipleInitGuesses = multipleInitGuessesCausal(singleInitGuesses, nStart)
+	
+	best_fit = None
+	best_nll = float('inf')
+	best_params = None
+	
+	disable_progress = (len(multipleInitGuesses) == 1)
+	
+	print(f"Fitting causal inference model with {len(multipleInitGuesses)} different starting points...")
+	
+	for i in tqdm(range(len(multipleInitGuesses)), desc="Fitting multiple starting points", disable=disable_progress):
+		try:
+			# Fit with current initial guess - disable individual progress bars
+			fitted_params = fitCausalInferenceModel(data, multipleInitGuesses[i], use_vectorized=use_vectorized, show_progress=False)
+			
+			# Calculate negative log-likelihood for this fit
+			if use_vectorized:
+				nll = nLL_causal_inference_fully_vectorized(fitted_params, data)
+			else:
+				nll = nLL_causal_inference(fitted_params, data)
+			
+			# Check if this is the best fit so far
+			if nll < best_nll:
+				best_nll = nll
+				best_params = fitted_params
+				best_fit = i
+			
+			print(f"Start {i+1}: NLL = {nll:.4f}")
+			
+		except Exception as e:
+			print(f"Start {i+1}: Failed with error: {e}")
+			continue
+	
+	if best_params is None:
+		raise ValueError("All fitting attempts failed!")
+	
+	print(f"\nBest fit found at starting point {best_fit+1} with NLL = {best_nll:.4f}")
+	print(f"Best parameters: {best_params}")
+	
+	return best_params, best_nll
 
+def fitCausalInferenceWrapper(data, initGuesses=None, nStart=1, use_vectorized=True, verbose=True):
+	"""
+	Wrapper function to fit causal inference model with flexible options.
+	
+	Parameters:
+	-----------
+	data : pandas.DataFrame
+		The data to fit
+	initGuesses : list, optional
+		Initial parameter guesses. If None, uses default values.
+	nStart : int, default=1
+		Number of starting points to try. If 1, uses single starting point.
+		If > 1, uses multiple starting points.
+	use_vectorized : bool, default=True
+		Whether to use vectorized fitting (recommended for speed)
+	verbose : bool, default=True
+		Whether to print progress and results
+	
+	Returns:
+	--------
+	fitted_params : array
+		Best fitted parameters
+	nll : float
+		Negative log-likelihood of best fit
+	"""
+	
+	# Default initial guesses if none provided
+	if initGuesses is None:
+		initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.6]
+	
+	if nStart == 1:
+		# Single starting point
+		if verbose:
+			print("=== Fitting with single starting point ===")
+		fitted_params = fitCausalInferenceModel(data, initGuesses, use_vectorized=use_vectorized, show_progress=verbose)
+		
+		# Calculate NLL
+		if use_vectorized:
+			nll = nLL_causal_inference_fully_vectorized(fitted_params, data)
+		else:
+			nll = nLL_causal_inference(fitted_params, data)
+		
+		if verbose:
+			print(f"Fitted parameters: {fitted_params}")
+			print(f"NLL: {nll:.4f}")
+		
+		return fitted_params, nll
+	
+	else:
+		# Multiple starting points
+		if verbose:
+			print(f"=== Fitting with {nStart} starting points ===")
+		
+		fitted_params, nll = fitCausalInferenceMultipleStarts(
+			data, initGuesses, nStart=nStart, use_vectorized=use_vectorized
+		)
+		
+		return fitted_params, nll
 
+# Example usage:
+if __name__ == "__main__":
+	# Load data
+	loadDataVars = loadData("mh_all.csv", 1, 1)
+	data = loadDataVars[0]
+	
+	# Initial guesses for [lambda, sigma_av_a_1, sigma_av_v_1, p_c_1, sigma_av_a_2, sigma_av_v_2, p_c_2]
+	initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.6]
+	
+	# Option 2: Multiple starting points (more robust)
+	print("\n=== Multiple Starting Points ===")
+	fitted_params_multi, nll_multi = fitCausalInferenceWrapper(data, initGuesses, nStart=100, use_vectorized=True)
+	
+	# Option 1: Single starting point (faster, but less robust)
+	print("\n=== Single Starting Point ===")
+	fitted_params_single, nll_single = fitCausalInferenceWrapper(data, initGuesses)
+	
+	# Use the best fit for plotting
+	fitted_params = fitted_params_multi if nll_multi < nll_single else fitted_params_single
+	
+	# Plot results (existing plotting code continues from here...)
+	plt.figure(figsize=(16, 6))
+	for i, standardLevel in enumerate(uniqueStandard):
+		for j, audioNoiseLevel in enumerate(sorted(uniqueSensory)):
 
-
-# Use the faster version for fitting
-fitted_params = fitCausalInferenceModel(data, initGuesses, use_vectorized=True)
+			for k, conflictLevel in enumerate(uniqueConflict):
+				plt.subplot(1, 2, j+1)
+				lambda_, sigma_av_a, sigma_av_v, p_c = getParamsCausal(fitted_params, conflictLevel, audioNoiseLevel)
+				x = np.linspace(-0.9, 0.9, 500)
+				y = probTestLonger_vectorized(x, conflictLevel, lambda_, sigma_av_a, sigma_av_v, p_c)
+				color = sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))
+				plt.plot(x, y, color=color, label=f"c: {int(conflictLevel*1000)}, $\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f}", linewidth=4)
+				plt.axvline(x=0, color='gray', linestyle='--')
+				plt.axhline(y=0.5, color='gray', linestyle='--')
+				plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
+				plt.ylabel("P(chose test)")
+				plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
+				plt.legend(fontsize=14, title_fontsize=14)
+				plt.grid()
+				groupedData = groupByChooseTest(data[(data[standardVar] == standardLevel) & (data[sensoryVar] == audioNoiseLevel) & (data[conflictVar] == conflictLevel)])
+				bin_and_plot(groupedData, bin_method='cut', bins=10, plot=True, color=color)
+				plt.text(0.05, 0.8, f"$\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f},", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
+				plt.tight_layout()
+				plt.grid(True)
+				print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Lambda: {lambda_:.3f}, Sigma_a: {sigma_av_a:.3f}, Sigma_v: {sigma_av_v:.3f}, p_c: {p_c:.3f}")
+			plt.text(0.15, 0.9, f"P(C=1): {p_c:.2f}", fontsize=12, ha='center', va='bottom', transform=plt.gca().transAxes)
+	plt.show()
