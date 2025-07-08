@@ -768,8 +768,9 @@ def probTestLonger(deltaDur, conflict, lambda_,sigma_av_a, sigma_av_v,p_c):
 	"""Compute psychometric using causal inference model"""
 	# take estimates
 	est_standard= causalInference(S_a_s,conflict,sigma_av_a, sigma_av_v,  p_c) 
-	est_test= causalInference(S_a_t,0,sigma_av_a, sigma_av_v,  p_c) # conflict is 0 for test duration
-
+	est_test= fusionAV(sigma_av_a, sigma_av_v, S_a_t, conflict)[0]  # We compute the fused estimate for test duration because test duration do
+	# not have a conflict, so we use the fusion function directly.
+	
 	# Decison decison
 	deltaEstimates=est_test-est_standard
 	sigma_decision=genDecisionNoiseCausal(sigma_av_a,sigma_av_v,p_c)
@@ -797,10 +798,9 @@ def nLL_causal_inference(params, rawData):
 		ll += y[i] * np.log(P) + (1 - y[i]) * np.log(1 - P)
 	
 	return -ll
-def fitCausalInferenceModel(data, initGuesses):
+def fitCausalInferenceModel(data, initGuesses, use_vectorized=True):
 	"""Fit the causal inference model to the data."""
 	# parameters should be lambda, sigma_a_1,sigma_v_1,p_c_!,sigma_a_2,sigma_v_2,p_c_2
-	bounds=[]
 	bounds = [
 		(0, 0.25),      # lambda_
 		(0.01, 2),      # sigma_a_1
@@ -810,6 +810,7 @@ def fitCausalInferenceModel(data, initGuesses):
 		(0.01, 2),      # sigma_v_2
 		(0.01, 1)    # p_c_2
 	]
+	
 	class TqdmMinimizeCallback:
 		def __init__(self, total=100):
 			self.pbar = tqdm(total=total, desc="Fitting Causal Inference", leave=True)
@@ -823,9 +824,17 @@ def fitCausalInferenceModel(data, initGuesses):
 			self.pbar.close()
 
 	callback = TqdmMinimizeCallback(total=100)
+	
+	# Choose which negative log-likelihood function to use
+	if use_vectorized:
+		nll_function = nLL_causal_inference_fully_vectorized
+		print("Using fully vectorized causal inference fitting...")
+	else:
+		nll_function = nLL_causal_inference
+		print("Using original (slower) causal inference fitting...")
 
 	result = minimize(
-		nLL_causal_inference,
+		nll_function,
 		x0=initGuesses,
 		args=(data,),
 		bounds=bounds,
@@ -835,20 +844,192 @@ def fitCausalInferenceModel(data, initGuesses):
 	callback.close()
 	return result.x
 
+# ===============================
+# VECTORIZED CAUSAL INFERENCE FUNCTIONS
+# ===============================
+
+def causalInference_vectorized(S_a, conflict, sigma_av_a, sigma_av_v, p_c):
+	"""Vectorized version of causal inference computation."""
+	S_v = S_a + conflict
+	
+	# Measurements (in this case, just the true values)
+	m_a = S_a
+	m_v = S_v
+	
+	# LIKELIHOODS
+	# Common cause likelihood
+	var_sum = sigma_av_a**2 + sigma_av_v**2
+	likelihood_c1 = (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-(m_a - m_v)**2 / (2 * var_sum))
+	
+	# Independent causes likelihood
+	likelihood_c2 = norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
+	
+	# POSTERIOR probability of common cause
+	posterior_c1 = (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
+	
+	# ESTIMATES
+	# Fusion estimate (common cause)
+	J_AV_A = 1 / sigma_av_a**2
+	J_AV_V = 1 / sigma_av_v**2
+	w_a = J_AV_A / (J_AV_A + J_AV_V)
+	w_v = 1 - w_a
+	fused_S_av = w_a * S_a + w_v * S_v
+	
+	# Segregation estimate (independent causes)
+	segregated_S_av = S_a
+	
+	# Model averaging
+	hat_S_AV_A_final = posterior_c1 * fused_S_av + (1 - posterior_c1) * segregated_S_av
+	
+	return hat_S_AV_A_final
+
+def probTestLonger_vectorized(deltaDur, conflict, lambda_, sigma_av_a, sigma_av_v, p_c):
+	"""Vectorized version of probability computation."""
+	S_a_s = 0.5
+	S_a_t = S_a_s + deltaDur
+	
+	# Compute estimates
+	est_standard = causalInference_vectorized(S_a_s, conflict, sigma_av_a, sigma_av_v, p_c)
+	
+	# For test duration, use fusion directly (no conflict)
+	J_AV_A = 1 / sigma_av_a**2
+	J_AV_V = 1 / sigma_av_v**2
+	w_a = J_AV_A / (J_AV_A + J_AV_V)
+	w_v = 1 - w_a
+	est_test = w_a * S_a_t + w_v * S_a_t  # Since there's no conflict, S_v = S_a
+	
+	# Decision noise
+	var_fusion = 1 / (1/sigma_av_a**2 + 1/sigma_av_v**2)
+	var_segregated = sigma_av_a**2
+	var_estimate = p_c * var_fusion + (1 - p_c) * var_segregated
+	sigma_decision = np.sqrt(2 * var_estimate)
+	
+	# Decision
+	deltaEstimates = est_test - est_standard
+	p_choose_test = lambda_/2 + (1 - lambda_) * norm.cdf(deltaEstimates, loc=0, scale=sigma_decision)
+	
+	return p_choose_test
+
+def nLL_causal_inference_vectorized(params, rawData):
+	"""Vectorized negative log-likelihood for causal inference model."""
+	# Extract data arrays
+	snr_values = rawData["audNoise"].values
+	conflict_values = rawData["conflictDur"].values
+	responses = rawData["chose_test"].values
+	delta_dur_values = rawData["delta_dur_percents"].values
+	
+	# Pre-allocate parameter arrays
+	n_trials = len(rawData)
+	lambda_arr = np.empty(n_trials)
+	sigma_av_a_arr = np.empty(n_trials)
+	sigma_av_v_arr = np.empty(n_trials)
+	p_c_arr = np.empty(n_trials)
+	
+	# Vectorized parameter assignment
+	for i in range(n_trials):
+		lambda_arr[i], sigma_av_a_arr[i], sigma_av_v_arr[i], p_c_arr[i] = getParamsCausal(
+			params, conflict_values[i], snr_values[i]
+		)
+	
+	# Vectorized probability computation
+	P = probTestLonger_vectorized(delta_dur_values, conflict_values, lambda_arr, 
+								  sigma_av_a_arr, sigma_av_v_arr, p_c_arr)
+	
+	# Clip probabilities to avoid log(0)
+	epsilon = 1e-9
+	P = np.clip(P, epsilon, 1 - epsilon)
+	
+	# Vectorized log-likelihood computation
+	ll = np.sum(responses * np.log(P) + (1 - responses) * np.log(1 - P))
+	
+	return -ll
+
+def nLL_causal_inference_fully_vectorized(params, rawData):
+	"""Fully vectorized version - even faster by avoiding parameter loops."""
+	# Extract data arrays
+	snr_values = rawData["audNoise"].values
+	conflict_values = rawData["conflictDur"].values
+	responses = rawData["chose_test"].values
+	delta_dur_values = rawData["delta_dur_percents"].values
+	
+	# Create boolean masks for different SNR conditions
+	snr_01_mask = np.isclose(snr_values, 0.1)
+	snr_12_mask = np.isclose(snr_values, 1.2)
+	
+	# Pre-allocate parameter arrays
+	n_trials = len(rawData)
+	lambda_arr = np.full(n_trials, params[0])  # lambda is shared
+	sigma_av_a_arr = np.empty(n_trials)
+	sigma_av_v_arr = np.empty(n_trials)
+	p_c_arr = np.empty(n_trials)
+	
+	# Vectorized parameter assignment
+	sigma_av_a_arr[snr_01_mask] = params[1]
+	sigma_av_v_arr[snr_01_mask] = params[2]
+	p_c_arr[snr_01_mask] = params[3]
+	
+	sigma_av_a_arr[snr_12_mask] = params[4]
+	sigma_av_v_arr[snr_12_mask] = params[5]
+	p_c_arr[snr_12_mask] = params[6]
+	
+	# Vectorized causal inference computation
+	S_a_s = 0.5
+	S_a_t = S_a_s + delta_dur_values
+	
+	
+	# Standard estimates (vectorized)
+	S_v_s = S_a_s + conflict_values
+	m_a_s = S_a_s
+	m_v_s = S_v_s
+	
+	# Common cause likelihood for standard
+	var_sum_s = sigma_av_a_arr**2 + sigma_av_v_arr**2
+	likelihood_c1_s = (1 / np.sqrt(2 * np.pi * var_sum_s)) * np.exp(-(m_a_s - m_v_s)**2 / (2 * var_sum_s))
+	
+	# Independent causes likelihood for standard
+	likelihood_c2_s = norm.pdf(m_a_s, loc=S_a_s, scale=sigma_av_a_arr) * norm.pdf(m_v_s, loc=S_v_s, scale=sigma_av_v_arr)
+	
+	# Posterior probability of common cause for standard
+	posterior_c1_s = (likelihood_c1_s * p_c_arr) / (likelihood_c1_s * p_c_arr + likelihood_c2_s * (1 - p_c_arr))
+	
+	# Fusion estimate for standard
+	J_AV_A = 1 / sigma_av_a_arr**2
+	J_AV_V = 1 / sigma_av_v_arr**2
+	w_a = J_AV_A / (J_AV_A + J_AV_V)
+	fused_S_av_s = w_a * S_a_s + (1 - w_a) * S_v_s
+	
+	# Final estimate for standard (model averaging)
+	est_standard = posterior_c1_s * fused_S_av_s + (1 - posterior_c1_s) * S_a_s
+	
+	# Test estimates (fusion only, no conflict)
+	est_test = w_a * S_a_t + (1 - w_a) * S_a_t  # Simplifies to S_a_t
+	
+	# Decision noise
+	var_fusion = 1 / (1/sigma_av_a_arr**2 + 1/sigma_av_v_arr**2)
+	var_segregated = sigma_av_a_arr**2
+	var_estimate = p_c_arr * var_fusion + (1 - p_c_arr) * var_segregated
+	sigma_decision = np.sqrt(2 * var_estimate)
+	
+	# Decision
+	deltaEstimates = est_test - est_standard
+	P = lambda_arr/2 + (1 - lambda_arr) * norm.cdf(deltaEstimates, loc=0, scale=sigma_decision)
+	
+	# Clip probabilities to avoid log(0)
+	epsilon = 1e-9
+	P = np.clip(P, epsilon, 1 - epsilon)
+	
+	# Vectorized log-likelihood computation
+	ll = np.sum(responses * np.log(P) + (1 - responses) * np.log(1 - P))
+	
+	return -ll
+
+loadDataVars= loadData("as_all.csv",1,1)
+data= loadDataVars[0]
+
+initGuesses= [0.03, 0.1, 0.1, 0.7, 0.1, 0.1, 0.6]  # Initial guesses for lambda, sigma_av_a_1, sigma_av_v_1, p_c_1, sigma_av_a_2, sigma_av_v_2, p_c_2
 
 
-loadedDataVars=loadData("as_all.csv", isShared=True,isAllIndependent=True)
-data= loadedDataVars[0]
-# set the variables
-intensityVariable = 'delta_dur_percents'
-sensoryVar = 'audNoise'
-conflictVar = 'conflictDur'
-standardVar = 'standardDur'
-
-fitCausalInferenceModel(data, initGuesses=[0.1, 0.1, 0.1, 0.5, 0.1, 0.1, 0.5])
 
 
-
-
-
-
+# Use the faster version for fitting
+fitted_params = fitCausalInferenceModel(data, initGuesses, use_vectorized=True)
