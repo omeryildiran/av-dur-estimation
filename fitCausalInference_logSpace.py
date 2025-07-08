@@ -1216,7 +1216,7 @@ def debug_data_issues(data):
 # Example usage:
 if __name__ == "__main__":
 	# Load data
-	loadDataVars = loadData("hh_all.csv", 1, 1)
+	loadDataVars = loadData("all_all.csv", 1, 1)
 	data = loadDataVars[0]
 	
 	# Debug data issues
@@ -1241,7 +1241,7 @@ if __name__ == "__main__":
 	
 	# Option 2: Multiple starting points (more robust) - only if single works
 	print("\n=== Multiple Starting Points ===")
-	fitted_params_multi, nll_multi = fitCausalInferenceWrapper(data, initGuesses, nStart=10, use_vectorized=True)
+	fitted_params_multi, nll_multi = fitCausalInferenceWrapper(data, initGuesses, nStart=100, use_vectorized=True)
 	
 	# Validate the multiple fits
 	validate_causal_inference_params(fitted_params_multi, verbose=True)
