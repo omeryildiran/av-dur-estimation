@@ -359,25 +359,216 @@ def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_lev
         nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
         return nll
 
-# fitting function for joint model
-def fitJoint(grouped_data,  initGuesses):
+# ===============================
+# JOINT CAUSAL INFERENCE FITTING
+# ===============================
+
+def getCausalInferenceParams(params, conflict, audio_noise, nLambda, nSigma):
+    """
+    Extract causal inference parameters for a specific condition (conflict, noise).
+    Similar to getParams but for causal inference model with 4 parameters.
+    
+    Parameters:
+    -----------
+    params : array
+        Full parameter array 
+    conflict : float
+        Visual conflict level
+    audio_noise : float
+        Auditory noise level
+    nLambda : int
+        Number of lambda parameters
+    nSigma : int
+        Number of sigma parameters
+        
+    Returns:
+    --------
+    lambda_ : float
+        Lapse rate for this condition
+    sigma_av_a : float
+        Auditory noise in AV condition
+    sigma_av_v : float
+        Visual noise in AV condition  
+    p_common : float
+        Prior probability of common cause
+    """
+    if allIndependent and not sharedSigma:
+        # Each (noise, conflict) pair has its own set of causal inference parameters
+        noise_idx = np.where(uniqueSensory == round(audio_noise, 3))[0][0]
+        conflict_idx = np.where(uniqueConflict == round(conflict, 3))[0][0]
+        nCond = len(uniqueSensory) * len(uniqueConflict)
+        cond_idx = noise_idx * len(uniqueConflict) + conflict_idx
+        
+        # Each condition has 4 parameters: lambda, sigma_av_a, sigma_av_v, p_common
+        lambda_ = params[cond_idx * 4 + 0]
+        sigma_av_a = params[cond_idx * 4 + 1]
+        sigma_av_v = params[cond_idx * 4 + 2]
+        p_common = params[cond_idx * 4 + 3]
+        
+        return lambda_, sigma_av_a, sigma_av_v, p_common
+        
+    elif allIndependent == False and sharedSigma:
+        # Shared structure: 
+        # - Single lambda across all conditions
+        # - sigma_av_a varies by noise level only
+        # - sigma_av_v varies by noise level only  
+        # - p_common varies by (noise, conflict) combination
+        
+        # Get lambda (shared across all conditions)
+        lambda_ = params[0]
+        
+        # Get noise index
+        noise_idx_array = np.where(uniqueSensory == audio_noise)[0]
+        if len(noise_idx_array) == 0:
+            raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
+        noise_idx = noise_idx_array[0]
+        
+        # sigma_av_a and sigma_av_v depend on noise level
+        sigma_av_a = params[1 + noise_idx]  # After lambda
+        sigma_av_v = params[1 + nSigma + noise_idx]  # After lambda and all sigma_av_a
+        
+        # Get conflict index
+        conflict_idx_array = np.where(np.isclose(uniqueConflict, conflict, atol=1e-1))[0]
+        if len(conflict_idx_array) == 0:
+            raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
+        conflict_idx = conflict_idx_array[0]
+        
+        # p_common varies by (noise, conflict) combination
+        noise_offset = noise_idx * len(uniqueConflict)
+        p_common_idx = 1 + 2*nSigma + noise_offset + conflict_idx
+        p_common = params[p_common_idx]
+        
+        return lambda_, sigma_av_a, sigma_av_v, p_common
+        
+    else:
+        # Non-shared structure: each (noise, conflict) has its own parameters
+        lambda_ = params[0]  # Shared lambda
+        
+        # Get indices
+        noise_idx_array = np.where(uniqueSensory == round(audio_noise, 3))[0]
+        if len(noise_idx_array) == 0:
+            raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
+            
+        conflict_idx_array = np.where(uniqueConflict == conflict)[0]
+        if len(conflict_idx_array) == 0:
+            raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
+            
+        noise_idx = noise_idx_array[0]
+        conflict_idx = conflict_idx_array[0]
+        
+        nConditions = len(uniqueConflict) * len(uniqueSensory)
+        cond_idx = conflict_idx * len(uniqueSensory) + noise_idx
+        
+        # Parameters are organized as: lambda, then sigma_av_a for each condition, 
+        # then sigma_av_v for each condition, then p_common for each condition
+        sigma_av_a = params[nLambda + cond_idx]
+        sigma_av_v = params[nLambda + nConditions + cond_idx]
+        p_common = params[nLambda + 2*nConditions + cond_idx]
+        
+        return lambda_, sigma_av_a, sigma_av_v, p_common
+
+def causalInferenceNLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_levels):
+    """
+    Joint negative log-likelihood for causal inference model across all conditions.
+    Similar to nLLJoint but for causal inference model.
+    
+    Parameters:
+    -----------
+    params : array
+        Parameter array (structure depends on allIndependent and sharedSigma flags)
+    delta_dur : array
+        Duration differences for each data point
+    responses : array
+        Number of times test was chosen for each data point
+    total_responses : array
+        Total responses for each data point
+    conflicts : array
+        Visual conflict levels for each data point
+    noise_levels : array
+        Auditory noise levels for each data point
+        
+    Returns:
+    --------
+    nll : float
+        Negative log-likelihood
+    """
+    # Precompute parameter arrays for each data point
+    lambda_arr = np.empty(len(delta_dur))
+    sigma_av_a_arr = np.empty(len(delta_dur))
+    sigma_av_v_arr = np.empty(len(delta_dur))
+    p_common_arr = np.empty(len(delta_dur))
+    
+    for i in range(len(delta_dur)):
+        lambda_arr[i], sigma_av_a_arr[i], sigma_av_v_arr[i], p_common_arr[i] = getCausalInferenceParams(
+            params, conflicts[i], noise_levels[i], nLambda, nSigma
+        )
+    
+    # Compute probabilities using vectorized causal inference psychometric function
+    p_choose_test = np.zeros_like(delta_dur, dtype=float)
+    
+    for i in range(len(delta_dur)):
+        p_choose_test[i] = causalInferencePsychometric(
+            delta_dur[i], lambda_arr[i], sigma_av_a_arr[i], 
+            sigma_av_v_arr[i], p_common_arr[i], conflicts[i]
+        )
+    
+    # Clip probabilities to avoid log(0)
+    epsilon = 1e-9
+    p_choose_test = np.clip(p_choose_test, epsilon, 1 - epsilon)
+    
+    # Vectorized negative log-likelihood
+    nll = -np.sum(responses * np.log(p_choose_test) + 
+                  (total_responses - responses) * np.log(1 - p_choose_test))
+    
+    return nll
+
+def fitCausalInferenceJoint(grouped_data, initGuesses):
+    """
+    Fit causal inference model jointly across all conditions.
+    Similar to fitJoint but for causal inference model.
+    
+    Parameters:
+    -----------
+    grouped_data : DataFrame
+        Grouped experimental data
+    initGuesses : list
+        Initial parameter guesses [lambda_, sigma_av_a, sigma_av_v, p_common]
+        
+    Returns:
+    --------
+    result : OptimizeResult
+        Fitted parameters and optimization result
+    """
     if allIndependent:
-        nCond = nSensoryVar * nConflictVar
-        # Repeat initial guesses for each condition
-        initGuesses = (initGuesses * nCond)[:nCond*3]
+        nCond = len(uniqueSensory) * len(uniqueConflict)
+        # Each condition has 4 parameters: lambda, sigma_av_a, sigma_av_v, p_common
+        initGuesses = (initGuesses * nCond)[:nCond*4]
+        
+        # Extract data
         intensities = grouped_data[intensityVariable]
         chose_tests = grouped_data['num_of_chose_test']
         total_responses = grouped_data['total_responses']
         conflicts = grouped_data[conflictVar]
         noise_levels = grouped_data[sensoryVar]
-        # Bounds for each parameter: lambda, mu, sigma per condition
+        
+        # Bounds for each parameter set per condition
         bounds = []
         for _ in range(nCond):
-            bounds.extend([(0, 0.25), (-2, 2), (0.01, 2)])
-    elif sharedSigma==True:
-        # Initialize guesses for parameters 
-        # lambda, mu,sigma
-        initGuesses= [initGuesses[0]]*nLambda +  [initGuesses[1]]*nSensoryVar+[initGuesses[2]]*nSensoryVar*nConflictVar
+            bounds.extend([
+                (0, 0.25),    # lambda_: lapse rate
+                (0.01, 2),    # sigma_av_a: auditory noise in AV
+                (0.01, 2),    # sigma_av_v: visual noise in AV  
+                (0, 1)        # p_common: prior probability of common cause
+            ])
+            
+    elif sharedSigma == True:
+        # Shared structure: lambda (1) + sigma_av_a per noise (nSigma) + 
+        # sigma_av_v per noise (nSigma) + p_common per (noise,conflict) (nSigma*len(uniqueConflict))
+        nParams = 1 + 2*nSigma + nSigma*len(uniqueConflict)
+        initGuesses = ([initGuesses[0]] +  # lambda
+                      [initGuesses[1]]*nSigma +  # sigma_av_a per noise level
+                      [initGuesses[2]]*nSigma +  # sigma_av_v per noise level  
+                      [initGuesses[3]]*nSigma*len(uniqueConflict))  # p_common per condition
         
         intensities = grouped_data[intensityVariable]
         chose_tests = grouped_data['num_of_chose_test']
@@ -385,14 +576,20 @@ def fitJoint(grouped_data,  initGuesses):
         conflicts = grouped_data[conflictVar]
         noise_levels = grouped_data[sensoryVar]
         
-        
-        # Set bounds for parameters
-        # array of parameters in order of lambda, mu, sigma
-        bounds = [(0,0.25)]*nLambda +  [(0.01, +1)]*nSensoryVar+[(-1, +1)]*nSensoryVar*nConflictVar 
+        # Set bounds
+        bounds = ([(0, 0.25)] +  # lambda
+                 [(0.01, 2)]*nSigma +  # sigma_av_a bounds
+                 [(0.01, 2)]*nSigma +  # sigma_av_v bounds
+                 [(0, 1)]*nSigma*len(uniqueConflict))  # p_common bounds
+                 
     else:
-        # Initialize guesses for parameters 
-        # lambda, mu, sigma
-        initGuesses= [initGuesses[0]]*nLambda + [initGuesses[1]]*nSensoryVar*nConflictVar+ [initGuesses[2]]*nSensoryVar*nConflictVar
+        # Each (noise, conflict) combination has its own sigma_av_a, sigma_av_v, p_common
+        # but shared lambda
+        nConditions = nSigma * len(uniqueConflict)
+        initGuesses = ([initGuesses[0]] +  # shared lambda
+                      [initGuesses[1]]*nConditions +  # sigma_av_a per condition
+                      [initGuesses[2]]*nConditions +  # sigma_av_v per condition
+                      [initGuesses[3]]*nConditions)   # p_common per condition
         
         intensities = grouped_data[intensityVariable]
         chose_tests = grouped_data['num_of_chose_test']
@@ -400,25 +597,27 @@ def fitJoint(grouped_data,  initGuesses):
         conflicts = grouped_data[conflictVar]
         noise_levels = grouped_data[sensoryVar]
         
-        
-        # Set bounds for parameters
-        # array of parameters in order of lambda, mu, sigma
-        bounds = [(0, 0.25)]*nLambda + [(-2, +2)]*nSensoryVar*nConflictVar + [(0.01, +2)]*nSensoryVar*nConflictVar 
-
-    #print(f" len initGuesses: {len(initGuesses)}")
+        # Set bounds
+        bounds = ([(0, 0.25)] +  # lambda
+                 [(0.01, 2)]*nConditions +  # sigma_av_a bounds
+                 [(0.01, 2)]*nConditions +  # sigma_av_v bounds  
+                 [(0, 1)]*nConditions)      # p_common bounds
 
     # Minimize negative log-likelihood
     result = minimize(
-        nLLJoint,
+        causalInferenceNLLJoint,
         x0=initGuesses,
         args=(intensities, chose_tests, total_responses, conflicts, noise_levels),
         bounds=bounds,
-        method='L-BFGS-B'  # Use L-BFGS-B for bounded optimization
+        method='L-BFGS-B'
     )
     
     return result
 
 def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_levels):
+    """
+    Vectorized negative log likelihood for all conditions.
+    """
     if allIndependent:
         lam = np.empty(len(delta_dur))
         mu = np.empty(len(delta_dur))
@@ -451,640 +650,229 @@ def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_lev
         nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
         return nll
 
-# Fit the psychometric function to the grouped data
-def multipleInitGuessesWEstimate(singleInitGuesses, nStart):
-    initLambdas=np.linspace(0.01, 0.1, nStart)
-    initMus=np.linspace(-0.83, 0.83, nStart)
-    initSigmas=np.linspace(0.01, 1.5, nStart)
-    multipleInitGuesses = []
-    if nStart == 1:
-        # estimate initial guesses
-        initLambdas = [singleInitGuesses[0]]
-        initMus = [singleInitGuesses[1]]
-        initSigmas = [singleInitGuesses[2]]
-        multipleInitGuesses.append([initLambdas[0], initMus[0], initSigmas[0]])
+# ===============================
+# CAUSAL INFERENCE MODEL FUNCTIONS
+# ===============================
+
+def fusionAV(sigma_av_a, sigma_av_v, S_a, conflict):
+    """
+    Optimal fusion of auditory and visual estimates.
+    
+    Parameters:
+    -----------
+    sigma_av_a : float
+        Auditory noise in AV condition
+    sigma_av_v : float
+        Visual noise in AV condition
+    S_a : float
+        Auditory estimate
+    conflict : float
+        Visual conflict (difference between visual and auditory)
+        
+    Returns:
+    --------
+    fused_estimate : float
+        Optimally fused estimate
+    fused_variance : float
+        Variance of fused estimate
+    """
+    # Visual estimate includes conflict
+    S_v = S_a + conflict
+    
+    # Optimal fusion weights (reliability-weighted average)
+    w_a = (1/sigma_av_a**2) / (1/sigma_av_a**2 + 1/sigma_av_v**2)
+    w_v = (1/sigma_av_v**2) / (1/sigma_av_a**2 + 1/sigma_av_v**2)
+    
+    # Fused estimate
+    fused_estimate = w_a * S_a + w_v * S_v
+    
+    # Fused variance (inverse of sum of precisions)
+    fused_variance = 1 / (1/sigma_av_a**2 + 1/sigma_av_v**2)
+    
+    return fused_estimate, fused_variance
+
+def causalInference(S_a, conflict, sigma_av_a, sigma_av_v, p_common):
+    """
+    Causal inference model for audiovisual integration.
+    
+    Parameters:
+    -----------
+    S_a : float
+        Auditory stimulus estimate
+    conflict : float
+        Visual conflict level (difference from auditory)
+    sigma_av_a : float
+        Auditory noise in AV condition
+    sigma_av_v : float
+        Visual noise in AV condition
+    p_common : float
+        Prior probability of common cause
+        
+    Returns:
+    --------
+    estimate : float
+        Final causal inference estimate
+    p_posterior : float
+        Posterior probability of common cause
+    """
+    # Visual estimate includes conflict
+    S_v = S_a + conflict
+    
+    # Likelihood under common cause (C=1): optimal fusion
+    fused_estimate, fused_variance = fusionAV(sigma_av_a, sigma_av_v, S_a, conflict)
+    
+    # For likelihood calculation, we need to consider the probability of observing 
+    # the discrepancy between auditory and visual estimates
+    discrepancy = S_v - S_a  # This should equal conflict in our setup
+    
+    # Likelihood of discrepancy under common cause
+    # The discrepancy should be small under common cause
+    var_discrepancy_common = sigma_av_a**2 + sigma_av_v**2
+    likelihood_common = norm.pdf(discrepancy, loc=0, scale=np.sqrt(var_discrepancy_common))
+    
+    # Likelihood under separate causes (C=2)
+    # Under separate causes, discrepancy can be large (determined by prior on conflicts)
+    # We assume a uniform prior over conflicts, so likelihood is constant
+    # For simplicity, we use a wide Gaussian
+    var_discrepancy_separate = var_discrepancy_common * 10  # Much larger variance
+    likelihood_separate = norm.pdf(discrepancy, loc=0, scale=np.sqrt(var_discrepancy_separate))
+    
+    # Posterior probability of common cause using Bayes rule
+    evidence_common = likelihood_common * p_common
+    evidence_separate = likelihood_separate * (1 - p_common)
+    evidence_total = evidence_common + evidence_separate
+    
+    if evidence_total > 0:
+        p_posterior = evidence_common / evidence_total
     else:
-        for i, initLambda in enumerate(initLambdas):
-            for j, initMu in enumerate(initMus):
-                for k, initSigma in enumerate(initSigmas):
-                    multipleInitGuesses.append([initLambda, initMu, initSigma])
-    return multipleInitGuesses
-
-
-def fitMultipleStartingPoints(data,nStart=3):
-    # group data and prepare for fitting
-    groupedData = groupByChooseTest(data)
-    global nLambda, nSensoryVar, nConflictVar, uniqueSensory, uniqueConflict
-    nSensoryVar = len(uniqueSensory)  # Number of sensory variables
-    nConflictVar = len(uniqueConflict)  # Number of conflict variables
-    uniqueSensory = data['audNoise'].unique()
-    uniqueConflict = sorted(data[conflictVar].unique())
+        p_posterior = p_common  # Fallback to prior
     
-    levels = groupedData[intensityVariable].values
-    responses = groupedData['num_of_chose_test'].values
-    totalResp = groupedData['total_responses'].values
-    conflictLevels = groupedData[conflictVar].values
-    noiseLevels = groupedData[sensoryVar].values
-
-    # Prepare multiple initial guesses
-    singleInitGuesses = estimate_initial_guesses(levels, responses, totalResp)
-
-    multipleInitGuesses = multipleInitGuessesWEstimate(singleInitGuesses, nStart)
-
-    # Fit the model with multiple starting points
-    
-    best_fit = None
-    best_nll = float('inf')  # Initialize with infinity
-    disable=False
-    if len(multipleInitGuesses)==1:
-        disable=True
-    
-    for i in tqdm(range(len(multipleInitGuesses)), desc="Fitting multiple starting points",disable=disable):
-        
-        fit = fitJoint(groupedData, initGuesses=multipleInitGuesses[i])
-        nll = nLLJoint(fit.x, levels, responses, totalResp, conflictLevels, noiseLevels)
-
-        if nll < best_nll:
-            best_nll = nll
-            best_fit = fit
-
-    return best_fit
-
-def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable):
-    colors = sns.color_palette("viridis", n_colors=len(uniqueSensory))  # Use Set2 palette for different noise levels
-    plt.figure(figsize=(12*2.5, 6*2))
-
-    for i, standardLevel in enumerate(uniqueStandard):
-        for j, audioNoiseLevel in enumerate(sorted(uniqueSensory)):
-            print(f"standardLevel: {standardLevel}, audioNoiseLevel: {audioNoiseLevel}, uniqueConflict: {uniqueConflict}")
-            for k, conflictLevel in enumerate(uniqueConflict):
-                lambda_, mu, sigma = getParams(best_fit.x, conflictLevel, audioNoiseLevel, nLambda, nSigma)
-                # Filter the data for the current standard and audio noise levels
-                df = data[round(data[standardVar], 2) == round(standardLevel,2)]
-                df = df[df[sensoryVar] == audioNoiseLevel]
-                df = df[df[conflictVar] == conflictLevel]
-                dfFiltered = groupByChooseTest(df)
-                levels = dfFiltered[intensityVariable].values
-                if len(levels) == 0:
-                    continue
-                responses = dfFiltered['num_of_chose_test'].values
-                totalResponses = dfFiltered['total_responses'].values
-                
-                # Fit the psychometric function
-                plt.subplot(1, 2, j+1)
-                maxX = max(levels) + 0.1
-                minX = min(levels) - 0.1
-                x = np.linspace(-0.9, 0.9, 500)
-                y = psychometric_function(x, lambda_, mu, sigma)
-                color=sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))  # Use a colormap for different conflict levels
-                plt.plot(x, y, color=color, label=f"C: {int(conflictLevel*1000)}, $\lambda$: {lambda_:.2f} $\mu$: {mu:.2f}, $\sigma$: {sigma:.2f}", linewidth=4,)
-                plt.axvline(x=0, color='gray', linestyle='--')
-                plt.axhline(y=0.5, color='gray', linestyle='--')
-                plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
-                plt.ylabel("P(chose test)")
-                #plt.title(f" {pltTitle} ", fontsize=16)
-
-                plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
-                plt.legend(fontsize=14, title_fontsize=14)
-                plt.grid()
-                bin_and_plot(dfFiltered, bin_method='cut', bins=10, plot=True, color=color)
-
-                plt.text(0.05, 0.8, f"Shared $\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
-                plt.tight_layout()
-                plt.grid(True)
-
-                # print the fitted parameters
-                print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Mu: {mu:.3f}, Sigma: {sigma:.3f}")
-    #plt.show()
-
-
-def simulate_dataset(params, gdf):
-    """
-    Produce one synthetic data set that has the SAME predictors
-    (delta, conflict, noise, total_responses) as 'gdf' but with
-    binomially simulated response counts.
-    """
-    sim_gdf = gdf.copy()
-
-    # vectorised computation to avoid Python loop
-    lam   = np.empty(len(gdf))
-    mu    = np.empty(len(gdf))
-    sigma = np.empty(len(gdf))
-
-    # Map each row's (conflict, noise) to its λ, μ, σ
-    for idx, row in gdf.iterrows():
-        lam_i, mu_i, sig_i = getParams(params,
-                                        row[conflictVar],
-                                        row[sensoryVar],
-                                        nLambda,
-                                        nSigma)
-        lam[idx], mu[idx], sigma[idx] = lam_i, mu_i, sig_i
-
-    p_choose_test = psychometric_function(sim_gdf[intensityVariable].values,
-                                          lam, mu, sigma)
-
-    # Binomial draw
-    sim_gdf['num_of_chose_test'] = np.random.binomial(
-        n = sim_gdf['total_responses'].values.astype(int),
-        p = p_choose_test)
-
-    return sim_gdf
-
-def paramBootstrap(fitParams, nBoots):
-    
-    groupedData = groupByChooseTest(data)
-    nBootParams = []
-    # Add tqdm progress bar
-    for _ in tqdm(range(nBoots), desc="Bootstrapping", unit="iteration"):
-        #1- do simulation
-        simData = simulate_dataset(fitParams, groupedData)
-        # simulate data by taking binomials at this
-        initGuessEstimate = estimate_initial_guesses(simData[intensityVariable].values, 
-                                                    simData['num_of_chose_test'], 
-                                                    simData['total_responses'])
-        # fit the data to boot
-        bootFit = fitJoint(grouped_data=simData, initGuesses=initGuessEstimate)
-
-        # save
-        nBootParams.append(bootFit.x)
-
-    return np.vstack(nBootParams)
-
-def plot_conflict_vs_pse(best_fit, allBootedFits):
-    """
-    Plot the relation between conflict and PSE (mu) with confidence intervals.
-    """
-    plt.figure(figsize=(12, 6))
-    m = 0
-    for i, standardLevel in enumerate(uniqueStandard):
-        for j, audioNoiseLevel in enumerate(uniqueSensory):
-            for k, conflictLevel in enumerate(uniqueConflict):
-                lambda_, mu, sigma = getParams(best_fit.x, conflictLevel, audioNoiseLevel, nLambda, nSigma)
-                m += 1        
-                plt.subplot(1, 2, j + 1)
-                color = sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))
-                plt.scatter(conflictLevel * 1000, mu * 1000 / 2, color=color, s=100)
-                plt.xlabel("Visual Conflict(ms)")
-                plt.ylabel("PSE (ms)")
-                plt.title(f"Standard: {standardLevel}, Noise: {audioNoiseLevel}")
-                plt.grid()
-                plt.axhline(y=0, color='gray', linestyle='--')
-                plt.axvline(x=0, color='gray', linestyle='--')
-
-                mu_all = []
-                for fit in allBootedFits:
-                    lambda_, muBooted, sigma = getParams(fit, conflictLevel, audioNoiseLevel, nLambda, nSigma)
-                    mu_all.append(muBooted)
-                mu_ci = np.percentile(mu_all, [2.5, 97.5])
-                lower_err = np.maximum(mu*1000/2-mu_ci[0]*1000/2, 0)
-                upper_err = np.maximum(mu_ci[1]*1000/2-mu*1000/2, 0)
-                plt.errorbar(conflictLevel*1000, mu*1000/2, yerr=[[lower_err], [upper_err]], fmt='o', color=color, capsize=10
-                            , label=f"95% CI for mu: {mu_ci[0]*1000/2:.2f} - {mu_ci[1]*1000/2:.2f}", linewidth=2)
-                plt.ylim(-350, 350)
-    plt.show()
-
-
-
-def plotStairCases(data):
-
-    # select the current stair
-    uniqueStairs = data['current_stair'].unique()
-    uniqueStairs= sorted(uniqueStairs)[:-1]
-    plt.figure(figsize=(20, 10))
-    for idx, stair in enumerate(uniqueStairs):
-        df= data[data['current_stair'] == stair]. reset_index(drop=True)
-        plt.subplot(2, 2, idx+1)
-        for trialN in range(df.shape[0]):
-            color = 'green' if df['chose_test'][trialN] == 1 or df['chose_test'][trialN] == "True" else 'red'            
-            #print(f"Trial {trialN}, delta_dur_percents: {df['delta_dur_percents'][trialN]}, is_correct: {df['is_correct'][trialN]}")
-            plt.scatter(trialN,df['delta_dur_percents'][trialN], color=color, s=60, alpha=0.5)
-            plt.plot(df['delta_dur_percents'], color='blue')
-
-            plt.title(f"Stair {stair}")
-            plt.xlabel("Test(stair)-Standard(0.5s) Duration Difference Ratio")
-            plt.ylabel("Delta Duration %")
-            plt.axhline(y=0, color='gray', linestyle='--')
-            #plt.axvline(x=0, color='gray', linestyle='--')
-            plt.ylim(-0.9, 0.9)
-            plt.grid()
-    plt.tight_layout()
-    plt.show()
-
-
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Fit joint psychometric model.")
-    parser.add_argument("--dataName", type=str, help="CSV file name in data/ directory")
-    parser.add_argument("--sharedSigma", action="store_true", help="Use shared sigma across noise levels")
-    args = parser.parse_args()
-
-    dataName = args.dataName
-    global sharedSigma
-    global allIndependent
-    allIndependent= 1
-    sharedSigma = args.sharedSigma
-
-    if not dataName:
-        dataName = "all_all.csv"
-    global pltTitle
-    pltTitle=dataName.split("_")[1]
-    pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
-        
-    sharedSigma = False  # Set to True if you want to use shared sigma across noise levels
-    # Example usage
-    data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName, sharedSigma,isAllIndependent=allIndependent)
-    fit = fitMultipleStartingPoints(data, nStart=1)
-    # print the fitted parameters
-    print(f"Fitted parameters: {fit.x}")
-
-    # Plot the fitted psychometric functions
-    plot_fitted_psychometric(
-        data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
-        standardVar, sensoryVar, conflictVar, intensityVariable
-    )
-    plotStairCases(data)
-
-
-    # Plot the relation between conflict and PSE (mu) with confidence intervals
-    #allBootedFits = paramBootstrap(fit.x, nBoots=100)
-    #plot_conflict_vs_pse(fit, allBootedFits)
-
-# example usage on how to run the code on terminal
-# python jointSharedSigma.py --dataName "LN_main_all.csv" --sharedSigma True
-
-# # run the code to test the functions
-# if __name__ == "__main__":
-#     # Example usage
-#     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma,nMu = loadData("LC_auditoryDurEst_2025-05-23_16h37.43.184.csv")
-#     grouped_data = groupByChooseTest(data)
-    
-#     # Fit the model with multiple starting points
-#     fit = fitMultipleStartingPoints(data, nStart=3)
-    
-#     # Get fitted parameters
-#     lambda_, mu, sigma = getFittedParams(fit)
-    
-#     print(f"Fitted parameters: lambda={lambda_}, mu={mu}, sigma={sigma}")
-
-
-
-
-# -------------------------
-# Causal Inference 0.1
-# -------------------------
-
-
-from scipy.stats import truncnorm, lognorm
-
-def unimodalMeasurements(sigma, S, n=500):
-    # Define lower bound (0) and calculate the standardized lower bound for truncnorm
-    a = (0 - S) / sigma
-    b = np.inf  # no upper bound restriction
-    m = truncnorm.rvs(a, b, loc=S, scale=sigma, size=n)
-    return m
-
-# Log-normal implementation for duration estimation
-def unimodalMeasurementsLogNormal(sigma_log, S, n=500):
-    # Generate log-normal measurements
-    # lognorm.rvs(s=sigma_log, scale=S) where s is the shape parameter (sigma in log space)
-    measurements = lognorm.rvs(s=sigma_log, scale=S, size=n)
-    return measurements
-
-def logNormalPDF(x, mu, sigma):
-    """
-    Probability density function for log-normal distribution.
-    Args:
-        x: value to evaluate the PDF at
-        mu: mean of the underlying normal distribution
-        sigma: standard deviation of the underlying normal distribution
-    Returns:
-        pdf: probability density function value at x
-    """
-    return (1 / (x * sigma * np.sqrt(2 * np.pi))) * np.exp(-((np.log(x) - mu) ** 2) / (2 * sigma ** 2))
-
-# likelihood function
-def unimodalLikelihood( S, sigma):
-    #S=np.log(S)  # convert S to log scale
-    # P(m|s) # likelihood of measurements given the true duration
-    m=np.linspace(0, S + 10*sigma, 500)
-    p_m=norm.pdf(m, loc=S, scale=sigma) # uncomment
-    return m, p_m
-
-# probability density function of a Gaussian distribution
-def gaussianPDF(x,S, sigma):
-	return (1/(np.sqrt(2*np.pi)*sigma))*np.exp(-((x-S)**2)/(2*(sigma**2)))
-
-
-
-
-### Important part:
-# compute fused estimate (reliability weighted avg)
-def fusionAV(sigmaAV_A,sigmaAV_V, S_a, visualConflict):
-	S_v=S_a+visualConflict
-	# compute the precisons inverse of variances
-	J_AV_A= sigmaAV_A**-2 # auditory precision
-	J_AV_V=sigmaAV_V**-2 # visual precision
-	w_a= J_AV_A / (J_AV_A + J_AV_V)  # auditory weight
-	w_v= J_AV_V / (J_AV_A + J_AV_V)  # visual weight
-	# compute the fused estimate using reliability weighted averaging
-	fused_S_av= (w_a*S_a+w_v*S_v)
-	sigma_S_AV_hat=np.sqrt(1 / (J_AV_A + J_AV_V))  # fused standard deviation
-
-	return fused_S_av, sigma_S_AV_hat
-
-# Simulate m_a, m_v and compute likelihood under C=1
-def likelihood_C1(m_a, m_v, sigma_av_a, sigma_av_v):
-    var_sum = sigma_av_a**2 + sigma_av_v**2
-    likelihood_c1 = (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-(m_a - m_v)**2 / (2 * var_sum))
-    return likelihood_c1
-
-def unbiased_S_v(S_a, conflict):
-    return S_a + conflict  # compute unbiased S_v based on S_a and conflict
-
-def likelihood_C2(m_a, m_v, S_a, conflict, sigma_av_a, sigma_av_v):
-    S_v= unbiased_S_v(S_a, conflict)  # compute unbiased S_v
-    #return 1/ (np.sqrt(2 * np.pi * (sigma_av_a**2 + sigma_av_v**2))) * np.exp(-(m_a - m_v)**2 / (2 * (sigma_av_a**2 + sigma_av_v**2)))
-    return norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
-
-def posterior_C1(likelihood_c1, likelihood_c2, p_c):
-    return (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
-
-def causalInference(sigmaAV_A, sigmaAV_V, S_a, p_c, visualConflict):
-    """
-    Perform causal inference for a single trial.
-    Args:
-        sigmaAV_A: auditory noise standard deviation
-        sigmaAV_V: visual noise standard deviation  
-        S_a: true auditory duration
-        p_c: prior probability of common cause
-        visualConflict: visual conflict (S_v - S_a)
-        
-    Returns:
-        hat_S_AV_A: final auditory estimate after causal inference
-        posterior_c1: posterior probability of common cause
-        m_a: auditory measurement
-        m_v: visual measurement
-    """
-    S_v = S_a + visualConflict
-
-    # Generate actual noisy measurements (single values, not arrays)
-    m_a = np.random.normal(S_a, sigmaAV_A)  # Single auditory measurement
-    m_v = np.random.normal(S_v, sigmaAV_V)  # Single visual measurement
-    
-    # Compute likelihoods under each causal structure
-    likelihood_c1 = likelihood_C1(m_a, m_v, sigmaAV_A, sigmaAV_V)
-    likelihood_c2 = likelihood_C2(m_a, m_v, S_a, visualConflict, sigmaAV_A, sigmaAV_V)
-
-    # Compute posterior probability of common cause
-    posterior_c1 = posterior_C1(likelihood_c1, likelihood_c2, p_c)
-    posterior_c2 = 1 - posterior_c1
-
     # Estimates under each causal structure
-    # C=1: Reliability-weighted fusion
-    fused_S_av, sigma_S_AV_hat = fusionAV(sigmaAV_A, sigmaAV_V, S_a, visualConflict)
+    estimate_common = fused_estimate  # Optimal fusion
+    estimate_separate = S_a  # Auditory only (for duration task)
     
-    # C=2: Use only auditory measurement
-    auditory_only_estimate = m_a
+    # Model averaging
+    final_estimate = p_posterior * estimate_common + (1 - p_posterior) * estimate_separate
     
-    # Model averaging: weight estimates by posterior probabilities
-    hat_S_AV_A = posterior_c1 * fused_S_av + posterior_c2 * auditory_only_estimate
-    
-    return hat_S_AV_A, posterior_c1, m_a, m_v
+    return final_estimate, p_posterior
 
-def calculate_decision_noise_causal_inference(sigma_av_a, sigma_av_v, p_common):
+def causalInferencePsychometric(delta_dur, lambda_, sigma_av_a, sigma_av_v, p_common, conflict):
     """
-    Calculate theoretically correct decision noise for causal inference model.
+    Psychometric function for causal inference model.
     
-    The decision noise accounts for:
-    1. Optimal fusion variance when modalities are integrated (C=1)
-    2. Auditory-only variance when modalities are segregated (C=2)  
-    3. The probability of integration (p_common)
-    4. The sqrt(2) factor for comparing two independent estimates
-    
-    Args:
-        sigma_av_a: auditory noise standard deviation in AV condition
-        sigma_av_v: visual noise standard deviation in AV condition
-        p_common: prior probability of common cause
+    Parameters:
+    -----------
+    delta_dur : float
+        Duration difference (test - standard)
+    lambda_ : float
+        Lapse rate
+    sigma_av_a : float
+        Auditory noise in AV condition
+    sigma_av_v : float
+        Visual noise in AV condition
+    p_common : float
+        Prior probability of common cause
+    conflict : float
+        Visual conflict level
         
     Returns:
-        sigma_decision: standard deviation of decision variable
+    --------
+    p_choose_test : float
+        Probability of choosing test interval
     """
-    # Variance under common cause (optimal fusion)
+    # Generate estimates for both intervals using causal inference
+    # Standard interval (reference)
+    S_standard = 0.0  # Assume normalized to zero
+    estimate_standard, _ = causalInference(S_standard, conflict, sigma_av_a, sigma_av_v, p_common)
+    
+    # Test interval
+    S_test = S_standard + delta_dur
+    estimate_test, _ = causalInference(S_test, conflict, sigma_av_a, sigma_av_v, p_common)
+    
+    # Decision variable
+    decision_variable = estimate_test - estimate_standard
+    
+    # Calculate decision noise using the corrected formula
     var_fusion = 1 / (1/sigma_av_a**2 + 1/sigma_av_v**2)
-    
-    # Variance under separate causes (auditory only in duration task)
     var_segregated = sigma_av_a**2
-    
-    # Expected variance of causal inference estimate
-    # This is a simplified approximation assuming p_posterior ≈ p_common
     var_estimate = p_common * var_fusion + (1 - p_common) * var_segregated
-    
-    # Decision noise for difference of two independent estimates
     sigma_decision = np.sqrt(2 * var_estimate)
     
-    return sigma_decision
-
-def causalInferencePsychometric(delta_dur, lambda_, sigma_av_a, sigma_av_v, p_c, conflict):
-    """
-    Psychometric function using causal inference model.
-    
-    Args:
-        delta_dur: duration difference (test - standard)
-        lambda_: lapse rate
-        sigma_av_a: auditory noise in AV condition
-        sigma_av_v: visual noise in AV condition
-        p_c: prior probability of common cause
-        conflict: visual conflict level
-        
-    Returns:
-        p_choose_test: probability of choosing test interval
-    """
-    # Convert delta_dur to actual durations
-    # Standard duration (baseline) - no additional bias needed since
-    # causal inference process naturally creates biases
-    S_standard = 0.5  # Baseline standard duration
-    S_test = S_standard + delta_dur  # No mu bias - let causal inference handle it
-    
-    # Generate causal inference estimates for both intervals
-    hat_S_test, _, _, _ = causalInference(sigma_av_a, sigma_av_v, S_test, p_c, conflict)
-    hat_S_standard, _, _, _ = causalInference(sigma_av_a, sigma_av_v, S_standard, p_c, conflict)
-    
-    # Decision variable based on causal inference estimates
-    decision_diff = hat_S_test - hat_S_standard
-    
-    # Convert to probability using cumulative normal
-    # Calculate theoretically correct decision noise
-    sigma_decision = calculate_decision_noise_causal_inference(sigma_av_a, sigma_av_v, p_c)
-    
-    p_choose_test = lambda_/2 + (1 - lambda_) * norm.cdf(decision_diff / sigma_decision)
+    # Apply psychometric function with lapse rate
+    p_choose_test = lambda_/2 + (1 - lambda_) * norm.cdf(decision_variable, loc=0, scale=sigma_decision)
     
     return p_choose_test
 
-def causalInferenceTrialAverage(sigmaAV_A, sigmaAV_V, S_a, p_c, visualConflict, n_trials=100):
-    """
-    Average causal inference estimate over multiple trials to reduce noise.
-    
-    Args:
-        sigmaAV_A: auditory noise standard deviation
-        sigmaAV_V: visual noise standard deviation  
-        S_a: true auditory duration
-        p_c: prior probability of common cause
-        visualConflict: visual conflict
-        n_trials: number of trials to average over
-        
-    Returns:
-        mean_estimate: averaged estimate
-        mean_posterior: averaged posterior probability
-    """
-    estimates = []
-    posteriors = []
-    
-    for _ in range(n_trials):
-        hat_S, post_c1, _, _ = causalInference(sigmaAV_A, sigmaAV_V, S_a, p_c, visualConflict)
-        estimates.append(hat_S)
-        posteriors.append(post_c1)
-    
-    return np.mean(estimates), np.mean(posteriors)
-
-# ===============================
-
-def demonstrate_causal_inference():
-    """
-    Demonstrate the corrected causal inference implementation.
-    """
-    print("="*60)
-    print("DEMONSTRATING CORRECTED CAUSAL INFERENCE")
-    print("="*60)
-    
-    # Parameters
-    sigmaAV_A = 0.2   # Auditory noise
-    sigmaAV_V = 0.3   # Visual noise  
-    S_a = 0.5         # True auditory duration
-    p_c = 0.7         # Prior probability of common cause
-    visualConflict = 0.2  # Visual conflict
-    
-    print(f"True auditory duration: {S_a}")
-    print(f"Visual conflict: {visualConflict}")
-    print(f"True visual duration: {S_a + visualConflict}")
-    print(f"Prior P(common cause): {p_c}")
-    print(f"Auditory noise: {sigmaAV_A}")
-    print(f"Visual noise: {sigmaAV_V}")
-    print()
-    
-    # Run several trials to show variability
-    print("Running 5 example trials:")
-    print("-" * 80)
-    print("Trial | m_a    | m_v    | P(C=1) | Estimate | Fusion | Aud Only")
-    print("-" * 80)
-    
-    for trial in range(5):
-        hat_S, post_c1, m_a, m_v = causalInference(sigmaAV_A, sigmaAV_V, S_a, p_c, visualConflict)
-        
-        # Compute what fusion and auditory-only would give
-        fusion_est, _ = fusionAV(sigmaAV_A, sigmaAV_V, S_a, visualConflict)
-        
-        print(f"{trial+1:5d} | {m_a:6.3f} | {m_v:6.3f} | {post_c1:6.3f} | {hat_S:8.3f} | {fusion_est:6.3f} | {m_a:8.3f}")
-    
-    print("-" * 80)
-    print()
-    
-    # Show average behavior
-    mean_est, mean_post = causalInferenceTrialAverage(sigmaAV_A, sigmaAV_V, S_a, p_c, visualConflict, n_trials=1000)
-    print(f"Average over 1000 trials:")
-    print(f"  Mean estimate: {mean_est:.3f}")
-    print(f"  Mean P(C=1): {mean_post:.3f}")
-    print(f"  True auditory: {S_a:.3f}")
-    
-    # Theoretical fusion estimate
-    fusion_theory, _ = fusionAV(sigmaAV_A, sigmaAV_V, S_a, visualConflict)
-    print(f"  Theoretical fusion: {fusion_theory:.3f}")
-    
-    print()
-    print("Key insights:")
-    print("- m_a and m_v are single noisy measurements, not arrays")
-    print("- P(C=1) varies per trial based on how similar m_a and m_v are")
-    print("- Final estimate is between fusion and auditory-only")
-    print("- When P(C=1) is high → estimate closer to fusion")
-    print("- When P(C=1) is low → estimate closer to auditory measurement")
-
-
-# ===============================
-# CAUSAL INFERENCE MODEL Fitting
-# ===============================
-
 def causal_inference_negative_log_likelihood(params, delta_dur, chose_test, total_responses, conflicts):
     """
-    Negative log-likelihood for  causal inference model.
+    Negative log-likelihood for causal inference model.
+    
     Parameters:
     -----------
-    params : array;       [lambda_, sigma_av_a, sigma_av_v, p_common_prior] (NO mu parameter)
-    delta_dur : array;       Duration differences
-    chose_test : array;     Number of times test was chosen
-    total_responses : array;        Total responses per condition
-    conflicts : array:     Visual conflict levels
+    params : array
+        [lambda_, sigma_av_a, sigma_av_v, p_common]
+    delta_dur : array
+        Duration differences
+    chose_test : array
+        Number of times test was chosen
+    total_responses : array
+        Total responses per condition
+    conflicts : array
+        Visual conflict levels
+        
     Returns:
-    nll : float   Negative log-likelihood
+    --------
+    nll : float
+        Negative log-likelihood
     """
-    lambda_, sigma_av_a, sigma_av_v, p_common_prior = params 
+    lambda_, sigma_av_a, sigma_av_v, p_common = params
     
-    # Compute probabilities for each data point
-    p_choose_test = np.zeros_like(delta_dur, dtype=float)
-    
-    for i in range(len(delta_dur)):
-        p_choose_test[i] = causalInferencePsychometric(
-            delta_dur[i], lambda_, sigma_av_a, sigma_av_v, p_common_prior, conflicts[i]
-        )
+    # Compute probabilities
+    p = np.array([causalInferencePsychometric(dd, lambda_, sigma_av_a, sigma_av_v, p_common, conf) 
+                  for dd, conf in zip(delta_dur, conflicts)])
     
     # Clip probabilities to avoid log(0)
     epsilon = 1e-9
-    p_choose_test = np.clip(p_choose_test, epsilon, 1 - epsilon)
+    p = np.clip(p, epsilon, 1 - epsilon)
     
     # Compute negative log-likelihood
-    log_likelihood = np.sum(
-        chose_test * np.log(p_choose_test) + 
-        (total_responses - chose_test) * np.log(1 - p_choose_test)
-    )
+    nll = -np.sum(chose_test * np.log(p) + (total_responses - chose_test) * np.log(1 - p))
     
-    return -log_likelihood
+    return nll
 
-def fit_causal_inference(grouped_data, init_guesses=None):
+def fit_causal_inference(delta_dur, chose_test, total_responses, conflicts, 
+                        init_params=[0.05, 0.2, 0.3, 0.7]):
     """
-    Fit the causal inference model to grouped data.
+    Fit causal inference model to data.
     
     Parameters:
     -----------
-    grouped_data : DataFrame
-        Grouped experimental data
-    init_guesses : list, optional
-        Initial parameter guesses [lambda_, sigma_av_a, sigma_av_v, p_common_prior]
+    delta_dur : array
+        Duration differences
+    chose_test : array
+        Number of times test was chosen
+    total_responses : array
+        Total responses per condition
+    conflicts : array
+        Visual conflict levels
+    init_params : list
+        Initial parameter guesses [lambda_, sigma_av_a, sigma_av_v, p_common]
         
     Returns:
     --------
     result : OptimizeResult
-        Fitted parameters and optimization result
+        Fitting result
     """
-    if init_guesses is None:
-        init_guesses = [0.05, 0.2, 0.2, 0.5]  # Default: [lambda_, sigma_av_a, sigma_av_v, p_common]
-    
-    # Extract data
-    delta_dur = grouped_data[intensityVariable].values
-    chose_test = grouped_data['num_of_chose_test'].values
-    total_responses = grouped_data['total_responses'].values
-    conflicts = grouped_data[conflictVar].values
-    
-    # Set bounds: [lambda_, sigma_av_a, sigma_av_v, p_common_prior]
     bounds = [
         (0, 0.25),    # lambda_: lapse rate
-        (0.01, 2),    # sigma_av_a: auditory noise in AV condition
-        (0.01, 2),    # sigma_av_v: visual noise in AV condition
-        (0, 1)        # p_common_prior: prior probability of common cause
+        (0.01, 2),    # sigma_av_a: auditory noise in AV
+        (0.01, 2),    # sigma_av_v: visual noise in AV
+        (0, 1)        # p_common: prior probability of common cause
     ]
     
-    # Fit the model
     result = minimize(
         causal_inference_negative_log_likelihood,
-        x0=init_guesses,
+        x0=init_params,
         args=(delta_dur, chose_test, total_responses, conflicts),
         bounds=bounds,
         method='L-BFGS-B'
@@ -1092,211 +880,398 @@ def fit_causal_inference(grouped_data, init_guesses=None):
     
     return result
 
-def plot_causal_inference(data, fitted_params, title_suffix=""):
+# ===============================
+# ORIGINAL PSYCHOMETRIC FUNCTIONS (CONTINUED)
+# ===============================
+
+def plot_fitted_psychometric(data, fitted_params, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
+                            standardVar, sensoryVar, conflictVar, intensityVariable, title="Fitted Psychometric Functions"):
     """
-    Plot fitted  causal inference psychometric functions.
+    Plot fitted psychometric functions for the given data and model parameters.
+    
+    Parameters:
+    -----------
+    data : DataFrame
+        The input data containing trial information
+    fitted_params : array
+        The fitted parameters from the psychometric function
+    nLambda : int
+        Number of lambda parameters (for subsetting fitted_params)
+    nSigma : int
+        Number of sigma parameters (for subsetting fitted_params)
+    uniqueSensory : array
+        Unique values of the sensory variable (e.g., auditory noise levels)
+    uniqueStandard : array
+        Unique values of the standard duration
+    uniqueConflict : array
+        Unique values of the conflict duration
+    standardVar : str
+        The name of the standard duration variable in the data
+    sensoryVar : str
+        The name of the sensory variable in the data
+    conflictVar : str
+        The name of the conflict variable in the data
+    intensityVariable : str
+        The name of the intensity variable (e.g., "delta_dur_percents")
+    title : str
+        The title of the plot
+    
+    Returns:
+    --------
+    None
+    """
+    # Create a grid of subplots
+    n_rows = len(uniqueSensory)
+    n_cols = len(uniqueConflict)
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(5*n_cols, 4*n_rows), sharex=True, sharey=True)
+    plt.subplots_adjust(hspace=0.4, wspace=0.4)
+    fig.suptitle(title, fontsize=16)
+    
+    # Flatten the axes array for easy iteration
+    axes = axes.flatten()
+    
+    for i, noise in enumerate(uniqueSensory):
+        for j, conflict in enumerate(uniqueConflict):
+            ax = axes[i * n_cols + j]
+            
+            # Subset data for this noise and conflict level
+            subset = data[(data[sensoryVar] == noise) & (data[conflictVar] == conflict)]
+            
+            if len(subset) == 0:
+                continue  # No data for this condition
+            
+            # Compute the x values (intensity levels) for the psychometric function
+            x_values = np.linspace(-0.1, 0.1, 100)  # Adjusted range for better visualization
+            
+            # Compute the fitted y values using the psychometric function
+            if allIndependent:
+                # For independent parameters, subset the fitted_params accordingly
+                param_idx = i * len(uniqueConflict) + j
+                lambda_fit = fitted_params[param_idx * 3]
+                mu_fit = fitted_params[param_idx * 3 + 1]
+                sigma_fit = fitted_params[param_idx * 3 + 2]
+            else:
+                # For shared parameters, use the appropriate shared values
+                lambda_fit = fitted_params[0]
+                mu_fit = fitted_params[nLambda + i]
+                sigma_fit = fitted_params[nLambda + nSigma + i]
+            
+            y_values = psychometric_function(x_values, lambda_fit, mu_fit, sigma_fit)
+            
+            # Plot the data and the fitted psychometric function
+            ax.plot(x_values, y_values, label='Fitted Psychometric Function', color='red')
+            ax.scatter(subset[intensityVariable], subset['p_choose_test'], s=10, color='blue', label='Data')
+            
+            # Set axis labels and title
+            ax.set_xlabel('Intensity (Delta Dur %)')
+            ax.set_ylabel('P(Choose Test)')
+            ax.set_title(f'Noise: {noise}, Conflict: {conflict}')
+            ax.legend()
+    
+    # Hide any empty subplots
+    for k in range(len(uniqueSensory) * len(uniqueConflict), len(axes)):
+        fig.delaxes(axes[k])
+    
+    plt.show()
+
+def fitCausalInferenceMultipleStartingPoints(data, nStart=5):
+    """
+    Fit causal inference model with multiple starting points for robustness.
+    Similar to fitMultipleStartingPoints but for causal inference model.
+    
+    Parameters:
+    -----------
+    data : DataFrame
+        Experimental data
+    nStart : int
+        Number of starting points to try
+        
+    Returns:
+    --------
+    best_result : OptimizeResult
+        Best fitting result across all starting points
+    """
+    # Group data
+    grouped_data = groupByChooseTest(data)
+    
+    # Generate multiple starting points
+    best_result = None
+    best_nll = np.inf
+    
+    for i in range(nStart):
+        # Random initial guesses within reasonable bounds
+        lambda_init = np.random.uniform(0.01, 0.1)
+        sigma_av_a_init = np.random.uniform(0.1, 0.8)
+        sigma_av_v_init = np.random.uniform(0.1, 0.8)
+        p_common_init = np.random.uniform(0.3, 0.9)
+        
+        initGuesses = [lambda_init, sigma_av_a_init, sigma_av_v_init, p_common_init]
+        
+        try:
+            result = fitCausalInferenceJoint(grouped_data, initGuesses)
+            
+            if result.success and result.fun < best_nll:
+                best_nll = result.fun
+                best_result = result
+                
+        except Exception as e:
+            print(f"Starting point {i+1} failed: {e}")
+            continue
+    
+    if best_result is None:
+        raise RuntimeError("All starting points failed to converge")
+        
+    print(f"Best fit found with NLL: {best_nll:.3f}")
+    return best_result
+
+def plot_fitted_causal_inference_joint(data, fitted_params, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
+                                  standardVar, sensoryVar, conflictVar, intensityVariable, title="Causal Inference Model Fit"):
+    """
+    Plot fitted causal inference psychometric functions across all conditions.
     
     Parameters:
     -----------
     data : DataFrame
         Experimental data
     fitted_params : array
-        Fitted parameters [lambda_, sigma_av_a, sigma_av_v, p_common_prior]
-    title_suffix : str
-        Additional text for plot title
+        Fitted causal inference parameters
+    nLambda : int
+        Number of lambda parameters
+    nSigma : int
+        Number of sigma parameters
+    uniqueSensory : array
+        Unique values of the sensory variable (e.g., auditory noise levels)
+    uniqueStandard : array
+        Unique values of the standard duration
+    uniqueConflict : array
+        Unique values of the conflict duration
+    standardVar : str
+        The name of the standard duration variable in the data
+    sensoryVar : str
+        The name of the sensory variable in the data
+    conflictVar : str
+        The name of the conflict variable in the data
+    intensityVariable : str
+        The name of the intensity variable (e.g., "delta_dur_percents")
+    title : str
+        Plot title
     """
-    lambda_, sigma_av_a, sigma_av_v, p_common_prior = fitted_params
+    grouped_data = groupByChooseTest(data)
     
-    plt.figure(figsize=(12, 6))
+    # Get unique conditions
+    unique_noise = sorted(data[sensoryVar].unique())
+    unique_conflict = sorted(data[conflictVar].unique())
     
-    # Get unique conflict levels
-    unique_conflicts = sorted(data[conflictVar].unique())
-    colors = sns.color_palette("viridis", n_colors=len(unique_conflicts))
+    n_noise = len(unique_noise)
+    n_conflict = len(unique_conflict)
     
-    for i, conflict_level in enumerate(unique_conflicts):
-        # Filter data for this conflict level
-        df_conflict = data[data[conflictVar] == conflict_level]
-        grouped_conflict = groupByChooseTest(df_conflict)
-        
-        if len(grouped_conflict) == 0:
-            continue
+    fig, axes = plt.subplots(n_noise, n_conflict, figsize=(5*n_conflict, 4*n_noise))
+    if n_noise == 1 and n_conflict == 1:
+        axes = np.array([[axes]])
+    elif n_noise == 1:
+        axes = axes[np.newaxis, :]
+    elif n_conflict == 1:
+        axes = axes[:, np.newaxis]
+    
+    for i, noise in enumerate(unique_noise):
+        for j, conflict in enumerate(unique_conflict):
+            ax = axes[i, j]
             
-        # Plot data points
-        bin_and_plot(grouped_conflict, bin_method='cut', bins=10, plot=True, color=colors[i])
-        
-        # Plot fitted curve
-        x = np.linspace(-0.9, 0.9, 100)
-        y = np.zeros_like(x)
-        
-        for j, delta in enumerate(x):
-            y[j] = causalInferencePsychometric(
-                delta, lambda_, sigma_av_a, sigma_av_v, p_common_prior, conflict_level
+            # Filter data for this condition
+            condition_data = grouped_data[
+                (grouped_data[sensoryVar] == noise) & 
+                (grouped_data[conflictVar] == conflict)
+            ]
+            
+            if len(condition_data) == 0:
+                ax.text(0.5, 0.5, 'No data', ha='center', va='center', transform=ax.transAxes)
+                continue
+            
+            # Get fitted parameters for this condition
+            lambda_ci, sigma_av_a, sigma_av_v, p_common = getCausalInferenceParams(
+                fitted_params, conflict, noise, nLambda, nSigma
             )
-        
-        plt.plot(x, y, color=colors[i], linewidth=3, 
-                label=f'Conflict: {conflict_level:.3f}')
+            
+            # Plot data
+            x_data = condition_data[intensityVariable]
+            y_data = condition_data['p_choose_test']
+            sizes = condition_data['total_responses'] * 5  # Scale point sizes by trials
+            
+            ax.scatter(x_data, y_data, s=sizes, alpha=0.6, color='blue', label='Data')
+            
+            # Plot fitted curve
+            x_range = np.linspace(x_data.min() - 0.1, x_data.max() + 0.1, 100)
+            y_pred = [causalInferencePsychometric(x, lambda_ci, sigma_av_a, sigma_av_v, p_common, conflict) 
+                     for x in x_range]
+            
+            ax.plot(x_range, y_pred, 'r-', linewidth=2, label='Causal Inference Model')
+            
+            # Formatting
+            ax.set_xlabel('Duration Difference (%)')
+            ax.set_ylabel('P(Choose Test)')
+            ax.set_title(f'Noise={noise:.2f}, Conflict={conflict:.3f}\n' +
+                        f'λ={lambda_ci:.3f}, σₐ={sigma_av_a:.3f}, σᵥ={sigma_av_v:.3f}, p={p_common:.3f}')
+            ax.grid(True, alpha=0.3)
+            ax.legend()
+            ax.set_ylim(0, 1)
     
-    plt.axvline(x=0, color='gray', linestyle='--', alpha=0.7)
-    plt.axhline(y=0.5, color='gray', linestyle='--', alpha=0.7)
-    plt.xlabel('Duration Difference (%)')
-    plt.ylabel('P(choose test)')
-    plt.title(f'4-Parameter Causal Inference Model {title_suffix}')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    
-    # Add parameter text
-    param_text = (f'λ={lambda_:.3f}\n'
-                 f'σ_av_a={sigma_av_a:.3f}\n' 
-                 f'σ_av_v={sigma_av_v:.3f}\n'
-                 f'P(common)={p_common_prior:.3f}')
-    plt.text(0.02, 0.98, param_text, transform=plt.gca().transAxes, 
-             verticalalignment='top', fontsize=12,
-             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
-    
+    plt.suptitle(title, fontsize=16)
     plt.tight_layout()
     plt.show()
 
-def compare_causalInference_vs_standard(data, n_starts=3):
+def example_usage():
     """
-    Compare  causal inference model with standard psychometric model.
+    Example usage of the fitting functions with simulated data.
     
-    Parameters:
-    -----------
-    data : DataFrame
-        Experimental data
-    n_starts : int
-        Number of random starting points for optimization
-        
     Returns:
     --------
-    results : dict
-        Dictionary containing fitted models and comparison metrics
+    None
     """
-    print("Fitting standard psychometric model...")
-    standard_fit = fitMultipleStartingPoints(data, nStart=n_starts)
+    # Simulate some data
+    np.random.seed(0)
+    n_trials = 1000
+    true_lambda = 0.1
+    true_mu = 0.02
+    true_sigma = 0.05
     
-    print("\nFitting causal inference model...")
+    # Simulate sensory variable (e.g., auditory noise levels)
+    sensory_var = np.random.choice([0.01, 0.02, 0.03], size=n_trials)
+    
+    # Simulate conflict variable (e.g., visual conflict levels)
+    conflict_var = np.random.choice([0.005, 0.01, 0.015], size=n_trials)
+    
+    # Simulate intensity variable (e.g., duration differences)
+    delta_dur = sensory_var + conflict_var + np.random.normal(0, 0.01, size=n_trials)
+    
+    # Simulate responses (0 or 1) based on a psychometric function with added noise
+    p_choose_test = psychometric_function(delta_dur, true_lambda, true_mu, true_sigma)
+    responses = np.random.binomial(1, p_choose_test)
+    
+    # Create a DataFrame from the simulated data
+    data = pd.DataFrame({
+        'delta_dur_percents': delta_dur,
+        'audNoise': sensory_var,
+        'conflictDur': conflict_var,
+        'responses': responses
+    })
+    
+    # Fit the model to the simulated data
     grouped_data = groupByChooseTest(data)
+    levels = grouped_data['delta_dur_percents'].values
+    chooseTest = grouped_data['num_of_chose_test'].values
+    totalResp = grouped_data['total_responses'].values
+    conflictLevels = grouped_data['conflictDur'].values
+    audioNoiseLevels = grouped_data['audNoise'].values
     
-    # Try multiple starting points for causal inference model
-    best_ci_fit = None
-    best_ci_nll = float('inf')
+    # Standard fitting
+    print("Fitting standard psychometric function...")
+    standard_init_guesses = [0.05, 0.01, 0.02]  # Initial guesses for lambda, mu, sigma
+    standard_fit = fit_psychometric_function(levels, chooseTest, totalResp, standard_init_guesses)
+    print("Standard psychometric function fitted.")
     
-    for i in range(n_starts):
-        # Random initial guesses for
-        init_guesses = [
-            np.random.uniform(0.01, 0.1),    # lambda_
-            np.random.uniform(0.1, 0.5),     # sigma_av_a
-            np.random.uniform(0.1, 0.5),     # sigma_av_v
-            np.random.uniform(0.2, 0.8)      # p_common_prior
-        ]
-        
-        try:
-            ci_fit = fit_causal_inference(grouped_data, init_guesses)
+    # Joint causal inference fitting
+    print("Fitting joint causal inference model...")
+    causal_init_guesses = [0.05, 0.2, 0.3, 0.7]  # Initial guesses for lambda_, sigma_av_a, sigma_av_v, p_common
+    causal_fit = fitCausalInferenceMultipleStartingPoints(data, nStart=1)
+    print("Joint causal inference model fitted.")
+    
+    # Compare models
+    print("Comparing models...")
+    grouped_data = groupByChooseTest(data)
+    levels = grouped_data['delta_dur_percents'].values
+    responses = grouped_data['num_of_chose_test'].values
+    totalResp = grouped_data['total_responses'].values
+    conflictLevels = grouped_data['conflictDur'].values
+    noiseLevels = grouped_data['audNoise'].values
+    
+    # Standard model NLL
+    standard_nll = nLLJoint(standard_fit.x, levels, responses, totalResp, conflictLevels, noiseLevels)
+    
+    # Causal inference model NLL
+    causal_nll = causalInferenceNLLJoint(causal_fit.x, levels, responses, totalResp, conflictLevels, noiseLevels)
+    
+    print(f"Standard psychometric model NLL: {standard_nll:.2f}")
+    print(f"Causal inference model NLL: {causal_nll:.2f}")
+    print(f"Improvement: {standard_nll - causal_nll:.2f} (positive = causal model is better)")
+    
+    # Compute AIC
+    n_params_standard = len(standard_fit.x)
+    n_params_causal = len(causal_fit.x)
+    
+    aic_standard = 2 * n_params_standard + 2 * standard_nll
+    aic_causal = 2 * n_params_causal + 2 * causal_nll
+    
+    print(f"\nAIC Comparison:")
+    print(f"Standard model: {aic_standard:.2f} (params: {n_params_standard})")
+    print(f"Causal inference model: {aic_causal:.2f} (params: {n_params_causal})")
+    print(f"ΔAIC: {aic_causal - aic_standard:.2f} (negative favors causal model)")
+    
+    # Plot both models for comparison
+    print(f"\n{'-'*40}")
+    print("PLOTTING RESULTS")
+    print(f"{'-'*40}")
+    
+    # Plot standard model
+    plt.figure(figsize=(20, 12))
+    plt.suptitle("Model Comparison: Standard vs Causal Inference", fontsize=16)
+    
+    # Standard model subplot
+    plt.subplot(2, 1, 1)
+    plot_fitted_psychometric(
+        data, standard_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
+        standardVar, sensoryVar, conflictVar, intensityVariable
+    )
+    plt.title("Standard Psychometric Model", fontsize=14)
+    
+    # Causal inference model subplot  
+    plt.subplot(2, 1, 2)
+    plot_fitted_causal_inference_joint(
+        data, causal_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
+        standardVar, sensoryVar, conflictVar, intensityVariable
+    )
+    plt.title("Joint Causal Inference Model", fontsize=14)
+    
+    plt.tight_layout()
+    plt.show()
+    
+    # Show parameter details for a few conditions
+    print(f"\n{'-'*40}")
+    print("PARAMETER DETAILS (Sample Conditions)")
+    print(f"{'-'*40}")
+    
+    for i, noise in enumerate(uniqueSensory[:2]):  # Show first 2 noise levels
+        for j, conflict in enumerate(uniqueConflict[:3]):  # Show first 3 conflict levels
+            # Standard model parameters
+            lambda_std, mu_std, sigma_std = getParams(standard_fit.x, conflict, noise, nLambda, nSigma)
             
-            # Compute negative log-likelihood for comparison
-            delta_dur = grouped_data[intensityVariable].values
-            chose_test = grouped_data['num_of_chose_test'].values
-            total_responses = grouped_data['total_responses'].values
-            conflicts = grouped_data[conflictVar].values
-            
-            ci_nll = causal_inference_negative_log_likelihood(
-                ci_fit.x, delta_dur, chose_test, total_responses, conflicts
+            # Causal inference parameters  
+            lambda_ci, sigma_av_a, sigma_av_v, p_common = getCausalInferenceParams(
+                causal_fit.x, conflict, noise, nLambda, nSigma
             )
             
-            if ci_nll < best_ci_nll:
-                best_ci_nll = ci_nll
-                best_ci_fit = ci_fit
-                
-        except Exception as e:
-            print(f"Fit {i+1} failed: {e}")
-            continue
+            print(f"\nNoise: {noise}, Conflict: {conflict}")
+            print(f"  Standard: λ={lambda_std:.3f}, μ={mu_std:.3f}, σ={sigma_std:.3f}")
+            print(f"  Causal:   λ={lambda_ci:.3f}, σ_a={sigma_av_a:.3f}, σ_v={sigma_av_v:.3f}, P(c)={p_common:.3f}")
     
-    if best_ci_fit is None:
-        print("Warning: causal inference model fitting failed!")
-        return {"standard_fit": standard_fit, "causal_inference_fit": None}
-    
-    # Compute standard model NLL for comparison
-    delta_dur = grouped_data[intensityVariable].values
-    chose_test = grouped_data['num_of_chose_test'].values
-    total_responses = grouped_data['total_responses'].values
-    conflicts = grouped_data[conflictVar].values
-    noise_levels = grouped_data[sensoryVar].values
-    
-    standard_nll = nLLJoint(
-        standard_fit.x, delta_dur, chose_test, total_responses, conflicts, noise_levels
-    )
-    
-    # Compute AIC and BIC for model comparison
-    n_data = len(delta_dur)
-    
-    # Standard model parameters (count them)
-    if allIndependent:
-        n_params_standard = len(standard_fit.x)
-    else:
-        n_params_standard = len(standard_fit.x)
-    
-    # Causal inference model has exactly 
-    n_params_ci = 4
-    
-    # AIC = 2k - 2ln(L) = 2k + 2NLL
-    aic_standard = 2 * n_params_standard + 2 * standard_nll
-    aic_ci = 2 * n_params_ci + 2 * best_ci_nll
-    
-    # BIC = k*ln(n) - 2ln(L) = k*ln(n) + 2NLL
-    bic_standard = n_params_standard * np.log(n_data) + 2 * standard_nll
-    bic_ci = n_params_ci * np.log(n_data) + 2 * best_ci_nll
-    
-    # Prepare results
-    results = {
-        "standard_fit": standard_fit,
-        "causal_inference_fit": best_ci_fit,
-        "standard_nll": standard_nll,
-        "causal_inference_nll": best_ci_nll,
-        "standard_aic": aic_standard,
-        "causal_inference_aic": aic_ci,
-        "standard_bic": bic_standard,
-        "causal_inference_bic": bic_ci,
-        "n_params_standard": n_params_standard,
-        "n_params_ci": n_params_ci,
-        "delta_aic": aic_ci - aic_standard,
-        "delta_bic": bic_ci - bic_standard
+    return {
+        'standard_fit': standard_fit,
+        'causal_fit': causal_fit,
+        'standard_nll': standard_nll,
+        'causal_nll': causal_nll,
+        'data': data
     }
-    
-    # Print comparison
-    print("\n" + "="*60)
-    print("4-PARAMETER MODEL COMPARISON RESULTS")
-    print("="*60)
-    print(f"Standard Model:")
-    print(f"  Parameters: {n_params_standard}")
-    print(f"  NLL: {standard_nll:.2f}")
-    print(f"  AIC: {aic_standard:.2f}")
-    print(f"  BIC: {bic_standard:.2f}")
-    print(f"\n4-Parameter Causal Inference Model:")
-    print(f"  Parameters: {n_params_ci}")
-    print(f"  λ (lapse): {best_ci_fit.x[0]:.3f}")
-    print(f"  σ_av_a (aud noise AV): {best_ci_fit.x[1]:.3f}")
-    print(f"  σ_av_v (vis noise AV): {best_ci_fit.x[2]:.3f}")
-    print(f"  P(common): {best_ci_fit.x[3]:.3f}")
-    print(f"  NLL: {best_ci_nll:.2f}")
-    print(f"  AIC: {aic_ci:.2f}")
-    print(f"  BIC: {bic_ci:.2f}")
-    print(f"\nModel Comparison:")
-    print(f"  ΔAIC: {aic_ci - aic_standard:.2f} (negative favors CI model)")
-    print(f"  ΔBIC: {bic_ci - bic_standard:.2f} (negative favors CI model)")
-    
-    if aic_ci < aic_standard:
-        print(f"  → 4-Parameter Causal Inference model preferred by AIC")
-    else:
-        print(f"  → Standard model preferred by AIC")
-        
-    if bic_ci < bic_standard:
-        print(f"  → 4-Parameter Causal Inference model preferred by BIC")
-    else:
-        print(f"  → Standard model preferred by BIC")
-    
-    print("="*60)
-    
-    return results
 
-# ===============================
+# Add this to the main execution section
+if __name__ == "__main__":
+    # ...existing code...
+    
+    # Add example for joint causal inference fitting
+    print("\n" + "="*80)
+    print("RUNNING JOINT CAUSAL INFERENCE EXAMPLE")
+    print("="*80)
+    
+    # Uncomment the line below to run the joint causal inference example
+    #results = example_joint_causal_inference_fitting(dataName)
+    
+    print("To run joint causal inference fitting, uncomment the line above and modify as needed.")

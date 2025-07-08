@@ -129,6 +129,9 @@ def loadData(dataName, isShared, isAllIndependent):
     data["logTestDur"] = np.log(data["testDurS"])
     data["logDeltaDur"] = data["logTestDur"] - data["logStandardDur"]
 
+
+    data = data.reset_index(drop=True)
+
     return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
 
 intensityVariable="delta_dur_percents"
