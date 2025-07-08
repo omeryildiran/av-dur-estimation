@@ -12,7 +12,7 @@ def loadData(dataName, isShared, isAllIndependent):
 	global data, sharedSigma, intensityVariable, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu, allIndependent
 	sharedSigma = isShared  # Set to True if you want to use shared sigma across noise levels
 	allIndependent = isAllIndependent  # Set to 1 if you want to use independent parameters for each condition
-	intensityVariable="delta_dur_percents"
+	intensityVariable="deltaDurS"
 
 	sensoryVar="audNoise"
 	standardVar="standardDur"
@@ -131,7 +131,7 @@ def loadData(dataName, isShared, isAllIndependent):
 
 	return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
 
-intensityVariable="delta_dur_percents"
+intensityVariable="deltaDurS"
 
 sensoryVar="audNoise"
 standardVar="standardDur"
@@ -1114,7 +1114,7 @@ def fitCausalInferenceWrapper(data, initGuesses=None, nStart=1, use_vectorized=T
 # Example usage:
 if __name__ == "__main__":
 	# Load data
-	loadDataVars = loadData("ml_all.csv", 1, 1)
+	loadDataVars = loadData("dt_all.csv", 1, 1)
 	data = loadDataVars[0]
 	# Initial guesses for [lambda, sigma_av_a_1, sigma_av_v_1, p_c_1, sigma_av_a_2, sigma_av_v_2, p_c_2]
 	initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.3]
@@ -1127,7 +1127,7 @@ if __name__ == "__main__":
 	fitted_params_single, nll_single = fitCausalInferenceWrapper(data, initGuesses)
 	
 	# Use the best fit for plotting
-	fitted_params = fitted_params_multi if nll_multi < nll_single else fitted_params_single
+	fittedParams = fitted_params_multi if nll_multi < nll_single else fitted_params_single
 	
 	# Plot results (existing plotting code continues from here...)
 	plt.figure(figsize=(16, 6))
@@ -1136,7 +1136,7 @@ if __name__ == "__main__":
 
 			for k, conflictLevel in enumerate(uniqueConflict):
 				plt.subplot(1, 2, j+1)
-				lambda_, sigma_av_a, sigma_av_v, p_c = getParamsCausal(fitted_params, conflictLevel, audioNoiseLevel)
+				lambda_, sigma_av_a, sigma_av_v, p_c = getParamsCausal(fittedParams, conflictLevel, audioNoiseLevel)
 				x = np.linspace(-0.9, 0.9, 500)
 				y = probTestLonger_vectorized(x, conflictLevel, lambda_, sigma_av_a, sigma_av_v, p_c)
 				color = sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))
@@ -1158,41 +1158,51 @@ if __name__ == "__main__":
 	plt.show()
 
 
-delta_dur_values = data["deltaDurS"].values
-conflict_values = data["conflictDur"].values
-snr_values = data["audNoise"].values
-best_params = fitted_params  # Use the best fitted parameters from the previous fitting
-
-posterior_values = []
-for delta, conflict, snr in zip(delta_dur_values, conflict_values, snr_values):
-    λ, σa, σv, pc = getParamsCausal(best_params, conflict, snr)
-    S_std = 0.5
-    S_test = S_std + delta
-    S_v = S_std + conflict
-
-    m_a = S_std
-    m_v = S_v
-
-    L1 = likelihood_C1(m_a, m_v, σa, σv)
-    L2 = likelihood_C2(m_a, m_v, S_std, S_v, σa, σv)
-    posterior = posterior_C1(L1, L2, pc)
-    posterior_values.append(posterior)
 
 
+def plot_posterior_vs_conflict(data,fittedParams,snr_list=[1.2, 0.1]):
+
+	delta_dur_values = data["deltaDurS"].values
+	conflict_values = data["conflictDur"].values
+	snr_values = data["audNoise"].values
+	best_params = fittedParams  # Use the best fitted parameters from the previous fitting
+
+	posterior_values = []
+	for delta, conflict, snr in zip(delta_dur_values, conflict_values, snr_values):
+		λ, σa, σv, pc = getParamsCausal(best_params, conflict, snr)
+		S_std = 0.5
+		S_test = S_std + delta
+		S_v = S_std + conflict
+
+		m_a = S_std
+		m_v = S_v
+
+		L1 = likelihood_C1(m_a, m_v, σa, σv)
+		L2 = likelihood_C2(m_a, m_v, S_std, S_v, σa, σv)
+		posterior = posterior_C1(L1, L2, pc)
+		posterior_values.append(posterior)
 
 
-# Plot posterior probability vs conflict for noisy SNR (e.g., SNR == 0.1)
-noisy_snr_value = 1.2  # Adjust if your noisy SNR value is different
-mask_noisy = np.isclose(snr_values, noisy_snr_value)
-conflicts_noisy = conflict_values[mask_noisy]
-posteriors_noisy = np.array(posterior_values)[mask_noisy]
+	"""
+	Plot posterior probability vs conflict for given SNR values.
+	snr_list: list of SNR values to plot (default: [1.2, 0.1])
+	"""
+	plt.figure(figsize=(8, 5))
+	for idx, noisy_snr_value in enumerate(snr_list):
+		mask_noisy = np.isclose(snr_values, noisy_snr_value)
+		conflicts_noisy = conflict_values[mask_noisy]
+		posteriors_noisy = np.array(posterior_values)[mask_noisy]
+		plt.subplot(1, 2, idx + 1)
+		plt.scatter(conflicts_noisy * 1000, posteriors_noisy, alpha=0.6, label=f'Posterior P(C=1) (SNR={noisy_snr_value})')
+		plt.xlabel('Conflict (ms)')
+		plt.ylabel('Posterior Probability of Common Cause')
+		plt.title(f'Posterior P(C=1) vs Conflict (SNR={noisy_snr_value})')
+		plt.axhline(y=getParamsCausal(fittedParams, conflicts_noisy, noisy_snr_value)[3], color='gray', linestyle='--', label=f'P(C=1)={getParamsCausal(fittedParams, conflicts_noisy, noisy_snr_value)[3]:.2f}')
+		plt.legend()
+		plt.ylim(0, 1)
+		plt.grid()
+	plt.tight_layout()
+	plt.show()
 
-plt.figure(figsize=(8, 5))
-plt.scatter(conflicts_noisy * 1000, posteriors_noisy, alpha=0.6, label='Posterior P(C=1) (Noisy SNR)')
-plt.xlabel('Conflict (ms)')
-plt.ylabel('Posterior Probability of Common Cause')
-plt.title('Posterior P(C=1) vs Conflict (Noisy SNR)')
-plt.axhline(y=0.5, color='gray', linestyle='--', label='P(C=1) = 0.5')
-plt.legend()
-plt.grid()
-plt.show()
+# Plot posterior vs conflict for SNR values 1.2 and 0.1
+plot_posterior_vs_conflict(data,fittedParams,snr_list=[1.2, 0.1])

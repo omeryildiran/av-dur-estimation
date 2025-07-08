@@ -1216,14 +1216,14 @@ def debug_data_issues(data):
 # Example usage:
 if __name__ == "__main__":
 	# Load data
-	loadDataVars = loadData("all_all.csv", 1, 1)
+	loadDataVars = loadData("HH_all.csv", 1, 1)
 	data = loadDataVars[0]
 	
 	# Debug data issues
 	debug_data_issues(data)
 	
 	# Initial guesses for [lambda, sigma_av_a_high, sigma_av_v_high, p_c_high, sigma_av_a_low, sigma_av_v_low, p_c_low]
-	initGuesses = [0.03, 0.1, 0.1, 0.3, 0.1, 0.1, 0.3]  # Positive offset ensures P(C=1) increases for low SNR
+	initGuesses = [0.02, 0.1, 0.1, 0.3, 0.1, 0.1, 0.3]  # Positive offset ensures P(C=1) increases for low SNR
 	
 	# Test with a single starting point first to debug
 	print("=== Testing Single Starting Point ===")
@@ -1316,14 +1316,15 @@ conflicts_noisy = conflict_values[mask_noisy]
 posteriors_noisy = np.array(posterior_values)[mask_noisy]
 
 plt.figure(figsize=(8, 5))
+plt.subplot(1,2,1)
 plt.scatter(conflicts_noisy * 1000, posteriors_noisy, alpha=0.6, label='Posterior P(C=1) (Noisy SNR)')
 plt.xlabel('Conflict (ms)')
 plt.ylabel('Posterior Probability of Common Cause')
 plt.title('Posterior P(C=1) vs Conflict (SNR=1/1.2)')
 plt.axhline(y=0.5, color='gray', linestyle='--', label='P(C=1) = 0.5')
 plt.legend()
+plt.ylim(0, 1)
 plt.grid()
-plt.show()
 
 
 # also plot for the 0.1
@@ -1331,12 +1332,14 @@ noisy_snr_value = 0.1  # Adjust if your noisy SNR value is different
 mask_noisy = np.isclose(snr_values, noisy_snr_value)
 conflicts_noisy = conflict_values[mask_noisy]
 posteriors_noisy = np.array(posterior_values)[mask_noisy]
-
-plt.figure(figsize=(8, 5))
+plt.subplot(1,2,2)
 plt.scatter(conflicts_noisy * 1000, posteriors_noisy, alpha=0.6, label='Posterior P(C=1) (Noisy SNR)')
 plt.xlabel('Conflict (ms)')
 plt.ylabel('Posterior Probability of Common Cause')
 plt.title('Posterior P(C=1) vs Conflict (SNR=1/0.1)')
 plt.axhline(y=0.5, color='gray', linestyle='--', label='P(C=1) = 0.5')
 plt.legend()
+plt.tight_layout()
+plt.grid()
+plt.ylim(0, 1)
 plt.show()
