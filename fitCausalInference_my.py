@@ -37,6 +37,16 @@ def loadData(dataName, isShared, isAllIndependent):
 	data = data[~data['audNoise'].isna()]
 	if "VisualPSE" not in data.columns:
 		data["VisualPSE"]=data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+	data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+	data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
+
+
+	data["unbiasedVisualStandardDur"]= data["recordedDurVisualStandard"] - data["visualPSEBias"]
+	data["unbiasedVisualTestDur"]= data["recordedDurVisualTest"] - data["visualPSEBiasTest"]
+
+	data["unbiasedVisualStandardDurMs"]= data["unbiasedVisualStandardDur"]*1000
+	data["unbiasedVisualTestDurMs"]= data["unbiasedVisualTestDur"]*1000
+
 
 	print(f"\n Total trials before cleaning\n: {len(data)}")
 	data= data[data['audNoise'] != 0]
@@ -55,8 +65,6 @@ def loadData(dataName, isShared, isAllIndependent):
 	# Define columns for chosing test or standard
 	data['chose_test'] = (data['responses'] == data['order']).astype(int)
 	data['chose_standard'] = (data['responses'] != data['order']).astype(int)
-	data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
-	data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
 
 	try: 
 		data['biasCheckTest'] = np.isclose(data['visualPSEBiasTest'], data['VisualPSE'], atol=0.012)
@@ -966,9 +974,12 @@ def nLL_causal_inference_fully_vectorized(params, rawData):
 	S_a_t = S_a_s + delta_dur_values
 	
 	# Standard estimates (vectorized)
-	S_v_s = S_a_s + conflict_values
-	m_a_s = S_a_s
-	m_v_s = S_v_s
+	S_v_s = rawData["unbiasedVisualStandardDur"].values  # Assuming this is the unbiased visual standard
+
+	
+	m_a_s = S_a_s # Measurements for standard
+	m_v_s = S_v_s # Measurements for standard
+
 	# Common cause likelihood for standard
 	var_sum_s = sigma_av_a_arr**2 + sigma_av_v_arr**2
 	likelihood_c1_s = (1 / np.sqrt(2 * np.pi * var_sum_s)) * np.exp(-(m_a_s - m_v_s)**2 / (2 * var_sum_s))
@@ -991,6 +1002,7 @@ def nLL_causal_inference_fully_vectorized(params, rawData):
 	
 	# Test estimates (fusion only, no conflict)
 	est_test = w_a * S_a_t + (1 - w_a) * S_a_t  # Simplifies to S_a_t
+
 	# Decision noise
 	var_fusion = 1 / (1/sigma_av_a_arr**2 + 1/sigma_av_v_arr**2)
 	var_segregated = sigma_av_a_arr**2
@@ -1206,3 +1218,233 @@ def plot_posterior_vs_conflict(data,fittedParams,snr_list=[1.2, 0.1]):
 
 # Plot posterior vs conflict for SNR values 1.2 and 0.1
 plot_posterior_vs_conflict(data,fittedParams,snr_list=[1.2, 0.1])
+
+
+
+def calculate_mu_from_data_and_model(data, fittedParams):
+	"""
+	Calculate mu (PSE) from both data and model predictions for each SNR and conflict condition.
+	"""
+	# Get unique conditions
+	unique_snr = sorted(data['audNoise'].unique())
+	unique_conflict = sorted(data['conflictDur'].unique())
+	
+	mu_data = {}
+	mu_model = {}
+	
+	# Calculate mu for each condition
+	for snr in unique_snr:
+		mu_data[snr] = {}
+		mu_model[snr] = {}
+		
+		for conflict in unique_conflict:
+			# Filter data for current condition
+			condition_data = data[(data['audNoise'] == snr) & (data['conflictDur'] == conflict)]
+			
+			if len(condition_data) > 0:
+				# Group data by delta duration
+				grouped = condition_data.groupby('deltaDurS').agg({
+					'chose_test': 'sum',
+					'responses': 'count'
+				}).reset_index()
+				grouped['p_choose_test'] = grouped['chose_test'] / grouped['responses']
+				
+				# Fit psychometric function to get mu from data
+				if len(grouped) > 3:  # Need enough points to fit
+					try:
+						# Estimate initial guesses
+						init_guess = estimate_initial_guesses(
+							grouped['deltaDurS'].values,
+							grouped['chose_test'].values,
+							grouped['responses'].values
+						)
+						
+						# Fit psychometric function
+						fitted_params_data = fit_psychometric_function(
+							grouped['deltaDurS'].values,
+							grouped['chose_test'].values,
+							grouped['responses'].values,
+							init_guess
+						)
+						mu_data[snr][conflict] = fitted_params_data[1]  # mu is second parameter
+						
+					except:
+						mu_data[snr][conflict] = np.nan
+				else:
+					mu_data[snr][conflict] = np.nan
+				
+				# Get mu from causal inference model
+				lambda_, sigma_av_a, sigma_av_v, p_c = getParamsCausal(fittedParams, conflict, snr)
+				
+				# Calculate model's effective mu by finding where P(choose test) = 0.5
+				delta_range = np.linspace(-0.5, 0.5, 1000)
+				p_values = []
+				
+				for delta in delta_range:
+					p = probTestLonger_vectorized(delta, conflict, lambda_, sigma_av_a, sigma_av_v, p_c)
+					p_values.append(p)
+				
+				p_values = np.array(p_values)
+				# Find delta where p is closest to 0.5
+				idx_closest = np.argmin(np.abs(p_values - 0.5))
+				mu_model[snr][conflict] = delta_range[idx_closest]
+			
+			else:
+				mu_data[snr][conflict] = np.nan
+				mu_model[snr][conflict] = np.nan
+	
+	return mu_data, mu_model
+
+def plot_mu_comparison(mu_data, mu_model, unique_snr, unique_conflict):
+	"""
+	Plot comparison of mu values from data vs model predictions.
+	"""
+	fig, axes = plt.subplots(1, 2, figsize=(15, 6))
+	
+	colors = sns.color_palette("viridis", n_colors=len(unique_conflict))
+	
+	for i, snr in enumerate(unique_snr):
+		ax = axes[i]
+		
+		conflicts_plot = []
+		mu_data_plot = []
+		mu_model_plot = []
+		
+		for j, conflict in enumerate(unique_conflict):
+			if not np.isnan(mu_data[snr][conflict]) and not np.isnan(mu_model[snr][conflict]):
+				conflicts_plot.append(conflict * 1000)  # Convert to ms
+				mu_data_plot.append(mu_data[snr][conflict] * 1000)  # Convert to ms
+				mu_model_plot.append(mu_model[snr][conflict] * 1000)  # Convert to ms
+		
+		if conflicts_plot:
+			# Plot data mu
+			ax.scatter(conflicts_plot, mu_data_plot, 
+					  color='red', s=100, alpha=0.7, 
+					  label='Data μ (PSE)', marker='o')
+			
+			# Plot model mu
+			ax.scatter(conflicts_plot, mu_model_plot, 
+					  color='blue', s=100, alpha=0.7, 
+					  label='Model μ (PSE)', marker='s')
+			
+			# Connect corresponding points
+			for k in range(len(conflicts_plot)):
+				ax.plot([conflicts_plot[k], conflicts_plot[k]], 
+					   [mu_data_plot[k], mu_model_plot[k]], 
+					   'gray', alpha=0.5, linestyle='--')
+		
+		ax.axhline(y=0, color='black', linestyle='-', alpha=0.3)
+		ax.axvline(x=0, color='black', linestyle='-', alpha=0.3)
+		ax.set_xlabel('Visual Conflict (ms)')
+		ax.set_ylabel('μ (PSE) (ms)')
+		ax.set_title(f'Data vs Model μ (SNR={snr})')
+		# limits
+		ax.set_ylim(-300, 300)
+		ax.legend()
+		ax.grid(True, alpha=0.3)
+	
+	plt.tight_layout()
+	plt.show()
+	
+	# Print numerical comparison
+	print("\n=== Mu (PSE) Comparison: Data vs Model ===")
+	print("SNR\tConflict(ms)\tData μ(ms)\tModel μ(ms)\tDifference(ms)")
+	print("-" * 60)
+	
+	for snr in unique_snr:
+		for conflict in unique_conflict:
+			if not np.isnan(mu_data[snr][conflict]) and not np.isnan(mu_model[snr][conflict]):
+				data_mu_ms = mu_data[snr][conflict] * 1000
+				model_mu_ms = mu_model[snr][conflict] * 1000
+				diff_ms = data_mu_ms - model_mu_ms
+				print(f"{snr}\t{conflict*1000:.0f}\t\t{data_mu_ms:.2f}\t\t{model_mu_ms:.2f}\t\t{diff_ms:.2f}")
+
+def plot_mu_vs_conflict_detailed(mu_data, mu_model, unique_snr, unique_conflict):
+	"""
+	Create a more detailed plot showing mu vs conflict with trend lines.
+	"""
+	plt.figure(figsize=(12, 8))
+	
+	for i, snr in enumerate(unique_snr):
+		plt.subplot(2, 2, i+1)
+		
+		conflicts_ms = []
+		mu_data_ms = []
+		mu_model_ms = []
+		
+		for conflict in unique_conflict:
+			if not np.isnan(mu_data[snr][conflict]) and not np.isnan(mu_model[snr][conflict]):
+				conflicts_ms.append(conflict * 1000)
+				mu_data_ms.append(mu_data[snr][conflict] * 1000)
+				mu_model_ms.append(mu_model[snr][conflict] * 1000)
+		
+		if conflicts_ms:
+			# Plot with trend lines
+			plt.plot(conflicts_ms, mu_data_ms, 'ro-', linewidth=2, markersize=8, 
+					label='Data μ', alpha=0.8)
+			plt.plot(conflicts_ms, mu_model_ms, 'bs-', linewidth=2, markersize=8, 
+					label='Model μ', alpha=0.8)
+			
+			# Calculate correlation
+			if len(conflicts_ms) > 2:
+				corr_data = np.corrcoef(conflicts_ms, mu_data_ms)[0,1]
+				corr_model = np.corrcoef(conflicts_ms, mu_model_ms)[0,1]
+				plt.text(0.05, 0.95, f'Data r={corr_data:.3f}\nModel r={corr_model:.3f}', 
+						transform=plt.gca().transAxes, fontsize=10,
+						verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+		
+		plt.axhline(y=0, color='black', linestyle='-', alpha=0.3)
+		plt.axvline(x=0, color='black', linestyle='-', alpha=0.3)
+		plt.xlabel('Visual Conflict (ms)')
+		plt.ylabel('μ (PSE) (ms)')
+		plt.title(f'μ vs Conflict (SNR={snr})')
+		plt.legend()
+		plt.grid(True, alpha=0.3)
+		plt.ylim(-300, 300)
+	
+	# Correlation plot
+	plt.subplot(2, 2, len(unique_snr)+1)
+	all_data_mu = []
+	all_model_mu = []
+	
+	for snr in unique_snr:
+		for conflict in unique_conflict:
+			if not np.isnan(mu_data[snr][conflict]) and not np.isnan(mu_model[snr][conflict]):
+				all_data_mu.append(mu_data[snr][conflict] * 1000)
+				all_model_mu.append(mu_model[snr][conflict] * 1000)
+	
+	if all_data_mu:
+		plt.scatter(all_data_mu, all_model_mu, s=100, alpha=0.7)
+		
+		# Add diagonal line (perfect correlation)
+		min_val = min(min(all_data_mu), min(all_model_mu))
+		max_val = max(max(all_data_mu), max(all_model_mu))
+		plt.plot([min_val, max_val], [min_val, max_val], 'k--', alpha=0.5, label='Perfect correlation')
+		
+		# Calculate overall correlation
+		overall_corr = np.corrcoef(all_data_mu, all_model_mu)[0,1]
+		plt.text(0.05, 0.95, f'Overall r={overall_corr:.3f}', 
+				transform=plt.gca().transAxes, fontsize=12,
+				verticalalignment='top', bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+		
+		plt.xlabel('Data μ (ms)')
+		plt.ylabel('Model μ (ms)')
+		plt.title('Data vs Model μ Correlation')
+		plt.legend()
+		plt.grid(True, alpha=0.3)
+		plt.ylim(-300, 300)
+	
+	plt.tight_layout()
+	plt.show()
+
+# Calculate mu from both data and model
+print("Calculating mu (PSE) from data and model predictions...")
+mu_data, mu_model = calculate_mu_from_data_and_model(data, fittedParams)
+
+# Get unique values for plotting
+unique_snr = sorted(data['audNoise'].unique())
+unique_conflict = sorted(data['conflictDur'].unique())
+
+# Create comparison plots
+plot_mu_comparison(mu_data, mu_model, unique_snr, unique_conflict)
+plot_mu_vs_conflict_detailed(mu_data, mu_model, unique_snr, unique_conflict)

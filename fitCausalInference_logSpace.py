@@ -12,7 +12,7 @@ def loadData(dataName, isShared, isAllIndependent):
 	global data, sharedSigma, intensityVariable, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu, allIndependent
 	sharedSigma = isShared  # Set to True if you want to use shared sigma across noise levels
 	allIndependent = isAllIndependent  # Set to 1 if you want to use independent parameters for each condition
-	intensityVariable="delta_dur_percents"
+	intensityVariable="logDeltaDur"
 
 	sensoryVar="audNoise"
 	standardVar="standardDur"
@@ -29,14 +29,25 @@ def loadData(dataName, isShared, isAllIndependent):
 	data["conflictDurMs"]= data["conflictDur"]*1000
 	data["DeltaDurMs"]= data["testDurMs"] - data["standardDurMs"]
 
-	data = data.round({'standardDur': 2, 'conflictDur': 2})
+	if "VisualPSE" not in data.columns:
+		data["VisualPSE"]=data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+	data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+	data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
+
+
+	data["unbiasedVisualStandardDur"]= data["recordedDurVisualStandard"] - data["visualPSEBias"]
+	data["unbiasedVisualTestDur"]= data["recordedDurVisualTest"] - data["visualPSEBiasTest"]
+
+	data["unbiasedVisualStandardDurMs"]= data["unbiasedVisualStandardDur"]*1000
+	data["unbiasedVisualTestDurMs"]= data["unbiasedVisualTestDur"]*1000
+
+
+	data = data.round({'standardDur': 2, 'conflictDur': 2,'unbiasedVisualStandardDur':3, 'unbiasedVisualTestDur':3,'unbiasedVisualStandardDurMs':3, 'unbiasedVisualTestDurMs':3})
 	# if nan in conflictDur remove those rows
 	data = data[~data['conflictDur'].isna()]
 
 	# if nan in audNoise remove those rows
 	data = data[~data['audNoise'].isna()]
-	if "VisualPSE" not in data.columns:
-		data["VisualPSE"]=data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
 
 	print(f"\n Total trials before cleaning\n: {len(data)}")
 	data= data[data['audNoise'] != 0]
@@ -55,8 +66,6 @@ def loadData(dataName, isShared, isAllIndependent):
 	# Define columns for chosing test or standard
 	data['chose_test'] = (data['responses'] == data['order']).astype(int)
 	data['chose_standard'] = (data['responses'] != data['order']).astype(int)
-	data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
-	data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
 
 	try: 
 		data['biasCheckTest'] = np.isclose(data['visualPSEBiasTest'], data['VisualPSE'], atol=0.012)
@@ -127,11 +136,20 @@ def loadData(dataName, isShared, isAllIndependent):
 	data["logStandardDur"] = np.log(1000*data[standardVar])
 	data["logConflictDur"] = np.log(1000*data[conflictVar])
 	data["logTestDur"] = np.log(1000*data["testDurS"])
-	data["logDeltaDur"] = data["logTestDur"] - data["logStandardDur"]
+	data["logDeltaDur"] = np.log(data["testDurS"]/ data["standardDur"])
+	data["logConflict"]= np.log(data["unbiasedVisualStandardDur"] / data["standardDur"])
+	print(f"\n\n\n\n\nmax of logConflict: {data['logConflict'].max()} and min: {data['logConflict'].min()}\n\n\n\n")
+	print(f"max of logDeltaDur: {data['logDeltaDur'].max()} and min: {data['logDeltaDur'].min()}")
+
+	# reset index
+	data.reset_index(drop=True, inplace=True)
+
+	# print names of columns
+	print(f"\n\n\n\nColumns in data: {data.columns.tolist()}\n\n\n\n")
 
 	return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
 
-intensityVariable="delta_dur_percents"
+intensityVariable="logDeltaDur"
 
 sensoryVar="audNoise"
 standardVar="standardDur"
@@ -856,7 +874,7 @@ def fitCausalInferenceModel(data, initGuesses, use_vectorized=True, show_progres
 	
 	# Choose which negative log-likelihood function to use
 	if use_vectorized:
-		nll_function = nLL_causal_inference_fully_vectorized
+		nll_function = nLL_causal_inference_fully_vectorized_Log
 		#print("\nUsing fully vectorized causal inference fitting...\n")
 	else:
 		nll_function = nLL_causal_inference
@@ -955,81 +973,90 @@ def probTestLonger_vectorized(deltaDur, conflict, lambda_, sigma_av_a, sigma_av_
 	p_choose_test = lambda_/2 + (1 - lambda_) * norm.cdf(deltaEstimates, loc=0, scale=sigma_decision)
 	
 	return p_choose_test
-
-def nLL_causal_inference_fully_vectorized(params, rawData):
-	"""Fully vectorized version - even faster by avoiding parameter loops."""
-	# Extract data arrays - using correct columns
+def nLL_causal_inference_fully_vectorized_Log(params, rawData):
+	"""
+	Negative log-likelihood for causal inference model using log-transformed durations.
+	"""
+	# Extract data arrays
 	snr_values = rawData["audNoise"].values
-	conflict_values = rawData["conflictDur"].values  # Use conflictDur, not conflictDurMs
+	conflict_values = rawData["conflictDur"].values
 	responses = rawData["chose_test"].values
 	delta_dur_values = rawData["deltaDurS"].values
-	
-	# Create boolean masks for different SNR conditions
+	standard_dur = rawData["standardDur"].values
+
+	# Masks for different SNR levels
 	snr_01_mask = np.isclose(snr_values, 0.1)
 	snr_12_mask = np.isclose(snr_values, 1.2)
-	
-	# Pre-allocate parameter arrays
+
+	# Initialize parameter arrays
 	n_trials = len(rawData)
-	lambda_arr = np.full(n_trials, params[0])  # lambda is shared
+	lambda_arr = np.full(n_trials, params[0])
 	sigma_av_a_arr = np.empty(n_trials)
 	sigma_av_v_arr = np.empty(n_trials)
 	p_c_arr = np.empty(n_trials)
-	
-	# Vectorized parameter assignment
-	sigma_av_a_arr[snr_01_mask] = params[1]  # sigma_a for high SNR (0.1)
-	sigma_av_v_arr[snr_01_mask] = params[2]  # sigma_v for high SNR (0.1)
-	p_c_arr[snr_01_mask] = params[3]         # p_c_high (base) for high SNR
-	
-	sigma_av_a_arr[snr_12_mask] = params[4]  # sigma_a for low SNR (1.2)
-	sigma_av_v_arr[snr_12_mask] = params[5]  # sigma_v for low SNR (1.2)
-	p_c_arr[snr_12_mask] = params[6]  # p_c for low SNR (1.2)
-	
-	# Work in original scale, not log scale for causal inference
-	S_a_s = 0.5  # Standard duration in seconds
-	S_a_t = S_a_s + delta_dur_values  # Test durations
-	
-	# Standard estimates (vectorized)
-	S_v_s = S_a_s + conflict_values  # Visual standard duration
-	m_a_s = S_a_s
-	m_v_s = S_v_s
-	
-	# Common cause likelihood for standard
+
+	# Assign parameters
+	sigma_av_a_arr[snr_01_mask] = params[1]
+	sigma_av_v_arr[snr_01_mask] = params[2]
+	p_c_arr[snr_01_mask] = params[3]
+
+	sigma_av_a_arr[snr_12_mask] = params[4]
+	sigma_av_v_arr[snr_12_mask] = params[5]
+	p_c_arr[snr_12_mask] = params[6]
+
+	# Log-domain values
+	S_a_s = standard_dur  # standard in sec
+	S_a_t = S_a_s + delta_dur_values  # test in sec
+	S_v_s = rawData["unbiasedVisualStandardDur"].values  # corrected visual durations
+	S_v_t=rawData["unbiasedVisualTestDur"].values  # corrected visual test durations
+
+	logS_a_s = np.log(S_a_s)
+	logS_a_t = np.log(S_a_t)
+	logS_v_s = np.log(S_v_s)
+	logS_v_t=np.log(S_v_t)
+
+	# Likelihoods under C=1
 	var_sum_s = sigma_av_a_arr**2 + sigma_av_v_arr**2
-	likelihood_c1_s = (1 / np.sqrt(2 * np.pi * var_sum_s)) * np.exp(-(m_a_s - m_v_s)**2 / (2 * var_sum_s))
-	
-	# Independent causes likelihood for standard
-	likelihood_c2_s = norm.pdf(m_a_s, loc=S_a_s, scale=sigma_av_a_arr) * norm.pdf(m_v_s, loc=S_v_s, scale=sigma_av_v_arr)
-	
-	# Posterior probability of common cause for standard
-	posterior_c1_s = (likelihood_c1_s * p_c_arr) / (likelihood_c1_s * p_c_arr + likelihood_c2_s * (1 - p_c_arr))
-	
-	# Fusion estimate for standard
-	J_AV_A = 1 / sigma_av_a_arr**2
-	J_AV_V = 1 / sigma_av_v_arr**2
-	w_a = J_AV_A / (J_AV_A + J_AV_V)
+	likelihood_c1_s = norm.pdf(logS_a_s - logS_v_s, loc=0, scale=np.sqrt(var_sum_s))
+
+	# Likelihoods under C=2 (independent)
+	likelihood_c2_s = norm.pdf(logS_a_s, loc=logS_a_s, scale=sigma_av_a_arr) * \
+					  norm.pdf(logS_v_s, loc=logS_v_s, scale=sigma_av_v_arr)
+
+	# Posterior for common cause
+	posterior_c1_s = (likelihood_c1_s * p_c_arr) / (
+		likelihood_c1_s * p_c_arr + likelihood_c2_s * (1 - p_c_arr)
+	)
+
+	# Fused estimate in log space
+	J_a = 1 / sigma_av_a_arr**2
+	J_v = 1 / sigma_av_v_arr**2
+	w_a = J_a / (J_a + J_v)
 	w_v = 1 - w_a
-	fused_S_av_s = w_a * S_a_s + w_v * S_v_s
-	
-	# Final estimate for standard (model averaging)
-	est_standard = posterior_c1_s * fused_S_av_s + (1 - posterior_c1_s) * S_a_s
-	
-	# Test estimates (fusion only, no conflict for test)
-	est_test = S_a_t  # No conflict for test duration
-	
-	# Decision noise
-	var_fusion = 1 / (1/sigma_av_a_arr**2 + 1/sigma_av_v_arr**2)
+	fused_log_S_av_s = w_a * logS_a_s + w_v * logS_v_s
+
+	# Final auditory estimate (convert to linear scale)
+	est_standard = posterior_c1_s * np.exp(fused_log_S_av_s) + (1 - posterior_c1_s) * S_a_s
+
+	# Test estimate (no conflict, so logS_a_t)
+#	est_test = w_a * logS_a_t + w_v * logS_v_t  # Since there's no conflict, S_v = S_a
+	# Convert estimates back to linear scale
+#	est_test = np.exp(est_test)
+	est_test = np.exp(logS_a_t)
+
+	# Decision variable and noise
+	delta_estimates = est_test - est_standard
+	delta_estimates = np.log(est_test/est_standard)  # Convert to log scale for decision variable
+	var_fusion = 1 / (1 / sigma_av_a_arr**2 + 1 / sigma_av_v_arr**2)
 	var_segregated = sigma_av_a_arr**2
 	var_estimate = p_c_arr * var_fusion + (1 - p_c_arr) * var_segregated
 	sigma_decision = np.sqrt(2 * var_estimate)
-	
-	# Decision
-	deltaEstimates = est_test - est_standard
-	P = lambda_arr/2 + (1 - lambda_arr) * norm.cdf(deltaEstimates, loc=0, scale=sigma_decision)
-	
-	# Clip probabilities to avoid log(0)
-	epsilon = 1e-9
-	P = np.clip(P, epsilon, 1 - epsilon)
-	# Vectorized log-likelihood computation
+
+	# Compute choice probability
+	P = lambda_arr / 2 + (1 - lambda_arr) * norm.cdf(delta_estimates, loc=0, scale=sigma_decision)
+	P = np.clip(P, 1e-9, 1 - 1e-9)
+
+	# Log likelihood
 	ll = np.sum(responses * np.log(P) + (1 - responses) * np.log(1 - P))
 	return -ll
 
@@ -1042,10 +1069,10 @@ def multipleInitGuessesCausal(singleInitGuesses, nStart):
 		lambda_ = np.random.uniform(0.001, 0.2)
 		sigma_a_high = np.random.uniform(0.01, 0.5)  # High SNR (0.1)
 		sigma_v_high = np.random.uniform(0.01, 0.5)  # High SNR (0.1)
-		p_c_high = np.random.uniform(0.05, 0.5)     # Base P(C=1) for high SNR (should be lower)
+		p_c_high = np.random.uniform(0.05, 0.99)     # Base P(C=1) for high SNR (should be lower)
 		sigma_a_low = np.random.uniform(0.01, 0.5)   # Low SNR (1.2)
 		sigma_v_low = np.random.uniform(0.01, 0.5)   # Low SNR (1.2)
-		p_c_offset = np.random.uniform(0.1, 0.6)     # Positive offset to ensure P(C=1) increases for low SNR
+		p_c_offset = np.random.uniform(0.1, .99)     # Positive offset to ensure P(C=1) increases for low SNR
 		
 		guesses.append([
 			lambda_, sigma_a_high, sigma_v_high, p_c_high,
@@ -1083,7 +1110,7 @@ def fitCausalInferenceMultipleStarts(data, singleInitGuesses, nStart=5, use_vect
 				
 			# Calculate negative log-likelihood for this fit
 			if use_vectorized:
-				nll = nLL_causal_inference_fully_vectorized(fitted_params, data)
+				nll = nLL_causal_inference_fully_vectorized_Log(fitted_params, data)
 			else:
 				nll = nLL_causal_inference(fitted_params, data)
 			
@@ -1128,7 +1155,7 @@ def fitCausalInferenceWrapper(data, initGuesses=None, nStart=1, use_vectorized=T
 		
 		# Calculate NLL
 		if use_vectorized:
-			nll = nLL_causal_inference_fully_vectorized(fitted_params, data)
+			nll = nLL_causal_inference_fully_vectorized_Log(fitted_params, data)
 		else:
 			nll = nLL_causal_inference(fitted_params, data)
 		
@@ -1192,7 +1219,7 @@ def debug_data_issues(data):
 	for col in key_cols:
 		if col in data.columns:
 			print(f"{col}: min={data[col].min():.4f}, max={data[col].max():.4f}, "
-			      f"mean={data[col].mean():.4f}, unique_count={data[col].nunique()}")
+				  f"mean={data[col].mean():.4f}, unique_count={data[col].nunique()}")
 		else:
 			print(f"WARNING: {col} not found in data!")
 	
@@ -1216,7 +1243,7 @@ def debug_data_issues(data):
 # Example usage:
 if __name__ == "__main__":
 	# Load data
-	loadDataVars = loadData("HH_all.csv", 1, 1)
+	loadDataVars = loadData("sx_all.csv", 1, 1)
 	data = loadDataVars[0]
 	
 	# Debug data issues
@@ -1241,7 +1268,7 @@ if __name__ == "__main__":
 	
 	# Option 2: Multiple starting points (more robust) - only if single works
 	print("\n=== Multiple Starting Points ===")
-	fitted_params_multi, nll_multi = fitCausalInferenceWrapper(data, initGuesses, nStart=100, use_vectorized=True)
+	fitted_params_multi, nll_multi = fitCausalInferenceWrapper(data, initGuesses, nStart=5, use_vectorized=True)
 	
 	# Validate the multiple fits
 	validate_causal_inference_params(fitted_params_multi, verbose=True)
