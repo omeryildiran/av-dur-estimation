@@ -1,14 +1,11 @@
 # function for loading data
-def loadData(dataName, isShared, isAllIndependent):
-	global data, sharedSigma, intensityVariable, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu, allIndependent
-	sharedSigma = isShared  # Set to True if you want to use shared sigma across noise levels
-	allIndependent = isAllIndependent  # Set to 1 if you want to use independent parameters for each condition
-	intensityVariable="delta_dur_percents"
+import pandas as pd
+import numpy as np
 
+def loadData(dataName):	
 	sensoryVar="audNoise"
 	standardVar="standardDur"
 	conflictVar="conflictDur"
-	global pltTitle
 	pltTitle=dataName.split("_")[1]
 	pltTitle=dataName.split("_")[0]+str(" ")+pltTitle    
 
@@ -28,6 +25,19 @@ def loadData(dataName, isShared, isAllIndependent):
 	data = data[~data['audNoise'].isna()]
 	if "VisualPSE" not in data.columns:
 		data["VisualPSE"]=data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+	data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
+	data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
+
+
+	data["unbiasedVisualStandardDur"]= data["recordedDurVisualStandard"] - data["visualPSEBias"]
+	data["unbiasedVisualTestDur"]= data["recordedDurVisualTest"] - data["visualPSEBiasTest"]
+
+	data["unbiasedVisualStandardDurMs"]= data["unbiasedVisualStandardDur"]*1000
+	data["unbiasedVisualTestDurMs"]= data["unbiasedVisualTestDur"]*1000
+
+	# SV=SA+c+PSE
+	data["realConflictDur"]=data['recordedDurVisualStandard'] -data["standardDur"]-data["VisualPSE"]
+	data["realConflictDurMs"]=data["realConflictDur"]*1000
 
 	print(f"\n Total trials before cleaning\n: {len(data)}")
 	data= data[data['audNoise'] != 0]
@@ -46,8 +56,6 @@ def loadData(dataName, isShared, isAllIndependent):
 	# Define columns for chosing test or standard
 	data['chose_test'] = (data['responses'] == data['order']).astype(int)
 	data['chose_standard'] = (data['responses'] != data['order']).astype(int)
-	data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
-	data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
 
 	try: 
 		data['biasCheckTest'] = np.isclose(data['visualPSEBiasTest'], data['VisualPSE'], atol=0.012)
@@ -115,13 +123,10 @@ def loadData(dataName, isShared, isAllIndependent):
 	nSigma=len(uniqueSensory)
 	nMu=len(uniqueConflict)*nSigma
 	
-	data["logStandardDur"] = np.log(1000*data[standardVar])
-	data["logConflictDur"] = np.log(1000*data[conflictVar])
-	data["logTestDur"] = np.log(1000*data["testDurS"])
+	data["logStandardDur"] = np.log(data[standardVar])
+	data["logConflictDur"] = np.log(data[conflictVar])
+	data["logTestDur"] = np.log(data["testDurS"])
 	data["logDeltaDur"] = data["logTestDur"] - data["logStandardDur"]
-	
-	data["unbiasedVisualStandardDur"]= data["recordedDurVisualStandard"] - data["visualPSEBias"]
-	data["unbiasedVisualTestDur"]= data["recordedDurVisualTest"] - data["visualPSEBiasTest"]
 
-
-	return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
+	dataName = dataName.split(".")[0]
+	return data, dataName
