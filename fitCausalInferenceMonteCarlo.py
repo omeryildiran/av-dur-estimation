@@ -150,6 +150,27 @@ def probTestLonger(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_=0):
 	
 	return p_final
 
+from scipy.ndimage import gaussian_filter1d
+
+def smooth_psychometric_curve(x_vals, conflict, sigma_av_a, sigma_av_v, p_c, lambda_, n_samples=2000, sigma_smooth=2):
+	"""Returns a smoothed psychometric curve using Monte Carlo and Gaussian filtering"""
+	S_a_s = 0.5
+	S_v_s = S_a_s + conflict
+	
+	y_vals = np.zeros_like(x_vals)
+	
+	for i, delta in enumerate(x_vals):
+		S_a_t = S_a_s + delta
+		S_v_t = S_a_t  # no conflict
+		true_stims = (S_a_s, S_a_t, S_v_s, S_v_t)
+		y_vals[i] = probTestLonger(true_stims, sigma_av_a, sigma_av_v, p_c, lambda_)
+	
+	y_smoothed = gaussian_filter1d(y_vals, sigma=0.5)
+	return y_smoothed
+
+
+
+
 def probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c,lambda_ ):
 	nSimul=1000
 	S_a_s, S_a_t, S_v_s, S_v_t = trueStims
@@ -229,6 +250,7 @@ class TqdmMinimizeCallback:
 		if self.show_progress:
 			self.pbar.update(1)
 
+
 	def close(self):
 		if self.show_progress:
 			self.pbar.close()
@@ -236,37 +258,40 @@ class TqdmMinimizeCallback:
 def fitCausalInferenceMonteCarlo(data, nStart=10):
 	"""Fit causal inference model with multiple random starts"""
 	
-	bounds = [(0, 0.3),      # lambda_ (lapse rate)
-			  (0.01, 2.0),   # sigma_av_a_1 (SNR 0.1)
-			  (0.01, 2.0),   # sigma_av_v_1 (SNR 0.1)
-			  (0, 1),        # p_c_1 (SNR 0.1)
-			  (0.01, 2.0),   # sigma_av_a_2 (SNR 1.2)  
-			  (0.01, 2.0),   # sigma_av_v_2 (SNR 1.2)
-			  (0, 1)]        # p_c_2 (SNR 1.2)
+	bounds = [(0, 0.25),      # lambda_ (lapse rate)
+			  (0.1, 1.5),   # sigma_av_a_1 (SNR 0.1)
+			  (0.1, 1.5),   # sigma_av_v_1 (SNR 0.1)
+			  (0.05, 0.99),        # p_c_1 (SNR 0.1)
+			  (0.1, 1.5),   # sigma_av_a_2 (SNR 1.2)  
+			  (0.1, 1.5),   # sigma_av_v_2 (SNR 1.2)
+			  (0.05, 0.99)]        # p_c_2 (SNR 1.2)
 	
 	best_result = None
 	best_ll = np.inf
 	
 	print(f"Starting {nStart} optimization attempts...")
 	
-	for attempt in range(nStart):
+	# Loop for multiple random starts
+	# Each attempt will start with a random initialization within the bounds
+	#attempts_iter = tqdm(range(nStart), desc="Random Starts", leave=True)
+	for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
 		#print(f"\nAttempt {attempt + 1}/{nStart}")
 		
 		# Random initialization within bounds
 		x0 = []
 		for i, (lower, upper) in enumerate(bounds):
 			if i in [3, 6]:  # p_c_1 and p_c_2
-				x0.append(np.random.uniform(0.1, 0.9))
+				x0.append(np.random.uniform(0.1, 0.98))
 			elif i in [1, 2, 4, 5]:  # sigma parameters
-				x0.append(np.random.uniform(0.05, 1))
+				x0.append(np.random.uniform(0.1, 1.4))
 			else:  # lambda
-				x0.append(np.random.uniform(0.01, 0.1))
+				x0.append(np.random.uniform(0.01, 0.24))
 
 		x0 = np.array(x0)
 		if attempt == 0:
 			print(f"Initial guess: {x0}")
 		
-		callback = TqdmMinimizeCallback(total=100, show_progress=1)
+		callback = TqdmMinimizeCallback(total=100, show_progress=0)
 		
 		try:
 			result = minimize(nLLMonteCarloCausal,
@@ -292,7 +317,9 @@ def fitCausalInferenceMonteCarlo(data, nStart=10):
 		except Exception as e:
 			callback.close()
 			print(f"Attempt {attempt + 1} failed: {str(e)}")
-			continue	
+			continue
+
+
 
 	if best_result is None:
 		raise RuntimeError("All optimization attempts failed!")
@@ -318,6 +345,7 @@ def groupByChooseTest(x,groupArgs):
 	return grouped
 
 import time
+from tqdm import tqdm
 if __name__ == "__main__":
 	# Example usage
 	data, dataName = loadData.loadData("dt_all.csv")
@@ -357,7 +385,7 @@ if __name__ == "__main__":
 			for k, conflictLevel in enumerate(uniqueConflict):
 				plt.subplot(1, 2, j+1)
 				lambda_, sigma_av_a, sigma_av_v, p_c = getParamsCausal(fittedParams, conflictLevel, audioNoiseLevel)
-				x = np.linspace(-0.9, 0.9, 10000)
+				x = np.linspace(-0.5, 0.5, 100)
 				S_a_s=0.5
 				#c_arr=np.full_like(x, conflictLevel)
 				S_v_s= S_a_s+conflictLevel
@@ -365,9 +393,9 @@ if __name__ == "__main__":
 				for i in range(len(x)):
 					y[i] = probTestLonger([S_a_s,S_a_s+x[i],S_v_s,S_a_s+x[i]], sigma_av_a, sigma_av_v, p_c, lambda_)
 
-
 				color = sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))
 				plt.plot(x, y, color=color, label=f"c: {int(conflictLevel*1000)}, $\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f}", linewidth=4)
+				
 				plt.axvline(x=0, color='gray', linestyle='--')
 				plt.axhline(y=0.5, color='gray', linestyle='--')
 				plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
@@ -385,3 +413,48 @@ if __name__ == "__main__":
 			plt.text(0.15, 0.9, f"P(C=1): {p_c:.2f}", fontsize=12, ha='center', va='bottom', transform=plt.gca().transAxes)
 	plt.show()
 
+
+
+def plot_posterior_vs_conflict(data,fittedParams,snr_list=[1.2, 0.1]):
+
+	delta_dur_values = data["deltaDurS"].values
+	conflict_values = data["conflictDur"].values
+	snr_values = data["audNoise"].values
+	best_params = fittedParams  # Use the best fitted parameters from the previous fitting
+
+	posterior_values = []
+	for delta, conflict, snr in zip(delta_dur_values, conflict_values, snr_values):
+		λ, σa, σv, pc = getParamsCausal(best_params, conflict, snr)
+		S_std = 0.5
+		S_test = S_std + delta
+		S_v = S_std + conflict
+
+		m_a = S_std
+		m_v = S_v
+
+		L1 = likelihood_C1(m_a, m_v, σa, σv)
+		L2 = likelihood_C2(m_a, m_v, S_std, S_v, σa, σv)
+		posterior = posterior_C1(L1, L2, pc)
+		posterior_values.append(posterior)
+
+
+	"""
+	Plot posterior probability vs conflict for given SNR values.
+	snr_list: list of SNR values to plot (default: [1.2, 0.1])
+	"""
+	plt.figure(figsize=(8, 5))
+	for idx, noisy_snr_value in enumerate(snr_list):
+		mask_noisy = np.isclose(snr_values, noisy_snr_value)
+		conflicts_noisy = conflict_values[mask_noisy]
+		posteriors_noisy = np.array(posterior_values)[mask_noisy]
+		plt.subplot(1, 2, idx + 1)
+		plt.scatter(conflicts_noisy * 1000, posteriors_noisy, alpha=0.6, label=f'Posterior P(C=1) (SNR={noisy_snr_value})')
+		plt.xlabel('Conflict (ms)')
+		plt.ylabel('Posterior Probability of Common Cause')
+		plt.title(f'Posterior P(C=1) vs Conflict (SNR={noisy_snr_value})')
+		plt.axhline(y=getParamsCausal(fittedParams, conflicts_noisy, noisy_snr_value)[3], color='gray', linestyle='--', label=f'P(C=1)={getParamsCausal(fittedParams, conflicts_noisy, noisy_snr_value)[3]:.2f}')
+		plt.legend()
+		plt.ylim(0, 1)
+		plt.grid()
+	plt.tight_layout()
+	plt.show()
