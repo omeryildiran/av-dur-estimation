@@ -140,15 +140,15 @@ def loadData(dataName, isShared, isAllIndependent):
 
 	return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
 
-intensityVariable="delta_dur_percents"
+intensityVariable="deltaDurS"
 
 sensoryVar="audNoise"
 standardVar="standardDur"
 conflictVar="conflictDur"
 
-def groupByChooseTest(x):
+def groupByChooseTest(x, group_vars):
     #print(f"Grouping by {intensityVariable}, {sensoryVar}, {standardVar}, {conflictVar}")
-    grouped = x.groupby([intensityVariable, sensoryVar, standardVar,conflictVar]).agg(
+    grouped = x.groupby(group_vars).agg(
         num_of_chose_test=('chose_test', 'sum'),
         total_responses=('responses', 'count'),
         num_of_chose_standard=('chose_standard', 'sum'),
