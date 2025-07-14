@@ -148,25 +148,7 @@ def probTestLonger(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_=0):
 	# Apply lapse rate: p_final = (1-lambda) * p_base + lambda/2
 	p_final = (1 - lambda_) * p_base + lambda_ / 2
 	
-	return p_final
-
-from scipy.ndimage import gaussian_filter1d
-
-def smooth_psychometric_curve(x_vals, conflict, sigma_av_a, sigma_av_v, p_c, lambda_, n_samples=2000, sigma_smooth=2):
-	"""Returns a smoothed psychometric curve using Monte Carlo and Gaussian filtering"""
-	S_a_s = 0.5
-	S_v_s = S_a_s + conflict
-	
-	y_vals = np.zeros_like(x_vals)
-	
-	for i, delta in enumerate(x_vals):
-		S_a_t = S_a_s + delta
-		S_v_t = S_a_t  # no conflict
-		true_stims = (S_a_s, S_a_t, S_v_s, S_v_t)
-		y_vals[i] = probTestLonger(true_stims, sigma_av_a, sigma_av_v, p_c, lambda_)
-	
-	y_smoothed = gaussian_filter1d(y_vals, sigma=0.5)
-	return y_smoothed
+	return p_fina
 
 
 
@@ -301,8 +283,8 @@ def fitCausalInferenceMonteCarlo(data, nStart, optimizer="bads"):
 				# Prepare bounds
 				lb = bounds[:, 0]
 				ub = bounds[:, 1]
-				plb = np.clip(x0 * 1.2, lb, ub)
-				pub = np.clip(x0 * 0.9, lb, ub)
+				plb = lb*1.2
+				pub = ub*0.9
 
 				obj = lambda x: nLLMonteCarloCausal(x, data)
 				bads = BADS(obj, x0, lb, ub, plb, pub)
@@ -350,6 +332,55 @@ def groupByChooseTest(x,groupArgs):
 
 	return grouped
 
+
+def simulateData(fittedParams, nSamples=1000):
+	"""
+	Simulate data based on fitted parameters.
+	Returns a DataFrame with simulated responses.
+	"""
+	simData = []
+	uniqueSensory = np.linspace(0.1, 1.2)
+	uniqueConflict = np.linspace(0.05, 0.99, 5)
+	for audioNoiseLevel in uniqueSensory:
+		for conflictLevel in uniqueConflict:
+			# Unpack fitted parameters
+			lambda_, sigma_av_a, sigma_av_v, p_c = getParamsCausal(fittedParams, conflictLevel, audioNoiseLevel)
+			
+			# Simulate responses
+			for _ in range(nSamples):
+				S_a_s = 0.5
+				S_v_s = S_a_s + conflictLevel
+				S_a_t = S_a_s + np.random.uniform(-0.5, 0.5)
+				S_v_t = S_v_s + np.random.uniform(-0.5, 0.5)
+				trueStims = (S_a_s, S_a_t, S_v_s, S_v_t)
+				p_test_longer = probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_)
+				chose_test = np.random.binomial(1, p_test_longer)
+				simData.append({
+					'standardDur': S_a_s,
+					'testDurS': S_a_t,
+					'unbiasedVisualStandardDur': S_v_s,
+					'unbiasedVisualTestDur': S_v_t,
+					'audNoise': audioNoiseLevel,
+					'conflictDur': conflictLevel,
+					'chose_test': chose_test,
+					'responses': 1  # Assuming each sample is a response
+				})
+	simData = pd.DataFrame(simData)
+	return simData
+
+
+##############################
+
+# ----------------------------------------------
+# This code is part of the Causal Inference Monte Carlo fitting process.
+# --- <Main Function> ---
+# It loads data, groups it by conditions, and fits the model using Monte Carlo simulation.
+# The fitted parameters are then used to plot the results.
+# ----------------------------------------------
+
+##############################
+
+
 from pybads import BADS
 import time
 from tqdm import tqdm
@@ -374,7 +405,7 @@ if __name__ == "__main__":
 
 	timeStart = time.time()
 	print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
-	fittedParams = fitCausalInferenceMonteCarlo(groupedData)
+	fittedParams = fitCausalInferenceMonteCarlo(groupedData,nStart=1, optimizer="bads")  # Adjust nStart as needed
 	print(f"\nFitted parameters for {dataName}: {fittedParams}")
 	print(f"Time taken to fit: {time.time() - timeStart:.2f} seconds")
 
