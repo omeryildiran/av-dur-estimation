@@ -255,104 +255,21 @@ class TqdmMinimizeCallback:
 		if self.show_progress:
 			self.pbar.close()
 
-def fitCausalInferenceMonteCarlo(data, nStart=1):
-	"""Fit causal inference model with multiple random starts"""
-	
-	bounds = [(0, 0.25),      # lambda_ (lapse rate)
-			  (0.1, 1.5),   # sigma_av_a_1 (SNR 0.1)
-			  (0.1, 1.5),   # sigma_av_v_1 (SNR 0.1)
-			  (0.05, 0.99),        # p_c_1 (SNR 0.1)
-			  (0.1, 1.5),   # sigma_av_a_2 (SNR 1.2)  
-			  (0.1, 1.5),   # sigma_av_v_2 (SNR 1.2)
-			  (0.05, 0.99)]        # p_c_2 (SNR 1.2)
-	
-	best_result = None
-	best_ll = np.inf
-	
-	print(f"Starting {nStart} optimization attempts...")
-	
-	# Loop for multiple random starts
-	# Each attempt will start with a random initialization within the bounds
-	#attempts_iter = tqdm(range(nStart), desc="Random Starts", leave=True)
-	for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
-		#print(f"\nAttempt {attempt + 1}/{nStart}")
-		
-		# Random initialization within bounds
-		x0 = []
-		for i, (lower, upper) in enumerate(bounds):
-			if i in [3, 6]:  # p_c_1 and p_c_2
-				x0.append(np.random.uniform(0.1, 0.98))
-			elif i in [1, 2, 4, 5]:  # sigma parameters
-				x0.append(np.random.uniform(0.1, 1.4))
-			else:  # lambda
-				x0.append(np.random.uniform(0.01, 0.24))
 
-		x0 = np.array(x0)
-		if attempt == 0:
-			print(f"Initial guess: {x0}")
-		
-		callback = TqdmMinimizeCallback(total=100, show_progress=0)
-		x0 = x0
-
-		# Lower and upper bounds (required by BADS)
-		lb = np.array([0,    0.01, 0.01, 0,    0.01, 0.01, 0])
-		ub = np.array([0.3,  2.0,  2.0,  1.0,  2.0,  2.0, 1.0])
-
-		# Plausible bounds (suggests the optimizer to stay around these)
-		plb = np.array([0.01, 0.05, 0.05, 0.1, 0.05, 0.05, 0.1])
-		pub = np.array([0.2,  1.5,  1.5,  0.9, 1.5,  1.5, 0.9])
-
-		try:
-			result = minimize(nLLMonteCarloCausal,
-							x0=x0,
-							args=(data,),
-							method='Powell',
-							bounds=bounds,
-							callback=callback,
-							)
-			# or using pybads
-
-			callback.close()
-			if attempt == 0:
-				print(f"\nresult fitted params is{result.x}\n")
-			
-			#print(f"Attempt {attempt + 1} - Final LL: {result.fun:.6f}")
-			#print(f"Success: {result.success}, Message: {result.message}")
-			
-			if result.fun < best_ll and result.success:
-				best_ll = result.fun
-				best_result = result
-				#print(f"New best result found!")
-				
-		except Exception as e:
-			callback.close()
-			print(f"Attempt {attempt + 1} failed: {str(e)}")
-			continue
-
-
-
-	if best_result is None:
-		raise RuntimeError("All optimization attempts failed!")
-
-	print(f"\nBest result from {nStart} attempts:")
-	print(f"Final parameters: {best_result.x}")
-	print(f"Final log-likelihood: {best_result.fun:.6f}")
-	
-	return best_result.x
 
 from scipy.optimize import minimize
 from pybads import BADS  # Only if installed
 import numpy as np
 from tqdm import tqdm
 
-def fitCausalInferenceMonteCarlo(data, nStart=1, optimizer="bads"):
+def fitCausalInferenceMonteCarlo(data, nStart, optimizer="bads"):
 	"""
 	Fit causal inference model using Monte Carlo simulation with multiple random starts.
 	Supports 'scipy' (default) or 'bads' optimization (if installed).
 	"""
 	# Parameter bounds
 	bounds = np.array([
-		(0, 0.25),     # lambda_
+		(0, 0.3),     # lambda_
 		(0.1, 1.5),    # sigma_av_a_1
 		(0.1, 1.5),    # sigma_av_v_1
 		(0.05, 0.99),  # p_c_1
@@ -371,11 +288,11 @@ def fitCausalInferenceMonteCarlo(data, nStart=1, optimizer="bads"):
 		# Random x0 initialization within bounds
 		x0 = np.array([
 			np.random.uniform(0.01, 0.24),  # lambda_
-			np.random.uniform(0.1, 1.4),    # sigma_av_a_1
-			np.random.uniform(0.1, 1.4),    # sigma_av_v_1
+			np.random.uniform(0.1, 1.5),    # sigma_av_a_1
+			np.random.uniform(0.1, 1.5),    # sigma_av_v_1
 			np.random.uniform(0.1, 0.98),   # p_c_1
-			np.random.uniform(0.1, 1.4),    # sigma_av_a_2
-			np.random.uniform(0.1, 1.4),    # sigma_av_v_2
+			np.random.uniform(0.1, 1.5),    # sigma_av_a_2
+			np.random.uniform(0.1, 1.5),    # sigma_av_v_2
 			np.random.uniform(0.1, 0.98),   # p_c_2
 		])
 
@@ -384,8 +301,8 @@ def fitCausalInferenceMonteCarlo(data, nStart=1, optimizer="bads"):
 				# Prepare bounds
 				lb = bounds[:, 0]
 				ub = bounds[:, 1]
-				plb = np.clip(x0 * 0.5, lb, ub)
-				pub = np.clip(x0 * 1.5, lb, ub)
+				plb = np.clip(x0 * 1.2, lb, ub)
+				pub = np.clip(x0 * 0.9, lb, ub)
 
 				obj = lambda x: nLLMonteCarloCausal(x, data)
 				bads = BADS(obj, x0, lb, ub, plb, pub)
@@ -401,12 +318,8 @@ def fitCausalInferenceMonteCarlo(data, nStart=1, optimizer="bads"):
 					method='Powell',
 					bounds=bounds
 				)
-
-			# if isinstance(result.fun, (int, float)) and result.fun < best_ll and result.success:
-			# 	best_ll = result.fun
-			# 	best_result = result
-			print(f"\n\n\nDone\n\n\n")
-			print(f"\nAttempt {attempt + 1} - Final LL: {result.fval:.6f}")
+			#print(f"\n\n\nDone\n\n\n")
+			#print(f"\nAttempt {attempt + 1} - Final LL: {result.fval:.6f}")
 			if result.fval < best_ll:
 				best_ll = result.fval
 				best_result = result
