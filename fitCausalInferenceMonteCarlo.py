@@ -334,10 +334,6 @@ def groupByChooseTest(x,groupArgs):
 
 
 def simulateData(fittedParams, nSamples=1000):
-	"""
-	Simulate data based on fitted parameters.
-	Returns a DataFrame with simulated responses.
-	"""
 	simData = []
 	uniqueSensory = np.linspace(0.1, 1.2)
 	uniqueConflict = np.linspace(0.05, 0.99, 5)
@@ -345,7 +341,6 @@ def simulateData(fittedParams, nSamples=1000):
 		for conflictLevel in uniqueConflict:
 			# Unpack fitted parameters
 			lambda_, sigma_av_a, sigma_av_v, p_c = getParamsCausal(fittedParams, conflictLevel, audioNoiseLevel)
-			
 			# Simulate responses
 			for _ in range(nSamples):
 				S_a_s = 0.5
