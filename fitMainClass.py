@@ -11,7 +11,7 @@ warnings.filterwarnings('ignore')
 from loadData import loadData
 
 class fitPychometric:
-    def __init__(self, data, intensityVar='delta_dur_percents', allIndependent=True, sharedSigma=False,sensoryVar = 'audNoise', 
+    def __init__(self, data, intensityVar='deltaDurS', allIndependent=True, sharedSigma=False,sensoryVar = 'audNoise', 
                  standardVar = 'standardDur', conflictVar = 'conflictDur'):
         self.data = data
         self.intensityVar = intensityVar

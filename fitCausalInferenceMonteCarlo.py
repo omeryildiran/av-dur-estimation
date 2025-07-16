@@ -25,7 +25,7 @@ def getParamsCausal(params, conflict, SNR):
 	return lambda_,sigma_av_a,sigma_av_v,p_c
 
 # likelihood function
-def unimodalLikelihood( S, sigma):
+def unimodalLikelihood(S, sigma):
 	#S=np.log(S)  # convert S to log scale
 	# P(m|s) # likelihood of measurements given the true duration
 	m=np.linspace(0, S + 10*sigma, 500)
@@ -126,7 +126,7 @@ def causalInfDecision(trueStims, measurements, sigma_av_a, sigma_av_v, p_c):
 
 def probTestLonger(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_=0):
 	"""Monte Carlo approximation of probability test duration judged longer than standard"""
-	nSimul = 1000  # Increase for better approximation
+	nSimul = 10  # Increase for better approximation
 	#print(f"\nRunning Monte Carlo simulation with {nSimul} samples...\n")
 	S_a_s, S_a_t, S_v_s, S_v_t = trueStims
 	
@@ -148,13 +148,11 @@ def probTestLonger(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_=0):
 	# Apply lapse rate: p_final = (1-lambda) * p_base + lambda/2
 	p_final = (1 - lambda_) * p_base + lambda_ / 2
 	
-	return p_fina
-
-
+	return p_final
 
 
 def probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c,lambda_ ):
-	nSimul=1000
+	nSimul=10
 	S_a_s, S_a_t, S_v_s, S_v_t = trueStims
 
 	# Sample Monte Carlo measurements
@@ -333,7 +331,7 @@ def groupByChooseTest(x,groupArgs):
 	return grouped
 
 
-def simulateData(fittedParams,uniqueSensory, uniqueConflict, nSamples=10000):
+def simulateMonteCarloData(fittedParams,uniqueSensory, uniqueConflict, nSamples=10000):
 	simData = []
 	uniqueSensory = [0.1,1.2]
 	for audioNoiseLevel in uniqueSensory:
@@ -364,6 +362,8 @@ def simulateData(fittedParams,uniqueSensory, uniqueConflict, nSamples=10000):
 	return simData
 
 
+
+"TEST CODE"
 ##############################
 
 # ----------------------------------------------
