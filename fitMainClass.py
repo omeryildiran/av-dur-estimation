@@ -245,7 +245,7 @@ class fitPychometric:
                         multipleInitGuesses.append([initLambda, initMu, initSigma])
         return multipleInitGuesses
 
-    def fitMultipleStartingPoints(self, data, nStart=3):
+    def fitMultipleStartingPoints(self, data, nStart=1):
         # group data and prepare for fitting
         groupedData = self.groupByChooseTest(data)
         levels = groupedData[self.intensityVar].values
@@ -411,7 +411,7 @@ if __name__ == "__main__":
     print(f"Fitted parameters: {best_fit.x}")
 
     fit_model.plot_fitted_psychometric(best_fit, pltTitle=pltTitle)
-    fit_model.plotStairCases(data)
+    #fit_model.plotStairCases(data)
 
     # # Plot the relation between conflict and PSE (mu) with confidence intervals
     "Uncomment to PSE plot"

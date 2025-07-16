@@ -364,10 +364,13 @@ class fitPychometricMonteCarlo(fitPychometric):
         plt.tight_layout()
         plt.show()
 
+
+
+
         # Simulate psychometric data using fitted parameters
         uniqueSensory = np.unique(data["audNoise"])
         uniqueConflict = np.unique(data["conflictDur"])
-        simulated_data = self.simulateMonteCarloData(fittedParams, uniqueSensory, uniqueConflict, nSamples=1000)
+        simulatedData = self.simulateMonteCarloData(fittedParams, uniqueSensory, uniqueConflict, nSamples=100)
 
         # Group and plot simulated psychometric
         intensityVariable = "deltaDurS"
@@ -376,20 +379,27 @@ class fitPychometricMonteCarlo(fitPychometric):
         conflictVar = "conflictDur"
         visualStandardVar = "unbiasedVisualStandardDur"
         visualTestVar = "unbiasedVisualTestDur"
-        audioStandardVar = "standardDur"
         audioTestVar = "testDurS"
 
-        sim_grouped = self.groupByChooseTest(simulated_data, [intensityVariable, sensoryVar, standardVar, conflictVar, visualStandardVar, visualTestVar, audioTestVar])
+        sim_grouped = self.groupByChooseTest(simulatedData, [intensityVariable, sensoryVar, standardVar, conflictVar, visualStandardVar, visualTestVar, audioTestVar])
+
+        print(f"\n\n\n Fittin nowSimulated data grouped by conditions: {len(sim_grouped)} unique conditions")
 
         # fit simulated data the simple psychometric model
-        
+        fitSimData = self.fitMultipleStartingPoints(simulatedData)
+
+        print(f"\nFitted parameters for simulated data: {fitSimData.x}")
+
+        #self.plot_fitted_psychometric(fitSimData,pltTitle="Simulated Psychometric (Causal Inference Model)",)
 
         plt.figure(figsize=(10, 5))
-        for audioNoiseLevel in sorted(sim_grouped[sensoryVar].unique()):
-            for conflictLevel in sorted(sim_grouped[conflictVar].unique()):
+        for j, audioNoiseLevel in enumerate(sorted(self.uniqueSensory)):
+            for k, conflictLevel in enumerate(self.uniqueConflict):
+                # get parameters for the current condition
+                lambda_,mu,sigma=self.getParams(fitSimData.x, conflictLevel, audioNoiseLevel)
                 mask = (sim_grouped[sensoryVar] == audioNoiseLevel) & (sim_grouped[conflictVar] == conflictLevel)
-                x = sim_grouped[mask][intensityVariable]
-                y = sim_grouped[mask]['p_choose_test']
+                x = np.linspace(-0.5, 0.5, 1000)
+                y =  self.psychometric_function(x, lambda_, mu, sigma)
                 color = sns.color_palette("viridis", as_cmap=True)(conflictLevel / max(sim_grouped[conflictVar]))
                 plt.plot(x, y, 'o-', color=color, label=f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel:.2f}")
         plt.xlabel("Test - Standard Duration Difference")
@@ -511,9 +521,9 @@ if __name__ == "__main__":
     # Simulate and plot psychometric data
     uniqueSensory = np.unique(data[sensoryVar])
     uniqueConflict = np.unique(data[conflictVar])
-    simulated_data = mc_fitter.simulateMonteCarloData(fittedParams, uniqueSensory, uniqueConflict, nSamples=1000)
+    simulatedData = mc_fitter.simulateMonteCarloData(fittedParams, uniqueSensory, uniqueConflict, nSamples=1000)
     mc_fitter.plotPsychometric(
-        simulated_data,
+        simulatedData,
         intensityVariable=intensityVariable,
         sensoryVar=sensoryVar,
         standardVar=standardVar,
