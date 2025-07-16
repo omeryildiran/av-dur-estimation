@@ -333,10 +333,9 @@ def groupByChooseTest(x,groupArgs):
 	return grouped
 
 
-def simulateData(fittedParams, nSamples=1000):
+def simulateData(fittedParams,uniqueSensory, uniqueConflict, nSamples=10000):
 	simData = []
-	uniqueSensory = np.linspace(0.1, 1.2)
-	uniqueConflict = np.linspace(0.05, 0.99, 5)
+	uniqueSensory = [0.1,1.2]
 	for audioNoiseLevel in uniqueSensory:
 		for conflictLevel in uniqueConflict:
 			# Unpack fitted parameters
@@ -353,6 +352,7 @@ def simulateData(fittedParams, nSamples=1000):
 				simData.append({
 					'standardDur': S_a_s,
 					'testDurS': S_a_t,
+					'deltaDurS': S_a_t - S_a_s,
 					'unbiasedVisualStandardDur': S_v_s,
 					'unbiasedVisualTestDur': S_v_t,
 					'audNoise': audioNoiseLevel,
@@ -489,5 +489,28 @@ def plot_posterior_vs_conflict(data,fittedParams,snr_list=[1.2, 0.1]):
 		plt.legend()
 		plt.ylim(0, 1)
 		plt.grid()
+	plt.tight_layout()
+	plt.show()
+
+
+	# Simulate psychometric data using fitted parameters
+	simulated_data = simulateData(fittedParams, nSamples=1000)
+
+	# Group and plot simulated psychometric
+	sim_grouped = groupByChooseTest(simulated_data, [intensityVariable, sensoryVar, standardVar, conflictVar, visualStandardVar, visualTestVar, audioStandardVar, audioTestVar])
+
+	plt.figure(figsize=(10, 5))
+	for audioNoiseLevel in sorted(sim_grouped[sensoryVar].unique()):
+		for conflictLevel in sorted(sim_grouped[conflictVar].unique()):
+			mask = (sim_grouped[sensoryVar] == audioNoiseLevel) & (sim_grouped[conflictVar] == conflictLevel)
+			x = sim_grouped[mask][intensityVariable]
+			y = sim_grouped[mask]['p_choose_test']
+			color = sns.color_palette("viridis", as_cmap=True)(conflictLevel / max(sim_grouped[conflictVar]))
+			plt.plot(x, y, 'o-', color=color, label=f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel:.2f}")
+	plt.xlabel("Test - Standard Duration Difference")
+	plt.ylabel("P(chose test)")
+	plt.title("Simulated Psychometric (Causal Inference Model)")
+	plt.legend()
+	plt.grid(True)
 	plt.tight_layout()
 	plt.show()
