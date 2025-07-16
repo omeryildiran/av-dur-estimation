@@ -5,6 +5,8 @@ import seaborn as sns
 import pandas as pd
 import os
 
+
+
 # function for loading data
 def loadData(dataName, isShared, isAllIndependent):
     global data, sharedSigma, intensityVariable, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu, allIndependent
@@ -184,7 +186,6 @@ def estimate_initial_guesses(levels,chooseTest,totalResp):
     return [lapse_rate_guess, mu_guess, sigma_guess]
 
 
-from tqdm import tqdm
 
 def getParams(params, conflict, audio_noise, nLambda, nSigma):
     if allIndependent and not sharedSigma:  # if all parameters are independent
@@ -310,43 +311,6 @@ def fit_psychometric_function(levels,nResp, totalResp,init_guesses=[0,0,0]):
     # returns the fitted parameters lambda, mu, sigma
     return result.x
 
-
-# Update nLLJoint to use getParams
-def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_levels):
-    """
-    Vectorized negative log likelihood for all conditions.
-    """
-    if allIndependent:
-        lam = np.empty(len(delta_dur))
-        mu = np.empty(len(delta_dur))
-        sigma = np.empty(len(delta_dur))
-        for i in range(len(delta_dur)):
-            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
-
-        # Vectorized psychometric function
-        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
-        epsilon = 1e-9
-        p = np.clip(p, epsilon, 1 - epsilon)
-
-        # Vectorized negative log-likelihood
-        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
-        return nll
-    else:
-        # Precompute parameter arrays for each data point
-        lam = np.empty(len(delta_dur))
-        mu = np.empty(len(delta_dur))
-        sigma = np.empty(len(delta_dur))
-        for i in range(len(delta_dur)):
-            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
-
-        # Vectorized psychometric function
-        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
-        epsilon = 1e-9
-        p = np.clip(p, epsilon, 1 - epsilon)
-
-        # Vectorized negative log-likelihood
-        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
-        return nll
 
 # fitting function for joint model
 def fitJoint(grouped_data,  initGuesses):
