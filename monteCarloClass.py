@@ -34,7 +34,7 @@ class TqdmMinimizeCallback:
 
 
 
-class fitPychometricMonteCarlo(fitPychometric):
+class OmerMonteCarlo(fitPychometric):
     """
     A class for fitting psychometric functions using Monte Carlo methods.
     Inherits from fitPychometric.
@@ -48,6 +48,11 @@ class fitPychometricMonteCarlo(fitPychometric):
         self.nStart = 1  # Number of random starts for optimization
         self.nSimul = 10  # Number of simulations for Monte Carlo approximation
         self.optimizationMethod = 'BADS'  # Optimization method for fitting
+        self.modelFit = None  # Placeholder for fitted model
+        self.simulatedData = None  # Placeholder for simulated data
+        self.dataFit = None  # Placeholder for fitted data
+        self.simDataFit = None  # Placeholder for simulated data fit
+        self.groupedData = None  # Placeholder for grouped data
 
 
     def getParamsCausal(self,params,SNR):
@@ -366,8 +371,89 @@ class fitPychometricMonteCarlo(fitPychometric):
 
 
 
+    def plot_mu_vs_conflict_MC_vs_Data(self):
+        plt.figure(figsize=(16, 6))
+        for i, standardLevel in enumerate(self.uniqueStandard):
+            for j, audioNoiseLevel in enumerate(sorted(self.uniqueSensory)):
+                for k, conflictLevel in enumerate(self.uniqueConflict):
+                    plt.subplot(1, 2, j + 1)
+                    color = sns.color_palette("viridis", as_cmap=True)(k / len(self.uniqueConflict))
+                    
+                    paramsSimDf = self.getParams(self.simDataFit.x, conflictLevel, audioNoiseLevel)  # lambda mu sigma
+                    muModel = paramsSimDf[1]
+                    muData = self.getParams(self.dataFit.x, conflictLevel, audioNoiseLevel)[1]
+                    print(muModel, muData)
+                    plt.scatter(conflictLevel, muData, color="red", s=40, alpha=0.7)
+                    plt.scatter(conflictLevel, muModel, color="blue", s=40,  alpha=0.7)
+                    plt.xlabel(f"Conflict (ms)")
+                    plt.ylabel("Mu (sigma_av_a)")
+                    plt.axhline(y=0, color='gray', linestyle='--')
+                    plt.axvline(x=0, color='gray', linestyle='--')
+                    plt.ylim(-0.5, 0.5)
+                    plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
+                    plt.axline((0, 0), slope=1, color='gray', linestyle='--', label='y=x')
+                    plt.legend(fontsize=14, title_fontsize=14)
+                    plt.grid()
+        plt.show()
 
 
+    def plotPsychometrics_MC_Data(self):
+        "use self to get the  required stuff"
+
+        pltTitle = self.dataName + " Causal Inference Model Fit"
+        plt.figure(figsize=(16, 6))
+        for i, standardLevel in enumerate(self.uniqueStandard):
+            for j, audioNoiseLevel in enumerate(sorted(self.uniqueSensory)):
+                for k, conflictLevel in enumerate(self.uniqueConflict):
+                    plt.subplot(1, 2, j + 1)
+                    x = np.linspace(-0.5, 0.5, 1000)
+                    color = sns.color_palette("viridis", as_cmap=True)(k / len(self.uniqueConflict))
+                    paramsSimDf=self.getParams(self.simDataFit.x, conflictLevel, audioNoiseLevel)
+
+                    # Plot simulation: plot simulated data points (proportion chose test) for each deltaDurS
+                    simDf = self.simulatedData[
+                        (self.simulatedData[sensoryVar] == audioNoiseLevel) &
+                        (self.simulatedData[conflictVar] == conflictLevel)
+                    ]
+                    if not simDf.empty:
+                        simDf = simDf.sort_values(by=intensityVariable)
+                        x_sim = simDf[intensityVariable].values
+                        y_sim = simDf['chose_test'] / simDf['responses']
+                        #plt.scatter(x_sim, y_sim, color=color, s=40, marker='o', label=f"SimData c={int(conflictLevel*1000)}", alpha=0.7)
+                    ySimSigmoid=self.psychometric_function(x, paramsSimDf[0],paramsSimDf[1],paramsSimDf[2])
+                    plt.plot(x, ySimSigmoid, color=color)
+
+
+                    "plot the monte carlo"
+                    lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(fittedParams, audioNoiseLevel)
+                    S_a_s = 0.5
+                    S_v_s = S_a_s + conflictLevel
+                    y = np.zeros_like(x)
+                    for idx in range(len(x)):
+                        y[idx] = self.probTestLonger([S_a_s, S_a_s + x[idx], S_v_s, S_a_s + x[idx]], sigma_av_a, sigma_av_v, p_c, lambda_)
+                    
+                    plt.plot(x, y, color=color, label=f"c: {int(conflictLevel*1000)}, $\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f}", linewidth=4,alpha=0.3)
+                    
+
+                    plt.axvline(x=0, color='gray', linestyle='--')
+                    plt.axhline(y=0.5, color='gray', linestyle='--')
+                    plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
+                    plt.ylabel("P(chose test)")
+                    plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
+                    plt.legend(fontsize=14, title_fontsize=14)
+                    plt.grid()
+
+                    groupedDataSub = self.groupByChooseTest(
+                        data[(data[standardVar] == standardLevel) & (data[sensoryVar] == audioNoiseLevel) & (data[conflictVar] == conflictLevel)],
+                        [intensityVariable, sensoryVar, standardVar, conflictVar, visualStandardVar, visualTestVar, audioTestVar]
+                    )
+                    self.bin_and_plot(groupedDataSub, bin_method='cut', bins=10, plot=True, color=color)
+                    plt.text(0.05, 0.8, f"$\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f},", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
+                    plt.tight_layout()
+                    plt.grid(True)
+                    print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Lambda: {lambda_:.3f}, Sigma_a: {sigma_av_a:.3f}, Sigma_v: {sigma_av_v:.3f}, p_c: {p_c:.3f}")
+                    plt.text(0.15, 0.9, f"P(C=1): {p_c:.2f}", fontsize=12, ha='center', va='bottom', transform=plt.gca().transAxes)
+        plt.show()
 
 
 
@@ -402,7 +488,7 @@ if __name__ == "__main__":
 
 
     # Instantiate the Monte Carlo class
-    mc_fitter = fitPychometricMonteCarlo(
+    mc_fitter = OmerMonteCarlo(
         data
         # intensityVar=intensityVariable,
         # sensoryVar=sensoryVar,
@@ -433,64 +519,72 @@ if __name__ == "__main__":
     # uniqueConflict = sorted(groupedData[conflictVar].unique())
 
     # simulate data for psychometric curve
-    simulatedData = mc_fitter.simulateMonteCarloData(fittedParams, mc_fitter.uniqueSensory, mc_fitter.uniqueConflict, nSamples=100)
-    simDataFit=mc_fitter.fitMultipleStartingPoints(simulatedData,1)
+    mc_fitter.simulatedData = mc_fitter.simulateMonteCarloData(fittedParams, mc_fitter.uniqueSensory, mc_fitter.uniqueConflict, nSamples=100)
+    mc_fitter.simDataFit=mc_fitter.fitMultipleStartingPoints(mc_fitter.simulatedData,1)
+
+    "psychometric fit"
+    mc_fitter.dataFit= mc_fitter.fitMultipleStartingPoints(data,1)
 
 
-    pltTitle = dataName + " Causal Inference Model Fit"
-    plt.figure(figsize=(16, 6))
-    for i, standardLevel in enumerate(mc_fitter.uniqueStandard):
-        for j, audioNoiseLevel in enumerate(sorted(mc_fitter.uniqueSensory)):
-            for k, conflictLevel in enumerate(mc_fitter.uniqueConflict):
-                plt.subplot(1, 2, j + 1)
-                x = np.linspace(-0.5, 0.5, 1000)
-                color = sns.color_palette("viridis", as_cmap=True)(k / len(mc_fitter.uniqueConflict))
-                paramsSimDf=mc_fitter.getParams(simDataFit.x, conflictLevel, audioNoiseLevel)
+    # Plotting the results
+    mc_fitter.plotPsychometrics_MC_Data()
+    # pltTitle = dataName + " Causal Inference Model Fit"
+    # plt.figure(figsize=(16, 6))
+    # for i, standardLevel in enumerate(mc_fitter.uniqueStandard):
+    #     for j, audioNoiseLevel in enumerate(sorted(mc_fitter.uniqueSensory)):
+    #         for k, conflictLevel in enumerate(mc_fitter.uniqueConflict):
+    #             plt.subplot(1, 2, j + 1)
+    #             x = np.linspace(-0.5, 0.5, 1000)
+    #             color = sns.color_palette("viridis", as_cmap=True)(k / len(mc_fitter.uniqueConflict))
+    #             paramsSimDf=mc_fitter.getParams(mc_fitter.simDataFit.x, conflictLevel, audioNoiseLevel)
 
-                # Plot simulation: plot simulated data points (proportion chose test) for each deltaDurS
-                simDf = simulatedData[
-                    (simulatedData[sensoryVar] == audioNoiseLevel) &
-                    (simulatedData[conflictVar] == conflictLevel)
-                ]
-                if not simDf.empty:
-                    simDf = simDf.sort_values(by=intensityVariable)
-                    x_sim = simDf[intensityVariable].values
-                    y_sim = simDf['chose_test'] / simDf['responses']
-                    
-                    #plt.scatter(x_sim, y_sim, color=color, s=40, marker='o', label=f"SimData c={int(conflictLevel*1000)}", alpha=0.7)
-                ySimSigmoid=mc_fitter.psychometric_function(x, paramsSimDf[0],paramsSimDf[1],paramsSimDf[2])
-                plt.plot(x, ySimSigmoid, color=color)
+    #             # Plot simulation: plot simulated data points (proportion chose test) for each deltaDurS
+    #             simDf = mc_fitter.simulatedData[
+    #                 (mc_fitter.simulatedData[sensoryVar] == audioNoiseLevel) &
+    #                 (mc_fitter.simulatedData[conflictVar] == conflictLevel)
+    #             ]
+    #             if not simDf.empty:
+    #                 simDf = simDf.sort_values(by=intensityVariable)
+    #                 x_sim = simDf[intensityVariable].values
+    #                 y_sim = simDf['chose_test'] / simDf['responses']
+    #                 #plt.scatter(x_sim, y_sim, color=color, s=40, marker='o', label=f"SimData c={int(conflictLevel*1000)}", alpha=0.7)
+    #             ySimSigmoid=mc_fitter.psychometric_function(x, paramsSimDf[0],paramsSimDf[1],paramsSimDf[2])
+    #             plt.plot(x, ySimSigmoid, color=color)
 
 
-                "plot the monte carlo"
-                lambda_, sigma_av_a, sigma_av_v, p_c = mc_fitter.getParamsCausal(fittedParams, audioNoiseLevel)
-                S_a_s = 0.5
-                S_v_s = S_a_s + conflictLevel
-                y = np.zeros_like(x)
-                for idx in range(len(x)):
-                    y[idx] = mc_fitter.probTestLonger([S_a_s, S_a_s + x[idx], S_v_s, S_a_s + x[idx]], sigma_av_a, sigma_av_v, p_c, lambda_)
+    #             "plot the monte carlo"
+    #             lambda_, sigma_av_a, sigma_av_v, p_c = mc_fitter.getParamsCausal(fittedParams, audioNoiseLevel)
+    #             S_a_s = 0.5
+    #             S_v_s = S_a_s + conflictLevel
+    #             y = np.zeros_like(x)
+    #             for idx in range(len(x)):
+    #                 y[idx] = mc_fitter.probTestLonger([S_a_s, S_a_s + x[idx], S_v_s, S_a_s + x[idx]], sigma_av_a, sigma_av_v, p_c, lambda_)
                 
-                plt.plot(x, y, color=color, label=f"c: {int(conflictLevel*1000)}, $\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f}", linewidth=4,alpha=0.3)
+    #             plt.plot(x, y, color=color, label=f"c: {int(conflictLevel*1000)}, $\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f}", linewidth=4,alpha=0.3)
                 
-                plt.axvline(x=0, color='gray', linestyle='--')
-                plt.axhline(y=0.5, color='gray', linestyle='--')
-                plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
-                plt.ylabel("P(chose test)")
-                plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
-                plt.legend(fontsize=14, title_fontsize=14)
-                plt.grid()
 
-                groupedDataSub = mc_fitter.groupByChooseTest(
-                    data[(data[standardVar] == standardLevel) & (data[sensoryVar] == audioNoiseLevel) & (data[conflictVar] == conflictLevel)],
-                    [intensityVariable, sensoryVar, standardVar, conflictVar, visualStandardVar, visualTestVar, audioTestVar]
-                )
-                #mc_fitter.bin_and_plot(groupedDataSub, bin_method='cut', bins=10, plot=True, color=color)
-                plt.text(0.05, 0.8, f"$\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f},", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
-                plt.tight_layout()
-                plt.grid(True)
-                print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Lambda: {lambda_:.3f}, Sigma_a: {sigma_av_a:.3f}, Sigma_v: {sigma_av_v:.3f}, p_c: {p_c:.3f}")
-                plt.text(0.15, 0.9, f"P(C=1): {p_c:.2f}", fontsize=12, ha='center', va='bottom', transform=plt.gca().transAxes)
-    plt.show()
+    #             plt.axvline(x=0, color='gray', linestyle='--')
+    #             plt.axhline(y=0.5, color='gray', linestyle='--')
+    #             plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
+    #             plt.ylabel("P(chose test)")
+    #             plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
+    #             plt.legend(fontsize=14, title_fontsize=14)
+    #             plt.grid()
+
+    #             groupedDataSub = mc_fitter.groupByChooseTest(
+    #                 data[(data[standardVar] == standardLevel) & (data[sensoryVar] == audioNoiseLevel) & (data[conflictVar] == conflictLevel)],
+    #                 [intensityVariable, sensoryVar, standardVar, conflictVar, visualStandardVar, visualTestVar, audioTestVar]
+    #             )
+    #             mc_fitter.bin_and_plot(groupedDataSub, bin_method='cut', bins=10, plot=True, color=color)
+    #             plt.text(0.05, 0.8, f"$\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f},", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
+    #             plt.tight_layout()
+    #             plt.grid(True)
+    #             print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Lambda: {lambda_:.3f}, Sigma_a: {sigma_av_a:.3f}, Sigma_v: {sigma_av_v:.3f}, p_c: {p_c:.3f}")
+    #             plt.text(0.15, 0.9, f"P(C=1): {p_c:.2f}", fontsize=12, ha='center', va='bottom', transform=plt.gca().transAxes)
+    # plt.show()
+
+
+                
 
 
 

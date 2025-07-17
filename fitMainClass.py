@@ -25,7 +25,9 @@ class fitPychometric:
         self.uniqueConflict = sorted(data[self.conflictVar].unique())
         self.nLambda = len(self.uniqueSensory)
         self.nSigma = len(self.uniqueStandard)
-        self.nMu = len(self.uniqueConflict) * len(self.uniqueSensory)  
+        self.nMu = len(self.uniqueConflict) * len(self.uniqueSensory) 
+        self.dataName= None # placeholder for data name if needed 
+        
         
 
 
@@ -407,6 +409,8 @@ if __name__ == "__main__":
     data, dataName = loadData("HH_all.csv")
 
     fit_model = fitPychometric(data, sharedSigma=sharedSigma, allIndependent=allIndependent)
+    fit_model.dataName = dataName
+
     best_fit = fit_model.fitMultipleStartingPoints(data, nStart=1)
     print(f"Fitted parameters: {best_fit.x}")
 
