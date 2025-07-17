@@ -12,7 +12,7 @@ from loadData import loadData
 
 class fitPychometric:
     def __init__(self, data, intensityVar='deltaDurS', allIndependent=True, sharedSigma=False,sensoryVar = 'audNoise', 
-                 standardVar = 'standardDur', conflictVar = 'conflictDur'):
+                 standardVar = 'standardDur', conflictVar = 'conflictDur', dataName=None):
         self.data = data
         self.intensityVar = intensityVar
         self.allIndependent = allIndependent

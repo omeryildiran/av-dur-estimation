@@ -41,8 +41,8 @@ class OmerMonteCarlo(fitPychometric):
     """
     
     def __init__(self, data, intensityVar='deltaDurS', allIndependent=True, sharedSigma=False, sensoryVar='audNoise', 
-                 standardVar='standardDur', conflictVar='conflictDur'):
-        super().__init__(data, intensityVar, allIndependent, sharedSigma, sensoryVar, standardVar, conflictVar) 
+                 standardVar='standardDur', conflictVar='conflictDur',dataName=None):
+        super().__init__(data, intensityVar, allIndependent, sharedSigma, sensoryVar, standardVar, conflictVar,dataName) 
         
         self.fitType = 'Monte Carlo'
         self.nStart = 1  # Number of random starts for optimization
@@ -53,7 +53,7 @@ class OmerMonteCarlo(fitPychometric):
         self.dataFit = None  # Placeholder for fitted data
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
-
+        self.mDist = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
 
     def getParamsCausal(self,params,SNR):
         """Extract causal inference parameters for a specific condition (conflict, noise)."""
@@ -156,19 +156,35 @@ class OmerMonteCarlo(fitPychometric):
         return p_final
 
     def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_):
-        nSimul = self.nSimul
-        S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-        m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
-        m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
-        m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
-        m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
-        est_standard = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
-        est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
-        p_base = np.mean(est_test > est_standard)
-        p_final = (1 - lambda_) * p_base + lambda_ / 2
+        if self.mDist == "gaussian":
+            #print("Using Gaussian distribution for measurements")
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
+            m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
+            m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
+            m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
+            est_standard = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
+            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            p_base = np.mean(est_test > est_standard)
+            p_final = (1 - lambda_) * p_base + lambda_ / 2
+
+        elif self.mDist == "lognorm":
+            #print("Using lognormal distribution for measurements")
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            m_a_s = np.random.lognormal(mean=np.log(S_a_s), sigma=sigma_av_a, size=nSimul)
+            m_v_s = np.random.lognormal(mean=np.log(S_v_s), sigma=sigma_av_v, size=nSimul)
+            m_a_t = np.random.lognormal(mean=np.log(S_a_t), sigma=sigma_av_a, size=nSimul)
+            m_v_t = np.random.lognormal(mean=np.log(S_v_t), sigma=sigma_av_v, size=nSimul)
+            est_standard = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
+            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            p_base = np.mean(est_test > est_standard)
+            p_final = (1 - lambda_) * p_base + lambda_ / 2
         return p_final
     
     def nLLMonteCarloCausal(self, params, groupedData):
+
         """Negative log-likelihood for causal inference model"""
         ll = 0
         lenData = len(groupedData)
@@ -265,7 +281,7 @@ class OmerMonteCarlo(fitPychometric):
                     result = minimize(
                         self.nLLMonteCarloCausal,
                         x0=x0,
-                        args=(groupedData,),
+                        args=(groupedData),
                         method='Powell',
                         bounds=bounds
                     )
@@ -382,16 +398,14 @@ class OmerMonteCarlo(fitPychometric):
                     paramsSimDf = self.getParams(self.simDataFit.x, conflictLevel, audioNoiseLevel)  # lambda mu sigma
                     muModel = paramsSimDf[1]
                     muData = self.getParams(self.dataFit.x, conflictLevel, audioNoiseLevel)[1]
-                    print(muModel, muData)
                     plt.scatter(conflictLevel, muData, color="red", s=40, alpha=0.7)
                     plt.scatter(conflictLevel, muModel, color="blue", s=40,  alpha=0.7)
                     plt.xlabel(f"Conflict (ms)")
                     plt.ylabel("Mu (sigma_av_a)")
                     plt.axhline(y=0, color='gray', linestyle='--')
                     plt.axvline(x=0, color='gray', linestyle='--')
-                    plt.ylim(-0.5, 0.5)
-                    plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
-                    plt.axline((0, 0), slope=1, color='gray', linestyle='--', label='y=x')
+                    plt.ylim(-0.3, 0.3)
+                    plt.title(f"{self.dataName} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
                     plt.legend(fontsize=14, title_fontsize=14)
                     plt.grid()
         plt.show()
@@ -495,7 +509,8 @@ if __name__ == "__main__":
         # standardVar=standardVar,
         # conflictVar=conflictVar
     )
-    mc_fitter.nSimul = 100
+    mc_fitter.dataName = dataName
+    mc_fitter.nSimul = 1000
     mc_fitter.optimizationMethod= "not bads"  # Use BADS for optimization
     mc_fitter.nStart = 1  # Number of random starts for optimization
     groupedData = mc_fitter.groupByChooseTest(
@@ -507,7 +522,7 @@ if __name__ == "__main__":
     )
 
 
-
+    mc_fitter.mDist = "lognorm"  # Set measurement distribution to Gaussian
     timeStart = time.time()
     print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
     fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
@@ -524,6 +539,7 @@ if __name__ == "__main__":
 
     "psychometric fit"
     mc_fitter.dataFit= mc_fitter.fitMultipleStartingPoints(data,1)
+
 
 
     # Plotting the results
