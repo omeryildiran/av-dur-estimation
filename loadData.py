@@ -127,6 +127,7 @@ def loadData(dataName):
 	data["logConflictDur"] = np.log(data[conflictVar])
 	data["logTestDur"] = np.log(data["testDurS"])
 	data["logDeltaDur"] = data["logTestDur"] - data["logStandardDur"]
+	data["logDeltaDurMs"] = np.log(data["testDurMs"]) - np.log(data["standardDurMs"])
 
 	dataName = dataName.split(".")[0]
 	return data, dataName
