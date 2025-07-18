@@ -258,9 +258,9 @@ class CausalInferenceSimulation(Scene):
         
         # Show different scenarios with actual data
         scenarios = [
-            {"name": "No Conflict (P_common=0.9)", "S_a": 0.8, "conflict": 0.0, "p_c": 0.9, "color": GREEN},
-            {"name": "Small Conflict (P_common=0.7)", "S_a": 0.8, "conflict": 0.4, "p_c": 0.7, "color": YELLOW},
-            {"name": "Large Conflict (P_common=0.3)", "S_a": 0.8, "conflict": 0.8, "p_c": 0.3, "color": RED},
+            {"name": "Very small conflict (P_common=0.9)", "S_a": 0.8, "conflict": 0.0, "p_c": 1, "color": RED},
+            {"name": "Small conflict (P_common=0.95)", "S_a": 0.8, "conflict": 0.4, "p_c": 0.95, "color": RED},
+            {"name": "Large conflict (P_common=0.7)", "S_a": 0.8, "conflict": 0.8, "p_c": 0.7, "color": RED},
         ]
         
         for i, scenario in enumerate(scenarios):
@@ -279,8 +279,8 @@ class CausalInferenceSimulation(Scene):
         S_a = scenario["S_a"]
         conflict = scenario["conflict"]
         S_v = S_a + conflict
-        sigma_a = 0.2
-        sigma_v = 0.2
+        sigma_a = 0.4
+        sigma_v = 0.4
         p_c = scenario["p_c"]
         
         # Generate simulation data

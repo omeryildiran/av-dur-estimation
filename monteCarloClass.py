@@ -331,7 +331,7 @@ class OmerMonteCarlo(fitPychometric):
 
     def simulateMonteCarloData(self, fittedParams, uniqueSensory, uniqueConflict, nSamples=10000):
         simData = []
-        deltaDurs = np.linspace(-1, 1, 100)
+        deltaDurs = np.linspace(-0.5, 0.5, 100)
         for x in deltaDurs:
             for audioNoiseLevel in uniqueSensory:
                 for conflictLevel in uniqueConflict:
