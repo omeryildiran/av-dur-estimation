@@ -74,7 +74,7 @@ class OmerMonteCarlo(fitPychometric):
     # likelihood function
     def unimodalLikelihood(self, S, sigma):
         m = np.linspace(0, S + 10*sigma, 500)
-        p_m = fitMain.norm.pdf(m, loc=S, scale=sigma)
+        p_m = norm.pdf(m, loc=S, scale=sigma)
         return m, p_m
 
     # probability density function of a Gaussian distribution
@@ -108,7 +108,7 @@ class OmerMonteCarlo(fitPychometric):
 
     # Likelihood under independent causes
     def likelihood_C2(self, m_a, m_v, S_a, S_v, sigma_av_a, sigma_av_v):
-        return fitMain.norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * fitMain.norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
+        return norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
 
     # Posterior of common cause
     def posterior_C1(self, likelihood_c1, likelihood_c2, p_c):
@@ -127,7 +127,7 @@ class OmerMonteCarlo(fitPychometric):
     def causalInference_vectorized(self, S_a, S_v, m_a, m_v, sigma_av_a, sigma_av_v, p_c):
         var_sum = sigma_av_a**2 + sigma_av_v**2
         likelihood_c1 = (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-(m_a - m_v)**2 / (2 * var_sum))
-        likelihood_c2 = fitMain.norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * fitMain.norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
+        likelihood_c2 = norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
         posterior_c1 = (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
         fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_av_a, sigma_av_v)
 
@@ -137,7 +137,7 @@ class OmerMonteCarlo(fitPychometric):
     def causalInference_vectorized_logNorm(self, S_a, S_v, m_a, m_v, sigma_av_a, sigma_av_v, p_c):
         var_sum = sigma_av_a**2 + sigma_av_v**2
         likelihood_c1 = (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-(m_a - m_v)**2 / (2 * var_sum))
-        likelihood_c2 = fitMain.norm.pdf(np.log(m_a), loc=np.log(S_a), scale=sigma_av_a) * fitMain.norm.pdf(np.log(m_v), loc=np.log(S_v), scale=sigma_av_v)
+        likelihood_c2 = norm.pdf(np.log(m_a), loc=np.log(S_a), scale=sigma_av_a) * norm.pdf(np.log(m_v), loc=np.log(S_v), scale=sigma_av_v)
         posterior_c1 = (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
         fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_av_a, sigma_av_v)
 
