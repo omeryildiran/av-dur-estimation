@@ -209,7 +209,9 @@ class OmerMonteCarlo(fitPychometric):
             m_a_t = np.random.lognormal(mean=np.log(S_a_t), sigma=sigma_av_a, size=nSimul)
             m_v_t = np.random.lognormal(mean=np.log(S_v_t), sigma=sigma_av_v, size=nSimul)
             est_standard = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
-            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            #est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            # or est_test computed using causalInference_vectorized 
+            est_test = self.causalInference_vectorized(S_a_t, S_v_t, m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
             p_base = np.mean(est_test > est_standard)
             p_final = (1 - lambda_) * p_base + lambda_ / 2
         return p_final
@@ -477,13 +479,13 @@ class OmerMonteCarlo(fitPychometric):
                     lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(self.modelFit, audioNoiseLevel)
                     S_a_s = 0.5
                     S_v_s = S_a_s + conflictLevel
-                    y = np.zeros_like(x)
-                    for idx in range(len(x)):
-                        y[idx] = self.probTestLonger([S_a_s, S_a_s + x[idx], S_v_s, S_a_s + x[idx]], sigma_av_a, sigma_av_v, p_c, lambda_)
+                    # plot the psychometric curve for the monte carlo model simulations
+                    # y = np.zeros_like(x)
+                    # for idx in range(len(x)):
+                    #     y[idx] = self.probTestLonger([S_a_s, S_a_s + x[idx], S_v_s, S_a_s + x[idx]], sigma_av_a, sigma_av_v, p_c, lambda_)
                     
-                    plt.plot(x, y, color=color, label=f"c: {int(conflictLevel*1000)}, $\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f}", linewidth=4,alpha=0.3)
-                    
-
+                    # plt.plot(x, y, color=color, label=f"c: {int(conflictLevel*1000)}, $\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f}", linewidth=4,alpha=0.3)
+            
                     plt.axvline(x=0, color='gray', linestyle='--')
                     plt.axhline(y=0.5, color='gray', linestyle='--')
                     plt.xlabel(f"({self.intensityVar}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
