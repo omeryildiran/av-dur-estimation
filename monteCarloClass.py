@@ -54,7 +54,18 @@ class OmerMonteCarlo(fitPychometric):
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
         self.mDist = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
-        
+        self.groupedData= self.groupByChooseTest(x=data,
+                    groupArgs=[
+                    intensityVariable, sensoryVar, standardVar, conflictVar,
+                    visualStandardVar, visualTestVar, audioTestVar
+                        ]
+                        )
+        self.visualStandardVar = "unbiasedVisualStandardDur"
+        self.visualTestVar = "unbiasedVisualTestDur"
+        self.audioTestVar = "testDurS"
+        self.dataName = dataName if dataName else "default_data"
+        self.data = data
+                
 
     def getParamsCausal(self,params,SNR):
         """Extract causal inference parameters for a specific condition (conflict, noise)."""
@@ -326,43 +337,45 @@ class OmerMonteCarlo(fitPychometric):
         print(f"  → Final log-likelihood: {fval:.6f}")
 
         return xres
-    
 
-
-    def simulateMonteCarloData(self, fittedParams, uniqueSensory, uniqueConflict, nSamples=10000):
+    def simulateMonteCarloData(self, fittedParams, data, nSamples=10000):        
         simData = []
-        deltaDurs = np.linspace(-0.5, 0.5, 100)
-        for x in deltaDurs:
-            for audioNoiseLevel in uniqueSensory:
-                for conflictLevel in uniqueConflict:
-                    # Unpack fitted parameters
-                    lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(fittedParams, audioNoiseLevel)
-                    # Simulate responses
-                    for _ in range(nSamples):
-                        S_a_s = 0.5
-                        S_v_s = S_a_s + conflictLevel
-                        S_a_t = S_a_s + x
-                        S_v_t = S_a_t
-                        trueStims = (S_a_s, S_a_t, S_v_s, S_v_t)
-                        p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_)
-                        chose_test = np.random.binomial(1, p_test_longer)
-                        simData.append({
-                            'standardDur': S_a_s,
-                            'testDurS': S_a_t,
-                            'deltaDurS': S_a_t - S_a_s,
-                            'logDeltaDur': np.log(S_a_t) - np.log(S_a_s),
-                            'logDeltaDurMs': np.log(S_a_t * 1000) - np.log(S_a_s * 1000),
-                            'unbiasedVisualStandardDur': S_v_s,
-                            'unbiasedVisualTestDur': S_v_t,
-                            'audNoise': audioNoiseLevel,
-                            'conflictDur': conflictLevel,
-                            'chose_test': chose_test,
-                            'chose_standard': 1 - chose_test,  # Assuming binary choice
-                            'responses': 1  # Each sample is a response
-                        })
+        # Extract unique combinations of trials from the dataset
+    
+        for _, trial in self.groupedData.iterrows():
+            deltaDurS = trial["deltaDurS"]
+            audioNoiseLevel = trial["audNoise"]
+            conflictLevel = trial["conflictDur"]
+
+            # Unpack fitted parameters for the current audio noise level
+            lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(fittedParams, audioNoiseLevel)
+
+            # Simulate responses for the current trial
+            for _ in range(nSamples):
+                S_a_s = 0.5
+                S_v_s = S_a_s + conflictLevel
+                S_a_t = S_a_s + deltaDurS
+                S_v_t = S_a_t
+                trueStims = (S_a_s, S_a_t, S_v_s, S_v_t)
+                p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_)
+                chose_test = np.random.binomial(1, p_test_longer)
+                simData.append({
+                    'standardDur': S_a_s,
+                    'testDurS': S_a_t,
+                    'deltaDurS': deltaDurS,
+                    'logDeltaDur': np.log(S_a_t) - np.log(S_a_s),
+                    'logDeltaDurMs': np.log(S_a_t * 1000) - np.log(S_a_s * 1000),
+                    'unbiasedVisualStandardDur': S_v_s,
+                    'unbiasedVisualTestDur': S_v_t,
+                    'audNoise': audioNoiseLevel,
+                    'conflictDur': conflictLevel,
+                    'chose_test': chose_test,
+                    'chose_standard': 1 - chose_test,  # Assuming binary choice
+                    'responses': 1  # Each sample is a response
+                })
+
         simData = pd.DataFrame(simData)
         return simData
-
 
 
     def plot_posterior_vs_conflict(self, data, fittedParams, snr_list=[1.2, 0.1]):
@@ -473,7 +486,7 @@ class OmerMonteCarlo(fitPychometric):
 
                     plt.axvline(x=0, color='gray', linestyle='--')
                     plt.axhline(y=0.5, color='gray', linestyle='--')
-                    plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
+                    plt.xlabel(f"({self.intensityVar}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
                     plt.ylabel("P(chose test)")
                     plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
                     plt.legend(fontsize=14, title_fontsize=14)
@@ -481,8 +494,8 @@ class OmerMonteCarlo(fitPychometric):
 
 
                     groupedDataSub = self.groupByChooseTest(
-                        data[(data[standardVar] == standardLevel) & (data[sensoryVar] == audioNoiseLevel) & (data[conflictVar] == conflictLevel)],
-                        [self.intensityVar, sensoryVar, standardVar, conflictVar, visualStandardVar, visualTestVar, audioTestVar]
+                        self.data[(self.data[self.standardVar] == standardLevel) & (self.data[self.sensoryVar] == audioNoiseLevel) & (self.data[self.conflictVar] == conflictLevel)],
+                        [self.intensityVar, self.sensoryVar, self.standardVar, self.conflictVar, self.visualStandardVar, self.visualTestVar, self.audioTestVar]
                     )
                     self.bin_and_plot(groupedDataSub, bin_method='cut', bins=10, plot=True, color=color)
                     plt.text(0.05, 0.8, f"$\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f},", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
@@ -546,6 +559,7 @@ if __name__ == "__main__":
         ]
     )
 
+    
 
     mc_fitter.mDist = "lognorm"  # Set measurement distribution to Gaussian
     timeStart = time.time()
@@ -560,7 +574,7 @@ if __name__ == "__main__":
     # uniqueConflict = sorted(groupedData[conflictVar].unique())
 
     # simulate data for psychometric curve
-    mc_fitter.simulatedData = mc_fitter.simulateMonteCarloData(fittedParams, mc_fitter.uniqueSensory, mc_fitter.uniqueConflict, nSamples=100)
+    mc_fitter.simulatedData = mc_fitter.simulateMonteCarloData(fittedParams, mc_fitter.data ,nSamples=100)
     mc_fitter.simDataFit=mc_fitter.fitMultipleStartingPoints(mc_fitter.simulatedData,1)
 
     "psychometric fit"
