@@ -54,18 +54,22 @@ class OmerMonteCarlo(fitPychometric):
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
         self.mDist = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
-        self.groupedData= self.groupByChooseTest(x=data,
-                    groupArgs=[
-                    intensityVariable, sensoryVar, standardVar, conflictVar,
-                    visualStandardVar, visualTestVar, audioTestVar
-                        ]
-                        )
+        
+    
+        
         self.visualStandardVar = "unbiasedVisualStandardDur"
         self.visualTestVar = "unbiasedVisualTestDur"
         self.audioTestVar = "testDurS"
         self.dataName = dataName if dataName else "default_data"
         self.data = data
-                
+        self.sharedSigma_v=True
+
+        self.groupedData= self.groupByChooseTest(x=data,
+                groupArgs=[
+                self.intensityVar, sensoryVar, standardVar, conflictVar,
+                self.visualStandardVar, self.visualTestVar, self.audioTestVar
+                    ]
+                    )
 
     def getParamsCausal(self,params,SNR):
         """Extract causal inference parameters for a specific condition (conflict, noise)."""
@@ -79,6 +83,10 @@ class OmerMonteCarlo(fitPychometric):
             sigma_av_a=params[4]
             sigma_av_v=params[5]
             p_c=params[6]
+
+        if self.sharedSigma_v:
+            sigma_av_v = params[2]  # Use the shared sigma for visual noise
+            params[5] =params[2]  # Update the second sigma_av_v parameter for the second SNR condition 
 
         return lambda_,sigma_av_a,sigma_av_v,p_c
     
@@ -108,8 +116,6 @@ class OmerMonteCarlo(fitPychometric):
         w_a = J_AV_A / (J_AV_A + J_AV_V)
         w_v = 1 - w_a
         fused_S_av = w_a * m_a + w_v * m_v
-        # if self.mDist == "lognorm":
-        #     fused_S_av = np.exp(fused_S_av)
         return fused_S_av
 
     # Likelihood under common cause
@@ -143,16 +149,6 @@ class OmerMonteCarlo(fitPychometric):
         fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_av_a, sigma_av_v)
 
         final_estimate = posterior_c1 * fused_S_av + (1 - posterior_c1) * m_a
-        return final_estimate
-    
-    def causalInference_vectorized_logNorm(self, S_a, S_v, m_a, m_v, sigma_av_a, sigma_av_v, p_c):
-        var_sum = sigma_av_a**2 + sigma_av_v**2
-        likelihood_c1 = (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-(m_a - m_v)**2 / (2 * var_sum))
-        likelihood_c2 = norm.pdf(np.log(m_a), loc=np.log(S_a), scale=sigma_av_a) * norm.pdf(np.log(m_v), loc=np.log(S_v), scale=sigma_av_v)
-        posterior_c1 = (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
-        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_av_a, sigma_av_v)
-
-        final_estimate = posterior_c1 * fused_S_av + (1 - posterior_c1) * np.exp(m_a)
         return final_estimate
 
 
@@ -348,10 +344,13 @@ class OmerMonteCarlo(fitPychometric):
             deltaDurS = trial["deltaDurS"]
             audioNoiseLevel = trial["audNoise"]
             conflictLevel = trial["conflictDur"]
+            totalResponses = trial["total_responses"]
+
 
             # Unpack fitted parameters for the current audio noise level
             lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(fittedParams, audioNoiseLevel)
 
+            nSamples = 10* int(totalResponses)  # Scale number of samples by total responses for better simulation
             # Simulate responses for the current trial
             for _ in range(nSamples):
                 S_a_s = 0.5
