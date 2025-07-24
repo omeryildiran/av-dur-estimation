@@ -327,12 +327,12 @@ class OmerMonteCarlo(fitPychometric):
             # Random x0 initialization within bounds
             x0 = np.array([
                 np.random.uniform(0.01, 0.24),  # lambda_
-                np.random.uniform(0.1, 1.5),    # sigma_av_a_1
-                np.random.uniform(0.1, 1.5),    # sigma_av_v_1
-                np.random.uniform(0.1, 0.98),   # p_c_1
-                np.random.uniform(0.1, 1.5),    # sigma_av_a_2
-                np.random.uniform(0.1, 1.5),    # sigma_av_v_2
-                np.random.uniform(0.1, 0.98),   # p_c_2,
+                np.random.uniform(0.1, 2),    # sigma_av_a_1
+                np.random.uniform(0.1, 2),    # sigma_av_v_1
+                np.random.uniform(0.1, 0.9),   # p_c_1
+                np.random.uniform(0.3, 2),    # sigma_av_a_2
+                np.random.uniform(0.1, 2),    # sigma_av_v_2
+                np.random.uniform(0.1, 1),   # p_c_2,
             ])
 
             try:
@@ -340,8 +340,8 @@ class OmerMonteCarlo(fitPychometric):
                     # Prepare bounds
                     lb = bounds[:, 0]
                     ub = bounds[:, 1]
-                    plb = lb * 1.2
-                    pub = ub * 0.9
+                    plb = [0.06, 0.2,0.2,0.3, 0.2, 0.2, 0.6]  # lower bounds for BADS
+                    pub = [0.15, 0.6,0.8,0.6, 0.8, 0.8, 0.9]  # lower bounds for BADS
 
                     obj = lambda x: self.nLLMonteCarloCausal(x, groupedData)
                     bads = BADS(obj, x0, lb, ub, plb, pub, options={"display": "off"})
@@ -392,7 +392,7 @@ class OmerMonteCarlo(fitPychometric):
             # Unpack fitted parameters for the current audio noise level
             lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(fittedParams, audioNoiseLevel)
 
-            nSamples = 10* int(totalResponses)  # Scale number of samples by total responses for better simulation
+            nSamples = nSamples#10* int(totalResponses)  # Scale number of samples by total responses for better simulation
             # Simulate responses for the current trial
             for _ in range(nSamples):
                 S_a_s = 0.5
@@ -418,7 +418,8 @@ class OmerMonteCarlo(fitPychometric):
                 })
 
         simData = pd.DataFrame(simData)
-        return simData
+        self.simulatedData = simData
+        return self.simulatedData
 
 
     def plot_posterior_vs_conflict(self, data, fittedParams, snr_list=[1.2, 0.1]):
