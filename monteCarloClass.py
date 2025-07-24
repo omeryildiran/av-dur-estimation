@@ -181,7 +181,8 @@ class OmerMonteCarlo(fitPychometric):
         p_base = np.mean(decisionArr)
         p_final = (1 - lambda_) * p_base + lambda_ / 2
         return p_final
-
+    
+    
     def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_):
         if self.mDist == "gaussian":
             #print("Using Gaussian distribution for measurements")
@@ -192,7 +193,9 @@ class OmerMonteCarlo(fitPychometric):
             m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
             m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
             est_standard = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
-            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            # est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            ## or est_test computed using causalInference_vectorized
+            est_test = self.causalInference_vectorized(S_a_t, S_v_t, m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
             p_base = np.mean(est_test > est_standard)
             p_final = (1 - lambda_) * p_base + lambda_ / 2
 
@@ -204,13 +207,52 @@ class OmerMonteCarlo(fitPychometric):
             m_v_s = np.random.lognormal(mean=np.log(S_v_s), sigma=sigma_av_v, size=nSimul)
             m_a_t = np.random.lognormal(mean=np.log(S_a_t), sigma=sigma_av_a, size=nSimul)
             m_v_t = np.random.lognormal(mean=np.log(S_v_t), sigma=sigma_av_v, size=nSimul)
-            est_standard = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
+            est_standard = self.causalInference_vectorized(np.log(S_a_s), np.log(S_v_s), m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
             #est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
-            # or est_test computed using causalInference_vectorized 
-            est_test = self.causalInference_vectorized(S_a_t, S_v_t, m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
+            ## or est_test computed using causalInference_vectorized 
+            est_test = self.causalInference_vectorized(np.log(S_a_t), np.log(S_v_t), m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
             p_base = np.mean(est_test > est_standard)
             p_final = (1 - lambda_) * p_base + lambda_ / 2
         return p_final
+    
+    # def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_):
+    #     if self.mDist == "gaussian":
+    #         nSimul = self.nSimul
+    #         S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+    #         m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
+    #         m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
+    #         m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
+    #         m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
+    #         est_standard = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
+    #         est_test = self.causalInference_vectorized(S_a_t, S_v_t, m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
+    #         p_base = np.mean(est_test > est_standard)
+    #         p_final = (1 - lambda_) * p_base + lambda_ / 2
+
+    #     elif self.mDist == "lognorm":
+    #         nSimul = self.nSimul
+    #         S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            
+    #         # Work entirely in log space
+    #         log_S_a_s = np.log(S_a_s)
+    #         log_S_a_t = np.log(S_a_t)
+    #         log_S_v_s = np.log(S_v_s)
+    #         log_S_v_t = np.log(S_v_t)
+            
+    #         # Generate measurements in log space (normal distribution)
+    #         log_m_a_s = np.random.normal(log_S_a_s, sigma_av_a, nSimul)
+    #         log_m_v_s = np.random.normal(log_S_v_s, sigma_av_v, nSimul)
+    #         log_m_a_t = np.random.normal(log_S_a_t, sigma_av_a, nSimul)
+    #         log_m_v_t = np.random.normal(log_S_v_t, sigma_av_v, nSimul)
+            
+    #         # Causal inference in log space
+    #         est_standard = self.causalInference_vectorized(log_S_a_s, log_S_v_s, log_m_a_s, log_m_v_s, sigma_av_a, sigma_av_v, p_c)
+    #         est_test = self.causalInference_vectorized(log_S_a_t, log_S_v_t, log_m_a_t, log_m_v_t, sigma_av_a, sigma_av_v, p_c)
+            
+    #         p_base = np.mean(est_test > est_standard)
+    #         p_final = (1 - lambda_) * p_base + lambda_ / 2
+            
+    #     return p_final
+    
     
     def nLLMonteCarloCausal(self, params, groupedData):
 
@@ -302,7 +344,7 @@ class OmerMonteCarlo(fitPychometric):
                     pub = ub * 0.9
 
                     obj = lambda x: self.nLLMonteCarloCausal(x, groupedData)
-                    bads = BADS(obj, x0, lb, ub, plb, pub)
+                    bads = BADS(obj, x0, lb, ub, plb, pub, options={"display": "off"})
                     result = bads.optimize()  # returns OptimizeResult object
 
                 else:
@@ -485,6 +527,8 @@ class OmerMonteCarlo(fitPychometric):
                     
                     # plt.plot(x, y, color=color, label=f"c: {int(conflictLevel*1000)}, $\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f}", linewidth=4,alpha=0.3)
             
+
+            
                     plt.axvline(x=0, color='gray', linestyle='--')
                     plt.axhline(y=0.5, color='gray', linestyle='--')
                     plt.xlabel(f"({self.intensityVar}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
@@ -548,7 +592,7 @@ if __name__ == "__main__":
     )
     mc_fitter.dataName = dataName
     mc_fitter.nSimul = 100
-    mc_fitter.optimizationMethod= "not bads"  # Use BADS for optimization
+    mc_fitter.optimizationMethod= "bads"  # Use BADS for optimization
     mc_fitter.nStart = 1  # Number of random starts for optimization
 
 
