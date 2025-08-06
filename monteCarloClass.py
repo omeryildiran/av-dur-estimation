@@ -143,6 +143,7 @@ class OmerMonteCarlo(fitPychometric):
 
     def causalInference_vectorized(self, S_a, S_v, m_a, m_v, sigma_av_a, sigma_av_v, p_c):
         var_sum = sigma_av_a**2 + sigma_av_v**2
+        # S is a single value m is random sampled array
         likelihood_c1 = (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-(m_a - m_v)**2 / (2 * var_sum))
         likelihood_c2 = norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
         posterior_c1 = (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
@@ -151,6 +152,34 @@ class OmerMonteCarlo(fitPychometric):
         final_estimate = posterior_c1 * fused_S_av + (1 - posterior_c1) * m_a
         return final_estimate
 
+    def causalInference_vectorized_numerical(self, S_a, S_v, m_a, m_v, sigma_av_a, sigma_av_v, p_c, nSimul=1000):
+        """
+        Fully numerical implementation of causal inference using Monte Carlo simulations.
+        """
+        # Generate random samples for measurements
+        m_a_samples = np.random.normal(m_a, sigma_av_a, nSimul)
+        m_v_samples = np.random.normal(m_v, sigma_av_v, nSimul)
+
+        # Likelihood under common cause (numerical approximation)
+        fused_samples = (m_a_samples + m_v_samples) / 2  # Simple fusion for common cause
+        likelihood_c1_samples = np.exp(-(m_a_samples - m_v_samples)**2 / (2 * (sigma_av_a**2 + sigma_av_v**2)))
+
+        # Likelihood under independent causes (numerical approximation)
+        likelihood_c2_samples = (
+            np.exp(-(m_a_samples - S_a)**2 / (2 * sigma_av_a**2)) *
+            np.exp(-(m_v_samples - S_v)**2 / (2 * sigma_av_v**2))
+        )
+
+        # Posterior of common cause (numerical approximation)
+        posterior_c1_samples = (likelihood_c1_samples * p_c) / (
+            likelihood_c1_samples * p_c + likelihood_c2_samples * (1 - p_c)
+        )
+
+        # Final estimate (numerical approximation)
+        final_estimate_samples = posterior_c1_samples * fused_samples + (1 - posterior_c1_samples) * m_a_samples
+
+        # Return the mean of the final estimates
+        return np.mean(final_estimate_samples)
 
     def causalInfDecision(self, trueStims, measurements, sigma_av_a, sigma_av_v, p_c):
         S_a_s, S_a_t, S_v_s, S_v_t = trueStims
@@ -171,10 +200,10 @@ class OmerMonteCarlo(fitPychometric):
         m_a_t_arr = np.random.normal(S_a_t, sigma_av_a, nSimul)
         m_v_t_arr = np.random.normal(S_v_t, sigma_av_v, nSimul)
         if self.mDist == "lognorm":
-            m_a_s_arr = np.random.lognormal(mean=np.log(S_a_s), sigma=sigma_av_a, size=nSimul)
-            m_v_s_arr = np.random.lognormal(mean=np.log(S_v_s), sigma=sigma_av_v, size=nSimul)
-            m_a_t_arr = np.random.lognormal(mean=np.log(S_a_t), sigma=sigma_av_a, size=nSimul)
-            m_v_t_arr = np.random.lognormal(mean=np.log(S_v_t), sigma=sigma_av_v, size=nSimul)
+            m_a_s_arr = np.random.normal(mean=np.log(S_a_s), sigma=sigma_av_a, size=nSimul)
+            m_v_s_arr = np.random.normal(mean=np.log(S_v_s), sigma=sigma_av_v, size=nSimul)
+            m_a_t_arr = np.random.normal(mean=np.log(S_a_t), sigma=sigma_av_a, size=nSimul)
+            m_v_t_arr = np.random.normal(mean=np.log(S_v_t), sigma=sigma_av_v, size=nSimul)
         measurementsArr = np.array([m_a_s_arr, m_a_t_arr, m_v_s_arr, m_v_t_arr])
         stimArr = np.array([S_a_s, S_a_t, S_v_s, S_v_t])
         decisionArr = self.causalInfDecision(stimArr, measurementsArr, sigma_av_a, sigma_av_v, p_c)
@@ -187,7 +216,7 @@ class OmerMonteCarlo(fitPychometric):
         if self.mDist == "gaussian":
             #print("Using Gaussian distribution for measurements")
             nSimul = self.nSimul
-            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims # S is a single value m is random sampled array
             m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
             m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
             m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
@@ -203,10 +232,10 @@ class OmerMonteCarlo(fitPychometric):
             #print("Using lognormal distribution for measurements")
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-            m_a_s = np.random.lognormal(mean=np.log(S_a_s), sigma=sigma_av_a, size=nSimul)
-            m_v_s = np.random.lognormal(mean=np.log(S_v_s), sigma=sigma_av_v, size=nSimul)
-            m_a_t = np.random.lognormal(mean=np.log(S_a_t), sigma=sigma_av_a, size=nSimul)
-            m_v_t = np.random.lognormal(mean=np.log(S_v_t), sigma=sigma_av_v, size=nSimul)
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             est_standard = self.causalInference_vectorized(np.log(S_a_s), np.log(S_v_s), m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
             #est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
             ## or est_test computed using causalInference_vectorized 
@@ -214,44 +243,6 @@ class OmerMonteCarlo(fitPychometric):
             p_base = np.mean(est_test > est_standard)
             p_final = (1 - lambda_) * p_base + lambda_ / 2
         return p_final
-    
-    # def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_):
-    #     if self.mDist == "gaussian":
-    #         nSimul = self.nSimul
-    #         S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-    #         m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
-    #         m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
-    #         m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
-    #         m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
-    #         est_standard = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
-    #         est_test = self.causalInference_vectorized(S_a_t, S_v_t, m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
-    #         p_base = np.mean(est_test > est_standard)
-    #         p_final = (1 - lambda_) * p_base + lambda_ / 2
-
-    #     elif self.mDist == "lognorm":
-    #         nSimul = self.nSimul
-    #         S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-            
-    #         # Work entirely in log space
-    #         log_S_a_s = np.log(S_a_s)
-    #         log_S_a_t = np.log(S_a_t)
-    #         log_S_v_s = np.log(S_v_s)
-    #         log_S_v_t = np.log(S_v_t)
-            
-    #         # Generate measurements in log space (normal distribution)
-    #         log_m_a_s = np.random.normal(log_S_a_s, sigma_av_a, nSimul)
-    #         log_m_v_s = np.random.normal(log_S_v_s, sigma_av_v, nSimul)
-    #         log_m_a_t = np.random.normal(log_S_a_t, sigma_av_a, nSimul)
-    #         log_m_v_t = np.random.normal(log_S_v_t, sigma_av_v, nSimul)
-            
-    #         # Causal inference in log space
-    #         est_standard = self.causalInference_vectorized(log_S_a_s, log_S_v_s, log_m_a_s, log_m_v_s, sigma_av_a, sigma_av_v, p_c)
-    #         est_test = self.causalInference_vectorized(log_S_a_t, log_S_v_t, log_m_a_t, log_m_v_t, sigma_av_a, sigma_av_v, p_c)
-            
-    #         p_base = np.mean(est_test > est_standard)
-    #         p_final = (1 - lambda_) * p_base + lambda_ / 2
-            
-    #     return p_final
     
     
     def nLLMonteCarloCausal(self, params, groupedData):
@@ -308,11 +299,11 @@ class OmerMonteCarlo(fitPychometric):
         # Parameter bounds
         bounds = np.array([
             (0, 0.3),     # lambda_
-            (0.1, 1.5),    # sigma_av_a_1
-            (0.1, 1.5),    # sigma_av_v_1
+            (0.1, 1.2),    # sigma_av_a_1
+            (0.1, 1.2),    # sigma_av_v_1
             (0.05, 0.99),  # p_c_1
-            (0.1, 1.5),    # sigma_av_a_2
-            (0.1, 1.5),    # sigma_av_v_2
+            (0.1, 1.7),    # sigma_av_a_2
+            (0.1, 1.7),    # sigma_av_v_2
             (0.05, 0.99)   # p_c_2
         ])
 
@@ -326,13 +317,13 @@ class OmerMonteCarlo(fitPychometric):
         for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
             # Random x0 initialization within bounds
             x0 = np.array([
-                np.random.uniform(0.01, 0.24),  # lambda_
-                np.random.uniform(0.1, 2),    # sigma_av_a_1
-                np.random.uniform(0.1, 2),    # sigma_av_v_1
-                np.random.uniform(0.1, 0.9),   # p_c_1
-                np.random.uniform(0.3, 2),    # sigma_av_a_2
-                np.random.uniform(0.1, 2),    # sigma_av_v_2
-                np.random.uniform(0.1, 1),   # p_c_2,
+                np.random.uniform(0.01, 0.25),  # lambda_
+                np.random.uniform(0.1, 1.2),    # sigma_av_a_1
+                np.random.uniform(0.1, 1.2),    # sigma_av_v_1
+                np.random.uniform(0.1, 0.85),   # p_c_1
+                np.random.uniform(0.1, 1.7),    # sigma_av_a_2
+                np.random.uniform(0.1, 1.7),    # sigma_av_v_2
+                np.random.uniform(0.1, 0.99),   # p_c_2,
             ])
 
             try:
@@ -340,8 +331,8 @@ class OmerMonteCarlo(fitPychometric):
                     # Prepare bounds
                     lb = bounds[:, 0]
                     ub = bounds[:, 1]
-                    plb = [0.06, 0.2,0.2,0.3, 0.2, 0.2, 0.6]  # lower bounds for BADS
-                    pub = [0.15, 0.6,0.8,0.6, 0.8, 0.8, 0.9]  # lower bounds for BADS
+                    plb = bounds[:, 0] + 0.1 * (bounds[:, 1] - bounds[:, 0])
+                    pub = bounds[:, 1] - 0.1 * (bounds[:, 1] - bounds[:, 0])
 
                     obj = lambda x: self.nLLMonteCarloCausal(x, groupedData)
                     bads = BADS(obj, x0, lb, ub, plb, pub, options={"display": "off"})
