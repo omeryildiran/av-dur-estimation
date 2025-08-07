@@ -70,6 +70,9 @@ class OmerMonteCarlo(fitPychometric):
                 self.visualStandardVar, self.visualTestVar, self.audioTestVar
                     ]
                     )
+        
+        self.t_min=data["recordedDurVisualTest"].min() # Minimum test duration
+        self.t_max=data["recordedDurVisualTest"].max()  # Maximum test duration
 
     def getParamsCausal(self,params,SNR):
         """Extract causal inference parameters for a specific condition (conflict, noise)."""
@@ -118,18 +121,18 @@ class OmerMonteCarlo(fitPychometric):
         fused_S_av = w_a * m_a + w_v * m_v
         return fused_S_av
 
-    # Likelihood under common cause
-    def likelihood_C1(self, m_a, m_v, sigma_av_a, sigma_av_v):
-        var_sum = sigma_av_a**2 + sigma_av_v**2
-        return (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-(m_a - m_v)**2 / (2 * var_sum))
+    # # Likelihood under common cause
+    # def likelihood_C1(self, m_a, m_v, sigma_av_a, sigma_av_v):
+    #     var_sum = sigma_av_a**2 + sigma_av_v**2
+    #     return (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-(m_a - m_v)**2 / (2 * var_sum))
 
-    # Likelihood under independent causes
-    def likelihood_C2(self, m_a, m_v, S_a, S_v, sigma_av_a, sigma_av_v):
-        return norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
+    # # Likelihood under independent causes
+    # def likelihood_C2(self, m_a, m_v, S_a, S_v, sigma_av_a, sigma_av_v):
+    #     return norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
 
-    # Posterior of common cause
-    def posterior_C1(self, likelihood_c1, likelihood_c2, p_c):
-        return (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
+    # # Posterior of common cause
+    # def posterior_C1(self, likelihood_c1, likelihood_c2, p_c):
+    #     return (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
 
     def causalInference(self, S_a, S_v, m_a, m_v, sigma_av_a, sigma_av_v, p_c):
         likelihood_c1 = self.likelihood_C1(m_a, m_v, sigma_av_a, sigma_av_v)
@@ -141,75 +144,93 @@ class OmerMonteCarlo(fitPychometric):
         hat_S_AV_A_final = posterior_c1 * fused_S_av + posterior_c2 * hat_S_AV_A_No_CC
         return hat_S_AV_A_final
 
-    def causalInference_vectorized(self, S_a, S_v, m_a, m_v, sigma_av_a, sigma_av_v, p_c):
-        var_sum = sigma_av_a**2 + sigma_av_v**2
-        # S is a single value m is random sampled array
-        likelihood_c1 = (1 / np.sqrt(2 * np.pi * var_sum)) * np.exp(-(m_a - m_v)**2 / (2 * var_sum))
-        likelihood_c2 = norm.pdf(m_a, loc=S_a, scale=sigma_av_a) * norm.pdf(m_v, loc=S_v, scale=sigma_av_v)
-        posterior_c1 = (likelihood_c1 * p_c) / (likelihood_c1 * p_c + likelihood_c2 * (1 - p_c))
-        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_av_a, sigma_av_v)
 
-        final_estimate = posterior_c1 * fused_S_av + (1 - posterior_c1) * m_a
+
+   # Vectorized causal inference functions 
+    def p_single(self,m,sigma,y_min,y_max):
+        """p(m | C=2)     and Gaussian measurement noise N(m; y, sigma^2). 
+        and Gaussian measurement noise N(m; y, sigma^2)."""
+        hi_cdf= norm.cdf((y_max - m) /sigma)
+        lo_cdf=norm.cdf((y_min-m)/sigma)
+        return (hi_cdf-lo_cdf)/(y_max-y_min)
+        
+    def p_C2(self, m_a,sigma_a, m_v,sigma_v,y_min,y_max):
+        """ Likelihood of separate sources: product of two marginal likelihoods 
+        two integral over two hidden duration y_a y_v"""
+        return self.p_single(m_a,sigma_a,y_min,y_max) * self.p_single(m_v,sigma_v,y_min,y_max)
+
+
+    def p_C1(self,m_a,m_v,sigma_a,sigma_v,y_max,y_min):
+        sigma_c_sq = (sigma_a**2 * sigma_v**2) / (sigma_a**2 + sigma_v**2)
+        sigma_c = np.sqrt(sigma_c_sq)
+        mu_c = (m_a / sigma_a**2 + m_v / sigma_v**2) / (1 / sigma_a**2 + 1 / sigma_v**2)
+
+        hi_cdf = norm.cdf((y_max-mu_c)/sigma_c)
+        lo_cdf = norm.cdf((y_min-mu_c)/sigma_c)
+        
+        expo = np.exp(-(m_a-m_v)**2/(2*(sigma_a**2+sigma_v**2)))
+        
+        prior = 1/(y_max-y_min)
+
+        return prior * sigma_c/np.sqrt(sigma_a**2 * sigma_v**2) * (hi_cdf-lo_cdf) * expo
+
+    def posterior_C1(self,m_a,m_v,sigma_a,
+                                    sigma_v, p_c,
+                                    t_min,t_max):
+        y_a,y_v= m_a,m_v
+        yMin, yMax = np.log(t_min), np.log(t_max)
+        
+        #likelihoods
+        L1 = self.p_C1(y_a, y_v, sigma_a, sigma_v, yMin, yMax)
+        L2=  self.p_C2(y_a, sigma_a, y_v,sigma_v, yMin, yMax)
+        
+        # posterior
+        postC1=L1*p_c/(L1*p_c+L2*(1-p_c))
+        
+        return postC1
+            
+            
+
+
+    def causalInference_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c):
+
+        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
+        # Calculate likelihoods
+        post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v,p_c,self.t_min, self.t_max )
+
+        final_estimate = post_C1 * fused_S_av + (1 - post_C1) * m_a
         return final_estimate
 
-    def causalInference_vectorized_numerical(self, S_a, S_v, m_a, m_v, sigma_av_a, sigma_av_v, p_c, nSimul=1000):
-        """
-        Fully numerical implementation of causal inference using Monte Carlo simulations.
-        """
-        # Generate random samples for measurements
-        m_a_samples = np.random.normal(m_a, sigma_av_a, nSimul)
-        m_v_samples = np.random.normal(m_v, sigma_av_v, nSimul)
 
-        # Likelihood under common cause (numerical approximation)
-        fused_samples = (m_a_samples + m_v_samples) / 2  # Simple fusion for common cause
-        likelihood_c1_samples = np.exp(-(m_a_samples - m_v_samples)**2 / (2 * (sigma_av_a**2 + sigma_av_v**2)))
+    # def causalInfDecision(self, trueStims, measurements, sigma_av_a, sigma_av_v, p_c):
+    #     S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+    #     if measurements[0] is None:
+    #         m_a_s, m_a_t, m_v_s, m_v_t = S_a_s, S_a_t, S_v_s, S_v_t
+    #     else:
+    #         m_a_s, m_a_t, m_v_s, m_v_t = measurements
+    #     standardShat = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
+    #     testShat = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+    #     decision = (testShat - standardShat) > 0
+    #     return decision
 
-        # Likelihood under independent causes (numerical approximation)
-        likelihood_c2_samples = (
-            np.exp(-(m_a_samples - S_a)**2 / (2 * sigma_av_a**2)) *
-            np.exp(-(m_v_samples - S_v)**2 / (2 * sigma_av_v**2))
-        )
-
-        # Posterior of common cause (numerical approximation)
-        posterior_c1_samples = (likelihood_c1_samples * p_c) / (
-            likelihood_c1_samples * p_c + likelihood_c2_samples * (1 - p_c)
-        )
-
-        # Final estimate (numerical approximation)
-        final_estimate_samples = posterior_c1_samples * fused_samples + (1 - posterior_c1_samples) * m_a_samples
-
-        # Return the mean of the final estimates
-        return np.mean(final_estimate_samples)
-
-    def causalInfDecision(self, trueStims, measurements, sigma_av_a, sigma_av_v, p_c):
-        S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-        if measurements[0] is None:
-            m_a_s, m_a_t, m_v_s, m_v_t = S_a_s, S_a_t, S_v_s, S_v_t
-        else:
-            m_a_s, m_a_t, m_v_s, m_v_t = measurements
-        standardShat = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
-        testShat = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
-        decision = (testShat - standardShat) > 0
-        return decision
-
-    def probTestLonger(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_=0):
-        nSimul = self.nSimul
-        S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-        m_a_s_arr = np.random.normal(S_a_s, sigma_av_a, nSimul)
-        m_v_s_arr = np.random.normal(S_v_s, sigma_av_v, nSimul)
-        m_a_t_arr = np.random.normal(S_a_t, sigma_av_a, nSimul)
-        m_v_t_arr = np.random.normal(S_v_t, sigma_av_v, nSimul)
-        if self.mDist == "lognorm":
-            m_a_s_arr = np.random.normal(mean=np.log(S_a_s), sigma=sigma_av_a, size=nSimul)
-            m_v_s_arr = np.random.normal(mean=np.log(S_v_s), sigma=sigma_av_v, size=nSimul)
-            m_a_t_arr = np.random.normal(mean=np.log(S_a_t), sigma=sigma_av_a, size=nSimul)
-            m_v_t_arr = np.random.normal(mean=np.log(S_v_t), sigma=sigma_av_v, size=nSimul)
-        measurementsArr = np.array([m_a_s_arr, m_a_t_arr, m_v_s_arr, m_v_t_arr])
-        stimArr = np.array([S_a_s, S_a_t, S_v_s, S_v_t])
-        decisionArr = self.causalInfDecision(stimArr, measurementsArr, sigma_av_a, sigma_av_v, p_c)
-        p_base = np.mean(decisionArr)
-        p_final = (1 - lambda_) * p_base + lambda_ / 2
-        return p_final
+    # def probTestLonger(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_=0):
+    #     nSimul = self.nSimul
+    #     S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+    #     m_a_s_arr = np.random.normal(S_a_s, sigma_av_a, nSimul)
+    #     m_v_s_arr = np.random.normal(S_v_s, sigma_av_v, nSimul)
+    #     m_a_t_arr = np.random.normal(S_a_t, sigma_av_a, nSimul)
+    #     m_v_t_arr = np.random.normal(S_v_t, sigma_av_v, nSimul)
+    #     if self.mDist == "lognorm":
+    #         m_a_s_arr = np.random.normal(mean=np.log(S_a_s), sigma=sigma_av_a, size=nSimul)
+    #         m_v_s_arr = np.random.normal(mean=np.log(S_v_s), sigma=sigma_av_v, size=nSimul)
+    #         m_a_t_arr = np.random.normal(mean=np.log(S_a_t), sigma=sigma_av_a, size=nSimul)
+    #         m_v_t_arr = np.random.normal(mean=np.log(S_v_t), sigma=sigma_av_v, size=nSimul)
+    #     measurementsArr = np.array([m_a_s_arr, m_a_t_arr, m_v_s_arr, m_v_t_arr])
+    #     stimArr = np.array([S_a_s, S_a_t, S_v_s, S_v_t])
+    #     decisionArr = self.causalInfDecision(stimArr, measurementsArr, sigma_av_a, sigma_av_v, p_c)
+    #     p_base = np.mean(decisionArr)
+    #     p_final = (1 - lambda_) * p_base + lambda_ / 2
+    #     return p_final
     
     
     def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_):
@@ -221,10 +242,11 @@ class OmerMonteCarlo(fitPychometric):
             m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
             m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
             m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
-            est_standard = self.causalInference_vectorized(S_a_s, S_v_s, m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
+
+            est_standard = self.causalInference_vectorized( m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
             # est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
             ## or est_test computed using causalInference_vectorized
-            est_test = self.causalInference_vectorized(S_a_t, S_v_t, m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
+            est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
             p_base = np.mean(est_test > est_standard)
             p_final = (1 - lambda_) * p_base + lambda_ / 2
 
@@ -236,10 +258,10 @@ class OmerMonteCarlo(fitPychometric):
             m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
             m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
             m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
-            est_standard = self.causalInference_vectorized(np.log(S_a_s), np.log(S_v_s), m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
+            est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
             #est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
             ## or est_test computed using causalInference_vectorized 
-            est_test = self.causalInference_vectorized(np.log(S_a_t), np.log(S_v_t), m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
+            est_test = self.causalInference_vectorized( m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
             p_base = np.mean(est_test > est_standard)
             p_final = (1 - lambda_) * p_base + lambda_ / 2
         return p_final
@@ -433,9 +455,9 @@ class OmerMonteCarlo(fitPychometric):
             m_a = S_std
             m_v = S_v
 
-            L1 = self.likelihood_C1(m_a, m_v, σa, σv)
-            L2 = self.likelihood_C2(m_a, m_v, S_std, S_v, σa, σv)
-            posterior = self.posterior_C1(L1, L2, pc)
+            L1 = self.p_C1(m_a, m_v, σa, σv,self.t_min, self.t_max)
+            L2 = self.p_C2(m_a, m_v, σa, σv, self.t_min, self.t_max)
+            posterior = self.posterior_C1(m_a, m_v, σa, σv, pc, self.t_min, self.t_max)
             posterior_values.append(posterior)
 
         plt.figure(figsize=(8, 5))
@@ -583,9 +605,9 @@ if __name__ == "__main__":
         # conflictVar=conflictVar
     )
     mc_fitter.dataName = dataName
-    mc_fitter.nSimul = 100
+    mc_fitter.nSimul = 1000
     mc_fitter.optimizationMethod= "bads"  # Use BADS for optimization
-    mc_fitter.nStart = 1  # Number of random starts for optimization
+    mc_fitter.nStart = 3  # Number of random starts for optimization
 
 
     groupedData = mc_fitter.groupByChooseTest(
