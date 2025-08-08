@@ -78,14 +78,17 @@ class OmerMonteCarlo(fitPychometric):
         """Extract causal inference parameters for a specific condition (conflict, noise)."""
 
         lambda_=params[0]
+        
+        p_c=params[3] # p_c is shared across SNR conditions no need to have two p_c parameters 
+        # we only need two p_c if we have a strong belief that the p_c changes the perceived context so the prior as well But with this simple model no need for it.
+        
+
         if np.isclose(SNR, 0.1):
             sigma_av_a=params[1]
             sigma_av_v=params[2]
-            p_c=params[3]
         elif np.isclose(SNR,1.2):
             sigma_av_a=params[4]
             sigma_av_v=params[5]
-            p_c=params[6]
 
         if self.sharedSigma_v:
             sigma_av_v = params[2]  # Use the shared sigma for visual noise
@@ -269,10 +272,9 @@ class OmerMonteCarlo(fitPychometric):
             (0, 0.3),     # lambda_
             (0.1, 1.2),    # sigma_av_a_1
             (0.1, 1.2),    # sigma_av_v_1
-            (0.05, 0.99),  # p_c_1
+            (0.001, 1),  # p_c_1
             (0.1, 1.7),    # sigma_av_a_2
             (0.1, 1.7),    # sigma_av_v_2
-            (0.05, 0.99)   # p_c_2
         ])
 
         # Initial best results
@@ -288,10 +290,10 @@ class OmerMonteCarlo(fitPychometric):
                 np.random.uniform(0.01, 0.25),  # lambda_
                 np.random.uniform(0.1, 1.2),    # sigma_av_a_1
                 np.random.uniform(0.1, 1.2),    # sigma_av_v_1
-                np.random.uniform(0.1, 0.85),   # p_c_1
+                np.random.uniform(0.1, 0.9),   # p_c general
                 np.random.uniform(0.1, 1.7),    # sigma_av_a_2
                 np.random.uniform(0.1, 1.7),    # sigma_av_v_2
-                np.random.uniform(0.1, 0.99),   # p_c_2,
+                #np.random.uniform(0.1, 0.99),   # p_c_2,
             ])
 
             try:
