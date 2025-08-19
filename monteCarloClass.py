@@ -53,7 +53,7 @@ class OmerMonteCarlo(fitPychometric):
         self.dataFit = None  # Placeholder for fitted data
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
-        self.mDist = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
+        self.modelName = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
         
     
         
@@ -183,7 +183,7 @@ class OmerMonteCarlo(fitPychometric):
     
     
     def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_):
-        if self.mDist == "gaussian":
+        if self.modelName == "gaussian":
             #print("Using Gaussian distribution for measurements")
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims # S is a single value m is random sampled array
@@ -196,10 +196,10 @@ class OmerMonteCarlo(fitPychometric):
             # est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
             ## or est_test computed using causalInference_vectorized
             est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
-            p_base = np.mean(est_test > est_standard)
-            p_final = (1 - lambda_) * p_base + lambda_ / 2
+            # p_base = np.mean(est_test > est_standard)
+            # p_final = (1 - lambda_) * p_base + lambda_ / 2
 
-        elif self.mDist == "lognorm":
+        elif self.modelName == "lognorm":
             #print("Using lognormal distribution for measurements")
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
@@ -211,8 +211,27 @@ class OmerMonteCarlo(fitPychometric):
             #est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
             ## or est_test computed using causalInference_vectorized 
             est_test = self.causalInference_vectorized( m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
-            p_base = np.mean(est_test > est_standard)
-            p_final = (1 - lambda_) * p_base + lambda_ / 2
+
+
+        elif self.modelName =="log-mismatch":
+            """
+            Main: Observer’s true measurements follow log-normal noise  but the observer assumes additive (normal) noise in linear time.
+            Q: If the brain is fundamentally encoding durations in a nonlinear (log) fashion, 
+            but using incorrect inference mechanisms — how will behavior deviate from optimality?
+            """
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # measurements are log-normal but the observer assumes normal noise
+            m_a_s = np.exp(np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul))
+            m_v_s = np.exp(np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul))
+            m_a_t = np.exp(np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul))
+            m_v_t = np.exp(np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul))
+
+            
+
+
+        p_base = np.mean(est_test > est_standard)
+        p_final = (1 - lambda_) * p_base + lambda_ / 2
         return p_final
     
     
@@ -568,7 +587,7 @@ if __name__ == "__main__":
 
     
 
-    mc_fitter.mDist = "lognorm"  # Set measurement distribution to Gaussian
+    mc_fitter.modelName = "lognorm"  # Set measurement distribution to Gaussian
     timeStart = time.time()
     print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
     fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
