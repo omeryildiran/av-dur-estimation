@@ -53,7 +53,7 @@ class OmerMonteCarlo(fitPychometric):
         self.dataFit = None  # Placeholder for fitted data
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
-        self.modelName = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
+        self.modelName = "log-mismatch"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
         
     
         
@@ -63,6 +63,7 @@ class OmerMonteCarlo(fitPychometric):
         self.dataName = dataName if dataName else "default_data"
         self.data = data
         self.sharedSigma_v=True
+        self.logLikelihood= None  # Placeholder for log-likelihood
 
         self.groupedData= self.groupByChooseTest(x=data,
                 groupArgs=[
@@ -141,6 +142,7 @@ class OmerMonteCarlo(fitPychometric):
 
 
     def p_C1(self,m_a,m_v,sigma_a,sigma_v,y_max,y_min):
+
         sigma_c_sq = (sigma_a**2 * sigma_v**2) / (sigma_a**2 + sigma_v**2)
         sigma_c = np.sqrt(sigma_c_sq)
         mu_c = (m_a / sigma_a**2 + m_v / sigma_v**2) / (1 / sigma_a**2 + 1 / sigma_v**2)
@@ -152,7 +154,25 @@ class OmerMonteCarlo(fitPychometric):
         
         prior = 1/(y_max-y_min)
 
+        if self.modelName == "log-mismatch":
+            # If the model is log-mismatch, we need to adjust the prior and it should be numerically integrated
+            # over the log-transformed durations
+            y_vals = np.linspace(y_min, y_max, self.nSimul)
+            dy=y_vals[1] - y_vals[0]
+            log_norm_const=y_max/y_min
+
+            # likelihoods under common cause
+            L_m_a=  norm.pdf(m_a, loc=y_vals, scale=sigma_a)  # shape: (n_points,)
+            L_m_v = norm.pdf(m_v, loc=y_vals, scale=sigma_v)
+
+            prior = 1/ (y_vals*log_norm_const)  # Adjusted prior for log-mismatch model
+            # Calculate the integral over the log-transformed durations
+            integrand=L_m_a * L_m_v * prior
+            integral = np.sum(integrand*dy)
+            return integral
+                
         return prior * sigma_c/np.sqrt(sigma_a**2 * sigma_v**2) * (hi_cdf-lo_cdf) * expo
+
 
     def posterior_C1(self,m_a,m_v,sigma_a,
                                     sigma_v, p_c,
@@ -222,12 +242,12 @@ class OmerMonteCarlo(fitPychometric):
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
             # measurements are log-normal but the observer assumes normal noise
-            m_a_s = np.exp(np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul))
+            m_a_s = np.exp(np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)) # so that measurements are log-normal
             m_v_s = np.exp(np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul))
             m_a_t = np.exp(np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul))
             m_v_t = np.exp(np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul))
 
-            
+
 
 
         p_base = np.mean(est_test > est_standard)

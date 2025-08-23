@@ -1,6 +1,6 @@
-ExpTesting = 1
+ExpTesting = 0
 ExpTraining= 0
-fullScreen=1
+fullScreen=0
 expName = 'visualDurEst'
 expCondition='visual'
 conflicts=[0]
