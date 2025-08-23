@@ -53,7 +53,7 @@ class OmerMonteCarlo(fitPychometric):
         self.dataFit = None  # Placeholder for fitted data
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
-        self.modelName = "log-mismatch"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
+        self.modelName = "logLinearMismatch"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
         
     
         
@@ -154,21 +154,24 @@ class OmerMonteCarlo(fitPychometric):
         
         prior = 1/(y_max-y_min)
 
-        if self.modelName == "log-mismatch":
-            # If the model is log-mismatch, we need to adjust the prior and it should be numerically integrated
+        if self.modelName == "logLinearMismatch":
+            # If the model is log mis, we need to adjust the prior and it should be numerically integrated
             # over the log-transformed durations
-            y_vals = np.linspace(y_min, y_max, self.nSimul)
+            
+            #.if m_a and m_v are in linear scale y_vals should be in linear scale as well
+            y_vals = np.linspace(self.t_min, self.t_max, self.nSimul) 
             dy=y_vals[1] - y_vals[0]
-            log_norm_const=y_max/y_min
+            log_norm_const=self.t_max/self.t_min
 
             # likelihoods under common cause
             L_m_a=  norm.pdf(m_a, loc=y_vals, scale=sigma_a)  # shape: (n_points,)
             L_m_v = norm.pdf(m_v, loc=y_vals, scale=sigma_v)
 
-            prior = 1/ (y_vals*log_norm_const)  # Adjusted prior for log-mismatch model
+            prior = 1/ (y_vals*log_norm_const)  # Adjusted prior for log mis model
             # Calculate the integral over the log-transformed durations
             integrand=L_m_a * L_m_v * prior
             integral = np.sum(integrand*dy)
+            integral = max(integral, 1e-10)
             return integral
                 
         return prior * sigma_c/np.sqrt(sigma_a**2 * sigma_v**2) * (hi_cdf-lo_cdf) * expo
@@ -216,8 +219,6 @@ class OmerMonteCarlo(fitPychometric):
             # est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
             ## or est_test computed using causalInference_vectorized
             est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
-            # p_base = np.mean(est_test > est_standard)
-            # p_final = (1 - lambda_) * p_base + lambda_ / 2
 
         elif self.modelName == "lognorm":
             #print("Using lognormal distribution for measurements")
@@ -228,12 +229,10 @@ class OmerMonteCarlo(fitPychometric):
             m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
             m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
-            #est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
-            ## or est_test computed using causalInference_vectorized 
             est_test = self.causalInference_vectorized( m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
 
 
-        elif self.modelName =="log-mismatch":
+        elif self.modelName =="logLinearMismatch":
             """
             Main: Observer’s true measurements follow log-normal noise  but the observer assumes additive (normal) noise in linear time.
             Q: If the brain is fundamentally encoding durations in a nonlinear (log) fashion, 
@@ -246,6 +245,9 @@ class OmerMonteCarlo(fitPychometric):
             m_v_s = np.exp(np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul))
             m_a_t = np.exp(np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul))
             m_v_t = np.exp(np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul))
+            est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
+            est_test = self.causalInference_vectorized( m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
+
 
 
 
@@ -493,7 +495,7 @@ class OmerMonteCarlo(fitPychometric):
     def plotPsychometrics_MC_Data(self):
         "use self to get the  required stuff"
 
-        pltTitle = self.dataName + " Causal Inference Model Fit"
+        pltTitle = self.dataName + " "+ self.modelName+" Model Fit"
         plt.figure(figsize=(16, 6))
         for i, standardLevel in enumerate(self.uniqueStandard):
             for j, audioNoiseLevel in enumerate(sorted(self.uniqueSensory)):
@@ -607,7 +609,7 @@ if __name__ == "__main__":
 
     
 
-    mc_fitter.modelName = "lognorm"  # Set measurement distribution to Gaussian
+    mc_fitter.modelName = "logLinearMismatch"  # Set measurement distribution to Gaussian
     timeStart = time.time()
     print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
     fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
