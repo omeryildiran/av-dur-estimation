@@ -324,7 +324,7 @@ class OmerMonteCarlo(fitPychometric):
         nStart = self.nStart if hasattr(self, 'nStart') else 1
         optimizer = self.optimizationMethod if hasattr(self, 'optimizationMethod') else 'scipy'
         print(f"\nStarting {nStart} optimization attempts using '{optimizer}'...")
-
+        print("Model is " + self.modelName)
         for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
             # Random x0 initialization within bounds
             x0 = np.array([
@@ -374,7 +374,7 @@ class OmerMonteCarlo(fitPychometric):
 
         fval = getattr(best_result, 'fval', best_result.fun)
         xres = getattr(best_result, 'x', best_result.x)
-        print(f"\n✅ Best result from {nStart} attempts:")
+        print(f"\n✅ Best result from {nStart} attem           spts:")
         print(f"  → Final parameters: {xres}")
         print(f"  → Final log-likelihood: {fval:.6f}")
 
