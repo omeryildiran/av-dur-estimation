@@ -53,7 +53,7 @@ class OmerMonteCarlo(fitPychometric):
         self.dataFit = None  # Placeholder for fitted data
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
-        self.modelName = "logLinearMismatch"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
+        self.modelName = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
         
     
         
@@ -64,6 +64,7 @@ class OmerMonteCarlo(fitPychometric):
         self.data = data
         self.sharedSigma_v=True
         self.logLikelihood= None  # Placeholder for log-likelihood
+        self.sharedLambda=True
 
         self.groupedData= self.groupByChooseTest(x=data,
                 groupArgs=[
@@ -75,10 +76,20 @@ class OmerMonteCarlo(fitPychometric):
         self.t_min=data["recordedDurVisualTest"].min() # Minimum test duration
         self.t_max=data["recordedDurVisualTest"].max()  # Maximum test duration
 
-    def getParamsCausal(self,params,SNR):
+
+
+    def getParamsCausal(self,params,SNR,conflict):
         """Extract causal inference parameters for a specific condition (conflict, noise)."""
 
         lambda_=params[0]
+        if self.sharedLambda==False:
+            if conflict in [ 0, -0.17,  0.25]:
+                lambda_=params[0]
+            elif conflict in [ -0.08, 0.17]:
+                lambda_=params[-2]
+            elif conflict in [ -0.25,  0.08]:
+                lambda_=params[-1]
+        
         
         p_c=params[3] # p_c is shared across SNR conditions no need to have two p_c parameters 
         # we only need two p_c if we have a strong belief that the p_c changes the perceived context so the prior as well But with this simple model no need for it.
@@ -180,12 +191,15 @@ class OmerMonteCarlo(fitPychometric):
     def posterior_C1(self,m_a,m_v,sigma_a,
                                     sigma_v, p_c,
                                     t_min,t_max):
-        y_a,y_v= m_a,m_v
-        yMin, yMax = np.log(t_min), np.log(t_max)
+        # For logLinearMismatch model, use log-transformed bounds
+        if self.modelName == "logLinearMismatch" or self.modelName == "lognorm":
+            yMin, yMax = np.log(t_min), np.log(t_max)
+        else:
+            yMin, yMax = t_min, t_max
         
         #likelihoods
-        L1 = self.p_C1(y_a, y_v, sigma_a, sigma_v, yMin, yMax)
-        L2=  self.p_C2(y_a, sigma_a, y_v,sigma_v, yMin, yMax)
+        L1 = self.p_C1(m_a, m_v, sigma_a, sigma_v, yMax, yMin)  # Fixed parameter order: y_max, y_min
+        L2 = self.p_C2(m_a, sigma_a, m_v, sigma_v, yMin, yMax)  # Fixed parameter order: y_min, y_max
         
         # posterior
         postC1=L1*p_c/(L1*p_c+L2*(1-p_c))
@@ -230,8 +244,7 @@ class OmerMonteCarlo(fitPychometric):
             m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
             est_test = self.causalInference_vectorized( m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
-
-
+      
         elif self.modelName =="logLinearMismatch":
             """
             Main: Observer’s true measurements follow log-normal noise  but the observer assumes additive (normal) noise in linear time.
@@ -248,7 +261,8 @@ class OmerMonteCarlo(fitPychometric):
             est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
             est_test = self.causalInference_vectorized( m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
 
-
+        else:
+            print("Model name not recognized. Please use 'gaussian', 'lognorm', or 'logLinearMismatch'.")
 
 
 
@@ -272,9 +286,9 @@ class OmerMonteCarlo(fitPychometric):
             currConflict = groupedData["conflictDur"].iloc[i]
             currResp = groupedData['num_of_chose_test'].iloc[i]
             totalResponses = groupedData['total_responses'].iloc[i]
-            
+
             # Get the parameters for the current condition
-            lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(params, currSNR)
+            lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(params, currSNR,currConflict)
 
             # Get the true standard and test durations
             S_a_s = groupedData["standardDur"].iloc[i]
@@ -316,6 +330,8 @@ class OmerMonteCarlo(fitPychometric):
             (0.001, 1),  # p_c_1
             (0.1, 1.7),    # sigma_av_a_2
             (0.1, 1.7),    # sigma_av_v_2
+            (0, 0.3),     # lambda_2
+            (0, 0.3),     # lambda_3
         ])
 
         # Initial best results
@@ -334,8 +350,16 @@ class OmerMonteCarlo(fitPychometric):
                 np.random.uniform(0.1, 0.9),   # p_c general
                 np.random.uniform(0.1, 1.7),    # sigma_av_a_2
                 np.random.uniform(0.1, 1.7),    # sigma_av_v_2
-                #np.random.uniform(0.1, 0.99),   # p_c_2,
+                np.random.uniform(0.01, 0.25),  # lambda_2
+                np.random.uniform(0.01, 0.25),  # lambda_3
+
             ])
+
+
+            # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0 and bounds
+            if self.sharedLambda:
+                x0= np.delete(x0, [6,7])  # remove lambda_2 and lambda_3 if sharedLambda is True
+                bounds = np.delete(bounds, [6,7], axis=0)  # remove corresponding bounds
 
             try:
                 if self.optimizationMethod == "bads":
@@ -392,7 +416,7 @@ class OmerMonteCarlo(fitPychometric):
 
 
             # Unpack fitted parameters for the current audio noise level
-            lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(fittedParams, audioNoiseLevel)
+            lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(fittedParams, audioNoiseLevel,conflictLevel)
 
             nSamples = nSamples#10* int(totalResponses)  # Scale number of samples by total responses for better simulation
             # Simulate responses for the current trial
@@ -427,42 +451,57 @@ class OmerMonteCarlo(fitPychometric):
     def plot_posterior_vs_conflict(self, data, fittedParams, snr_list=[1.2, 0.1]):
         """
         Plot posterior probability vs conflict for given SNR values.
-        snr_list: list of SNR values to plot (default: [1.2, 0.1])
         """
-        delta_dur_values = data["deltaDurS"].values
-        conflict_values = data["conflictDur"].values
-        snr_values = data["audNoise"].values
-        best_params = fittedParams  # Use the best fitted parameters from the previous fitting
+        best_params = fittedParams
+        posterior_by_condition = []
 
-        posterior_values = []
-        for delta, conflict, snr in zip(delta_dur_values, conflict_values, snr_values):
-            λ, σa, σv, pc = self.getParamsCausal(best_params, snr)
-            S_std = 0.5
-            S_test = S_std + delta
-            S_v = S_std + conflict
+        # Get unique conflict and SNR combinations
+        unique_conflicts = np.sort(data["conflictDur"].unique())
+        for snr in snr_list:
+            for conflict in unique_conflicts:
+                λ, σa, σv, pc = self.getParamsCausal(best_params, snr, conflict)
 
-            m_a = S_std
-            m_v = S_v
+                S_std = 0.5
+                S_v = S_std + conflict
+                m_a_samples, m_v_samples = None, None
 
-            L1 = self.p_C1(m_a, m_v, σa, σv,self.t_min, self.t_max)
-            L2 = self.p_C2(m_a, m_v, σa, σv, self.t_min, self.t_max)
-            posterior = self.posterior_C1(m_a, m_v, σa, σv, pc, self.t_min, self.t_max)
-            posterior_values.append(posterior)
+                if self.modelName in ["lognorm", "logLinearMismatch"]:
+                    m_a_samples = np.random.normal(loc=np.log(S_std), scale=σa, size=1000)
+                    m_v_samples = np.random.normal(loc=np.log(S_v), scale=σv, size=1000)
+                else:
+                    m_a_samples = np.random.normal(loc=S_std, scale=σa, size=1000)
+                    m_v_samples = np.random.normal(loc=S_v, scale=σv, size=1000)
 
+                posteriors = np.array([
+                    self.posterior_C1(m_a, m_v, σa, σv, pc, self.t_min, self.t_max)
+                    for m_a, m_v in zip(m_a_samples, m_v_samples)
+                ])
+
+                avg_posterior = np.mean(posteriors)
+                posterior_by_condition.append({
+                    "conflict_ms": conflict * 1000,
+                    "posterior": avg_posterior,
+                    "SNR": snr,
+                    "prior_pc": pc
+                })
+
+        # Convert to DataFrame for easy plotting
+        posterior_df = pd.DataFrame(posterior_by_condition)
+
+        # Plotting
         plt.figure(figsize=(8, 5))
-        for idx, noisy_snr_value in enumerate(snr_list):
-            mask_noisy = np.isclose(snr_values, noisy_snr_value)
-            conflicts_noisy = conflict_values[mask_noisy]
-            posteriors_noisy = np.array(posterior_values)[mask_noisy]
+        for idx, snr in enumerate(snr_list):
+            df_snr = posterior_df[posterior_df["SNR"] == snr]
             plt.subplot(1, 2, idx + 1)
-            plt.scatter(conflicts_noisy * 1000, posteriors_noisy, alpha=0.6, label=f'Posterior P(C=1) (SNR={noisy_snr_value})')
+            plt.scatter(df_snr["conflict_ms"], df_snr["posterior"], label=f"Posterior P(C=1) (SNR={snr})")
+            plt.axhline(y=df_snr["prior_pc"].iloc[0], color='gray', linestyle='--',
+                        label=f"P(C=1)={df_snr['prior_pc'].iloc[0]:.2f}")
             plt.xlabel('Conflict (ms)')
             plt.ylabel('Posterior Probability of Common Cause')
-            plt.title(f'Posterior P(C=1) vs Conflict (SNR={noisy_snr_value})')
-            plt.axhline(y=self.getParamsCausal(fittedParams, noisy_snr_value)[3], color='gray', linestyle='--', label=f'P(C=1)={self.getParamsCausal(fittedParams, noisy_snr_value)[3]:.2f}')
-            plt.legend()
-            plt.ylim(0, 1)
+            plt.title(f'Posterior P(C=1) vs Conflict (SNR={snr})')
             plt.grid()
+            plt.legend()
+
         plt.tight_layout()
         plt.show()
 
@@ -500,6 +539,7 @@ class OmerMonteCarlo(fitPychometric):
         for i, standardLevel in enumerate(self.uniqueStandard):
             for j, audioNoiseLevel in enumerate(sorted(self.uniqueSensory)):
                 for k, conflictLevel in enumerate(self.uniqueConflict):
+
                     plt.subplot(1, 2, j + 1)
                     x = np.linspace(-0.5, 0.5, 1000)
                     color = sns.color_palette("viridis", as_cmap=True)(k / len(self.uniqueConflict))
@@ -520,7 +560,7 @@ class OmerMonteCarlo(fitPychometric):
 
 
                     "plot the monte carlo"
-                    lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(self.modelFit, audioNoiseLevel)
+                    lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(self.modelFit, audioNoiseLevel, conflictLevel)
                     S_a_s = 0.5
                     S_v_s = S_a_s + conflictLevel
                     # plot the psychometric curve for the monte carlo model simulations
@@ -546,7 +586,7 @@ class OmerMonteCarlo(fitPychometric):
                         [self.intensityVar, self.sensoryVar, self.standardVar, self.conflictVar, self.visualStandardVar, self.visualTestVar, self.audioTestVar]
                     )
                     self.bin_and_plot(groupedDataSub, bin_method='cut', bins=10, plot=True, color=color)
-                    plt.text(0.05, 0.8, f"$\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f},", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
+                    plt.text(0.05, 0.8, fr"$\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f},", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
                     plt.tight_layout()
                     plt.grid(True)
                     print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Lambda: {lambda_:.3f}, Sigma_a: {sigma_av_a:.3f}, Sigma_v: {sigma_av_v:.3f}, p_c: {p_c:.3f}")
@@ -572,7 +612,7 @@ import time
 
 if __name__ == "__main__":
     # Example usage
-    data, dataName = loadData("dt_all.csv")
+    data, dataName = loadData("mt_all.csv")
 
     intensityVariable = "deltaDurS"
     sensoryVar = "audNoise"
@@ -595,7 +635,7 @@ if __name__ == "__main__":
     )
     mc_fitter.dataName = dataName
     mc_fitter.nSimul = 100
-    mc_fitter.optimizationMethod= "bads"  # Use BADS for optimization
+    mc_fitter.optimizationMethod= "normal"  # Use BADS for optimization
     mc_fitter.nStart = 1  # Number of random starts for optimization
 
 
@@ -609,7 +649,7 @@ if __name__ == "__main__":
 
     
 
-    mc_fitter.modelName = "logLinearMismatch"  # Set measurement distribution to Gaussian
+    mc_fitter.modelName = "gaussian"  # Set measurement distribution to Gaussian
     timeStart = time.time()
     print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
     fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
