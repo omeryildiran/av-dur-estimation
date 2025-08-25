@@ -1,4 +1,4 @@
-data
+
 data/_auditory_dur_estimate_2024-12-08_15h19.38.419.csv
 data/_auditory_dur_estimate_2024-12-08_15h19.38.419.mat
 data/_auditory_dur_estimate_2024-12-08_15h21.38.369.csv
@@ -1526,3 +1526,7 @@ media/videos/causal_inference_working/480p15/partial_movie_files/QuickMathDemo/6
 media/videos/causal_inference_working/480p15/partial_movie_files/QuickMathDemo/1185818338_3117517602_223132457.mp4
 media/videos/causal_inference_working/480p15/partial_movie_files/QuickMathDemo/partial_movie_file_list.txt
 test_histogram_logic.py
+/data
+OPTIMIZATION_GUIDE.md
+test_plot_posterior.py
+monteCarloClass_copy.py

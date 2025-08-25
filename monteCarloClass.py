@@ -146,7 +146,7 @@ class OmerMonteCarlo(fitPychometric):
         lo_cdf=norm.cdf((y_min-m)/sigma)
         return (hi_cdf-lo_cdf)/(y_max-y_min)
         
-    def p_C2(self, m_a,sigma_a, m_v,sigma_v,y_min,y_max):
+    def p_C2(self, m_a,m_v,sigma_a,sigma_v,y_max,y_min):
         """ Likelihood of separate sources: product of two marginal likelihoods 
         two integral over two hidden duration y_a y_v"""
         return self.p_single(m_a,sigma_a,y_min,y_max) * self.p_single(m_v,sigma_v,y_min,y_max)
@@ -199,7 +199,7 @@ class OmerMonteCarlo(fitPychometric):
         
         #likelihoods
         L1 = self.p_C1(m_a, m_v, sigma_a, sigma_v, yMax, yMin)  # Fixed parameter order: y_max, y_min
-        L2 = self.p_C2(m_a, sigma_a, m_v, sigma_v, yMin, yMax)  # Fixed parameter order: y_min, y_max
+        L2 = self.p_C2(m_a, m_v, sigma_a, sigma_v, yMax, yMin)  # Fixed parameter order: y_min, y_max
         
         # posterior
         postC1=L1*p_c/(L1*p_c+L2*(1-p_c))
@@ -334,6 +334,10 @@ class OmerMonteCarlo(fitPychometric):
             (0, 0.3),     # lambda_3
         ])
 
+        if self.sharedLambda:
+            bounds = np.delete(bounds, [6,7], axis=0)
+            
+
         # Initial best results
         best_result = None
         best_ll = np.inf
@@ -359,7 +363,6 @@ class OmerMonteCarlo(fitPychometric):
             # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0 and bounds
             if self.sharedLambda:
                 x0= np.delete(x0, [6,7])  # remove lambda_2 and lambda_3 if sharedLambda is True
-                bounds = np.delete(bounds, [6,7], axis=0)  # remove corresponding bounds
 
             try:
                 if self.optimizationMethod == "bads":
@@ -649,7 +652,7 @@ if __name__ == "__main__":
 
     
 
-    mc_fitter.modelName = "gaussian"  # Set measurement distribution to Gaussian
+    mc_fitter.modelName = "lognorm"  # Set measurement distribution to Gaussian
     timeStart = time.time()
     print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
     fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
