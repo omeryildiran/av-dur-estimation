@@ -334,6 +334,10 @@ class OmerMonteCarlo(fitPychometric):
             (0, 0.3),     # lambda_3
         ])
 
+        if self.sharedLambda:
+            bounds = np.delete(bounds, [6,7], axis=0)
+            
+
         # Initial best results
         best_result = None
         best_ll = np.inf
@@ -359,7 +363,6 @@ class OmerMonteCarlo(fitPychometric):
             # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0 and bounds
             if self.sharedLambda:
                 x0= np.delete(x0, [6,7])  # remove lambda_2 and lambda_3 if sharedLambda is True
-                bounds = np.delete(bounds, [6,7], axis=0)  # remove corresponding bounds
 
             try:
                 if self.optimizationMethod == "bads":
