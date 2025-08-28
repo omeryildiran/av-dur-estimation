@@ -1,11 +1,15 @@
 import os
 import numpy as np
 import json
-def saveFitResultsSingle(fitter,fittedParams, dataName,modelType="lognormal"):
+def saveFitResultsSingle(fitter,fittedParams, dataName,modelType="lognorm",lapseShared=True):
     participantID = dataName.split('_')[0]
     save_dir = os.path.join("model_fits", participantID)
+    
+    if lapseShared:
+        filename = f"{participantID}_{modelType}_LapseFix_fit.json"
+    else:
+        filename = f"{participantID}_{modelType}_LapseFree_fit.json"
 
-    filename = f"{participantID}_{modelType}_fit.json"
     filepath = os.path.join(save_dir, filename)
 
     # make directory if it doesn't exist

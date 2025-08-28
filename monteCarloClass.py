@@ -64,7 +64,7 @@ class OmerMonteCarlo(fitPychometric):
         self.data = data
         self.sharedSigma_v=True
         self.logLikelihood= None  # Placeholder for log-likelihood
-        self.sharedLambda=True
+        self.sharedLambda=False
 
         self.groupedData= self.groupByChooseTest(x=data,
                 groupArgs=[
