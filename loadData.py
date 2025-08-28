@@ -67,15 +67,15 @@ def loadData(dataName):
 		data["testDurSCompare"] = abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"])
 		data["standardDurCompare"] = abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur'])
 
-		#print len of testDurSCheck and standardDurCheck false
-		print("")
-		print(len(data[data['testDurSCheck'] == False]), " trials with testDurSCheck False")
-		print(len(data[data['standardDurCheck'] == False]), " trials with standardDurCheck False\n")
-		# print number of abs(testDurSCompare
-		print(len(data[abs(data['testDurSCompare']) > 0.03]), " trials with abs(testDurSCompare) > 0.05")
-		print(len(data[abs(data['standardDurCompare']) > 0.03]), " trials with abs(standardDurCompare) > 0.05")
-		print("")
-		print(len(data[data['testDurSCheckBias'] == False]), " trials with testDurSCheckBias False")
+		# #print len of testDurSCheck and standardDurCheck false
+		# print("")
+		# print(len(data[data['testDurSCheck'] == False]), " trials with testDurSCheck False")
+		# print(len(data[data['standardDurCheck'] == False]), " trials with standardDurCheck False\n")
+		# # print number of abs(testDurSCompare
+		# print(len(data[abs(data['testDurSCompare']) > 0.03]), " trials with abs(testDurSCompare) > 0.05")
+		# print(len(data[abs(data['standardDurCompare']) > 0.03]), " trials with abs(standardDurCompare) > 0.05")
+		# print("")
+		# print(len(data[data['testDurSCheckBias'] == False]), " trials with testDurSCheckBias False")
 
 	except:
 		print("Bias check failed!!!! No bias check columns found. Skipping bias check.")
@@ -92,20 +92,20 @@ def loadData(dataName):
 
 	data['standard_dur']=round(data['standardDur'],2)
 	data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
-	try:
-		print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
-		print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
-	except:
-		print("No negative visual test or standard duration found.")
+	# try:
+	# 	print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
+	# 	print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
+	# except:
+	# 	print("No negative visual test or standard duration found.")
 
 
 
 
 	try:
-		print(f'testdurCompare > 0.05: {len(data[data["testDurSCompare"] > 0.05])} trials')
+		#print(f'testdurCompare > 0.05: {len(data[data["testDurSCompare"] > 0.05])} trials')
 
-		print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
-		print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
+		#print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
+		#print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
 
 
 		data=data[data['recordedDurVisualStandard'] <=998]
