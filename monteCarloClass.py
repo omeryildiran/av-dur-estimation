@@ -73,8 +73,16 @@ class OmerMonteCarlo(fitPychometric):
                     ]
                     )
         
-        self.t_min=data["recordedDurVisualTest"].min() # Minimum test duration
-        self.t_max=data["recordedDurVisualTest"].max()  # Maximum test duration
+        self.t_min=data["testDurS"].min() # Minimum test duration
+        self.t_max=data["testDurS"].max()  # Maximum test duration
+        
+        # Prevent degenerate case where t_min == t_max
+        if self.t_max == self.t_min:
+            # Use reasonable bounds based on typical duration ranges
+            duration_center = self.t_min
+            self.t_min = max(0.1, duration_center - 0.5)  # At least 100ms range
+            self.t_max = duration_center + 0.5
+            print(f"Warning: All test durations identical ({duration_center}s). Using bounds [{self.t_min:.2f}, {self.t_max:.2f}]")
 
 
 
@@ -94,17 +102,17 @@ class OmerMonteCarlo(fitPychometric):
         p_c=params[3] # p_c is shared across SNR conditions no need to have two p_c parameters 
         # we only need two p_c if we have a strong belief that the p_c changes the perceived context so the prior as well But with this simple model no need for it.
         
+        if self.sharedSigma_v:
+            sigma_av_v = params[2]  # Use the shared sigma for visual noise
+            # Don't modify the original params array during optimization
 
         if np.isclose(SNR, 0.1):
             sigma_av_a=params[1]
-            sigma_av_v=params[2]
         elif np.isclose(SNR,1.2):
             sigma_av_a=params[4]
-            sigma_av_v=params[5]
+        else:
+            raise(ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2."))
 
-        if self.sharedSigma_v:
-            sigma_av_v = params[2]  # Use the shared sigma for visual noise
-            params[5] =params[2]  # Update the second sigma_av_v parameter for the second SNR condition 
 
         return lambda_,sigma_av_a,sigma_av_v,p_c
     
@@ -198,11 +206,21 @@ class OmerMonteCarlo(fitPychometric):
             yMin, yMax = t_min, t_max
         
         #likelihoods
-        L1 = self.p_C1(m_a, m_v, sigma_a, sigma_v, yMax, yMin)  # Fixed parameter order: y_max, y_min
-        L2 = self.p_C2(m_a, m_v, sigma_a, sigma_v, yMax, yMin)  # Fixed parameter order: y_min, y_max
+        L1 = self.p_C1(m_a, m_v, sigma_a, sigma_v, yMax, yMin)  
+        L2 = self.p_C2(m_a, m_v, sigma_a, sigma_v, yMax, yMin)  # Fixed: consistent parameter order
         
-        # posterior
-        postC1=L1*p_c/(L1*p_c+L2*(1-p_c))
+        # posterior with numerical stability
+        denominator = L1*p_c + L2*(1-p_c)
+        
+        # Handle both scalar and array cases
+        if np.isscalar(denominator):
+            if denominator == 0:
+                postC1 = p_c
+            else:
+                postC1 = L1*p_c / denominator
+        else:
+            # Array case - use np.where to handle element-wise
+            postC1 = np.where(denominator == 0, p_c, L1*p_c / denominator)
         
         return postC1
             
@@ -262,8 +280,8 @@ class OmerMonteCarlo(fitPychometric):
             est_test = self.causalInference_vectorized( m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
 
         else:
-            print("Model name not recognized. Please use 'gaussian', 'lognorm', or 'logLinearMismatch'.")
-
+            #break and raise error
+            raise ValueError("Invalid modelName. Choose 'gaussian', 'lognorm', or 'logLinearMismatch'.")
 
 
         p_base = np.mean(est_test > est_standard)
@@ -329,13 +347,13 @@ class OmerMonteCarlo(fitPychometric):
             (0.1, 1.2),    # sigma_av_v_1
             (0.001, 1),  # p_c_1
             (0.1, 1.7),    # sigma_av_a_2
-            (0.1, 1.7),    # sigma_av_v_2
+            #(0.1, 1.7),    # sigma_av_v_2
             (0, 0.3),     # lambda_2
             (0, 0.3),     # lambda_3
         ])
 
         if self.sharedLambda:
-            bounds = np.delete(bounds, [6,7], axis=0)
+            bounds = np.delete(bounds, [5,6], axis=0)
             
 
         # Initial best results
@@ -353,7 +371,7 @@ class OmerMonteCarlo(fitPychometric):
                 np.random.uniform(0.1, 1.2),    # sigma_av_v_1
                 np.random.uniform(0.1, 0.9),   # p_c general
                 np.random.uniform(0.1, 1.7),    # sigma_av_a_2
-                np.random.uniform(0.1, 1.7),    # sigma_av_v_2
+                #np.random.uniform(0.1, 1.7),    # sigma_av_v_2
                 np.random.uniform(0.01, 0.25),  # lambda_2
                 np.random.uniform(0.01, 0.25),  # lambda_3
 
@@ -362,7 +380,7 @@ class OmerMonteCarlo(fitPychometric):
 
             # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0 and bounds
             if self.sharedLambda:
-                x0= np.delete(x0, [6,7])  # remove lambda_2 and lambda_3 if sharedLambda is True
+                x0= np.delete(x0, [5,6])  # remove lambda_2 and lambda_3 if sharedLambda is True
 
             try:
                 if self.optimizationMethod == "bads":
@@ -468,12 +486,17 @@ class OmerMonteCarlo(fitPychometric):
                 S_v = S_std + conflict
                 m_a_samples, m_v_samples = None, None
 
-                if self.modelName in ["lognorm", "logLinearMismatch"]:
+                if self.modelName in ["lognorm"]:
                     m_a_samples = np.random.normal(loc=np.log(S_std), scale=σa, size=1000)
                     m_v_samples = np.random.normal(loc=np.log(S_v), scale=σv, size=1000)
-                else:
+                elif self.modelName in ["gaussian"]:
                     m_a_samples = np.random.normal(loc=S_std, scale=σa, size=1000)
                     m_v_samples = np.random.normal(loc=S_v, scale=σv, size=1000)
+                elif self.modelName in ["logLinearMismatch"]:
+                    m_a_samples = np.exp(np.random.normal(loc=np.log(S_std), scale=σa, size=1000))
+                    m_v_samples = np.exp(np.random.normal(loc=np.log(S_v), scale=σv, size=1000))
+                else:
+                    raise ValueError("Invalid modelName. Choose 'gaussian', 'lognorm', or 'logLinearMismatch'.")
 
                 posteriors = np.array([
                     self.posterior_C1(m_a, m_v, σa, σv, pc, self.t_min, self.t_max)
