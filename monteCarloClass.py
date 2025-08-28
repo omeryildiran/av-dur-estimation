@@ -536,7 +536,7 @@ class OmerMonteCarlo(fitPychometric):
 
     def plotPsychometrics_MC_Data(self):
         "use self to get the  required stuff"
-
+        print("Plotting psychometric curves for Monte Carlo model and data...")
         pltTitle = self.dataName + " "+ self.modelName+" Model Fit"
         plt.figure(figsize=(16, 6))
         for i, standardLevel in enumerate(self.uniqueStandard):
@@ -546,19 +546,13 @@ class OmerMonteCarlo(fitPychometric):
                     plt.subplot(1, 2, j + 1)
                     x = np.linspace(-0.5, 0.5, 1000)
                     color = sns.color_palette("viridis", as_cmap=True)(k / len(self.uniqueConflict))
-                    paramsSimDf=self.getParams(self.simDataFit.x, conflictLevel, audioNoiseLevel)
+                    
+                    paramsSimFit=self.getParams(self.simDataFit.x, conflictLevel,audioNoiseLevel)
+                    # Plot data fit: plot psychometric curve from fitted data
+                    ySimSigmoid=self.psychometric_function(x, paramsSimFit[0],paramsSimFit[1],paramsSimFit[2])
 
-                    # # Plot simulation: plot simulated data points (proportion chose test) for each deltaDurS
-                    # simDf = self.simulatedData[
-                    #     (self.simulatedData[sensoryVar] == audioNoiseLevel) &
-                    #     (self.simulatedData[conflictVar] == conflictLevel)
-                    # ]
-                    # if not simDf.empty:
-                    #     simDf = simDf.sort_values(by=self.intensityVariable)
-                    #     x_sim = simDf[self.intensityVariable].values
-                    #     y_sim = simDf['chose_test'] / simDf['responses']
-                    #     #plt.scatter(x_sim, y_sim, color=color, s=40, marker='o', label=f"SimData c={int(conflictLevel*1000)}", alpha=0.7)
-                    ySimSigmoid=self.psychometric_function(x, paramsSimDf[0],paramsSimDf[1],paramsSimDf[2])
+                    
+
                     plt.plot(x, ySimSigmoid, color=color)
 
 

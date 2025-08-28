@@ -28,6 +28,7 @@ def saveFitResultsSingle(fitter,fittedParams, dataName,modelType="lognormal"):
         "BIC": float(bic),
         "logLikelihood": fitter.logLikelihood,
         "n_conditions": n
+        
     }
 
 

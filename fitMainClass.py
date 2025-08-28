@@ -231,7 +231,7 @@ class fitPychometric:
     # Fit the psychometric function to the grouped data with multiple initial guesses
     def multipleInitGuessesWEstimate(self, singleInitGuesses, nStart):
         initLambdas = np.linspace(0.01, 0.1, nStart)
-        initMus = np.linspace(-0.83, 0.83, nStart)
+        initMus = np.linspace(-0.95, 0.95, nStart)
         initSigmas = np.linspace(0.01, 1.5, nStart)
         multipleInitGuesses = []
         if nStart == 1:
@@ -311,7 +311,8 @@ class fitPychometric:
                     plt.tight_layout()
                     plt.grid(True)
                     print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Mu: {mu:.3f}, Sigma: {sigma:.3f}")
-
+        plt.show()
+        
     def simulate_dataset(self, params, gdf):
         sim_gdf = gdf.copy()
         lam   = np.empty(len(gdf))

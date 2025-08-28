@@ -1,0 +1,14 @@
+{
+    "total_participants": 12,
+    "total_model_fits": 36,
+    "models_tested": [
+        "lognorm",
+        "gaussian",
+        "logLinearMismatch"
+    ],
+    "best_model_distribution": {
+        "gaussian": 4,
+        "lognorm": 4,
+        "logLinearMismatch": 4
+    }
+}
