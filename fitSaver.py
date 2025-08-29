@@ -23,7 +23,6 @@ def saveFitResultsSingle(fitter,fittedParams, dataName,modelType="lognorm",lapse
     aic= 2*k - 2*fitter.logLikelihood
     bic= np.log(n)*k - 2*fitter.logLikelihood
 
-    modelSimData = fitter.simulateMonteCarloData(fittedParams,fitter.data,100)
     
 
     # store results in a dictionary
@@ -35,7 +34,6 @@ def saveFitResultsSingle(fitter,fittedParams, dataName,modelType="lognorm",lapse
         "BIC": float(bic),
         "logLikelihood": fitter.logLikelihood,
         "n_conditions": n
-        ,"modelSimData": modelSimData.tolist() if isinstance(modelSimData, np.ndarray) else modelSimData
 
     }
 
