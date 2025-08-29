@@ -63,6 +63,7 @@ class OmerMonteCarlo(fitPychometric):
         self.dataName = dataName if dataName else "default_data"
         self.data = data
         self.sharedSigma_v=True
+        self.freeP_c = False  # Fix: Add missing attribute for parameter configuration
         self.logLikelihood= None  # Placeholder for log-likelihood
         self.sharedLambda=False
 
@@ -87,32 +88,78 @@ class OmerMonteCarlo(fitPychometric):
 
 
     def getParamsCausal(self,params,SNR,conflict):
-        """Extract causal inference parameters for a specific condition (conflict, noise)."""
+        """Extract causal inference parameters for a specific condition (conflict, noise).
+        
+        Parameters:
+        -----------
+        params : array-like
+            Parameter array with layout depending on configuration:
+            - sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3] (7 params)
+            - sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2] (5 params)
+            - sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2] (8 params)
+            - sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2] (6 params)
+        SNR : float
+            Signal-to-noise ratio (0.1 or 1.2)
+        conflict : float
+            Conflict level
+            
+        Returns:
+        --------
+        tuple : (lambda_, sigma_av_a, sigma_av_v, p_c)
+        """
+        
+        # Validate parameter array length
+        expected_lengths = {
+            (True, True): 6,    # sharedLambda=True, freeP_c=True
+            (True, False): 5,   # sharedLambda=True, freeP_c=False
+            (False, True): 8,   # sharedLambda=False, freeP_c=True
+            (False, False): 7   # sharedLambda=False, freeP_c=False
+        }
+        
+        config_key = (self.sharedLambda, self.freeP_c)
+        expected_length = expected_lengths[config_key]
+        
+        if len(params) != expected_length:
+            raise ValueError(f"Parameter array length {len(params)} doesn't match expected length {expected_length} for configuration sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
 
+        # Extract lambda parameter
         lambda_=params[0]
-        if self.sharedLambda==False:
+        if not self.sharedLambda:
             if conflict in [ 0, -0.17,  0.25]:
                 lambda_=params[0]
-            elif conflict in [ -0.08, 0.17]:
-                lambda_=params[-2]
+            elif conflict in [-0.08, 0.17]:
+                lambda_=params[5]
             elif conflict in [ -0.25,  0.08]:
-                lambda_=params[-1]
+                lambda_=params[6]
         
-        
-        p_c=params[3] # p_c is shared across SNR conditions no need to have two p_c parameters 
-        # we only need two p_c if we have a strong belief that the p_c changes the perceived context so the prior as well But with this simple model no need for it.
-        
+        # Extract p_c parameter
+        if self.freeP_c:
+            if np.isclose(SNR, 0.1):
+                p_c=params[3] # p_c is not shared across SNR conditions so we have two p_c parameters
+            elif np.isclose(SNR,1.2):
+                if self.sharedLambda:
+                    p_c=params[5]  # Different index when sharedLambda=True
+                else:
+                    p_c=params[7]  # Different index when sharedLambda=False
+            else:
+                raise(ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2."))
+        else:
+            p_c=params[3] # p_c is shared across SNR conditions no need to have two p_c parameters 
+
+        # Extract sigma_av_v parameter  
         if self.sharedSigma_v:
             sigma_av_v = params[2]  # Use the shared sigma for visual noise
-            # Don't modify the original params array during optimization
+        else:
+            # If not shared, would need separate logic here
+            sigma_av_v = params[2]  # For now, still use index 2
 
+        # Extract sigma_av_a parameter
         if np.isclose(SNR, 0.1):
             sigma_av_a=params[1]
         elif np.isclose(SNR,1.2):
             sigma_av_a=params[4]
         else:
             raise(ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2."))
-
 
         return lambda_,sigma_av_a,sigma_av_v,p_c
     
@@ -279,6 +326,29 @@ class OmerMonteCarlo(fitPychometric):
             est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
             est_test = self.causalInference_vectorized( m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
 
+        elif self.modelName == "fusionOnly":# Linear-Gaussian observer (classic model)
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
+            m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
+            m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
+            m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
+            est_standard = self.fusionAV_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
+            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+
+        elif self.modelName ==  "fusionOnlyLogNorm":## FusionOnlyLogNorm: Log-space observer with Gaussian noise in log space
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
+            est_standard = self.fusionAV_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
+            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+
+
+
+
         else:
             #break and raise error
             raise ValueError("Invalid modelName. Choose 'gaussian', 'lognorm', or 'logLinearMismatch'.")
@@ -341,20 +411,36 @@ class OmerMonteCarlo(fitPychometric):
         Supports 'scipy' (default) or 'bads' optimization (if installed).
         """
         # Parameter bounds
-        bounds = np.array([
-            (0, 0.3),     # lambda_
-            (0.1, 1.2),    # sigma_av_a_1
-            (0.1, 1.2),    # sigma_av_v_1
-            (0.001, 1),  # p_c_1
-            (0.1, 1.7),    # sigma_av_a_2
-            #(0.1, 1.7),    # sigma_av_v_2
-            (0, 0.3),     # lambda_2
-            (0, 0.3),     # lambda_3
-        ])
+        if self.freeP_c:
+            print("Fitting with free p_c parameters for each SNR condition.")
+            bounds = np.array([
+                (0, 0.25),     # 0 lambda_
+                (0.1, 1.2),    # 1 sigma_av_a_1
+                (0.1, 1.2),    # 2 sigma_av_v_1
+                (0.001, 0.999), # 3 p_c_1
+                (0.1, 1.7),    # 4 sigma_av_a_2
+                (0, 0.25),     # 5 lambda_2
+                (0, 0.25),     # 6 lambda_3
+                (0.001, 0.999),  #7  p_c_2
+            ])
+
+        elif self.freeP_c==False:
+            print("Fitting with shared p_c parameter across SNR conditions.")   
+            bounds = np.array([
+                (0, 0.25),     #0 lambda_
+                (0.1, 1.2),    #1 sigma_av_a_1
+                (0.1, 1.2),    #2 sigma_av_v_1
+                (0.001, 0.99), #3 p_c_1
+                (0.1, 1.7),    #4 sigma_av_a_2
+                (0, 0.25),     #5 lambda_2
+                (0, 0.25),     #6 lambda_3
+            ])
+
 
         if self.sharedLambda:
             bounds = np.delete(bounds, [5,6], axis=0)
-            
+        
+   
 
         # Initial best results
         best_result = None
@@ -365,17 +451,28 @@ class OmerMonteCarlo(fitPychometric):
         print("Model is " + self.modelName)
         for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
             # Random x0 initialization within bounds
-            x0 = np.array([
-                np.random.uniform(0.01, 0.25),  # lambda_
-                np.random.uniform(0.1, 1.2),    # sigma_av_a_1
-                np.random.uniform(0.1, 1.2),    # sigma_av_v_1
-                np.random.uniform(0.1, 0.9),   # p_c general
-                np.random.uniform(0.1, 1.7),    # sigma_av_a_2
-                #np.random.uniform(0.1, 1.7),    # sigma_av_v_2
-                np.random.uniform(0.01, 0.25),  # lambda_2
-                np.random.uniform(0.01, 0.25),  # lambda_3
+            if self.freeP_c==False:
+                x0 = np.array([
+                    np.random.uniform(0.01, 0.25),  #0 lambda_
+                    np.random.uniform(0.1, 1.2),    #1 sigma_av_a_1
+                    np.random.uniform(0.1, 1.2),    #2 sigma_av_v_1
+                    np.random.uniform(0.1, 0.95),   #3 p_c general
+                    np.random.uniform(0.1, 1.7),    #4 sigma_av_a_2
+                    np.random.uniform(0.01, 0.25),  #5 lambda_2
+                    np.random.uniform(0.01, 0.25),  #6 lambda_3
 
-            ])
+                ])
+            elif self.freeP_c:
+                x0 = np.array([
+                    np.random.uniform(0.01, 0.25),  #0 lambda_
+                    np.random.uniform(0.1, 1.2),    #1 sigma_av_a_1
+                    np.random.uniform(0.1, 1.2),    #2 sigma_av_v_1
+                    np.random.uniform(0.1, 0.95),   #3 p_c_1
+                    np.random.uniform(0.1, 1.7),    #4 sigma_av_a_2
+                    np.random.uniform(0.01, 0.25),  #5 lambda_2
+                    np.random.uniform(0.01, 0.25),  #6 lambda_3
+                    np.random.uniform(0.1, 0.95),   #7 p_c_2
+                ])
 
 
             # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0 and bounds
