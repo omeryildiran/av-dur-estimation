@@ -4,6 +4,12 @@ import json
 def saveFitResultsSingle(fitter,fittedParams, dataName,modelType="lognorm",lapseShared=True):
     participantID = dataName.split('_')[0]
     save_dir = os.path.join("model_fits", participantID)
+    if fitter.freeP_c:
+        modelType += "_contextualPrior"
+    else:
+        modelType += "_sharedPrior"
+
+    
     
     if lapseShared:
         filename = f"{participantID}_{modelType}_LapseFix_fit.json"
@@ -43,6 +49,5 @@ def saveFitResultsSingle(fitter,fittedParams, dataName,modelType="lognorm",lapse
         json.dump(results_dict, f, indent=4)
         
     print(f"✅ Saved fit for {participantID} ({modelType}) to: {filepath}")
-
 
 #saveFitResultsSingle(fittedParams, dataName, modelType="lognormal")
