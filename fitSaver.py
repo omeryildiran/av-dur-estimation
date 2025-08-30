@@ -1,20 +1,21 @@
 import os
 import numpy as np
 import json
-def saveFitResultsSingle(fitter,fittedParams, dataName,modelType="lognorm",lapseShared=True):
+def saveFitResultsSingle(fitter,fittedParams, dataName):
     participantID = dataName.split('_')[0]
     save_dir = os.path.join("model_fits", participantID)
+    modelType = fitter.modelName
     if fitter.freeP_c:
         modelType += "_contextualPrior"
     else:
         modelType += "_sharedPrior"
 
-    
-    
-    if lapseShared:
-        filename = f"{participantID}_{modelType}_LapseFix_fit.json"
+    if fitter.sharedLambda:
+        modelType += "_sharedLambda"
     else:
-        filename = f"{participantID}_{modelType}_LapseFree_fit.json"
+        modelType += "_freeLambda"
+        
+    filename = f"{participantID}_{modelType}_fit.json"
 
     filepath = os.path.join(save_dir, filename)
 

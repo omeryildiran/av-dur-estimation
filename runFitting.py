@@ -58,7 +58,9 @@ if __name__ == "__main__":
         mc_fitter.optimizationMethod= optimMethod  # Use BADS for optimization
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
-
+        print(f"Model name set to: {mc_fitter.modelName}")
+        #mc_fitter.sharedLambda
+        print(f"Shared lambda: {mc_fitter.sharedLambda}")
         # Fit the model and time it
         timeStart = time.time()
         print(f"\nFitting Causal Inference Model for {dataName} with {len(mc_fitter.groupedData)} unique conditions")
@@ -69,4 +71,4 @@ if __name__ == "__main__":
         mc_fitter.logLikelihood= -mc_fitter.nLLMonteCarloCausal(fittedParams, mc_fitter.groupedData)
 
         # Save the fit results
-        fitSaver.saveFitResultsSingle(mc_fitter, fittedParams, dataName, modelType=modelName)
+        fitSaver.saveFitResultsSingle(mc_fitter, fittedParams, dataName)
