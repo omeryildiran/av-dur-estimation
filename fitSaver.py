@@ -5,16 +5,19 @@ def saveFitResultsSingle(fitter,fittedParams, dataName):
     participantID = dataName.split('_')[0]
     save_dir = os.path.join("model_fits", participantID)
     modelType = fitter.modelName
+    
+    if fitter.sharedLambda:
+        modelType += "_LapseFix"
+    else:
+        modelType += "_LapseFree"
+    
     if fitter.freeP_c:
         modelType += "_contextualPrior"
     else:
         modelType += "_sharedPrior"
 
-    if fitter.sharedLambda:
-        modelType += "_sharedLambda"
-    else:
-        modelType += "_freeLambda"
-        
+
+
     filename = f"{participantID}_{modelType}_fit.json"
 
     filepath = os.path.join(save_dir, filename)

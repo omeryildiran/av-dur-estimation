@@ -44,23 +44,25 @@ if __name__ == "__main__":
         ## Initialize the Monte Carlo fitter
         mc_fitter = monteCarloClass.OmerMonteCarlo(data)
 
-        # Define variables in the fitter
-        print("Data shape:", data.shape)
-        print("\nConflict range:", data["conflictDur"].min(), "to", data["conflictDur"].max())
-        print("Standard duration:", data["standardDur"].unique())
-        print("Audio noise levels:", sorted(data["audNoise"].unique()))
-        print("Visual test duration range:", data["recordedDurVisualTest"].min(), "to", data["recordedDurVisualTest"].max())
-        print("t_min, t_max:", mc_fitter.t_min, mc_fitter.t_max)
-        print("Log t_min, Log t_max:", np.log(mc_fitter.t_min), np.log(mc_fitter.t_max))
+        ## Define variables in the fitter
+        #print("Data shape:", data.shape)
+        #print("\nConflict range:", data["conflictDur"].min(), "to", data["conflictDur"].max())
+        #print("Standard duration:", data["standardDur"].unique())
+        #print("Audio noise levels:", sorted(data["audNoise"].unique()))
+        #print("Visual test duration range:", data["recordedDurVisualTest"].min(), "to", data["recordedDurVisualTest"].max())
+        #print("t_min, t_max:", mc_fitter.t_min, mc_fitter.t_max)
+        #print("Log t_min, Log t_max:", np.log(mc_fitter.t_min), np.log(mc_fitter.t_max))
 
         # Set fitter parameters
         mc_fitter.nSimul = nSimul
         mc_fitter.optimizationMethod= optimMethod  # Use BADS for optimization
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
+        mc_fitter.freeP_c = True  # Free prior probability of common cause
         print(f"Model name set to: {mc_fitter.modelName}")
         #mc_fitter.sharedLambda
         print(f"Shared lambda: {mc_fitter.sharedLambda}")
+        print(f"Free P(C=1): {mc_fitter.freeP_c}")
         # Fit the model and time it
         timeStart = time.time()
         print(f"\nFitting Causal Inference Model for {dataName} with {len(mc_fitter.groupedData)} unique conditions")
