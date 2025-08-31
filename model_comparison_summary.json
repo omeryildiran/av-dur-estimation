@@ -1,14 +1,19 @@
 {
     "total_participants": 12,
-    "total_model_fits": 36,
+    "total_model_fits": 72,
     "models_tested": [
-        "lognorm",
-        "gaussian",
-        "logLinearMismatch"
+        "logLinearMismatch_contextualPrior",
+        "lognorm_sharedPrior",
+        "logLinearMismatch_sharedPrior",
+        "lognorm_contextualPrior",
+        "gaussian_contextualPrior",
+        "gaussian_sharedPrior"
     ],
     "best_model_distribution": {
-        "gaussian": 4,
-        "lognorm": 4,
-        "logLinearMismatch": 4
+        "lognorm_sharedPrior": 5,
+        "gaussian_contextualPrior": 2,
+        "logLinearMismatch_sharedPrior": 2,
+        "gaussian_sharedPrior": 2,
+        "lognorm_contextualPrior": 1
     }
 }
