@@ -521,6 +521,64 @@ class OmerMonteCarlo(fitPychometric):
         print(f"  → Final log-likelihood: {fval:.6f}")
 
         return xres
+    
+    def plot_mu_summary_with_errorbars(self, fittedParams, error_type='sem'):
+        """
+        Plots the average μ (PSE) across participants for each conflict and noise level,
+        including error bars based on standard error or confidence intervals.
+        """
+        conflictLevels = np.sort(self.groupedData[self.conflictVar].unique())
+        noiseLevels = np.sort(self.groupedData[self.sensoryVar].unique())
+
+        plt.figure(figsize=(12, 5))
+
+        for j, noiseLevel in enumerate(noiseLevels):
+            mus_by_conflict = []
+
+            for conflict in conflictLevels:
+                mus = []
+
+                for participant in self.groupedData['participantID'].unique():
+                    subset = self.groupedData[
+                        (self.groupedData[self.conflictVar] == conflict) &
+                        (self.groupedData[self.sensoryVar] == noiseLevel) &
+                        (self.groupedData['participantID'] == participant)
+                    ]
+                    if len(subset) == 0:
+                        continue
+
+                    # Extract PSE (mu) from psychometric fit of simulated or real data
+                    # You may replace this with model prediction if simDataFit is None
+                    try:
+                        mu = self.getParams(self.simDataFit.x, conflict, noiseLevel)[1]
+                        mus.append(mu)
+                    except:
+                        continue
+
+                # Compute mean and error bars
+                mu_mean = np.mean(mus)
+                if error_type == 'sem':
+                    mu_err = np.std(mus) / np.sqrt(len(mus))
+                elif error_type == 'ci95':
+                    mu_err = 1.96 * np.std(mus) / np.sqrt(len(mus))
+                else:
+                    mu_err = 0
+
+                mus_by_conflict.append((conflict * 1000, mu_mean, mu_err))
+
+            # Unpack values
+            conflicts_ms, mu_means, mu_errs = zip(*mus_by_conflict)
+            plt.subplot(1, 2, j + 1)
+            plt.errorbar(conflicts_ms, mu_means, yerr=mu_errs, fmt='-o', capsize=4, label=f"SNR={noiseLevel}")
+            plt.axhline(0, color='gray', linestyle='--')
+            plt.xlabel("Conflict (ms)")
+            plt.ylabel("Estimated μ (PSE)")
+            plt.title(f"Mean μ vs Conflict (Noise={noiseLevel})")
+            plt.legend()
+            plt.grid()
+
+        plt.tight_layout()
+        plt.show()
 
     def simulateMonteCarloData(self, fittedParams, data, nSamples=10000):        
         simData = []
@@ -531,12 +589,13 @@ class OmerMonteCarlo(fitPychometric):
             audioNoiseLevel = trial["audNoise"]
             conflictLevel = trial["conflictDur"]
             totalResponses = trial["total_responses"]
+            #print(f"Simulating for audNoise: {audioNoiseLevel}, conflict: {conflictLevel}, deltaDurS: {deltaDurS}, totalResponses: {totalResponses}")
 
-
+  
             # Unpack fitted parameters for the current audio noise level
             lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(fittedParams, audioNoiseLevel,conflictLevel)
 
-            nSamples = nSamples#10* int(totalResponses)  # Scale number of samples by total responses for better simulation
+            nSamples = int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
             # Simulate responses for the current trial
             for _ in range(nSamples):
                 S_a_s = 0.5
