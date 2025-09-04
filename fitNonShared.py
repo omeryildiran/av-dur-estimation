@@ -438,7 +438,7 @@ def plotStairCases(data):
 
 if __name__ == "__main__":
     fixedMu =0  # Set to True to ignore the bias in the model
-    dataName = "as_bimodalDurEst_2025-06-20_18h00.22.264.csv"
+    dataName = "all_visual.csv"
     # Example usage
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
     pltTitle=dataName.split("_")[1]
@@ -452,7 +452,7 @@ if __name__ == "__main__":
     plot_fitted_psychometric(
         data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
         standardVar, sensoryVar, conflictVar, intensityVariable)
-    plotStairCases(data)
+    #plotStairCases(data)
 
 
 
