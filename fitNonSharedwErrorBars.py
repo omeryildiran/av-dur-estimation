@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import os
+import argparse
 
 # function for loading data
 def loadData(dataName):
@@ -91,25 +92,91 @@ def groupByChooseTest(x):
 
     return grouped
 
+
+def groupByChooseTestWithParticipants(data):
+    """
+    Group data by intensity, sensory, standard, conflict AND participant to get individual participant responses
+    """
+    # First group by participant and conditions to get individual participant psychometric data
+    participant_grouped = data.groupby([intensityVariable, sensoryVar, standardVar, conflictVar, 'participantID']).agg(
+        num_of_chose_test=('chose_test', 'sum'),
+        total_responses=('responses', 'count'),
+        num_of_chose_standard=('chose_standard', 'sum'),
+    ).reset_index()
+    participant_grouped['p_choose_test'] = participant_grouped['num_of_chose_test'] / participant_grouped['total_responses']
+    
+    return participant_grouped
+
 # Compute sigma from slope
 def compute_sigma_from_slope(slope, lapse_rate=0.02):
     sigma = (1 - lapse_rate) / (np.sqrt(2 * np.pi) * slope)*np.exp(-0.5)
     return sigma
 
-def bin_and_plot(data, bin_method='cut', bins=10, bin_range=None, plot=True,color="blue"):
-    if bin_method == 'cut':
-        data['bin'] = pd.cut(data[intensityVariable], bins=bins, labels=False, include_lowest=True, retbins=False)
-    elif bin_method == 'manual':
-        data['bin'] = np.digitize(data[intensityVariable], bins=bin_range) - 1
+def bin_and_plot_with_error_bars(data, bin_method='cut', bins=10, bin_range=None, plot=True, color="blue"):
+    """
+    Bin data and plot with error bars calculated across participants
+    """
+    # First get participant-level data
+    participant_data = groupByChooseTestWithParticipants(data)
     
-    grouped = data.groupby('bin').agg(
+    if bin_method == 'cut':
+        participant_data['bin'] = pd.cut(participant_data[intensityVariable], bins=bins, labels=False, include_lowest=True, retbins=False)
+    elif bin_method == 'manual':
+        participant_data['bin'] = np.digitize(participant_data[intensityVariable], bins=bin_range) - 1
+    
+    # Group by bin and calculate statistics across participants
+    bin_summary = participant_data.groupby('bin').agg(
         x_mean=(intensityVariable, 'mean'),
         y_mean=('p_choose_test', 'mean'),
+        y_sem=('p_choose_test', lambda x: np.std(x) / np.sqrt(len(x)) if len(x) > 1 else 0),  # Standard error
+        y_std=('p_choose_test', 'std'),
+        n_participants=('participantID', 'nunique'),
         total_resp=('total_responses', 'sum')
-    )
+    ).reset_index()
+    
+    if plot and len(bin_summary) > 0:
+        # Plot with error bars
+        plt.errorbar(bin_summary['x_mean'], bin_summary['y_mean'], 
+                   yerr=bin_summary['y_sem'], 
+                   fmt='o', color=color, capsize=5, capthick=2,
+                   markersize=8, alpha=0.8, elinewidth=2)
+        
+        # Add text showing number of participants
+        if not bin_summary['n_participants'].empty:
+            n_participants = bin_summary['n_participants'].iloc[0]
+            plt.text(0.02, 0.95, f'n = {n_participants} participants', 
+                   transform=plt.gca().transAxes, fontsize=10,
+                   bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
+    
+    return bin_summary
 
-    if plot:
-        plt.scatter(grouped['x_mean'], grouped['y_mean'], s=grouped['total_resp']/data['total_responses'].sum()*900, color=color)
+
+def bin_and_plot(data, bin_method='cut', bins=10, bin_range=None, plot=True, color="blue", add_error_bars=True):
+    if add_error_bars and 'participantID' in data.columns:
+        return bin_and_plot_with_error_bars(data, bin_method, bins, bin_range, plot, color)
+    else:
+        # Original behavior for backwards compatibility
+        # If we have raw data (with participantID), we need to group it first
+        if 'participantID' in data.columns and 'p_choose_test' not in data.columns:
+            data = groupByChooseTest(data)
+        
+        if bin_method == 'cut':
+            data['bin'] = pd.cut(data[intensityVariable], bins=bins, labels=False, include_lowest=True, retbins=False)
+        elif bin_method == 'manual':
+            data['bin'] = np.digitize(data[intensityVariable], bins=bin_range) - 1
+        
+        grouped = data.groupby('bin').agg(
+            x_mean=(intensityVariable, 'mean'),
+            y_mean=('p_choose_test', 'mean'),
+            total_resp=('total_responses', 'sum')
+        )
+
+        if plot:
+            plt.scatter(grouped['x_mean'], grouped['y_mean'], 
+                      s=grouped['total_resp']/data['total_responses'].sum()*900, 
+                      color=color, alpha=0.8)
+        
+        return grouped
 
 from scipy.stats import linregress
 
@@ -370,7 +437,7 @@ def fitMultipleStartingPoints(data,nStart=3):
 
     return best_fit
 
-def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable):
+def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable, show_error_bars=True):
     print(f"Fitted parameters: {best_fit.x}")
     colors = sns.color_palette("viridis", n_colors=len(uniqueSensory))  # Use Set2 palette for different noise levels
     plt.figure(figsize=(10, 10))
@@ -403,8 +470,9 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 plt.title(f" {pltTitle} ", fontsize=16)
                 plt.legend(fontsize=14, title_fontsize=14)
                 plt.grid()
-                bin_and_plot(dfFiltered, bin_method='cut', bins=10, plot=True, color=color)
-                plt.text(0.05, 0.8, f"Shared $\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
+                # Use the raw data (df) instead of grouped data (dfFiltered) to preserve participantID for error bars
+                bin_and_plot(df, bin_method='cut', bins=10, plot=True, color=color, add_error_bars=show_error_bars)
+                plt.text(0.05, 0.8, f"Shared $\\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
                 plt.tight_layout()
                 plt.grid(True)
     plt.show()
@@ -437,22 +505,50 @@ def plotStairCases(data):
 
 
 if __name__ == "__main__":
-    fixedMu =0  # Set to True to ignore the bias in the model
-    dataName = "as_bimodalDurEst_2025-06-20_18h00.22.264.csv"
-    # Example usage
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Fit psychometric functions with optional error bars')
+    parser.add_argument('--no-error-bars', action='store_true', 
+                       help='Plot without error bars across participants')
+    parser.add_argument('--data', default='all_visual.csv',
+                       help='Data file to use (default: all_auditory.csv)')
+    args = parser.parse_args()
+    
+    fixedMu = 1  # Set to True to ignore the bias in the model
+    dataName = args.data
+    show_error_bars = not args.no_error_bars  # Invert the flag
+    
+    # Load and prepare data
+    print(f"Loading data from {dataName}...")
     data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
-    pltTitle=dataName.split("_")[1]
-    pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
+    
+    # Create plot title
+    pltTitle = dataName.split("_")[1]
+    pltTitle = dataName.split("_")[0] + str(" ") + pltTitle
+    
+    # Print data summary
+    print(f"Data loaded: {len(data)} trials from {data['participantID'].nunique()} participants")
+    print(f"Participants: {sorted(data['participantID'].unique())}")
+    
+    # Group data for fitting (using traditional grouping for model fitting)
     grouped_data = groupByChooseTest(data)
+    
+    # Fit the psychometric model
+    print("Fitting psychometric model...")
     fit = fitMultipleStartingPoints(data, nStart=1)
-    #print the fitted parameters
     print(f"Fitted parameters: {fit.x}")
 
-    #Plot the fitted psychometric functions
+    # Plot the fitted psychometric functions 
+    if show_error_bars:
+        print("Plotting psychometric functions with error bars across participants...")
+    else:
+        print("Plotting psychometric functions without error bars...")
+        
     plot_fitted_psychometric(
         data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
-        standardVar, sensoryVar, conflictVar, intensityVariable)
-    plotStairCases(data)
+        standardVar, sensoryVar, conflictVar, intensityVariable, show_error_bars=show_error_bars)
+    
+    # Optionally plot staircase data
+    # plotStairCases(data)
 
 
 
@@ -470,3 +566,4 @@ if __name__ == "__main__":
 #     lambda_, mu, sigma = getFittedParams(fit)
     
 #     print(f"Fitted parameters: lambda={lambda_}, mu={mu}, sigma={sigma}")
+

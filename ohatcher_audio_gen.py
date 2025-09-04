@@ -216,15 +216,15 @@ class AudioCueGenerator:
         # plot the sound waveforms
         time= np.linspace(0, len(stim_sound) / self.sample_rate, len(stim_sound))
 
-        # plt.plot(time,stim_sound, label='Signal Sound', color='forestgreen', alpha=0.7)
-        # plt.plot(time,background_noise, label='Background Noise', color='black', alpha=0.7)
-        # plt.title("Stimulus Sound Waveform")
-        # plt.xlabel("Time (s)")
-        # plt.xlim(0, len(stim_sound) / self.sample_rate)
-        # plt.xticks(np.arange(0, len(stim_sound) / self.sample_rate, 0.1))
-        # plt.legend()
-        # plt.ylabel("Amplitude")
-        # plt.show()
+        plt.plot(time,stim_sound, label='Signal Sound', color='forestgreen', alpha=0.7)
+        plt.plot(time,background_noise, label='Background Noise', color='black', alpha=0.7)
+        plt.title("Stimulus Sound Waveform")
+        plt.xlabel("Time (s)")
+        plt.xlim(0, len(stim_sound) / self.sample_rate)
+        plt.xticks(np.arange(0, len(stim_sound) / self.sample_rate, 0.1))
+        plt.legend()
+        plt.ylabel("Amplitude")
+        plt.show()
         
         # #Background noise of same totaal duration
 
@@ -240,50 +240,50 @@ class AudioCueGenerator:
 
 
 
-# # # Example usage with raised-cosine envelope
-# audio_cue = AudioCueGenerator(sampleRate=44100)
+# # Example usage with raised-cosine envelope
+audio_cue = AudioCueGenerator(sampleRate=44100)
 
-# #generate whole stim
-# test_dur = 0.4
-# standard_dur = 0.6
-# noise_type = "white"
-# intensity = 5
-# rise_dur = 1.2
-# order = 1
-# pre_cue_sound=0.25
-# pre_post_dur=pre_cue_sound
-# test_sound=test_dur
-# isi_sound=0.25
-# #audio_cue.play_sound(stim_sound)
+#generate whole stim
+test_dur = 0.4
+standard_dur = 0.6
+noise_type = "white"
+intensity = 5
+rise_dur = 1.2
+order = 1
+pre_cue_sound=0.25
+pre_post_dur=pre_cue_sound
+test_sound=test_dur
+isi_sound=0.25
+#audio_cue.play_sound(stim_sound)
 
-# #import for plotting
-# import matplotlib.pyplot as plt
+#import for plotting
+import matplotlib.pyplot as plt
 
-# ## PLot different sounds with different amplitude variance
-# def plot_sounds():
-#     plt.figure(figsize=(12, 4))
-#     for idx, rise in enumerate([1]):
-#         stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound,
-#                                               intensity_background=rise)
-#         #stim_sound*=0.5
+## PLot different sounds with different amplitude variance
+def plot_sounds():
+    plt.figure(figsize=(12, 4))
+    for idx, rise in enumerate([0.15]):
+        stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound,
+                                              intensity_background=rise)
+        #stim_sound*=0.5
 
-#         t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
-#         #if idx in [1]:
-#         #audio_cue.play_sound(stim_sound)
+        t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
+        #if idx in [1]:
+        #audio_cue.play_sound(stim_sound)
         
-#         plt.subplot(1, 2, idx + 1)
-#         plt.plot(t, stim_sound)
-#         plt.title(f"Rise duration: {rise}")
-#         plt.xlabel("Time (s)")
-#         plt.ylabel("Amplitude")
-#         plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="red", alpha=0.5, label="Reliable signal")
-#         plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="forestgreen", alpha=0.2, label="unreliable signal")
-#     #plt.ylim(-2,3)
-#     plt.tight_layout()
-#     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
-#     plt.show()
+        plt.subplot(1, 2, idx + 1)
+        plt.plot(t, stim_sound)
+        plt.title(f"Rise duration: {rise}")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="red", alpha=0.5, label="Reliable signal")
+        plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="forestgreen", alpha=0.2, label="unreliable signal")
+    #plt.ylim(-2,3)
+    plt.tight_layout()
+    plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
+    plt.show()
     
-# plot_sounds()
+plot_sounds()
 
 
 
