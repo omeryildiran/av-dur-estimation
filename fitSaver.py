@@ -54,4 +54,40 @@ def saveFitResultsSingle(fitter,fittedParams, dataName):
         
     print(f"✅ Saved fit for {participantID} ({modelType}) to: {filepath}")
 
+def saveSimulatedData(fitter, dataName):
+    
+    # generate simulated data
+    simulatedData= fitter.simulateMonteCarloData(fitter.modelFit, fitter.data)
+
+    if simulatedData is None or simulatedData.empty:
+        print("No simulated data to save.")
+        return
+    
+    participantID = dataName.split('_')[0]
+    save_dir = os.path.join("simulated_data", participantID)
+    modelType = fitter.modelName
+    
+    if fitter.sharedLambda:
+        modelType += "_LapseFix"
+    else:
+        modelType += "_LapseFree"
+    
+    if fitter.freeP_c:
+        modelType += "_contextualPrior"
+    else:
+        modelType += "_sharedPrior"
+
+    filename = f"{participantID}_{modelType}_simulated.csv"
+
+    filepath = os.path.join(save_dir, filename)
+
+    # make directory if it doesn't exist
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    # Save CSV
+    simulatedData.to_csv(filepath, index=False)
+        
+    print(f"✅ Saved simulated data for {participantID} ({modelType}) to: {filepath}")
+
 #saveFitResultsSingle(fittedParams, dataName, modelType="lognormal")

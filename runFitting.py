@@ -58,7 +58,7 @@ if __name__ == "__main__":
         mc_fitter.optimizationMethod= optimMethod  # Use BADS for optimization
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
-        mc_fitter.freeP_c = True  # Free prior probability of common cause
+        mc_fitter.freeP_c = 0  # Free prior probability of common cause
         print(f"Model name set to: {mc_fitter.modelName}")
         #mc_fitter.sharedLambda
         print(f"Shared lambda: {mc_fitter.sharedLambda}")
@@ -74,3 +74,8 @@ if __name__ == "__main__":
 
         # Save the fit results
         fitSaver.saveFitResultsSingle(mc_fitter, fittedParams, dataName)
+
+        # Optionally, generate and save simulated data based on the fitted model
+        #if True:
+        fitSaver.saveSimulatedData(mc_fitter, dataName)
+        print(f"=== Finished processing file: {dataFile} ===\n")

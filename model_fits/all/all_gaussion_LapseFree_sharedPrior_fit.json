@@ -1,0 +1,17 @@
+{
+    "participantID": "all",
+    "modelType": "gaussion_LapseFree_sharedPrior",
+    "fittedParams": [
+        0.23916015625,
+        0.6448437499999999,
+        0.5765234374999999,
+        0.31392578125,
+        1.003125,
+        0.1154296875,
+        0.1634765625
+    ],
+    "AIC": 20000000014.0,
+    "BIC": 20000000060.56574,
+    "logLikelihood": -10000000000.0,
+    "n_conditions": 5723
+}
