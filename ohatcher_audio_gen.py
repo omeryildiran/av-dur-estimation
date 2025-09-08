@@ -262,9 +262,12 @@ import matplotlib.pyplot as plt
 ## PLot different sounds with different amplitude variance
 def plot_sounds():
     plt.figure(figsize=(12, 4))
-    for idx, rise in enumerate([0.15]):
+    for idx, rise in enumerate([1.2]):
         stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound,
                                               intensity_background=rise)
+        #save sound
+        from scipy.io import wavfile
+        wavfile.write(f"stim_sound_rise_lowSNR.wav", audio_cue.sample_rate, (stim_sound * 32767).astype(np.int16))
         #stim_sound*=0.5
 
         t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
@@ -283,7 +286,7 @@ def plot_sounds():
     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
     plt.show()
     
-plot_sounds()
+#plot_sounds()
 
 
 

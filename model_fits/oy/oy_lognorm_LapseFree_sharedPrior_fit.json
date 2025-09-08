@@ -1,6 +1,6 @@
 {
     "participantID": "oy",
-    "modelType": "lognorm",
+    "modelType": "lognorm_LapseFree_sharedPrior",
     "fittedParams": [
         0.07729716078353022,
         0.2842735608532394,
@@ -10,8 +10,8 @@
         0.11699240564868205,
         0.15360234693796998
     ],
-    "AIC": 2327.5212110005305,
-    "BIC": 2359.1138217769167,
-    "logLikelihood": -1156.7606055002652,
+    "AIC": 2328.94268622279,
+    "BIC": 2360.5352969991764,
+    "logLikelihood": -1157.471343111395,
     "n_conditions": 674
 }

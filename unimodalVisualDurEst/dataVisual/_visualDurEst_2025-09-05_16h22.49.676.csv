@@ -1,0 +1,5 @@
+,standardDur,audNoise,order,preDur,postDur,isiDur,trial_num,total_audio_dur,delta_dur_percents,deltaDurS,testDurS,intensities,current_stair,responses,is_correct,response_rts,stair_num_reversal,stair_is_reversal,response_keys
+0,0.5,0.1,2,0.3833,0.35,0.5667,0,2.7,0.8,0.4,0.9,5,lapse_rate,2.0,True,1.386,0,False,right
+1,0.5,0.1,1,0.3167,0.3667,0.6333,1,2.7167,0.8,0.4,0.9,5,lapse_rate,1.0,True,0.55,0,False,left
+2,0.5,0.1,2,0.45,0.4,0.5333,2,1.9833,-0.8,-0.4,0.1,5,lapse_rate,2.0,False,0.52,0,False,right
+3,0.5,0.1,1,0.4333,0.3833,0.85,3,2.2666,-0.8,-0.4,0.1,5,lapse_rate,2.0,True,0.396,0,False,right

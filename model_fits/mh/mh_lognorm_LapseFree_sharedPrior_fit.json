@@ -1,6 +1,6 @@
 {
     "participantID": "mh",
-    "modelType": "lognorm",
+    "modelType": "lognorm_LapseFree_sharedPrior",
     "fittedParams": [
         0.18463516235351562,
         0.48277618408203127,
@@ -10,8 +10,8 @@
         4.920959472655417e-05,
         0.25
     ],
-    "AIC": 2428.01972130817,
-    "BIC": 2457.4657527952445,
-    "logLikelihood": -1207.009860654085,
+    "AIC": 2424.469291408493,
+    "BIC": 2453.9153228955674,
+    "logLikelihood": -1205.2346457042465,
     "n_conditions": 496
 }

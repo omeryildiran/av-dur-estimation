@@ -1,4 +1,4 @@
-ExpTesting = 1
+ExpTesting = 0
 ExpTraining= 0
 fullScreen=0  
 expName = 'bimodalDurEst'
