@@ -5,7 +5,14 @@ import monteCarloClass
 import time
 
 fileName="dt_all.csv"
-for fileName in [ "dt_all.csv"]:
+"""
+["as_all.csv", "oy_all.csv", "dt_all.csv", "HH_all.csv", "ip_all.csv", "ln_all.csv", 
+"LN01_all.csv", "mh_all.csv", "ml_all.csv", "mt_all.csv", "qs_all.csv", "sx_all.csv"]
+
+"""
+#for fileName in ["as_all.csv", "oy_all.csv", "dt_all.csv", "HH_all.csv", "ip_all.csv", "ln_all.csv","LN01_all.csv", 
+#                  "mh_all.csv", "ml_all.csv", "mt_all.csv", "qs_all.csv", "sx_all.csv"]:
+for fileName in ["all_main.csv"]:
     data, dataName = loadData.loadData(fileName)
 
     intensityVariable = "deltaDurS"
@@ -24,7 +31,7 @@ for fileName in [ "dt_all.csv"]:
 
 
     # fit parameters
-    mc_fitter.nSimul = 1000
+    #mc_fitter.nSimul = 1000
     mc_fitter.optimizationMethod= "bads"  # Use BADS for optimization
     mc_fitter.nStart = 1 # Number of random starts for optimization
     mc_fitter.modelName = "lognorm"  # Set measurement distribution to Gaussian
