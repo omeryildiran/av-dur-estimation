@@ -1,6 +1,6 @@
 {
     "participantID": "oy",
-    "modelType": "gaussian",
+    "modelType": "gaussian_LapseFree_sharedPrior",
     "fittedParams": [
         0.12308930158615113,
         0.14295337796211238,
@@ -10,8 +10,8 @@
         0.12557230293750762,
         0.15894559174776077
     ],
-    "AIC": 2337.978295953388,
-    "BIC": 2369.5709067297744,
-    "logLikelihood": -1161.989147976694,
+    "AIC": 2340.1833636791202,
+    "BIC": 2371.7759744555065,
+    "logLikelihood": -1163.0916818395601,
     "n_conditions": 674
 }

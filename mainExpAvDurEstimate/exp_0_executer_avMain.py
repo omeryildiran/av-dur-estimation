@@ -4,7 +4,7 @@ nTrialPerStairPerCondition=70
 
 ExpTesting = 0
 ExpTraining= 0
-fullScreen=True  
+fullScreen=1
 expName = 'mainExpAvDurEstimate'
 modalityCue='A'
 

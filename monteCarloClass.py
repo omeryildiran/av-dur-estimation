@@ -40,7 +40,7 @@ class OmerMonteCarlo(fitPychometric):
     Inherits from fitPychometric.
     """
     
-    def __init__(self, data, intensityVar='deltaDurS', allIndependent=True, sharedSigma=False, sensoryVar='audNoise', 
+    def __init__(self, data, intensityVar='deltaDurS', allIndependent=True, sharedSigma=0, sensoryVar='audNoise', 
                  standardVar='standardDur', conflictVar='conflictDur',dataName=None):
         super().__init__(data, intensityVar, allIndependent, sharedSigma, sensoryVar, standardVar, conflictVar,dataName) 
         
@@ -538,7 +538,7 @@ class OmerMonteCarlo(fitPychometric):
             # Unpack fitted parameters for the current audio noise level
             lambda_, sigma_av_a, sigma_av_v, p_c = self.getParamsCausal(fittedParams, audioNoiseLevel,conflictLevel)
 
-            nSamples = 10 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
+            nSamples = 30 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
             # Simulate responses for the current trial
             for _ in range(nSamples):
                 S_a_s = 0.5

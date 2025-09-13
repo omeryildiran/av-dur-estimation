@@ -218,6 +218,7 @@ def getParams(params, conflict, audio_noise, nLambda, nSigma):
         sigma  = params[cond_idx * 3 + 2]
         return lambda_, mu, sigma
     elif allIndependent==False and sharedSigma: #  if sigma is shared
+        # each noise level has its own lambda and sigma, but mu varies with conflict
         # Get lambda (lapse rate)
         lambda_ = params[0]    
         # Get sigma based on noise level

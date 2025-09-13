@@ -12,7 +12,7 @@ fileName="dt_all.csv"
 """
 #for fileName in ["as_all.csv", "oy_all.csv", "dt_all.csv", "HH_all.csv", "ip_all.csv", "ln_all.csv","LN01_all.csv", 
 #                  "mh_all.csv", "ml_all.csv", "mt_all.csv", "qs_all.csv", "sx_all.csv"]:
-for fileName in ["all_main.csv"]:
+for fileName in ["dt_all.csv"]:
     data, dataName = loadData.loadData(fileName)
 
     intensityVariable = "deltaDurS"

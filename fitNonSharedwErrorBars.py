@@ -13,13 +13,17 @@ def loadData(dataName):
     sensoryVar="audNoise"
     standardVar="standardDur"
     conflictVar="conflictDur"
-    
+    testDurVar="testDurS"
+
 
 
     data = pd.read_csv("data/"+dataName)
     # ignore firts 3 rows
     data= data[data['audNoise'] != 0]
     data=data[data['standardDur'] != 0]
+    data["testDurMs"]= data["testDurS"]*1000
+    data["standardDurMs"]= data["standardDur"]*1000
+    
     #round standardDur to 2 decimal places
     data = data.round({'standardDur': 2, 'audNoise': 2, 'conflictDur': 2, 'delta_dur_percents': 2})
     
@@ -83,7 +87,7 @@ intensityVariable="delta_dur_percents"
 
 
 def groupByChooseTest(x):
-    grouped = x.groupby([intensityVariable, sensoryVar, standardVar,conflictVar]).agg(
+    grouped = x.groupby([intensityVariable, sensoryVar, standardVar,conflictVar,"testDurMs"]).agg(
         num_of_chose_test=('chose_test', 'sum'),
         total_responses=('responses', 'count'),
         num_of_chose_standard=('chose_standard', 'sum'),
@@ -98,7 +102,7 @@ def groupByChooseTestWithParticipants(data):
     Group data by intensity, sensory, standard, conflict AND participant to get individual participant responses
     """
     # First group by participant and conditions to get individual participant psychometric data
-    participant_grouped = data.groupby([intensityVariable, sensoryVar, standardVar, conflictVar, 'participantID']).agg(
+    participant_grouped = data.groupby([intensityVariable, sensoryVar, standardVar, conflictVar,'testDurMs', 'participantID']).agg(
         num_of_chose_test=('chose_test', 'sum'),
         total_responses=('responses', 'count'),
         num_of_chose_standard=('chose_standard', 'sum'),
@@ -112,7 +116,7 @@ def compute_sigma_from_slope(slope, lapse_rate=0.02):
     sigma = (1 - lapse_rate) / (np.sqrt(2 * np.pi) * slope)*np.exp(-0.5)
     return sigma
 
-def bin_and_plot_with_error_bars(data, bin_method='cut', bins=10, bin_range=None, plot=True, color="blue"):
+def bin_and_plot_with_error_bars(data, bin_method='cut', bins=10, bin_range=None, plot=True, color="blue",binVar="delta_dur_percents"):
     """
     Bin data and plot with error bars calculated across participants
     """
@@ -120,13 +124,13 @@ def bin_and_plot_with_error_bars(data, bin_method='cut', bins=10, bin_range=None
     participant_data = groupByChooseTestWithParticipants(data)
     
     if bin_method == 'cut':
-        participant_data['bin'] = pd.cut(participant_data[intensityVariable], bins=bins, labels=False, include_lowest=True, retbins=False)
+        participant_data['bin'] = pd.cut(participant_data[binVar], bins=bins, labels=False, include_lowest=True, retbins=False)
     elif bin_method == 'manual':
-        participant_data['bin'] = np.digitize(participant_data[intensityVariable], bins=bin_range) - 1
+        participant_data['bin'] = np.digitize(participant_data[binVar], bins=bin_range) - 1
     
     # Group by bin and calculate statistics across participants
     bin_summary = participant_data.groupby('bin').agg(
-        x_mean=(intensityVariable, 'mean'),
+        x_mean=(binVar, 'mean'),
         y_mean=('p_choose_test', 'mean'),
         y_sem=('p_choose_test', lambda x: np.std(x) / np.sqrt(len(x)) if len(x) > 1 else 0),  # Standard error
         y_std=('p_choose_test', 'std'),
@@ -144,16 +148,16 @@ def bin_and_plot_with_error_bars(data, bin_method='cut', bins=10, bin_range=None
         # Add text showing number of participants
         if not bin_summary['n_participants'].empty:
             n_participants = bin_summary['n_participants'].iloc[0]
-            plt.text(0.02, 0.95, f'n = {n_participants} participants', 
-                   transform=plt.gca().transAxes, fontsize=10,
+            plt.text(0.02, 0.95, f'N = {n_participants}', 
+                   transform=plt.gca().transAxes, fontsize=16,
                    bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
     
     return bin_summary
 
 
-def bin_and_plot(data, bin_method='cut', bins=10, bin_range=None, plot=True, color="blue", add_error_bars=True):
+def bin_and_plot(data, bin_method='cut', bins=10, bin_range=None, plot=True, color="blue", add_error_bars=True,binVar="delta_dur_percents"):
     if add_error_bars and 'participantID' in data.columns:
-        return bin_and_plot_with_error_bars(data, bin_method, bins, bin_range, plot, color)
+        return bin_and_plot_with_error_bars(data, bin_method, bins, bin_range, plot, color,binVar)
     else:
         # Original behavior for backwards compatibility
         # If we have raw data (with participantID), we need to group it first
@@ -161,12 +165,12 @@ def bin_and_plot(data, bin_method='cut', bins=10, bin_range=None, plot=True, col
             data = groupByChooseTest(data)
         
         if bin_method == 'cut':
-            data['bin'] = pd.cut(data[intensityVariable], bins=bins, labels=False, include_lowest=True, retbins=False)
+            data['bin'] = pd.cut(data[binVar], bins=bins, labels=False, include_lowest=True, retbins=False)
         elif bin_method == 'manual':
-            data['bin'] = np.digitize(data[intensityVariable], bins=bin_range) - 1
+            data['bin'] = np.digitize(data[binVar], bins=bin_range) - 1
         
         grouped = data.groupby('bin').agg(
-            x_mean=(intensityVariable, 'mean'),
+            x_mean=(binVar, 'mean'),
             y_mean=('p_choose_test', 'mean'),
             total_resp=('total_responses', 'sum')
         )
@@ -440,7 +444,10 @@ def fitMultipleStartingPoints(data,nStart=3):
 def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable, show_error_bars=True):
     print(f"Fitted parameters: {best_fit.x}")
     colors = sns.color_palette("viridis", n_colors=len(uniqueSensory))  # Use Set2 palette for different noise levels
+    colors=["navy","maroon"]
+    
     plt.figure(figsize=(10, 10))
+    labeledStandard=0
     for i, standardLevel in enumerate(uniqueStandard):
         for j, audioNoiseLevel in enumerate(uniqueSensory):
             for k, conflictLevel in enumerate(uniqueConflict):
@@ -456,25 +463,41 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                     continue
                 responses = dfFiltered['num_of_chose_test'].values
                 totalResponses = dfFiltered['total_responses'].values
+                
                 maxX = max(levels) + 0.1
                 minX = min(levels) - 0.1
                 x = np.linspace(minX, maxX, 500)
                 y = psychometric_function(x, lambda_, mu, sigma)
+                
+                x= np.linspace(0,1000,500)
+                
                 color = colors[j]
                 plt.plot(x, y, color=color, label=f"Noise: {audioNoiseLevel}\n $\\mu$: {mu:.2f}, $\\sigma$: {sigma:.2f}", linewidth=4)
-                plt.axvline(x=0, color='gray', linestyle='--')
+                #plt.axvline(x=0, color='gray', linestyle='--')
                 plt.axhline(y=0.5, color='gray', linestyle='--')
-                plt.xlabel(f"({intensityVariable}) Test(stair)-Standard(0.5s) Duration Difference Ratio")
-                plt.ylabel("P(chose test)")
-
-                plt.title(f" {pltTitle} ", fontsize=16)
-                plt.legend(fontsize=14, title_fontsize=14)
-                plt.grid()
+                binVar='testDurMs'
+                fontSize=16
+                #plt.xlabel(f"({intensityVariable}) Test(stair)-Standard(0.5s) Duration Difference Ratio")
+                plt.xlabel("Test Duration (ms)",fontsize=fontSize)
+                plt.ylabel("P(chose test)",fontsize=fontSize)
+                
+                if not labeledStandard:
+                    plt.axvline(500,label="Standard duration (500ms)", linestyle='--')
+                labeledStandard=1
+                #plt.title(f" {pltTitle} ", fontsize=20)
+                #plt.title("Unimodal-visual psychometric function",fontsize=fontSize)
+                plt.xticks(fontsize=fontSize-2)
+                plt.yticks(fontsize=fontSize-2)
+                plt.xticks(500*np.arange(0, 3, 0.5))
+                #plt.legend(fontsize=14, title_fontsize=fontSize)
+                #plt.grid()
                 # Use the raw data (df) instead of grouped data (dfFiltered) to preserve participantID for error bars
-                bin_and_plot(df, bin_method='cut', bins=10, plot=True, color=color, add_error_bars=show_error_bars)
-                plt.text(0.05, 0.8, f"Shared $\\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
+                bin_and_plot(df, bin_method='cut', bins=10, plot=True, color=color, add_error_bars=show_error_bars,binVar="testDurMs")
+                plt.text(0.05, 0.9, f"Standard: 500ms ", fontsize=14, ha='left', va='top', transform=plt.gca().transAxes)
+                #plt.text(0.05, 0.8, f"Shared $\\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
                 plt.tight_layout()
-                plt.grid(True)
+                
+                #plt.grid(True)
     plt.show()
 
 
@@ -490,6 +513,7 @@ def plotStairCases(data):
         for trialN in range(df.shape[0]):
             color = 'green' if df['chose_test'][trialN] == 1 or df['chose_test'][trialN] == "True" else 'red'            
             #print(f"Trial {trialN}, delta_dur_percents: {df['delta_dur_percents'][trialN]}, is_correct: {df['is_correct'][trialN]}")
+
             plt.scatter(trialN,df['delta_dur_percents'][trialN], color=color, s=60, alpha=0.5)
             plt.plot(df['delta_dur_percents'], color='blue')
 
@@ -509,13 +533,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit psychometric functions with optional error bars')
     parser.add_argument('--no-error-bars', action='store_true', 
                        help='Plot without error bars across participants')
-    parser.add_argument('--data', default='all_visual.csv',
+    parser.add_argument('--data', default='all_crossmodal.csv',
                        help='Data file to use (default: all_auditory.csv)')
     args = parser.parse_args()
     
-    fixedMu = 1  # Set to True to ignore the bias in the model
+    fixedMu = 0 # Set to True to ignore the bias in the model
     dataName = args.data
-    show_error_bars = not args.no_error_bars  # Invert the flag
+    show_error_bars =  not args.no_error_bars  # Invert the flag
     
     # Load and prepare data
     print(f"Loading data from {dataName}...")

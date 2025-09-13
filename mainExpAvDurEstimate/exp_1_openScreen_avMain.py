@@ -67,7 +67,7 @@ myMon.setSizePix((sizeIs, sizeIs))
 
 win = visual.Window(size=(sizeIs, sizeIs),
                 fullscr=fullScreen, monitor=myMon, units='pix', color="gray", 
-                screen=1, colorSpace='rgb')
+                screen=0, colorSpace='rgb')
 
 
 

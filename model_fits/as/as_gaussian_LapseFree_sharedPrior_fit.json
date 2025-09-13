@@ -1,6 +1,6 @@
 {
     "participantID": "as",
-    "modelType": "gaussian",
+    "modelType": "gaussian_LapseFree_sharedPrior",
     "fittedParams": [
         0.003926116228103627,
         0.1363117790222168,
@@ -10,8 +10,8 @@
         0.04600045680999755,
         8.249282836914062e-05
     ],
-    "AIC": 2255.098023200974,
-    "BIC": 2283.429628454298,
-    "logLikelihood": -1120.549011600487,
+    "AIC": 2253.2979222711133,
+    "BIC": 2281.6295275244374,
+    "logLikelihood": -1119.6489611355566,
     "n_conditions": 423
 }

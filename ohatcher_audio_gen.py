@@ -216,15 +216,21 @@ class AudioCueGenerator:
         # plot the sound waveforms
         time= np.linspace(0, len(stim_sound) / self.sample_rate, len(stim_sound))
 
-        plt.plot(time,stim_sound, label='Signal Sound', color='forestgreen', alpha=0.7)
-        plt.plot(time,background_noise, label='Background Noise', color='black', alpha=0.7)
-        plt.title("Stimulus Sound Waveform")
-        plt.xlabel("Time (s)")
-        plt.xlim(0, len(stim_sound) / self.sample_rate)
-        plt.xticks(np.arange(0, len(stim_sound) / self.sample_rate, 0.1))
-        plt.legend()
-        plt.ylabel("Amplitude")
-        plt.show()
+        # fontSize=16
+        # plt.plot(time,stim_sound, label='Signal Sound', color='forestgreen', alpha=0.7, )
+        # plt.plot(time,background_noise, label='Background Noise', color='black', alpha=0.7,)
+        # plt.title("Stimulus Sound Waveform", fontsize=fontSize)
+
+        # plt.xlabel("Time (s)", fontsize=fontSize)
+        # plt.xlim(0, len(stim_sound) / self.sample_rate)
+        # #plt.legend()
+        # plt.ylabel("Amplitude", fontsize=fontSize)
+        # plt.xticks(fontsize=fontSize-2)
+        # plt.yticks(fontsize=fontSize-2)
+        # plt.xticks(np.arange(0, len(stim_sound) / self.sample_rate, 0.5))
+
+        
+        # plt.show()
         
         # #Background noise of same totaal duration
 
@@ -244,11 +250,11 @@ class AudioCueGenerator:
 audio_cue = AudioCueGenerator(sampleRate=44100)
 
 #generate whole stim
-test_dur = 0.4
-standard_dur = 0.6
+test_dur = 0.5
+standard_dur = 0.5
 noise_type = "white"
 intensity = 5
-rise_dur = 1.2
+rise_dur = 0.1
 order = 1
 pre_cue_sound=0.25
 pre_post_dur=pre_cue_sound
@@ -261,7 +267,7 @@ import matplotlib.pyplot as plt
 
 ## PLot different sounds with different amplitude variance
 def plot_sounds():
-    plt.figure(figsize=(12, 4))
+    plt.figure(figsize=(10, 6))
     for idx, rise in enumerate([1.2]):
         stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound,
                                               intensity_background=rise)
@@ -274,19 +280,20 @@ def plot_sounds():
         #if idx in [1]:
         #audio_cue.play_sound(stim_sound)
         
-        plt.subplot(1, 2, idx + 1)
+        #plt.subplot(1, 2, idx + 1)
         plt.plot(t, stim_sound)
         plt.title(f"Rise duration: {rise}")
         plt.xlabel("Time (s)")
         plt.ylabel("Amplitude")
-        plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="red", alpha=0.5, label="Reliable signal")
-        plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="forestgreen", alpha=0.2, label="unreliable signal")
+        #plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="red", alpha=0.5, label="Reliable signal")
+        #plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="forestgreen", alpha=0.2, label="unreliable signal")
     #plt.ylim(-2,3)
     plt.tight_layout()
     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
     plt.show()
     
 #plot_sounds()
+
 
 
 
