@@ -228,13 +228,13 @@ class OmerMonteCarlo(fitPychometric):
             #.if m_a and m_v are in linear scale y_vals should be in linear scale as well
             y_vals = np.linspace(self.t_min, self.t_max, self.nSimul) 
             dy=y_vals[1] - y_vals[0]
-            log_norm_const=self.t_max/self.t_min
+            log_norm_const=np.log(self.t_max / self.t_min)
 
             # likelihoods under common cause
             L_m_a=  norm.pdf(m_a, loc=y_vals, scale=sigma_a)  # shape: (n_points,)
             L_m_v = norm.pdf(m_v, loc=y_vals, scale=sigma_v)
 
-            prior = 1/ (y_vals*log_norm_const)  # Adjusted prior for log mis model
+            prior = 1/ ((y_vals +1e-10)*log_norm_const)  # Adjusted prior for log mis model
             # Calculate the integral over the log-transformed durations
             integrand=L_m_a * L_m_v * prior
             integral = np.sum(integrand*dy)
@@ -304,10 +304,10 @@ class OmerMonteCarlo(fitPychometric):
             #print("Using lognormal distribution for measurements")
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
-            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
-            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
-            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
+            m_a_s = np.exp(np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul))
+            m_v_s = np.exp(np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul))
+            m_a_t = np.exp(np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul))
+            m_v_t = np.exp(np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul))
             est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c)
             est_test = self.causalInference_vectorized( m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c)
       

@@ -451,6 +451,7 @@ def fitMultipleStartingPoints(data,nStart=3):
     disable=False
     if len(multipleInitGuesses)==1:
         disable=True
+    from tqdm import tqdm
     
     for i in tqdm(range(len(multipleInitGuesses)), desc="Fitting multiple starting points",disable=disable):
         

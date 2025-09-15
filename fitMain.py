@@ -696,7 +696,7 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "HH_all.csv"
+        dataName = "all_main.csv"
     global pltTitle
     pltTitle=dataName.split("_")[1]
     pltTitle=dataName.split("_")[0]+str(" ")+pltTitle

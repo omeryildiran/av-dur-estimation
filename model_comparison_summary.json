@@ -10,10 +10,10 @@
         "gaussian_sharedPrior"
     ],
     "best_model_distribution": {
-        "lognorm_sharedPrior": 5,
-        "gaussian_contextualPrior": 2,
+        "lognorm_sharedPrior": 4,
+        "gaussian_contextualPrior": 3,
         "logLinearMismatch_sharedPrior": 2,
         "gaussian_sharedPrior": 2,
-        "lognorm_contextualPrior": 1
+        "logLinearMismatch_contextualPrior": 1
     }
 }
