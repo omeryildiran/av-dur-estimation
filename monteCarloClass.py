@@ -10,6 +10,7 @@ import scipy.optimize as opt
 import fitMainClass as fitMain
 
 from fitMainClass import fitPychometric
+
 from tqdm import tqdm
 
 from scipy.optimize import minimize

@@ -117,6 +117,7 @@ def compute_sigma_from_slope(slope, lapse_rate=0.02):
     return sigma
 
 def bin_and_plot_with_error_bars(data, bin_method='cut', bins=10, bin_range=None, plot=True, color="blue",binVar="delta_dur_percents"):
+    
     """
     Bin data and plot with error bars calculated across participants
     """
@@ -145,13 +146,13 @@ def bin_and_plot_with_error_bars(data, bin_method='cut', bins=10, bin_range=None
                    fmt='o', color=color, capsize=5, capthick=2,
                    markersize=8, alpha=0.8, elinewidth=2)
         
-        # Add text showing number of participants
+        #Add text showing number of participants
         if not bin_summary['n_participants'].empty:
             n_participants = bin_summary['n_participants'].iloc[0]
             plt.text(0.02, 0.95, f'N = {n_participants}', 
-                   transform=plt.gca().transAxes, fontsize=16,
-                   bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
-    
+                   transform=plt.gca().transAxes, fontsize=16,)
+                   #bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
+
     return bin_summary
 
 
@@ -444,7 +445,7 @@ def fitMultipleStartingPoints(data,nStart=3):
 def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable, show_error_bars=True):
     print(f"Fitted parameters: {best_fit.x}")
     colors = sns.color_palette("viridis", n_colors=len(uniqueSensory))  # Use Set2 palette for different noise levels
-    colors=["navy","maroon"]
+    colors=["black", "navy","maroon" ]
     
     plt.figure(figsize=(10, 10))
     labeledStandard=0
@@ -472,7 +473,9 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 x= np.linspace(0,1000,500)
                 
                 color = colors[j]
-                plt.plot(x, y, color=color, label=f"Noise: {audioNoiseLevel}\n $\\mu$: {mu:.2f}, $\\sigma$: {sigma:.2f}", linewidth=4)
+                #plt.plot(x, y, color=color, label=f"Noise: {audioNoiseLevel}\n $\\mu$: {mu:.2f}, $\\sigma$: {sigma:.2f}", linewidth=4)
+                labelsDict={0.1:"Auditory low noise",1.2:"Auditory high noise",99:"Visual",0.03:"High noise"}
+                plt.plot(x,y, color=color, linewidth=4, label=f"{labelsDict.get(audioNoiseLevel,audioNoiseLevel)}" )
                 #plt.axvline(x=0, color='gray', linestyle='--')
                 plt.axhline(y=0.5, color='gray', linestyle='--')
                 binVar='testDurMs'
@@ -489,7 +492,7 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 plt.xticks(fontsize=fontSize-2)
                 plt.yticks(fontsize=fontSize-2)
                 plt.xticks(500*np.arange(0, 3, 0.5))
-                #plt.legend(fontsize=14, title_fontsize=fontSize)
+                plt.legend(fontsize=14, title_fontsize=fontSize)
                 #plt.grid()
                 # Use the raw data (df) instead of grouped data (dfFiltered) to preserve participantID for error bars
                 bin_and_plot(df, bin_method='cut', bins=10, plot=True, color=color, add_error_bars=show_error_bars,binVar="testDurMs")
@@ -533,13 +536,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit psychometric functions with optional error bars')
     parser.add_argument('--no-error-bars', action='store_true', 
                        help='Plot without error bars across participants')
-    parser.add_argument('--data', default='all_crossmodal.csv',
+    parser.add_argument('--data', default='all_visualAndAuditory.csv',
                        help='Data file to use (default: all_auditory.csv)')
     args = parser.parse_args()
     
     fixedMu = 0 # Set to True to ignore the bias in the model
     dataName = args.data
-    show_error_bars =  not args.no_error_bars  # Invert the flag
+    show_error_bars  =  not args.no_error_bars  # Invert the flag
     
     # Load and prepare data
     print(f"Loading data from {dataName}...")
