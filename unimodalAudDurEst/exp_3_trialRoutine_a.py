@@ -115,11 +115,12 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
 
     # audio stimulus
     audio_stim= audio_cue_gen.whole_stimulus(
-            test_dur=testDurS, standard_dur=standardDur, noise_type='white',
+            test_dur=0.6,#testDurS,
+              standard_dur=standardDur, noise_type='white',
             order=order, 
             pre_dur=preDur, post_dur=postDur, isi_dur=isiDur, 
             intensity=maxIntensityBurst, rise_dur=0.005, 
-            intensity_background=audNoise)
+            intensity_background=0.1) # audNoise)
 
     audio_stim_sound=sound.Sound(value=audio_stim, sampleRate=sampleRate, stereo=True)
     t=np.linspace(0,len(audio_stim)/sampleRate,len(audio_stim))
