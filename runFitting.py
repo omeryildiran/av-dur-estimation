@@ -73,7 +73,7 @@ if __name__ == "__main__":
         mc_fitter.logLikelihood= -mc_fitter.nLLMonteCarloCausal(fittedParams, mc_fitter.groupedData)
 
         # Save the fit results
-        #fitSaver.saveFitResultsSingle(mc_fitter, fittedParams, dataName)
+        fitSaver.saveFitResultsSingle(mc_fitter, fittedParams, dataName)
 
         # Optionally, generate and save simulated data based on the fitted model
         #if True:
