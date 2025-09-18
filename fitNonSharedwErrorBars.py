@@ -445,7 +445,7 @@ def fitMultipleStartingPoints(data,nStart=3):
 def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable, show_error_bars=True):
     print(f"Fitted parameters: {best_fit.x}")
     colors = sns.color_palette("viridis", n_colors=len(uniqueSensory))  # Use Set2 palette for different noise levels
-    colors=["black", "navy","maroon" ]
+    colors=[ "navy","maroon" ]
     
     plt.figure(figsize=(10, 10))
     labeledStandard=0
@@ -481,11 +481,11 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 binVar='testDurMs'
                 fontSize=16
                 #plt.xlabel(f"({intensityVariable}) Test(stair)-Standard(0.5s) Duration Difference Ratio")
-                plt.xlabel("Test Duration (ms)",fontsize=fontSize)
-                plt.ylabel("P(chose test)",fontsize=fontSize)
+                plt.xlabel("Auditory Duration (ms)",fontsize=fontSize)
+                plt.ylabel("P(chose audio)",fontsize=fontSize)
                 
                 if not labeledStandard:
-                    plt.axvline(500,label="Standard duration (500ms)", linestyle='--')
+                    plt.axvline(500, linestyle='--')
                 labeledStandard=1
                 #plt.title(f" {pltTitle} ", fontsize=20)
                 #plt.title("Unimodal-visual psychometric function",fontsize=fontSize)
@@ -496,7 +496,7 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 #plt.grid()
                 # Use the raw data (df) instead of grouped data (dfFiltered) to preserve participantID for error bars
                 bin_and_plot(df, bin_method='cut', bins=10, plot=True, color=color, add_error_bars=show_error_bars,binVar="testDurMs")
-                plt.text(0.05, 0.9, f"Standard: 500ms ", fontsize=14, ha='left', va='top', transform=plt.gca().transAxes)
+                plt.text(0.05, 0.9, f"Visual: 500ms ", fontsize=14, ha='left', va='top', transform=plt.gca().transAxes)
                 #plt.text(0.05, 0.8, f"Shared $\\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
                 plt.tight_layout()
                 
@@ -536,7 +536,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit psychometric functions with optional error bars')
     parser.add_argument('--no-error-bars', action='store_true', 
                        help='Plot without error bars across participants')
-    parser.add_argument('--data', default='all_visualAndAuditory.csv',
+    parser.add_argument('--data', default='all_crossmodal.csv',
                        help='Data file to use (default: all_auditory.csv)')
     args = parser.parse_args()
     
