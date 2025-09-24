@@ -13,7 +13,7 @@ if __name__ == "__main__":
     optimMethod = sys.argv[4] if len(sys.argv) > 4 else "bads"
     nStarts = int(sys.argv[5]) if len(sys.argv) > 5 else 1
     integrationMethod= sys.argv[6] if len(sys.argv) > 6 else "analytical" # "numerical" or "analytical"
-    print(f"Data file: {dataFiles}, Model: {modelName}, Simulations: {nSimul}, Optimizer: {optimMethod}, Starts: {nStarts}")
+    print(f"Data file: {dataFiles}, Model: {modelName}, Simulations: {nSimul}, Optimizer: {optimMethod}, \nStarts: {nStarts} Integration: {integrationMethod}")
 
 
 
@@ -59,6 +59,7 @@ if __name__ == "__main__":
         mc_fitter.optimizationMethod= optimMethod  # Use BADS for optimization
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
+        mc_fitter.integrationMethod= integrationMethod # "numerical" or "analytical"
         mc_fitter.freeP_c = 0  # Free prior probability of common cause
         print(f"Model name set to: {mc_fitter.modelName}")
         #mc_fitter.sharedLambda
