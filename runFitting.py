@@ -12,6 +12,7 @@ if __name__ == "__main__":
     nSimul = int(sys.argv[3]) if len(sys.argv) > 3 else 2000
     optimMethod = sys.argv[4] if len(sys.argv) > 4 else "bads"
     nStarts = int(sys.argv[5]) if len(sys.argv) > 5 else 1
+    integrationMethod= sys.argv[6] if len(sys.argv) > 6 else "analytical" # "numerical" or "analytical"
     print(f"Data file: {dataFiles}, Model: {modelName}, Simulations: {nSimul}, Optimizer: {optimMethod}, Starts: {nStarts}")
 
 
