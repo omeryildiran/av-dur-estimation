@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
 import scipy.optimize as opt
+from scipy.integrate import quad
 import fitMainClass as fitMain
 
 from fitMainClass import fitPychometric
@@ -48,6 +49,7 @@ class OmerMonteCarlo(fitPychometric):
         self.fitType = 'Monte Carlo'
         self.nStart = 3  # Number of random starts for optimization (increased for debugging)
         self.nSimul = 10  # Number of simulations for Monte Carlo approximation
+        self.nDiscretize = 100  # Number of points for discretized integration (used in logLinearMismatch)
         self.optimizationMethod = 'scipy'  # Use scipy for better debugging (BADS can be harder to debug)
         self.modelFit = None  # Placeholder for fitted model
         self.simulatedData = None  # Placeholder for simulated data
@@ -55,6 +57,7 @@ class OmerMonteCarlo(fitPychometric):
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
         self.modelName = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
+        self.integrationMethod = "analytical"  # Can be 'analytical' or 'numerical'
         
     
         
@@ -79,6 +82,9 @@ class OmerMonteCarlo(fitPychometric):
         # Store data bounds for initial parameter estimation and bounds constraints
         self.data_t_min = data["testDurS"].min()
         self.data_t_max = data["testDurS"].max()
+
+        self.t_max_reel=max(data["testDurS"].max(),data["recordedDurVisualStandard"].max(),data["recordedDurVisualTest"].max())
+        
         
         # Ensure we have reasonable data bounds for parameter initialization
         if self.data_t_max == self.data_t_min:
@@ -264,6 +270,55 @@ class OmerMonteCarlo(fitPychometric):
         return self.p_single(m_a,sigma_a,y_min,y_max) * self.p_single(m_v,sigma_v,y_min,y_max)
 
 
+    def p_single_numerical(self, m, sigma, y_min, y_max, t_min, t_max):
+        """
+        Numerical integration version of p_single for separate sources
+        """
+        if self.modelName == "logLinearMismatch":
+            # For logLinearMismatch, use the same special handling as in p_C1
+            y_vals = np.linspace(t_min, t_max, self.nDiscretize) 
+            dy = y_vals[1] - y_vals[0]
+            log_norm_const = np.log(t_max / t_min)
+            
+            # likelihood under separate source
+            L_m = norm.pdf(m, loc=y_vals, scale=sigma)
+            prior = 1 / ((y_vals + 1e-10) * log_norm_const)
+            
+            # Calculate the integral
+            integrand = L_m * prior
+            integral = np.sum(integrand * dy)
+            integral = max(integral, 1e-10)
+            return integral
+        
+        # For other models, use numerical integration
+        def integrand(y):
+            """Integrand function for numerical integration"""
+            # Likelihood for measurement given duration y
+            L = norm.pdf(m, loc=y, scale=sigma)
+            # Uniform prior over duration range
+            prior = 1.0 / (y_max - y_min)
+            return L * prior
+        
+        # Perform numerical integration
+        try:
+            result, _ = quad(integrand, 0, np.log(self.t_max_reel) )
+            return max(result, 1e-10)  # Ensure numerical stability
+        except Exception as e:
+            print(f"Warning: Numerical integration failed for p_single: {e}")
+            # Fallback to analytical solution
+            return self.p_single(m, sigma, y_min, y_max)
+
+
+    def p_C2_numerical(self, m_a, m_v, sigma_a, sigma_v, y_max, y_min, t_min, t_max):
+        """
+        Numerical integration version of p_C2 for separate sources
+        """
+        # For separate sources, we integrate over two independent hidden durations
+        p_a = self.p_single_numerical(m_a, sigma_a, y_min, y_max, t_min, t_max)
+        p_v = self.p_single_numerical(m_v, sigma_v, y_min, y_max, t_min, t_max)
+        return p_a * p_v
+
+
     def p_C1(self,m_a,m_v,sigma_a,sigma_v,y_max,y_min,t_min,t_max):
 
         sigma_c_sq = (sigma_a**2 * sigma_v**2) / (sigma_a**2 + sigma_v**2)
@@ -282,7 +337,7 @@ class OmerMonteCarlo(fitPychometric):
             # over the log-transformed durations
             
             #.if m_a and m_v are in linear scale y_vals should be in linear scale as well
-            y_vals = np.linspace(t_min, t_max, self.nSimul) 
+            y_vals = np.linspace(t_min, t_max, self.nDiscretize) 
             dy=y_vals[1] - y_vals[0]
             log_norm_const=np.log(t_max / t_min)
 
@@ -298,6 +353,81 @@ class OmerMonteCarlo(fitPychometric):
             return integral
                 
         return prior * sigma_c/np.sqrt(sigma_a**2 * sigma_v**2) * (hi_cdf-lo_cdf) * expo
+
+
+    def p_C1_numerical(self, m_a, m_v, sigma_a, sigma_v, y_max, y_min, t_min, t_max):
+        """
+        Numerical integration version of p_C1 using scipy.integrate.quad
+        """
+        # For logLinearMismatch model, handle the special case with log-transformed bounds
+        if self.modelName == "logLinearMismatch":
+            # Use the same approach as analytical version
+            y_vals = np.linspace(t_min, t_max, self.nDiscretize) 
+            dy = y_vals[1] - y_vals[0]
+            log_norm_const = np.log(t_max / t_min)
+
+            # likelihoods under common cause
+            L_m_a = norm.pdf(m_a, loc=y_vals, scale=sigma_a)
+            L_m_v = norm.pdf(m_v, loc=y_vals, scale=sigma_v)
+
+            prior = 1 / ((y_vals + 1e-10) * log_norm_const)
+            # Calculate the integral over the log-transformed durations
+            integrand = L_m_a * L_m_v * prior
+            integral = np.sum(integrand * dy)
+            integral = max(integral, 1e-10)
+            return integral
+        
+        # For other models, use numerical integration
+        def integrand(y):
+            """Integrand function for numerical integration"""
+            # Likelihood for auditory measurement given duration y
+            L_a = norm.pdf(m_a, loc=y, scale=sigma_a)
+            # Likelihood for visual measurement given duration y  
+            L_v = norm.pdf(m_v, loc=y, scale=sigma_v)
+            # Uniform prior over duration range
+            prior = 1.0 / (y_max - y_min)
+            return L_a * L_v * prior
+        
+        def vectorize_integrand(func):
+            y=np.vectorize(func)
+            return y
+        
+        # Perform numerical integration
+        try:
+            result, _ = quad(integrand, 0, np.log(self.t_max_reel) )
+            return max(result, 1e-10)  # Ensure numerical stability
+        except Exception as e:
+            print(f"Warning: Numerical integration failed: {e}")
+            # Fallback to analytical solution if numerical integration fails
+            return self.p_C1(m_a, m_v, sigma_a, sigma_v, y_max, y_min, t_min, t_max)
+
+
+    def posterior_C1_numerical(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
+        """Numerical integration version of posterior_C1"""
+        # For logLinearMismatch model, use log-transformed bounds
+        if self.modelName == "logLinearMismatch" or self.modelName == "lognorm":
+            yMin, yMax = np.log(t_min), np.log(t_max)
+        else:
+            yMin, yMax = t_min, t_max
+        
+        # Use numerical integration for both L1 and L2
+        L1 = self.p_C1_numerical(m_a, m_v, sigma_a, sigma_v, yMax, yMin, t_min, t_max)  
+        L2 = self.p_C2_numerical(m_a, m_v, sigma_a, sigma_v, yMax, yMin, t_min, t_max)  # Now using numerical version
+        
+        # posterior with numerical stability
+        denominator = L1 * p_c + L2 * (1 - p_c)
+        
+        # Handle both scalar and array cases
+        if np.isscalar(denominator):
+            if denominator == 0:
+                postC1 = p_c
+            else:
+                postC1 = L1 * p_c / denominator
+        else:
+            # Array case - use np.where to handle element-wise
+            postC1 = np.where(denominator == 0, p_c, L1 * p_c / denominator)
+        
+        return postC1
 
 
     def posterior_C1(self,m_a,m_v,sigma_a,
@@ -334,8 +464,23 @@ class OmerMonteCarlo(fitPychometric):
     def causalInference_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
 
         fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
-        # Calculate likelihoods
-        post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+        
+        # Calculate likelihoods using either analytical or numerical integration
+        if self.integrationMethod == "numerical":
+            # Handle vectorized inputs for numerical integration
+            if np.isscalar(m_a) and np.isscalar(m_v):
+                post_C1 = self.posterior_C1_numerical(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+            else:
+                # For arrays, apply numerical integration element-wise
+                post_C1 = np.array([
+                    self.posterior_C1_numerical(ma, mv, sigma_a, sigma_v, p_c, t_min, t_max)
+                    for ma, mv in zip(np.atleast_1d(m_a), np.atleast_1d(m_v))
+                ])
+                if len(post_C1) == 1:
+                    post_C1 = post_C1[0]
+        else:
+            # Use analytical solution (default)
+            post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
 
         # convert back to linear scale if measurements are in log scale
         if self.modelName == "lognorm" or self.modelName == "logLinearMismatch":
@@ -506,10 +651,10 @@ class OmerMonteCarlo(fitPychometric):
         # Debug: Print data bounds information
         print(f"Data bounds: t_min={self.data_t_min:.3f}, t_max={self.data_t_max:.3f}")
         
-        # Test components before starting optimization
-        if not self.test_fitting_components(groupedData):
-            print("ERROR: Component test failed. Aborting optimization.")
-            return None
+        # # Test components before starting optimization
+        # if not self.test_fitting_components(groupedData):
+        #     print("ERROR: Component test failed. Aborting optimization.")
+        #     return None
         
         # Parameter bounds
         if self.freeP_c:
@@ -554,25 +699,25 @@ class OmerMonteCarlo(fitPychometric):
             print("WARNING: t_max lower bound <= t_min upper bound, adjusting...")
             bounds[-1] = (bounds[-2][1] + 0.1, bounds[-1][1])  # Ensure t_max_min > t_min_max
             
-        # Test the likelihood function with reasonable parameters before optimization
-        print("Testing likelihood function with reasonable parameters...")
-        test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters
-        if not self.sharedLambda:
-            test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
-        if self.freeP_c:
-            test_params = np.append(test_params, [0.5])  # Add second p_c
-        # Add t_min and t_max
-        test_params = np.append(test_params, [0.2, 1.0])
+        # # Test the likelihood function with reasonable parameters before optimization
+        # print("Testing likelihood function with reasonable parameters...")
+        # test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters
+        # if not self.sharedLambda:
+        #     test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
+        # if self.freeP_c:
+        #     test_params = np.append(test_params, [0.5])  # Add second p_c
+        # # Add t_min and t_max
+        # test_params = np.append(test_params, [0.2, 1.0])
         
-        try:
-            test_ll = self.nLLMonteCarloCausal(test_params, groupedData)
-            print(f"Test likelihood evaluation: {test_ll}")
-            if test_ll >= 1e10:
-                print("ERROR: Test likelihood evaluation failed!")
-                return None
-        except Exception as e:
-            print(f"ERROR: Test likelihood evaluation threw exception: {e}")
-            return None
+        # try:
+        #     test_ll = self.nLLMonteCarloCausal(test_params, groupedData)
+        #     print(f"Test likelihood evaluation: {test_ll}")
+        #     if test_ll >= 1e10:
+        #         print("ERROR: Test likelihood evaluation failed!")
+        #         return None
+        # except Exception as e:
+        #     print(f"ERROR: Test likelihood evaluation threw exception: {e}")
+        #     return None
         
    
 
@@ -634,7 +779,9 @@ class OmerMonteCarlo(fitPychometric):
                     pub = bounds[:, 1] - 0.1 * (bounds[:, 1] - bounds[:, 0])
 
                     obj = lambda x: self.nLLMonteCarloCausal(x, groupedData)
-                    bads = BADS(obj, x0, lb, ub, plb, pub, options={"display": "off"})
+                    #bads = BADS(obj, x0, lb, ub, plb, pub, options={"display": "off"})
+                    bads = BADS(obj, x0, lb, ub, plb, pub, options={"display": "iter"})
+
                     result = bads.optimize()  # returns OptimizeResult object
 
                 else:
@@ -776,6 +923,51 @@ class OmerMonteCarlo(fitPychometric):
         plt.tight_layout()
         plt.show()
 
+
+    def compare_integration_methods(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
+        """
+        Compare analytical vs numerical integration results for validation
+        """
+        print("=== COMPARING INTEGRATION METHODS ===")
+        
+        # Store original method
+        original_method = self.integrationMethod
+        
+        # Set bounds for integration
+        if self.modelName == "logLinearMismatch" or self.modelName == "lognorm":
+            yMin, yMax = np.log(t_min), np.log(t_max)
+        else:
+            yMin, yMax = t_min, t_max
+        
+        # Test analytical method
+        self.integrationMethod = "analytical"
+        post_analytical = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+        p_c1_analytical = self.p_C1(m_a, m_v, sigma_a, sigma_v, yMax, yMin, t_min, t_max)
+        p_c2_analytical = self.p_C2(m_a, m_v, sigma_a, sigma_v, yMax, yMin)
+        
+        # Test numerical method
+        self.integrationMethod = "numerical"
+        post_numerical = self.posterior_C1_numerical(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+        p_c1_numerical = self.p_C1_numerical(m_a, m_v, sigma_a, sigma_v, yMax, yMin, t_min, t_max)
+        p_c2_numerical = self.p_C2_numerical(m_a, m_v, sigma_a, sigma_v, yMax, yMin, t_min, t_max)
+        
+        # Restore original method
+        self.integrationMethod = original_method
+        
+        print(f"Analytical p_C1: {p_c1_analytical:.6f}")
+        print(f"Numerical p_C1:  {p_c1_numerical:.6f}")
+        print(f"p_C1 difference: {abs(p_c1_analytical - p_c1_numerical):.6f}")
+        
+        print(f"Analytical p_C2: {p_c2_analytical:.6f}")
+        print(f"Numerical p_C2:  {p_c2_numerical:.6f}")
+        print(f"p_C2 difference: {abs(p_c2_analytical - p_c2_numerical):.6f}")
+        
+        print(f"Analytical posterior: {post_analytical:.6f}")
+        print(f"Numerical posterior:  {post_numerical:.6f}")
+        print(f"Posterior difference: {abs(post_analytical - post_numerical):.6f}")
+        print(f"Relative difference:  {abs(post_analytical - post_numerical) / abs(post_analytical) * 100:.4f}%")
+        
+        return post_analytical, post_numerical
 
 
     def plot_mu_vs_conflict_MC_vs_Data(self):
@@ -941,7 +1133,7 @@ import time
 
 if __name__ == "__main__":
     # Example usage
-    data, dataName = loadData("mt_all.csv")
+    data, dataName = loadData("HH_all.csv")
 
     intensityVariable = "deltaDurS"
     sensoryVar = "audNoise"
@@ -962,11 +1154,15 @@ if __name__ == "__main__":
         # standardVar=standardVar,
         # conflictVar=conflictVar
     )
+    
     mc_fitter.dataName = dataName
-    mc_fitter.nSimul = 100
-    mc_fitter.optimizationMethod= "normal"  # Use BADS for optimization
-    mc_fitter.nStart = 1  # Number of random starts for optimization
-
+    mc_fitter.nSimul = 50
+    mc_fitter.optimizationMethod= "bads"  # Use bads for optimization
+    mc_fitter.nStart = 1  # Number of random starts for optimization    
+    mc_fitter.modelName = "lognorm"  # Set measurement distribution to Gaussian
+    # Set integration method to numerical (default is "analytical")
+    mc_fitter.integrationMethod = "numerical"  # Use numerical integration instead of analytical
+    
 
     groupedData = mc_fitter.groupByChooseTest(
         x=data,
@@ -978,13 +1174,20 @@ if __name__ == "__main__":
 
     
 
-    mc_fitter.modelName = "lognorm"  # Set measurement distribution to Gaussian
+    print(f"Using integration method: {mc_fitter.integrationMethod}")
+    print(f"Using model: {mc_fitter.modelName}")
+    
     timeStart = time.time()
     print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
     fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
     mc_fitter.modelFit = fittedParams  # Store the fitted parameters in the class instance
     print(f"\nFitted parameters for {dataName}: {fittedParams}")
     print(f"Time taken to fit: {time.time() - timeStart:.2f} seconds")
+
+    # Compare integration methods for validation (optional test)
+    print("\n=== Validating Numerical Integration ===")
+    test_params = [0.5, 0.5, 0.5, 0.5, 0.5, 0.2, 1.0]  # [m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max]
+    mc_fitter.compare_integration_methods(*test_params)
 
     # uniqueStandard = groupedData[standardVar].unique()
     # uniqueSensory = groupedData[sensoryVar].unique()

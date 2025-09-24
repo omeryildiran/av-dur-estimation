@@ -83,7 +83,7 @@ def loadData(dataName):
     return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
 
 intensityVariable="testDurS"  # Use raw test duration for log-normal model
-fixedMu = False  # Set to True to fix mu to 0 (no bias)
+fixedMu = 1  # Set to True to fix mu to 0 (no bias)
 
 
 
@@ -559,18 +559,22 @@ def fitMultipleStartingPoints(data,nStart=3):
     return best_fit
 
 def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict, standardVar, sensoryVar, conflictVar, intensityVariable, show_error_bars=True):
-    plottingCrossModal=1
+    if fixedMu:
+        plottingCrossModal=0
+    else:
+        plottingCrossModal=1
     if plottingCrossModal:
         standardLabel="Visual:"
-        testLabel="Auditory:"
-        choseLabel="chose auditory"
-        colors=[ "navy","maroon" ]
+        testLabel="Auditory"
+        choseLabel="auditory stimulus perceived longer"
+        #colors=[ "navy","maroon" ]
+        colors=[ "blue","red" ]
 
     else:
         standardLabel="Standard:"
-        testLabel="Test:"
-        choseLabel="chose test"
-        colors=[ "black","navy","maroon" ]
+        testLabel="Test"
+        choseLabel="test stimulus perceived longer"
+        colors=[ "black","blue","red" ]
 
     print(f"Fitted parameters: {best_fit.x}")
     #colors = sns.color_palette("viridis", n_colors=len(uniqueSensory))  # Use Set2 palette for different noise levels
@@ -631,15 +635,15 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
 
                 color = colors[j]
                 #plt.plot(x, y, color=color, label=f"Noise: {audioNoiseLevel}\n $\\mu$: {mu:.2f}, $\\sigma$: {sigma:.2f}", linewidth=4)
-                labelsDict={0.1:"Auditory low noise",1.2:"Auditory high noise",99:"Visual",0.03:"High noise"}
+                labelsDict={0.1:"Auditory (low noise)",1.2:"Auditory (high noise)",99:"Visual",0.03:"High noise"}
                 plt.plot(x_smooth*1000, y, color=color, linewidth=4, label=f"{labelsDict.get(audioNoiseLevel,audioNoiseLevel)}" )
                 #plt.axvline(x=0, color='gray', linestyle='--')
                 plt.axhline(y=0.5, color='gray', linestyle='--')
                 binVar='testDurMs'
                 fontSize=16
                 #plt.xlabel(f"({intensityVariable}) Test(stair)-Standard(0.5s) Duration Difference Ratio")
-                plt.xlabel(f"{testLabel} Duration (ms)",fontsize=fontSize)
-                plt.ylabel(f"P({choseLabel} )",fontsize=fontSize)
+                plt.xlabel(f"{testLabel} duration (ms)",fontsize=fontSize)
+                plt.ylabel(f"Proportion {choseLabel}",fontsize=fontSize)
                 
 
                 if not labeledStandard:
@@ -655,11 +659,13 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 #plt.grid()
                 # Use the raw data (df) instead of grouped data (dfFiltered) to preserve participantID for error bars
                 bin_and_plot(df, bin_method='cut', bins=10, plot=True, color=color, add_error_bars=show_error_bars,binVar="testDurMs")
-                plt.text(0.05, 0.9, f"{str(standardLabel)} {standardLevel*1000:.0f}ms ", fontsize=14, ha='left', va='top', transform=plt.gca().transAxes)
+                plt.text(0.05, 0.9, f"{str(standardLabel)} {standardLevel*1000:.0f}ms ", fontsize=16, ha='left', va='top', transform=plt.gca().transAxes)
                 #plt.text(0.05, 0.8, f"Shared $\\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
 
                 # Set x-axis ticks based on actual duration range
                 #plt.xticks(np.arange(0, 1001, step=250))
+                plt.xticks(np.arange(0, int(maxX*1000)+1, step=250))
+
                 plt.xlim(0, 1000)
                 plt.tight_layout()
                 
@@ -699,11 +705,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit psychometric functions with optional error bars')
     parser.add_argument('--no-error-bars', action='store_true', 
                        help='Plot without error bars across participants')
-    parser.add_argument('--data', default='all_crossModal.csv',
+    parser.add_argument('--data', default='all_visualAndAuditory.csv',#all_visualAndAuditory
                        help='Data file to use (default: all_auditory.csv)')
     args = parser.parse_args()
     
-    fixedMu = 0 # Set to True to ignore the bias in the model (overrides global setting)
+    fixedMu = 1 # Set to True to ignore the bias in the model (overrides global setting)
     dataName = args.data
     show_error_bars  =  not args.no_error_bars  # Invert the flag
     

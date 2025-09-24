@@ -1536,6 +1536,7 @@ __pycache__/fitMainClass.cpython-311.pyc
 *.pyc
 model_fits/.DS_Store
 .DS_Store
+
 __pycache__/fitMainClass.cpython-311.pyc
 __pycache__/fitSaver.cpython-311.pyc
 __pycache__/loadData.cpython-311.pyc
@@ -1848,3 +1849,6 @@ demo_alternative_models.py
 alternative_psychometric_models.py
 raw_duration_comparison.png
 model_comparison.png
+tmp_legend_creator.py
+__pycache__/fitMainClass.cpython-311.pyc
+__pycache__/monteCarloClass.cpython-311.pyc
