@@ -251,31 +251,32 @@ class OmerMonteCarlo(fitPychometric):
 
 
    # Vectorized causal inference functions 
-    def p_single(self,m,sigma,y_min,y_max):
+    def p_single(self,m,sigma,t_min,t_max):
         """p(m | C=2)     and Gaussian measurement noise N(m; y, sigma^2). 
         and Gaussian measurement noise N(m; y, sigma^2)."""
-        hi_cdf= norm.cdf((y_max - m) /sigma)
-        lo_cdf=norm.cdf((y_min-m)/sigma)
-        return (hi_cdf-lo_cdf)/(y_max-y_min)
+        hi_cdf= norm.cdf((t_max - m) /sigma)
+        lo_cdf=norm.cdf((t_min-m)/sigma)
+        return (hi_cdf-lo_cdf)/(t_max-t_min)
         
-    def p_C2(self, m_a,m_v,sigma_a,sigma_v,y_max,y_min):
+    def L_C2(self, m_a,m_v,sigma_a,sigma_v,t_min,t_max):
         """ Likelihood of separate sources: product of two marginal likelihoods 
         two integral over two hidden duration y_a y_v"""
-        return self.p_single(m_a,sigma_a,y_min,y_max) * self.p_single(m_v,sigma_v,y_min,y_max)
+
+        return self.p_single(m_a,sigma_a,t_min,t_max) * self.p_single(m_v,sigma_v,t_min,t_max)
 
 
-    def p_C1(self,m_a,m_v,sigma_a,sigma_v,y_max,y_min,t_min,t_max):
+    def L_C1(self,m_a,m_v,sigma_a,sigma_v,t_min,t_max):
 
         sigma_c_sq = (sigma_a**2 * sigma_v**2) / (sigma_a**2 + sigma_v**2)
         sigma_c = np.sqrt(sigma_c_sq)
         mu_c = (m_a / sigma_a**2 + m_v / sigma_v**2) / (1 / sigma_a**2 + 1 / sigma_v**2)
 
-        hi_cdf = norm.cdf((y_max-mu_c)/sigma_c)
-        lo_cdf = norm.cdf((y_min-mu_c)/sigma_c)
+        hi_cdf = norm.cdf((t_max-mu_c)/sigma_c)
+        lo_cdf = norm.cdf((t_min-mu_c)/sigma_c)
         
         expo = np.exp(-(m_a-m_v)**2/(2*(sigma_a**2+sigma_v**2)))
         
-        prior = 1/(y_max-y_min)
+        prior = 1/(t_max-t_min)
 
         if self.modelName == "logLinearMismatch":
             # If the model is log mis, we need to adjust the prior and it should be numerically integrated
@@ -286,7 +287,7 @@ class OmerMonteCarlo(fitPychometric):
             dy=y_vals[1] - y_vals[0]
             log_norm_const=np.log(t_max / t_min)
 
-            # likelihoods under common cause
+            # likelihoods under common cause    
             L_m_a=  norm.pdf(m_a, loc=y_vals, scale=sigma_a)  # shape: (n_points,)
             L_m_v = norm.pdf(m_v, loc=y_vals, scale=sigma_v)
 
@@ -303,15 +304,10 @@ class OmerMonteCarlo(fitPychometric):
     def posterior_C1(self,m_a,m_v,sigma_a,
                                     sigma_v, p_c,
                                     t_min,t_max):
-        # For logLinearMismatch model, use log-transformed bounds
-        if self.modelName == "logLinearMismatch" or self.modelName == "lognorm":
-            yMin, yMax = np.log(t_min), np.log(t_max)
-        else:
-            yMin, yMax = t_min, t_max
-        
+
         #likelihoods
-        L1 = self.p_C1(m_a, m_v, sigma_a, sigma_v, yMax, yMin, t_min, t_max)  
-        L2 = self.p_C2(m_a, m_v, sigma_a, sigma_v, yMax, yMin)  # Fixed: consistent parameter order
+        L1 = self.L_C1(m_a, m_v, sigma_a, sigma_v, t_min, t_max)  
+        L2 = self.L_C2(m_a, m_v, sigma_a, sigma_v, t_min, t_max)  # Fixed: consistent parameter order
         
         # posterior with numerical stability
         denominator = L1*p_c + L2*(1-p_c)
@@ -332,7 +328,6 @@ class OmerMonteCarlo(fitPychometric):
 
 
     def causalInference_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
-
         fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
         # Calculate likelihoods
         post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
@@ -371,8 +366,8 @@ class OmerMonteCarlo(fitPychometric):
             m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
             m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
             m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
-            est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
-            est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+            est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
+            est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
 
         #  === Log-Linear Mismatch Model === #
         elif self.modelName =="logLinearMismatch":
@@ -511,20 +506,20 @@ class OmerMonteCarlo(fitPychometric):
             print("ERROR: Component test failed. Aborting optimization.")
             return None
         
-        # Parameter bounds
+        # ---- PARAMETER BOUNDS ----
         if self.freeP_c:
             print("Fitting with free p_c parameters for each SNR condition.")
             bounds = np.array([
-                (0, 0.25),      # 0 lambda_
+                (0, 0.4),      # 0 lambda_
                 (0.1, 1.2),     # 1 sigma_av_a_1
                 (0.1, 1.2),     # 2 sigma_av_v_1
-                (0.001, 0.999), # 3 p_c_1
+                (0.001, 0.95), # 3 p_c_1
                 (0.1, 1.7),     # 4 sigma_av_a_2
-                (0, 0.25),      # 5 lambda_2
-                (0, 0.25),      # 6 lambda_3
-                (0.001, 0.999), # 7 p_c_2
-                (0.1, 0.4), # 8 t_min (reasonable lower bound, must be less than data min)
-                (max(0.6, self.data_t_max + 1), 3.0),  # 9 t_max (must be greater than data max)
+                (0, 0.4),      # 5 lambda_2
+                (0, 0.4),      # 6 lambda_3
+                (0.001, 0.95), # 7 p_c_2
+                (0, 1), # 8 t_min (reasonable lower bound, must be less than data min)
+                (max(0.2, self.data_t_max + 1), 10.0),  # 9 t_max (must be greater than data max)
             ])
 
         elif self.freeP_c==False:
@@ -537,8 +532,8 @@ class OmerMonteCarlo(fitPychometric):
                 (0.1, 1.7),     # 4 sigma_av_a_2
                 (0, 0.25),      # 5 lambda_2
                 (0, 0.25),      # 6 lambda_3
-                (0.1, 0.4), # 7 t_min (reasonable lower bound, must be less than data min)
-                (max(0.6, self.data_t_max + 1), 3.0),  # 8 t_max (must be greater than data max)
+                (0, 1), # 7 t_min (reasonable lower bound, must be less than data min)
+                (0.05,max(self.data_t_max+1, 10.0)),  # 8 t_max (must be greater than data max)
             ])
 
         if self.sharedLambda:
@@ -590,7 +585,7 @@ class OmerMonteCarlo(fitPychometric):
                     np.random.uniform(0.01, 0.25),  # 0 lambda_
                     np.random.uniform(0.1, 1.2),    # 1 sigma_av_a_1
                     np.random.uniform(0.1, 1.2),    # 2 sigma_av_v_1
-                    np.random.uniform(0.1, 0.95),   # 3 p_c general
+                    np.random.uniform(0.1, 0.8),   # 3 p_c general
                     np.random.uniform(0.1, 1.7),    # 4 sigma_av_a_2
                     np.random.uniform(0.01, 0.25),  # 5 lambda_2
                     np.random.uniform(0.01, 0.25),  # 6 lambda_3
@@ -602,11 +597,11 @@ class OmerMonteCarlo(fitPychometric):
                     np.random.uniform(0.01, 0.25),  # 0 lambda_
                     np.random.uniform(0.1, 1.2),    # 1 sigma_av_a_1
                     np.random.uniform(0.1, 1.2),    # 2 sigma_av_v_1
-                    np.random.uniform(0.1, 0.95),   # 3 p_c_1
+                    np.random.uniform(0.1, 0.8),   # 3 p_c_1
                     np.random.uniform(0.1, 1.7),    # 4 sigma_av_a_2
                     np.random.uniform(0.01, 0.25),  # 5 lambda_2
                     np.random.uniform(0.01, 0.25),  # 6 lambda_3
-                    np.random.uniform(0.1, 0.95),   # 7 p_c_2
+                    np.random.uniform(0.1, 0.8),   # 7 p_c_2
                     np.random.uniform(bounds[-2][0], bounds[-2][1]),  # 8 t_min (from bounds)
                     np.random.uniform(bounds[-1][0], bounds[-1][1]),  # 9 t_max (from bounds)
                 ])
