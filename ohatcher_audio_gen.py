@@ -216,21 +216,50 @@ class AudioCueGenerator:
         # plot the sound waveforms
         time= np.linspace(0, len(stim_sound) / self.sample_rate, len(stim_sound))
 
-        # fontSize=16
-        # plt.plot(time,stim_sound, label='Signal Sound', color='forestgreen', alpha=0.7, )
-        # plt.plot(time,background_noise, label='Background Noise', color='black', alpha=0.7,)
-        # plt.title("Stimulus Sound Waveform", fontsize=fontSize)
+        # Replace the existing plotting section (lines 219-233) with this animated version:
+        import matplotlib.animation as animation
 
-        # plt.xlabel("Time (s)", fontsize=fontSize)
-        # plt.xlim(0, len(stim_sound) / self.sample_rate)
-        # #plt.legend()
-        # plt.ylabel("Amplitude", fontsize=fontSize)
-        # plt.xticks(fontsize=fontSize-2)
-        # plt.yticks(fontsize=fontSize-2)
-        # plt.xticks(np.arange(0, len(stim_sound) / self.sample_rate, 0.5))
+        # Create animated waveform plot
+        time = np.linspace(0, len(stim_sound) / self.sample_rate, len(stim_sound))
 
-        
-        # plt.show()
+        fig, ax = plt.subplots(figsize=(12, 6))
+        line1, = ax.plot([], [], color='forestgreen', alpha=0.8, linewidth=2, label='Stimulus')
+        line2, = ax.plot([], [], color='black', alpha=0.7, linewidth=1, label='Background Noise')
+
+        fontSize = 16
+        ax.set_xlim(0, len(stim_sound) / self.sample_rate)
+        ax.set_ylim(min(min(stim_sound), min(background_noise)) * 1.1, 
+                    max(max(stim_sound), max(background_noise)) * 1.1)
+        ax.set_xlabel("Time (s)", fontsize=fontSize)
+        ax.set_ylabel("Amplitude", fontsize=fontSize)
+        ax.set_title("Animated Stimulus Sound Waveform", fontsize=fontSize)
+        ax.tick_params(axis='both', which='major', labelsize=fontSize-2)
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+
+        # Animation parameters
+        frame_duration = 0.03  # seconds between frames
+        speed_factor = 2.0     # animation speed multiplier
+        total_frames = int((len(stim_sound) / self.sample_rate) / frame_duration * speed_factor)
+        samples_per_frame = len(stim_sound) // total_frames
+
+        def animate(frame):
+            end_sample = min((frame + 1) * samples_per_frame, len(stim_sound))
+            line1.set_data(time[:end_sample], stim_sound[:end_sample])
+            line2.set_data(time[:end_sample], background_noise[:end_sample])
+            
+            current_time = end_sample / self.sample_rate
+            ax.set_title(f"Animated Stimulus Sound Waveform - Time: {current_time:.2f}s", fontsize=fontSize)
+            return line1, line2
+
+        anim = animation.FuncAnimation(fig, animate, frames=total_frames, 
+                                    interval=int(frame_duration * 1000), 
+                                    blit=False, repeat=True)
+
+        plt.tight_layout()
+        plt.show()
+        # save animation
+        anim.save('stimulus_waveform_animation.gif', writer='imagemagick', fps=30)
         
         # #Background noise of same totaal duration
 
@@ -292,7 +321,7 @@ def plot_sounds():
     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
     plt.show()
     
-#plot_sounds()
+plot_sounds()
 
 
 

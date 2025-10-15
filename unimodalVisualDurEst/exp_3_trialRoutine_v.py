@@ -49,7 +49,7 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         deltaDurPercent = round(stair.next_trial(),4) # delta dur in terms of percentage of the standard duration (0.1, 0.2, 0.3, 0.4, 0.5)
 
     deltaDurS= round(standardDur*deltaDurPercent,4)  # delta dur in terms of seconds
-    testDurS = standardDur + deltaDurS
+    testDurS = standardDur# + deltaDurS 
 
 
     deltaDurs[trialN] = deltaDurPercent

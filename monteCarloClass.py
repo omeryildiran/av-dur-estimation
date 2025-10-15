@@ -1161,7 +1161,7 @@ if __name__ == "__main__":
     mc_fitter.nStart = 1  # Number of random starts for optimization    
     mc_fitter.modelName = "lognorm"  # Set measurement distribution to Gaussian
     # Set integration method to numerical (default is "analytical")
-    mc_fitter.integrationMethod = "numerical"  # Use numerical integration instead of analytical
+    mc_fitter.integrationMethod = "analytical"  # Use "numerical" integration instead of analytical
     
 
     groupedData = mc_fitter.groupByChooseTest(
