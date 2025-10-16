@@ -243,9 +243,7 @@ class OmerMonteCarlo(fitPychometric):
     def fusionAV_vectorized(self, m_a, m_v, sigma_av_a, sigma_av_v):
         J_AV_A = 1 / sigma_av_a**2
         J_AV_V = 1 / sigma_av_v**2
-        w_a = J_AV_A / (J_AV_A + J_AV_V)
-        w_v = 1 - w_a
-        fused_S_av = w_a * m_a + w_v * m_v
+        fused_S_av = (J_AV_A * m_a + J_AV_V * m_v) / (J_AV_A + J_AV_V)
         return fused_S_av
 
 
