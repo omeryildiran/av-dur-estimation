@@ -13,7 +13,7 @@ def loadData(dataName, isShared, isAllIndependent):
 	global data, sharedSigma, intensityVariable, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu, allIndependent
 	sharedSigma = isShared  # Set to True if you want to use shared sigma across noise levels
 	allIndependent = isAllIndependent  # Set to 1 if you want to use independent parameters for each condition
-	intensityVariable="delta_dur_percents"
+	intensityVariable="testDurS"  # Use raw test duration for log-normal model
 
 	sensoryVar="audNoise"
 	standardVar="standardDur"
@@ -140,7 +140,7 @@ def loadData(dataName, isShared, isAllIndependent):
 
 	return data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda,nSigma, nMu
 
-intensityVariable="delta_dur_percents"
+intensityVariable="testDurS"  # Use raw test duration for log-normal model
 
 sensoryVar="audNoise"
 standardVar="standardDur"
