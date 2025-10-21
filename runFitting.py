@@ -4,6 +4,8 @@ if __name__ == "__main__":
     #arguments: data file name, model type (e.g., "lognorm" or "gauss"), number of simulations, optimization method, number of starts
     # Example usage: python runFitting.py mt_all.csv lognorm 2000 bad
     
+    #python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln_all.csv,LN01_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "lognorm" 2000 "bads" 5
+    
     # take arguments from command line
     import sys
 # take arguments from command line
