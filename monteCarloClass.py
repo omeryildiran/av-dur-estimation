@@ -517,7 +517,7 @@ class OmerMonteCarlo(fitPychometric):
                 (0, 0.4),      # 6 lambda_3
                 (0.001, 0.95), # 7 p_c_2
                 (0, 1), # 8 t_min (reasonable lower bound, must be less than data min)
-                (max(0.2, self.data_t_max + 1), 10.0),  # 9 t_max (must be greater than data max)
+                (max(0.05, self.data_t_max + 1), 10.0),  # 9 t_max (must be greater than data max)
             ])
 
         elif self.freeP_c==False:

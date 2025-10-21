@@ -4,14 +4,14 @@ if __name__ == "__main__":
     #arguments: data file name, model type (e.g., "lognorm" or "gauss"), number of simulations, optimization method, number of starts
     # Example usage: python runFitting.py mt_all.csv lognorm 2000 bad
     
-    #python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln_all.csv,LN01_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "lognorm" 2000 "bads" 5
+    #python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln_all.csv,LN01_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "lognorm" 500 "bads" 5
     
     # take arguments from command line
     import sys
 # take arguments from command line
     dataFiles = sys.argv[1].split(',') if len(sys.argv) > 1 else ["mt_all.csv"]
     modelName = sys.argv[2] if len(sys.argv) > 2 else "lognorm"
-    nSimul = int(sys.argv[3]) if len(sys.argv) > 3 else 2000
+    nSimul = int(sys.argv[3]) if len(sys.argv) > 3 else 500
     optimMethod = sys.argv[4] if len(sys.argv) > 4 else "bads"
     nStarts = int(sys.argv[5]) if len(sys.argv) > 5 else 1
     integrationMethod= sys.argv[6] if len(sys.argv) > 6 else "analytical" # "numerical" or "analytical"
