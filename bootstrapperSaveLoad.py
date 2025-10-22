@@ -126,3 +126,30 @@ def loadBootstrappedParams(mc_fitter, dataName):
 # # Try to load existing bootstrapped parameters to test
 # dataBoots = loadBootstrappedParams(mc_fitter, dataName)
 # print(f"Original dataBoots shape: {dataBoots.shape}")
+
+# List of all participant filenames
+participant_files = [
+    "as_all.csv", "oy_all.csv", "dt_all.csv", "HH_all.csv", 
+    "ip_all.csv", "ln_all.csv", "LN01_all.csv", "mh_all.csv", 
+    "ml_all.csv", "mt_all.csv", "qs_all.csv", "sx_all.csv"
+]
+
+from monteCarloClass import MonteCarloFitter
+mc_fitter = MonteCarloFitter()
+# Load participant data
+from loadData import loadData
+
+
+for dataName in participant_files:
+    data, dataName = loadData.loadData(filename)
+    participant_id = dataName.split("_")[0]
+    # Load or generate bootstrapped parameters for each participant
+    dataBoots = loadBootstrappedParams(mc_fitter, dataName)
+    if dataBoots is None:
+        print(f"No existing bootstrapped parameters for {dataName}, generating new ones...")
+        # Here you would generate new bootstrapped parameters as needed
+        # For demonstration, we'll create a dummy array
+        dataBoots = np.random.rand(100, len(mc_fitter.paramNames))  # Example shape
+        saveBootstrappedParams(mc_fitter, dataBoots, dataName)
+    else:
+        print(f"Bootstrapped parameters for {dataName} loaded successfully.")
