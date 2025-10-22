@@ -154,6 +154,10 @@ def groupByChooseTest(x, groupArgs):
         num_of_chose_standard=('chose_standard', 'sum'),
     ).reset_index()
     grouped['p_choose_test'] = grouped['num_of_chose_test'] / grouped['total_responses']
+    
+    # Add standard_dur column for compatibility
+    if standardVar in grouped.columns:
+        grouped['standard_dur'] = grouped[standardVar]
 
     return grouped
 
@@ -175,7 +179,8 @@ def bin_and_plot(data, bin_method='cut', bins=10, bin_range=None, plot=True,colo
     )
 
     if plot:
-        plt.scatter(grouped['x_mean'], grouped['y_mean'], s=grouped['total_resp']/data['total_responses'].sum()*900, color=color)
+        # Convert seconds to milliseconds for plotting
+        plt.scatter(grouped['x_mean']*1000, grouped['y_mean'], s=grouped['total_resp']/data['total_responses'].sum()*900, color=color)
 
 from scipy.stats import linregress
 
@@ -293,22 +298,46 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 import argparse
 
-def psychometric_function(x, lambda_, mu, sigma):
-    # Cumulative distribution function with mean mu and standard deviation sigma
-    cdf = norm.cdf(x, loc=mu, scale=sigma) 
-    # take into account of lapse rate and return the probability of choosing test
-    p = lambda_/2 + (1-lambda_) * norm.cdf((x - mu) / sigma)
-    #return lapse_rate * 0.5 + (1 - lapse_rate) * cdf 
+def psychometric_function(test_dur, standard_dur, lambda_, mu, sigma):
+    """
+    Log-normal observer model for duration estimation.
+    
+    This model is more appropriate for duration data than cumulative normal because:
+    1. It gives zero probability for negative durations
+    2. It naturally incorporates Weber's law-like behavior
+    3. It's consistent with scalar timing theory
+    
+    Parameters:
+    - test_dur: test duration(s) in seconds
+    - standard_dur: standard duration in seconds (can be scalar or array)
+    - lambda_: lapse rate 
+    - mu: bias parameter (in log space)
+    - sigma: discrimination parameter (in log space)
+    """
+    # Ensure positive durations
+    test_dur = np.maximum(test_dur, 1e-10)
+    standard_dur = np.maximum(standard_dur, 1e-10)
+    
+    # Calculate the log ratio of durations
+    log_ratio = np.log(test_dur / standard_dur)
+    
+    # Apply bias and normalize by discrimination parameter
+    z_score = (log_ratio - mu) / sigma
+    
+    # Use standard normal CDF (this ensures monotonicity)
+    p_longer = norm.cdf(z_score)
+    
+    # Apply lapse rate
+    p = lambda_/2 + (1 - lambda_) * p_longer
+    
     return p
 
-    #p = lambda_/2 + (1-lambda_) * norm.cdf((x - mu) / sigma)
-
 # Negative log-likelihood
-def negative_log_likelihood(params, delta_dur, chose_test, total_responses):
+def negative_log_likelihood(params, test_dur, standard_dur, chose_test, total_responses):
     lambda_, mu, sigma = params # Unpack parameters
     
-    p = psychometric_function(delta_dur, lambda_, mu, sigma) # Compute probability of choosing test
-    epsilon = 1e-9 # Add a small number to avoid log(0) when calculating thxe log-likelihood
+    p = psychometric_function(test_dur, standard_dur, lambda_, mu, sigma) # Compute probability of choosing test
+    epsilon = 1e-9 # Add a small number to avoid log(0) when calculating the log-likelihood
     p = np.clip(p, epsilon, 1 - epsilon) # Clip p to avoid log(0) and log(1)
     # Compute the negative log-likelihood
     log_likelihood = np.sum(chose_test * np.log(p) + (total_responses - chose_test) * np.log(1 - p))
@@ -316,15 +345,15 @@ def negative_log_likelihood(params, delta_dur, chose_test, total_responses):
 
 
 # Fit psychometric function
-def fit_psychometric_function(levels,nResp, totalResp,init_guesses=[0,0,0]):
+def fit_psychometric_function(test_durations, standard_durations, nResp, totalResp, init_guesses=[0,0,0]):
     # then fits the psychometric function
     # order is lambda mu sigma
     #initial_guess = [0, -0.2, 0.05]  # Initial guess for [lambda, mu, sigma]
-    bounds = [(0, 0.25), (-2, +2), (0.01, 1)]  # Reasonable bounds
+    bounds = [(0, 0.25), (-1.0, +1.0), (0.01, 2.0)]  # Bounds for log-normal model
     # fitting is done here
     result = minimize(
         negative_log_likelihood, x0=init_guesses, 
-        args=(levels, nResp, totalResp),  #       Pass the data and fixed parameters
+        args=(test_durations, standard_durations, nResp, totalResp),  # Pass the data and fixed parameters
         bounds=bounds,
         method='L-BFGS-B' 
     )
@@ -333,41 +362,35 @@ def fit_psychometric_function(levels,nResp, totalResp,init_guesses=[0,0,0]):
 
 
 # Update nLLJoint to use getParams
-def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_levels):
+def nLLJoint(params, test_durations, standard_durations, responses, total_responses, conflicts, noise_levels):
     """
-    Vectorized negative log likelihood for all conditions.
+    Compute negative log likelihood for all conditions using log-space psychometric function.
     """
-    if allIndependent:
-        lam = np.empty(len(delta_dur))
-        mu = np.empty(len(delta_dur))
-        sigma = np.empty(len(delta_dur))
-        for i in range(len(delta_dur)):
-            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
-
-        # Vectorized psychometric function
-        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
+    nll = 0
+    
+    # Loop through each data point 
+    for i in range(len(test_durations)):
+        test_dur = test_durations[i]
+        standard_dur = standard_durations[i]
+        conflict = conflicts[i]
+        audio_noise = noise_levels[i]
+        total_response = total_responses[i]
+        chose_test = responses[i]
+        
+        # Get appropriate parameters for this condition
+        lambda_, mu, sigma = getParams(params, conflict, audio_noise, nLambda, nSigma)
+        
+        # Calculate probability of choosing test using log-space model
+        p = psychometric_function(test_dur, standard_dur, lambda_, mu, sigma)
+        
+        # Avoid numerical issues
         epsilon = 1e-9
         p = np.clip(p, epsilon, 1 - epsilon)
-
-        # Vectorized negative log-likelihood
-        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
-        return nll
-    else:
-        # Precompute parameter arrays for each data point
-        lam = np.empty(len(delta_dur))
-        mu = np.empty(len(delta_dur))
-        sigma = np.empty(len(delta_dur))
-        for i in range(len(delta_dur)):
-            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
-
-        # Vectorized psychometric function
-        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
-        epsilon = 1e-9
-        p = np.clip(p, epsilon, 1 - epsilon)
-
-        # Vectorized negative log-likelihood
-        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
-        return nll
+        
+        # Add to negative log-likelihood
+        nll += -1 * (chose_test * np.log(p) + (total_response - chose_test) * np.log(1 - p))
+    
+    return nll
 
 # fitting function for joint model
 def fitJoint(grouped_data,  initGuesses):
@@ -375,45 +398,48 @@ def fitJoint(grouped_data,  initGuesses):
         nCond = nSensoryVar * nConflictVar
         # Repeat initial guesses for each condition
         initGuesses = (initGuesses * nCond)[:nCond*3]
-        intensities = grouped_data[intensityVariable]
-        chose_tests = grouped_data['num_of_chose_test']
-        total_responses = grouped_data['total_responses']
-        conflicts = grouped_data[conflictVar]
-        noise_levels = grouped_data[sensoryVar]
+        test_durations = grouped_data[intensityVariable].values  # Raw test durations
+        standard_durations = grouped_data[standardVar].values    # Standard durations
+        chose_tests = grouped_data['num_of_chose_test'].values
+        total_responses = grouped_data['total_responses'].values
+        conflicts = grouped_data[conflictVar].values
+        noise_levels = grouped_data[sensoryVar].values
         # Bounds for each parameter: lambda, mu, sigma per condition
         bounds = []
         for _ in range(nCond):
-            bounds.extend([(0, 0.25), (-2, 2), (0.01, 2)])
+            bounds.extend([(0, 0.25), (-1.0, 1.0), (0.01, 2)])
     elif sharedSigma==True:
         # Initialize guesses for parameters 
         # lambda, mu,sigma
         initGuesses= [initGuesses[0]]*nLambda +  [initGuesses[1]]*nSensoryVar+[initGuesses[2]]*nSensoryVar*nConflictVar
         
-        intensities = grouped_data[intensityVariable]
-        chose_tests = grouped_data['num_of_chose_test']
-        total_responses = grouped_data['total_responses']
-        conflicts = grouped_data[conflictVar]
-        noise_levels = grouped_data[sensoryVar]
+        test_durations = grouped_data[intensityVariable].values  # Raw test durations
+        standard_durations = grouped_data[standardVar].values    # Standard durations
+        chose_tests = grouped_data['num_of_chose_test'].values
+        total_responses = grouped_data['total_responses'].values
+        conflicts = grouped_data[conflictVar].values
+        noise_levels = grouped_data[sensoryVar].values
         
         
-        # Set bounds for parameters
+        # Set bounds for parameters (log-normal model bounds)
         # array of parameters in order of lambda, mu, sigma
-        bounds = [(0,0.25)]*nLambda +  [(0.01, +1)]*nSensoryVar+[(-1, +1)]*nSensoryVar*nConflictVar 
+        bounds = [(0,0.25)]*nLambda +  [(0.01, +2.0)]*nSensoryVar+[(-1.0, +1.0)]*nSensoryVar*nConflictVar 
     else:
         # Initialize guesses for parameters 
         # lambda, mu, sigma
         initGuesses= [initGuesses[0]]*nLambda + [initGuesses[1]]*nSensoryVar*nConflictVar+ [initGuesses[2]]*nSensoryVar*nConflictVar
         
-        intensities = grouped_data[intensityVariable]
-        chose_tests = grouped_data['num_of_chose_test']
-        total_responses = grouped_data['total_responses']
-        conflicts = grouped_data[conflictVar]
-        noise_levels = grouped_data[sensoryVar]
+        test_durations = grouped_data[intensityVariable].values  # Raw test durations
+        standard_durations = grouped_data[standardVar].values    # Standard durations
+        chose_tests = grouped_data['num_of_chose_test'].values
+        total_responses = grouped_data['total_responses'].values
+        conflicts = grouped_data[conflictVar].values
+        noise_levels = grouped_data[sensoryVar].values
         
         
-        # Set bounds for parameters
+        # Set bounds for parameters (log-normal model bounds)
         # array of parameters in order of lambda, mu, sigma
-        bounds = [(0, 0.25)]*nLambda + [(-2, +2)]*nSensoryVar*nConflictVar + [(0.01, +2)]*nSensoryVar*nConflictVar 
+        bounds = [(0, 0.25)]*nLambda + [(-1.0, +1.0)]*nSensoryVar*nConflictVar + [(0.01, +2.0)]*nSensoryVar*nConflictVar 
 
     #print(f" len initGuesses: {len(initGuesses)}")
 
@@ -421,45 +447,43 @@ def fitJoint(grouped_data,  initGuesses):
     result = minimize(
         nLLJoint,
         x0=initGuesses,
-        args=(intensities, chose_tests, total_responses, conflicts, noise_levels),
+        args=(test_durations, standard_durations, chose_tests, total_responses, conflicts, noise_levels),
         bounds=bounds,
         method='L-BFGS-B'  # Use L-BFGS-B for bounded optimization
     )
     
     return result
 
-def nLLJoint(params, delta_dur, responses, total_responses, conflicts, noise_levels):
-    if allIndependent:
-        lam = np.empty(len(delta_dur))
-        mu = np.empty(len(delta_dur))
-        sigma = np.empty(len(delta_dur))
-        for i in range(len(delta_dur)):
-            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
-
-        # Vectorized psychometric function
-        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
+def nLLJoint(params, test_durations, standard_durations, responses, total_responses, conflicts, noise_levels):
+    """
+    Compute negative log likelihood for all conditions using log-space psychometric function.
+    (Duplicate function removed - using the one defined earlier)
+    """
+    nll = 0
+    
+    # Loop through each data point 
+    for i in range(len(test_durations)):
+        test_dur = test_durations[i]
+        standard_dur = standard_durations[i]
+        conflict = conflicts[i]
+        audio_noise = noise_levels[i]
+        total_response = total_responses[i]
+        chose_test = responses[i]
+        
+        # Get appropriate parameters for this condition
+        lambda_, mu, sigma = getParams(params, conflict, audio_noise, nLambda, nSigma)
+        
+        # Calculate probability of choosing test using log-space model
+        p = psychometric_function(test_dur, standard_dur, lambda_, mu, sigma)
+        
+        # Avoid numerical issues
         epsilon = 1e-9
         p = np.clip(p, epsilon, 1 - epsilon)
-
-        # Vectorized negative log-likelihood
-        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
-        return nll
-    else:
-        # Precompute parameter arrays for each data point
-        lam = np.empty(len(delta_dur))
-        mu = np.empty(len(delta_dur))
-        sigma = np.empty(len(delta_dur))
-        for i in range(len(delta_dur)):
-            lam[i], mu[i], sigma[i] = getParams(params, conflicts[i], noise_levels[i], nLambda, nSigma)
-
-        # Vectorized psychometric function
-        p = lam / 2 + (1 - lam) * norm.cdf((delta_dur - mu) / sigma)
-        epsilon = 1e-9
-        p = np.clip(p, epsilon, 1 - epsilon)
-
-        # Vectorized negative log-likelihood
-        nll = -np.sum(responses * np.log(p) + (total_responses - responses) * np.log(1 - p))
-        return nll
+        
+        # Add to negative log-likelihood
+        nll += -1 * (chose_test * np.log(p) + (total_response - chose_test) * np.log(1 - p))
+    
+    return nll
 
 # Fit the psychometric function to the grouped data
 def multipleInitGuessesWEstimate(singleInitGuesses, nStart):
@@ -491,14 +515,16 @@ def fitMultipleStartingPoints(data,nStart=3):
     uniqueSensory = data['audNoise'].unique()
     uniqueConflict = sorted(data[conflictVar].unique())
     
-    levels = groupedData[intensityVariable].values
+    test_durations = groupedData[intensityVariable].values  # Raw test durations
+    standard_durations = groupedData[standardVar].values   # Standard durations
     responses = groupedData['num_of_chose_test'].values
     totalResp = groupedData['total_responses'].values
     conflictLevels = groupedData[conflictVar].values
     noiseLevels = groupedData[sensoryVar].values
 
-    # Prepare multiple initial guesses
-    singleInitGuesses = estimate_initial_guesses(levels, responses, totalResp)
+    # For initial guess estimation, convert to percentage differences for compatibility
+    percentage_diffs = (test_durations - standard_durations) / standard_durations
+    singleInitGuesses = estimate_initial_guesses(percentage_diffs, responses, totalResp)
 
     multipleInitGuesses = multipleInitGuessesWEstimate(singleInitGuesses, nStart)
 
@@ -513,7 +539,7 @@ def fitMultipleStartingPoints(data,nStart=3):
     for i in tqdm(range(len(multipleInitGuesses)), desc="Fitting multiple starting points",disable=disable):
         
         fit = fitJoint(groupedData, initGuesses=multipleInitGuesses[i])
-        nll = nLLJoint(fit.x, levels, responses, totalResp, conflictLevels, noiseLevels)
+        nll = nLLJoint(fit.x, test_durations, standard_durations, responses, totalResp, conflictLevels, noiseLevels)
 
         if nll < best_nll:
             best_nll = nll
@@ -530,34 +556,61 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
             print(f"standardLevel: {standardLevel}, audioNoiseLevel: {audioNoiseLevel}, uniqueConflict: {uniqueConflict}")
             for k, conflictLevel in enumerate(uniqueConflict):
                 lambda_, mu, sigma = getParams(best_fit.x, conflictLevel, audioNoiseLevel, nLambda, nSigma)
+                
+                # Calculate sensory noise and Weber fraction
+                sigmaSensory = sigma/np.sqrt(2)
+                sigmaSensoryLinear = standardLevel * (np.exp(sigmaSensory) - 1)
+                weberFractionLinear = sigmaSensoryLinear / standardLevel
+                
+                # Calculate PSE in linear space
+                pse_pure = standardLevel * np.exp(mu)
+                pse_shift_pure = pse_pure - standardLevel
+                
+                print(f"\n=== Audio Noise: {audioNoiseLevel:.2f}, Conflict: {conflictLevel:.2f} ===")
+                print(f"Raw Parameters - Lambda: {lambda_:.3f}, Mu: {mu:.3f}, Sigma: {sigma:.3f}")
+                print(f"Sensory noise sigma (σ/√2): {sigmaSensory:.3f}")
+                print(f"Sigma sensory (linear): {sigmaSensoryLinear:.3f} s")
+                print(f"Weber fraction (linear): {weberFractionLinear:.3f}")
+                print(f"PSE (pure): {pse_pure*1000:.1f} ms")
+                print(f"PSE shift (pure): {pse_shift_pure*1000:+.1f} ms ({(pse_shift_pure/standardLevel)*100:+.1f}%)")
+                
                 # Filter the data for the current standard and audio noise levels
                 df = data[round(data[standardVar], 2) == round(standardLevel,2)]
                 df = df[df[sensoryVar] == audioNoiseLevel]
                 df = df[df[conflictVar] == conflictLevel]
                 dfFiltered = groupByChooseTest(df,groupArgs=[intensityVariable, sensoryVar, standardVar, conflictVar])
-                levels = dfFiltered[intensityVariable].values
-                if len(levels) == 0:
+                test_durations = dfFiltered[intensityVariable].values  # Raw test durations
+                if len(test_durations) == 0:
                     continue
                 responses = dfFiltered['num_of_chose_test'].values
                 totalResponses = dfFiltered['total_responses'].values
                 
                 # Fit the psychometric function
                 plt.subplot(1, 2, j+1)
-                maxX = max(levels) + 0.1
-                minX = min(levels) - 0.1
-                x = np.linspace(-0.9, 0.9, 500)
-                y = psychometric_function(x, lambda_, mu, sigma)
+                
+                # Create range of test durations for smooth curve
+                minX = min(test_durations) * 0.8  # Use raw duration range
+                maxX = max(test_durations) * 1.2
+                x_smooth = np.linspace(minX, maxX, 1000)
+                
+                # For plotting, we need to provide both test and standard durations
+                standard_dur_array = np.full_like(x_smooth, standardLevel)  # Constant standard duration
+                y = psychometric_function(x_smooth, standard_dur_array, lambda_, mu, sigma)
+                
                 color=sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))  # Use a colormap for different conflict levels
-                plt.plot(x, y, color=color, label=f"C: {int(conflictLevel*1000)}, $\lambda$: {lambda_:.2f} $\mu$: {mu:.2f}, $\sigma$: {sigma:.2f}", linewidth=4,)
-                plt.axvline(x=0, color='gray', linestyle='--')
+                plt.plot(x_smooth*1000, y, color=color, label=f"C: {int(conflictLevel*1000)}, $\lambda$: {lambda_:.2f} $\mu$: {mu:.2f}, $\sigma$: {sigma:.2f}", linewidth=4,)
+                plt.axvline(x=standardLevel*1000, color='gray', linestyle='--')  # Show standard duration line
                 plt.axhline(y=0.5, color='gray', linestyle='--')
-                plt.xlabel(f"({intensityVariable}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
+                plt.xlabel(f"Test duration (ms)")
                 plt.ylabel("P(chose test)")
                 #plt.title(f" {pltTitle} ", fontsize=16)
 
                 plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
                 plt.legend(fontsize=14, title_fontsize=14)
                 plt.grid()
+                
+                # Plot binned data points (convert to ms for display)
+                dfFiltered['testDurMs'] = dfFiltered[intensityVariable] * 1000
                 bin_and_plot(dfFiltered, bin_method='cut', bins=10, plot=True, color=color)
 
                 plt.text(0.05, 0.8, f"Shared $\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
@@ -572,7 +625,7 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
 def simulate_dataset(params, gdf):
     """
     Produce one synthetic data set that has the SAME predictors
-    (delta, conflict, noise, total_responses) as 'gdf' but with
+    (test_dur, standard_dur, conflict, noise, total_responses) as 'gdf' but with
     binomially simulated response counts.
     """
     sim_gdf = gdf.copy()
@@ -591,8 +644,10 @@ def simulate_dataset(params, gdf):
                                         nSigma)
         lam[idx], mu[idx], sigma[idx] = lam_i, mu_i, sig_i
 
-    p_choose_test = psychometric_function(sim_gdf[intensityVariable].values,
-                                          lam, mu, sigma)
+    # Use log-space psychometric function
+    test_durations = sim_gdf[intensityVariable].values
+    standard_durations = sim_gdf[standardVar].values
+    p_choose_test = psychometric_function(test_durations, standard_durations, lam, mu, sigma)
 
     # Binomial draw
     sim_gdf['num_of_chose_test'] = np.random.binomial(
@@ -624,6 +679,7 @@ def paramBootstrap(fitParams, nBoots):
 def plot_conflict_vs_pse(best_fit, allBootedFits):
     """
     Plot the relation between conflict and PSE (mu) with confidence intervals.
+    In log-space model, PSE = standard * exp(mu), so PSE shift = standard * (exp(mu) - 1)
     """
     plt.figure(figsize=(12, 6))
     m = 0
@@ -631,12 +687,16 @@ def plot_conflict_vs_pse(best_fit, allBootedFits):
         for j, audioNoiseLevel in enumerate(uniqueSensory):
             for k, conflictLevel in enumerate(uniqueConflict):
                 lambda_, mu, sigma = getParams(best_fit.x, conflictLevel, audioNoiseLevel, nLambda, nSigma)
+                
+                # Calculate PSE shift in linear space (ms)
+                pse_shift_ms = standardLevel * (np.exp(mu) - 1) * 1000
+                
                 m += 1        
                 plt.subplot(1, 2, j + 1)
                 color = sns.color_palette("viridis", as_cmap=True)(k / len(uniqueConflict))
-                plt.scatter(conflictLevel * 1000, mu * 1000 / 2, color=color, s=100)
+                plt.scatter(conflictLevel * 1000, pse_shift_ms, color=color, s=100)
                 plt.xlabel("Visual Conflict(ms)")
-                plt.ylabel("PSE (ms)")
+                plt.ylabel("PSE shift (ms)")
                 plt.title(f"Standard: {standardLevel}, Noise: {audioNoiseLevel}")
                 plt.grid()
                 plt.axhline(y=0, color='gray', linestyle='--')
@@ -646,11 +706,16 @@ def plot_conflict_vs_pse(best_fit, allBootedFits):
                 for fit in allBootedFits:
                     lambda_, muBooted, sigma = getParams(fit, conflictLevel, audioNoiseLevel, nLambda, nSigma)
                     mu_all.append(muBooted)
+                
+                # Convert mu confidence intervals to PSE shift in ms
                 mu_ci = np.percentile(mu_all, [2.5, 97.5])
-                lower_err = np.maximum(mu*1000/2-mu_ci[0]*1000/2, 0)
-                upper_err = np.maximum(mu_ci[1]*1000/2-mu*1000/2, 0)
-                plt.errorbar(conflictLevel*1000, mu*1000/2, yerr=[[lower_err], [upper_err]], fmt='o', color=color, capsize=10
-                            , label=f"95% CI for mu: {mu_ci[0]*1000/2:.2f} - {mu_ci[1]*1000/2:.2f}", linewidth=2)
+                pse_shift_lower = standardLevel * (np.exp(mu_ci[0]) - 1) * 1000
+                pse_shift_upper = standardLevel * (np.exp(mu_ci[1]) - 1) * 1000
+                
+                lower_err = np.maximum(pse_shift_ms - pse_shift_lower, 0)
+                upper_err = np.maximum(pse_shift_upper - pse_shift_ms, 0)
+                plt.errorbar(conflictLevel*1000, pse_shift_ms, yerr=[[lower_err], [upper_err]], fmt='o', color=color, capsize=10
+                            , label=f"95% CI: {pse_shift_lower:.2f} - {pse_shift_upper:.2f}", linewidth=2)
                 plt.ylim(-350, 350)
     plt.show()
 
