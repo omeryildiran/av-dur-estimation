@@ -41,9 +41,9 @@ def fit_and_save_psychometric(dataName, nStart=1, save_dir="psychometric_fits"):
     uniqueStandard = fit_model.uniqueStandard
     uniqueConflict = fit_model.uniqueConflict
     
-    # Group data
+    # Group data - use fit_model.data which has the logDurRatio column
     groupArgs = ['logDurRatio', 'audNoise', 'standardDur', 'conflictDur']
-    grouped_data = fit_model.groupByChooseTest(data, groupArgs)
+    grouped_data = fit_model.groupByChooseTest(fit_model.data, groupArgs)
     
     print(f"Total conditions: {len(grouped_data)}")
     print(f"Unique noise levels: {uniqueSensory}")
@@ -76,7 +76,7 @@ def fit_and_save_psychometric(dataName, nStart=1, save_dir="psychometric_fits"):
         "dataName": dataName,
         "n_params": n_params,
         "n_conditions": n_conditions,
-        "n_trials": int(len(data)),
+        "n_trials": int(len(fit_model.data)),
         "parameters": best_fit.x.tolist(),
         "log_likelihood": float(log_likelihood),
         "AIC": float(aic),
@@ -97,7 +97,7 @@ def fit_and_save_psychometric(dataName, nStart=1, save_dir="psychometric_fits"):
         json.dump(results, f, indent=4)
     
     print(f"\n✅ Saved psychometric fit to: {filepath}")
-    print(f"   Params: {n_params}, Conditions: {n_conditions}, Trials: {len(data)}")
+    print(f"   Params: {n_params}, Conditions: {n_conditions}, Trials: {len(fit_model.data)}")
     print(f"   AIC: {aic:.2f}, BIC: {bic:.2f}, LogLik: {log_likelihood:.2f}")
     
     return results
