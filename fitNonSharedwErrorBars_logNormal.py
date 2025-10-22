@@ -705,7 +705,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fit psychometric functions with optional error bars')
     parser.add_argument('--no-error-bars', action='store_true', 
                        help='Plot without error bars across participants')
-    parser.add_argument('--data', default='all_visualAndAuditory.csv',#all_visualAndAuditory
+    parser.add_argument('--data', default='mt_auditoryDurEst_2025-06-16_12h17.46.950.csv',#all_visualAndAuditory
                        help='Data file to use (default: all_auditory.csv)')
     args = parser.parse_args()
     
@@ -722,8 +722,12 @@ if __name__ == "__main__":
     pltTitle = dataName.split("_")[0] + str(" ") + pltTitle
     
     # Print data summary
-    print(f"Data loaded: {len(data)} trials from {data['participantID'].nunique()} participants")
-    print(f"Participants: {sorted(data['participantID'].unique())}")
+    #print(f"Data loaded: {len(data)} trials from {data['participantID'].nunique()} participants")
+    try:
+        print(f"Participants: {sorted(data['participantID'].unique())}")
+    except:
+        # if there is no participantID column create one with the data name 
+        data['participantID'] = dataName.split("_")[0]
     
     # Group data for fitting (using traditional grouping for model fitting)
     grouped_data = groupByChooseTest(data)
