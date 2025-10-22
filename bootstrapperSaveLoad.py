@@ -18,6 +18,10 @@ def saveBootstrappedParams(mc_fitter, dataBoots, dataName):
         modelType += "_contextualPrior"
     else:
         modelType += "_sharedPrior"
+
+    modelType="lognorm_LapseFree_sharedPrior"
+
+
     filename = f"{participantID.split('_')[0]}_{modelType}_bootstrapped_params.json"
     filename = os.path.join("bootstrapped_params", participantID.split('_')[0], filename)
     os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -76,7 +80,7 @@ def loadBootstrappedParams(mc_fitter, dataName):
     else:
         modelType += "_sharedPrior"
     
-    modelType="gaussian_LapseFree_sharedPrior"
+    modelType="lognorm_LapseFree_sharedPrior"
 
     filename = f"{participantID.split('_')[0]}_{modelType}_bootstrapped_params.json"
     filename = os.path.join("bootstrapped_params", participantID.split('_')[0], filename)
