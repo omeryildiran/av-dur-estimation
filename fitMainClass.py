@@ -11,8 +11,11 @@ warnings.filterwarnings('ignore')
 from loadData import loadData
 
 class fitPychometric:
-    def __init__(self, data, intensityVar='deltaDurS', allIndependent=True, sharedSigma=False,sensoryVar = 'audNoise', 
+    def __init__(self, data, intensityVar='logDurRatio', allIndependent=True, sharedSigma=False,sensoryVar = 'audNoise', 
                  standardVar = 'standardDur', conflictVar = 'conflictDur', dataName=None):
+        # Create log ratio intensity variable for Weber's law compliance
+        data = self._create_log_ratio_variable(data)
+        
         self.data = data
         self.intensityVar = intensityVar
         self.allIndependent = allIndependent
@@ -28,7 +31,50 @@ class fitPychometric:
         self.nMu = len(self.uniqueConflict) * len(self.uniqueSensory) 
         self.dataName= None # placeholder for data name if needed 
         
+    def _create_log_ratio_variable(self, data):
+        """
+        Create log ratio intensity variable for Weber's law compliance.
         
+        Creates logDurRatio = log(testDurS / standardDur) which accounts for 
+        scalar variability and Weber's law. This makes the psychometric model
+        work in log space where noise scales appropriately.
+        
+        Parameters:
+        -----------
+        data : pandas.DataFrame
+            Input data containing testDurS and standardDur columns
+            
+        Returns:
+        --------
+        pandas.DataFrame
+            Data with added logDurRatio column
+        """
+        # Create log ratio: log(test/standard)
+        # Add small epsilon to avoid log(0) issues
+        epsilon = 1e-10
+        data = data.copy()
+        
+        # Ensure we have the required columns
+        if 'testDurS' not in data.columns or 'standardDur' not in data.columns:
+            raise ValueError("Data must contain 'testDurS' and 'standardDur' columns")
+        
+        # Calculate log ratio
+        test_dur = np.maximum(data['testDurS'], epsilon)
+        standard_dur = np.maximum(data['standardDur'], epsilon)
+        
+        # Log ratio = log(test/standard) = log(test) - log(standard)
+        # This accounts for Weber's law: equal log differences represent equal proportional differences
+        # e.g., log(0.6/0.5) = log(1.2) ≈ 0.182, log(1.2/1.0) = log(1.2) ≈ 0.182
+        data['logDurRatio'] = np.log(test_dur) - np.log(standard_dur)
+        
+        # Also keep the original deltaDurS for backward compatibility
+        if 'deltaDurS' not in data.columns:
+            data['deltaDurS'] = data['testDurS'] - data['standardDur']
+            
+        print(f"Created logDurRatio variable: range [{data['logDurRatio'].min():.3f}, {data['logDurRatio'].max():.3f}]")
+        print(f"  → This represents log(test/standard) for Weber's law compliance")
+            
+        return data
 
 
     def groupByChooseTest(self, x, groupArgs=None):
@@ -48,6 +94,9 @@ class fitPychometric:
         return sigma
 
     def bin_and_plot(self, data, bin_method='cut', bins=10, bin_range=None, plot=True, color="blue"):
+        if len(data) == 0:
+            return
+            
         if bin_method == 'cut':
             data['bin'] = pd.cut(data[self.intensityVar], bins=bins, labels=False, include_lowest=True, retbins=False)
         elif bin_method == 'manual':
@@ -57,10 +106,24 @@ class fitPychometric:
             x_mean=(self.intensityVar, 'mean'),
             y_mean=('p_choose_test', 'mean'),
             total_resp=('total_responses', 'sum')
-        )
+        ).dropna()  # Remove any NaN values
 
-        if plot:
-            plt.scatter(grouped['x_mean'], grouped['y_mean'], s=grouped['total_resp']/data['total_responses'].sum()*900, color=color)
+        if plot and len(grouped) > 0:
+            # Calculate point sizes: minimum 50, maximum 300, scaled by response count
+            max_resp = grouped['total_resp'].max()
+            min_resp = grouped['total_resp'].min()
+            if max_resp > min_resp:
+                normalized_sizes = 50 + (grouped['total_resp'] - min_resp) / (max_resp - min_resp) * 250
+            else:
+                normalized_sizes = 100  # Default size if all responses are equal
+                
+            plt.scatter(grouped['x_mean'], grouped['y_mean'], 
+                       s=normalized_sizes, 
+                       color=color, 
+                       alpha=0.8, 
+                       edgecolors='white', 
+                       linewidth=1.5,
+                       zorder=5)  # Put points on top
 
     def estimate_initial_guesses(self, levels, chooseTest, totalResp):
         """
@@ -145,9 +208,40 @@ class fitPychometric:
         return lambda_, mu_idx, sigma_idx
 
     def psychometric_function(self, x, lambda_, mu, sigma):
-        cdf = norm.cdf(x, loc=mu, scale=sigma)
-        p = lambda_/2 + (1-lambda_) * norm.cdf((x - mu) / sigma)
-        return p
+        """
+        Psychometric function using log-ratio and z-score normalization.
+        
+        This implements Weber's law compliant psychometric function:
+        1. Apply bias (mu) and normalize by discrimination parameter (sigma)
+        2. Use standard normal CDF for monotonicity
+        3. Add lapse rate (lambda)
+        
+        Parameters:
+        -----------
+        x : array-like
+            Log ratio values (log(test/standard))
+        lambda_ : float
+            Lapse rate parameter
+        mu : float  
+            Bias parameter (PSE in log space)
+        sigma : float
+            Discrimination parameter (JND in log space)
+            
+        Returns:
+        --------
+        array-like
+            Probability of choosing test as longer
+        """
+        # Apply bias and normalize by discrimination parameter
+        z_score = (x - mu) / sigma
+        
+        # Use standard normal CDF (this ensures monotonicity)
+        p_longer = norm.cdf(z_score)
+        
+        # Add lapse rate: final probability accounts for random responses
+        p_final = lambda_/2 + (1-lambda_) * p_longer
+        
+        return p_final
 
     def negative_log_likelihood(self, params, delta_dur, chose_test, total_responses):
         lambda_, mu, sigma = params
@@ -247,7 +341,14 @@ class fitPychometric:
                         multipleInitGuesses.append([initLambda, initMu, initSigma])
         return multipleInitGuesses
 
-    def fitMultipleStartingPoints(self, data, nStart=1):
+    def fitMultipleStartingPoints(self, data=None, nStart=1):
+        # Use self.data (which has logDurRatio) instead of passed data if not specified
+        if data is None:
+            data = self.data
+        # Ensure the data has the required logDurRatio column
+        if 'logDurRatio' not in data.columns:
+            data = self._create_log_ratio_variable(data)
+            
         # group data and prepare for fitting
         groupedData = self.groupByChooseTest(data)
         levels = groupedData[self.intensityVar].values
@@ -279,6 +380,28 @@ class fitPychometric:
         colors = sns.color_palette("viridis", n_colors=len(self.uniqueSensory))
         plt.figure(figsize=(12*2.5, 6*2))
 
+        # Calculate data range for better plotting limits
+        data_min = self.data[self.intensityVar].min()
+        data_max = self.data[self.intensityVar].max()
+        data_range = data_max - data_min
+        
+        # Use a more conservative range focusing on the central 90% of data plus some margin
+        data_5th = self.data[self.intensityVar].quantile(0.05)
+        data_95th = self.data[self.intensityVar].quantile(0.95)
+        central_range = data_95th - data_5th
+        plot_margin = max(central_range * 0.3, 0.2)  # At least 0.2 log units margin
+        
+        x_min = data_5th - plot_margin
+        x_max = data_95th + plot_margin
+        
+        # Ensure we don't make the range too extreme
+        x_min = max(x_min, data_min - 0.5)
+        x_max = min(x_max, data_max + 0.5)
+        
+        print(f"Data range: [{data_min:.3f}, {data_max:.3f}]")
+        print(f"Central range (5th-95th percentile): [{data_5th:.3f}, {data_95th:.3f}]")
+        print(f"Plot range: [{x_min:.3f}, {x_max:.3f}]")
+
         for i, standardLevel in enumerate(self.uniqueStandard):
             for j, audioNoiseLevel in enumerate(sorted(self.uniqueSensory)):
                 for k, conflictLevel in enumerate(self.uniqueConflict):
@@ -295,21 +418,26 @@ class fitPychometric:
                     totalResponses = dfFiltered['total_responses'].values
 
                     plt.subplot(1, 2, j+1)
-                    x = np.linspace(-0.9, 0.9, 500)
+                    # Use adaptive range based on actual data
+                    x = np.linspace(x_min, x_max, 500)
                     y = self.psychometric_function(x, lambda_, mu, sigma)
                     color = sns.color_palette("viridis", as_cmap=True)(k / len(self.uniqueConflict))
-                    plt.plot(x, y, color=color, label=f"C: {int(conflictLevel*1000)}, $\lambda$: {lambda_:.2f} $\mu$: {mu:.2f}, $\sigma$: {sigma:.2f}", linewidth=4)
-                    plt.axvline(x=0, color='gray', linestyle='--')
-                    plt.axhline(y=0.5, color='gray', linestyle='--')
-                    plt.xlabel(f"({self.intensityVar}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
+                    plt.plot(x, y, color=color, label=f"C: {int(conflictLevel*1000)}, $\\lambda$: {lambda_:.2f} $\\mu$: {mu:.2f}, $\\sigma$: {sigma:.2f}", linewidth=4)
+                    plt.axvline(x=0, color='gray', linestyle='--', alpha=0.7)
+                    plt.axhline(y=0.5, color='gray', linestyle='--', alpha=0.7)
+                    plt.xlabel(f"({self.intensityVar}) Log Duration Ratio: log(Test/Standard)")
                     plt.ylabel("P(chose test)")
                     plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
-                    plt.legend(fontsize=14, title_fontsize=14)
-                    plt.grid()
+                    plt.legend(fontsize=12, title_fontsize=12, loc='center left', bbox_to_anchor=(1, 0.5))
+                    plt.grid(alpha=0.3)
                     self.bin_and_plot(dfFiltered, bin_method='cut', bins=10, plot=True, color=color)
-                    plt.text(0.05, 0.8, f"Shared $\lambda$: {lambda_:.2f}", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
+                    
+                    # Set reasonable axis limits
+                    plt.xlim(x_min, x_max)
+                    plt.ylim(-0.05, 1.05)
+                    
                     plt.tight_layout()
-                    plt.grid(True)
+                    plt.grid(True, alpha=0.3)
                     print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Mu: {mu:.3f}, Sigma: {sigma:.3f}")
         plt.show()
         
@@ -378,13 +506,24 @@ class fitPychometric:
             plt.subplot(2, 2, idx + 1)
             for trialN in range(df.shape[0]):
                 color = 'green' if df['chose_test'][trialN] == 1 or df['chose_test'][trialN] == "True" else 'red'
-                plt.scatter(trialN, df['delta_dur_percents'][trialN], color=color, s=60, alpha=0.5)
-                plt.plot(df['delta_dur_percents'], color='blue')
+                # Use delta_dur_percents if available, otherwise use the current intensity variable
+                if 'delta_dur_percents' in df.columns:
+                    y_val = df['delta_dur_percents'][trialN]
+                    y_data = df['delta_dur_percents']
+                    ylabel = "Delta Duration %"
+                else:
+                    y_val = df[self.intensityVar][trialN]
+                    y_data = df[self.intensityVar]
+                    ylabel = f"{self.intensityVar}"
+                
+                plt.scatter(trialN, y_val, color=color, s=60, alpha=0.5)
+                plt.plot(y_data, color='blue')
                 plt.title(f"Stair {stair}")
-                plt.xlabel("Test(stair)-Standard(0.5s) Duration Difference Ratio")
-                plt.ylabel("Delta Duration %")
+                plt.xlabel("Trial Number")
+                plt.ylabel(ylabel)
                 plt.axhline(y=0, color='gray', linestyle='--')
-                plt.ylim(-0.9, 0.9)
+                if 'delta_dur_percents' in df.columns:
+                    plt.ylim(-0.9, 0.9)
                 plt.grid()
         plt.tight_layout()
         plt.show()
@@ -412,7 +551,7 @@ if __name__ == "__main__":
     fit_model = fitPychometric(data, sharedSigma=sharedSigma, allIndependent=allIndependent)
     fit_model.dataName = dataName
 
-    best_fit = fit_model.fitMultipleStartingPoints(data, nStart=1)
+    best_fit = fit_model.fitMultipleStartingPoints(nStart=1)
     print(f"Fitted parameters: {best_fit.x}")
 
     fit_model.plot_fitted_psychometric(best_fit, pltTitle=pltTitle)
@@ -420,5 +559,5 @@ if __name__ == "__main__":
 
     # # Plot the relation between conflict and PSE (mu) with confidence intervals
     "Uncomment to PSE plot"
-    # allBootedFits = fit_model.paramBootstrap(best_fit.x, nBoots=10)
-    # fit_model.plot_conflict_vs_pse(best_fit, allBootedFits)
+    allBootedFits = fit_model.paramBootstrap(best_fit.x, nBoots=2)
+    fit_model.plot_conflict_vs_pse(best_fit, allBootedFits)

@@ -5,7 +5,8 @@ Fits psychometric functions to participant data and saves results to JSON files
 import os
 import json
 import numpy as np
-import fitMain
+from fitMainClass import fitPychometric
+from loadData import loadData
 
 
 def fit_and_save_psychometric(dataName, nStart=1, save_dir="psychometric_fits"):
@@ -29,18 +30,20 @@ def fit_and_save_psychometric(dataName, nStart=1, save_dir="psychometric_fits"):
     print(f"Processing: {dataName}")
     print(f"{'='*60}")
     
-    # Load data (this sets global variables in fitMain)
-    fitMain.loadData(dataName, isShared=False, isAllIndependent=True)
+    # Load data using the loadData function
+    data, dataName = loadData(dataName)
     
-    # Access the global variables from fitMain module
-    data = fitMain.data
-    uniqueSensory = fitMain.uniqueSensory
-    uniqueStandard = fitMain.uniqueStandard
-    uniqueConflict = fitMain.uniqueConflict
+    # Create the fitting model instance
+    fit_model = fitPychometric(data, allIndependent=True, sharedSigma=False)
+    
+    # Access unique values from the model
+    uniqueSensory = fit_model.uniqueSensory
+    uniqueStandard = fit_model.uniqueStandard
+    uniqueConflict = fit_model.uniqueConflict
     
     # Group data
-    groupArgs = ['delta_dur_percents', 'audNoise', 'standardDur', 'conflictDur']
-    grouped_data = fitMain.groupByChooseTest(data, groupArgs)
+    groupArgs = ['logDurRatio', 'audNoise', 'standardDur', 'conflictDur']
+    grouped_data = fit_model.groupByChooseTest(data, groupArgs)
     
     print(f"Total conditions: {len(grouped_data)}")
     print(f"Unique noise levels: {uniqueSensory}")
@@ -49,7 +52,7 @@ def fit_and_save_psychometric(dataName, nStart=1, save_dir="psychometric_fits"):
     
     # Fit the model
     print(f"\nFitting psychometric functions with {nStart} starting points...")
-    best_fit = fitMain.fitMultipleStartingPoints(data, nStart=nStart)
+    best_fit = fit_model.fitMultipleStartingPoints(nStart=nStart)
     
     # Extract participant ID
     participantID = dataName.split('_')[0]

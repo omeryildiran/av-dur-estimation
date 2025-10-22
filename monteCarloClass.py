@@ -986,10 +986,12 @@ if __name__ == "__main__":
 
     # simulate data for psychometric curve
     mc_fitter.simulatedData = mc_fitter.simulateMonteCarloData(fittedParams, mc_fitter.data ,nSamples=100)
-    mc_fitter.simDataFit=mc_fitter.fitMultipleStartingPoints(mc_fitter.simulatedData,1)
+    # Create a temporary fitter for simulated data
+    temp_fitter = fitPychometric(mc_fitter.simulatedData)
+    mc_fitter.simDataFit = temp_fitter.fitMultipleStartingPoints(nStart=1)
 
     "psychometric fit"
-    mc_fitter.dataFit= mc_fitter.fitMultipleStartingPoints(data,1)
+    mc_fitter.dataFit = mc_fitter.fitMultipleStartingPoints(nStart=1)
 
 
     # Plotting the results
