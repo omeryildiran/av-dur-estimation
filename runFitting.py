@@ -1,24 +1,16 @@
 
-if __name__ == "__main__":
-    # Main script to run the Monte Carlo fitting for the causal inference model
-    #arguments: data file name, model type (e.g., "lognorm" or "gauss"), number of simulations, optimization method, number of starts
-    # Example usage: python runFitting.py mt_all.csv lognorm 2000 bad
+def process_single_file(args):
+    """
+    Process a single data file. This function will be called in parallel.
     
-    #python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln_all.csv,LN01_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "lognorm" 500 "bads" 5
+    Args:
+        args: tuple containing (dataFile, modelName, nSimul, optimMethod, nStarts, integrationMethod)
     
-    # take arguments from command line
-    import sys
-# take arguments from command line
-    dataFiles = sys.argv[1].split(',') if len(sys.argv) > 1 else ["mt_all.csv"]
-    modelName = sys.argv[2] if len(sys.argv) > 2 else "lognorm"
-    nSimul = int(sys.argv[3]) if len(sys.argv) > 3 else 500
-    optimMethod = sys.argv[4] if len(sys.argv) > 4 else "bads"
-    nStarts = int(sys.argv[5]) if len(sys.argv) > 5 else 1
-    integrationMethod= sys.argv[6] if len(sys.argv) > 6 else "analytical" # "numerical" or "analytical"
-    print(f"Data file: {dataFiles}, Model: {modelName}, Simulations: {nSimul}, Optimizer: {optimMethod}, \nStarts: {nStarts} Integration: {integrationMethod}")
-
-
-
+    Returns:
+        tuple: (dataFile, success, error_message)
+    """
+    dataFile, modelName, nSimul, optimMethod, nStarts, integrationMethod = args
+    
     import os
     import numpy as np
     import pandas as pd
@@ -26,8 +18,8 @@ if __name__ == "__main__":
     import monteCarloClass
     import time
     import fitSaver
-
-    for dataFile in dataFiles:
+    
+    try:
         print(f"\n=== Processing file: {dataFile} ===")
 
         # Load the data
@@ -47,26 +39,17 @@ if __name__ == "__main__":
         ## Initialize the Monte Carlo fitter
         mc_fitter = monteCarloClass.OmerMonteCarlo(data)
 
-        ## Define variables in the fitter
-        #print("Data shape:", data.shape)
-        #print("\nConflict range:", data["conflictDur"].min(), "to", data["conflictDur"].max())
-        #print("Standard duration:", data["standardDur"].unique())
-        #print("Audio noise levels:", sorted(data["audNoise"].unique()))
-        #print("Visual test duration range:", data["recordedDurVisualTest"].min(), "to", data["recordedDurVisualTest"].max())
-        #print("t_min, t_max:", mc_fitter.t_min, mc_fitter.t_max)
-        #print("Log t_min, Log t_max:", np.log(mc_fitter.t_min), np.log(mc_fitter.t_max))
-
         # Set fitter parameters
         mc_fitter.nSimul = nSimul
         mc_fitter.optimizationMethod= optimMethod  # Use BADS for optimization
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
         mc_fitter.integrationMethod= integrationMethod # "numerical" or "analytical"
-        mc_fitter.freeP_c = 0  # Free prior probability of common cause
+        mc_fitter.freeP_c = False  # Free prior probability of common cause
         print(f"Model name set to: {mc_fitter.modelName}")
-        #mc_fitter.sharedLambda
         print(f"Shared lambda: {mc_fitter.sharedLambda}")
         print(f"Free P(C=1): {mc_fitter.freeP_c}")
+        
         # Fit the model and time it
         timeStart = time.time()
         print(f"\nFitting Causal Inference Model for {dataName} with {len(mc_fitter.groupedData)} unique conditions")
@@ -80,6 +63,87 @@ if __name__ == "__main__":
         fitSaver.saveFitResultsSingle(mc_fitter, fittedParams, dataName)
 
         # Optionally, generate and save simulated data based on the fitted model
-        #if True:
         fitSaver.saveSimulatedData(mc_fitter, dataName)
         print(f"=== Finished processing file: {dataFile} ===\n")
+        
+        return (dataFile, True, None)
+    
+    except Exception as e:
+        import traceback
+        error_msg = f"Error processing {dataFile}: {str(e)}\n{traceback.format_exc()}"
+        print(error_msg)
+        return (dataFile, False, error_msg)
+
+
+if __name__ == "__main__":
+    # Main script to run the Monte Carlo fitting for the causal inference model
+    #arguments: data file name, model type (e.g., "lognorm" or "gauss"), number of simulations, optimization method, number of starts
+    # Example usage: python runFitting.py mt_all.csv lognorm 2000 bad
+    
+    #python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln_all.csv,LN01_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "lognorm" 500 "bads" 5
+    #python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln2_all.csv, ln1_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "gaussian" 2500 "bads" 10
+    # NEW: Add number of cores as optional argument
+    #python runFitting.py "file1.csv,file2.csv" "lognorm" 500 "bads" 5 "analytical" 4
+
+    # take arguments from command line
+    import sys
+    import os
+    import time
+    from multiprocessing import Pool, cpu_count
+    
+    # Parse arguments
+    dataFiles = sys.argv[1].split(',') if len(sys.argv) > 1 else ["mt_all.csv"]
+    # Strip whitespace from file names
+    dataFiles = [f.strip() for f in dataFiles]
+    
+    modelName = sys.argv[2] if len(sys.argv) > 2 else "lognorm"
+    nSimul = int(sys.argv[3]) if len(sys.argv) > 3 else 500
+    optimMethod = sys.argv[4] if len(sys.argv) > 4 else "bads"
+    nStarts = int(sys.argv[5]) if len(sys.argv) > 5 else 1
+    integrationMethod = sys.argv[6] if len(sys.argv) > 6 else "analytical" # "numerical" or "analytical"
+    n_cores = int(sys.argv[7]) if len(sys.argv) > 7 else min(cpu_count(), len(dataFiles))  # Use all available cores by default, but not more than files
+    
+    print(f"Data files: {dataFiles}")
+    print(f"Model: {modelName}, Simulations: {nSimul}, Optimizer: {optimMethod}")
+    print(f"Starts: {nStarts}, Integration: {integrationMethod}")
+    print(f"Number of cores to use: {n_cores} (Available: {cpu_count()})")
+    print(f"Processing {len(dataFiles)} files in parallel...\n")
+
+    # Prepare arguments for parallel processing
+    args_list = [(dataFile, modelName, nSimul, optimMethod, nStarts, integrationMethod) 
+                 for dataFile in dataFiles]
+    
+    # Start timing
+    overall_start = time.time()
+    
+    # Run in parallel
+    if n_cores > 1 and len(dataFiles) > 1:
+        with Pool(processes=n_cores) as pool:
+            results = pool.map(process_single_file, args_list)
+    else:
+        # Fall back to sequential processing if only 1 core or 1 file
+        print("Running sequentially (single core or single file)...\n")
+        results = [process_single_file(args) for args in args_list]
+    
+    # Print summary
+    overall_time = time.time() - overall_start
+    print("\n" + "="*60)
+    print("SUMMARY")
+    print("="*60)
+    print(f"Total time: {overall_time:.2f} seconds")
+    print(f"Average time per file: {overall_time/len(dataFiles):.2f} seconds")
+    
+    successful = [r for r in results if r[1]]
+    failed = [r for r in results if not r[1]]
+    
+    print(f"\nSuccessfully processed: {len(successful)}/{len(dataFiles)} files")
+    if successful:
+        for dataFile, _, _ in successful:
+            print(f"  ✅ {dataFile}")
+    
+    if failed:
+        print(f"\nFailed: {len(failed)} files")
+        for dataFile, _, error_msg in failed:
+            print(f"  ❌ {dataFile}")
+            if error_msg:
+                print(f"     Error: {error_msg}")
