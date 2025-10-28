@@ -277,20 +277,27 @@ class OmerMonteCarlo(fitPychometric):
         prior = 1/(t_max-t_min)
 
         if self.modelName == "logLinearMismatch":
-            # If the model is log mis, we need to adjust the prior and it should be numerically integrated
-            # over the log-transformed durations
+            # Log-Linear Mismatch: Observer assumes linear Gaussian noise
+            # but measurements were actually generated with log-normal noise
+            # 
+            # Here we compute L(m_a, m_v | C=1) using the OBSERVER'S INCORRECT MODEL:
+            #   - Observer thinks: m ~ N(y, σ²) in linear space
+            #   - Prior over y: p(y) = 1/(y * log(t_max/t_min)) (uniform in log space)
+            #
+            # We integrate: L(m_a, m_v | C=1) = ∫ N(m_a; y, σ_a²) * N(m_v; y, σ_v²) * p(y) dy
             
-            #.if m_a and m_v are in linear scale y_vals should be in linear scale as well
             y_vals = np.linspace(t_min, t_max, self.nSimul) 
             dy=y_vals[1] - y_vals[0]
             log_norm_const=np.log(t_max / t_min)
 
-            # likelihoods under common cause    
+            # Likelihoods: observer assumes Gaussian noise in linear space
             L_m_a=  norm.pdf(m_a, loc=y_vals, scale=sigma_a)  # shape: (n_points,)
             L_m_v = norm.pdf(m_v, loc=y_vals, scale=sigma_v)
 
-            prior = 1/ ((y_vals +1e-10)*log_norm_const)  # Adjusted prior for log mis model
-            # Calculate the integral over the log-transformed durations
+            # Prior: uniform in log space means 1/(y * log(t_max/t_min)) in linear space
+            prior = 1/ ((y_vals +1e-10)*log_norm_const)  
+            
+            # Numerical integration
             integrand=L_m_a * L_m_v * prior
             integral = np.sum(integrand*dy)
             integral = max(integral, 1e-10)
@@ -331,7 +338,9 @@ class OmerMonteCarlo(fitPychometric):
         post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
 
         # convert back to linear scale if measurements are in log scale
-        if self.modelName == "lognorm" or self.modelName == "logLinearMismatch":
+        # Note: logLinearMismatch measurements are already in linear scale (generated via exp(log-normal))
+        # Only lognorm needs conversion since measurements are in log space
+        if self.modelName == "lognorm":
             m_a = np.exp(m_a)
             fused_S_av = np.exp(fused_S_av)
         
