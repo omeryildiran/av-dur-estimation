@@ -65,7 +65,7 @@ def saveBootstrappedParams(mc_fitter=None, dataBoots=None, dataName=None):
 # List of all participant filenames
 participant_files = [
     "as_all.csv", "oy_all.csv", "dt_all.csv", "HH_all.csv", 
-    "ip_all.csv", "ln_all.csv", "LN01_all.csv", "mh_all.csv", 
+    "ip_all.csv", "ln1_all.csv", "ln2_all.csv", "mh_all.csv", 
     "ml_all.csv", "mt_all.csv", "qs_all.csv", "sx_all.csv"
 ]
 
