@@ -1,4 +1,17 @@
 # A class for monte carlo inherited from fitMainClasss.py
+#
+# Supported Models:
+# -----------------
+# 1. gaussian: Linear-space causal inference with Gaussian measurement noise
+# 2. lognorm: Log-space causal inference with Gaussian noise in log space
+# 3. logLinearMismatch: Log-normal measurements with incorrect linear-space inference
+# 4. fusionOnly: Linear-space optimal fusion without causal inference (p_c=1.0)
+# 5. fusionOnlyLogNorm: Log-space optimal fusion without causal inference (p_c=1.0)
+#
+# Parameter Structure:
+# --------------------
+# Causal Inference Models: [λ, σa1, σv, pc, σa2, (λ2, λ3 if not shared), (pc2 if free), t_min, t_max]
+# Fusion-Only Models: [λ, σa1, σv, σa2, t_min, t_max] (p_c fixed at 1.0, not fitted)
 
 # import necessary libraries
 import numpy as np
@@ -95,11 +108,17 @@ class OmerMonteCarlo(fitPychometric):
         Parameters:
         -----------
         params : array-like
-            Parameter array with layout depending on configuration:
+            Parameter array with layout depending on configuration and model type:
+            
+            For causal inference models (gaussian, lognorm, logLinearMismatch):
             - sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3, t_min, t_max] (9 params)
             - sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2, t_min, t_max] (7 params)
             - sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2, t_min, t_max] (10 params)
             - sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2, t_min, t_max] (8 params)
+            
+            For fusion-only models (fusionOnly, fusionOnlyLogNorm):
+            - [λ, σa1, σv, σa2, t_min, t_max] (6 params) - p_c is fixed at 1.0
+            
         SNR : float
             Signal-to-noise ratio (0.1 or 1.2)
         conflict : float
@@ -108,8 +127,35 @@ class OmerMonteCarlo(fitPychometric):
         Returns:
         --------
         tuple : (lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+            Note: For fusion-only models, p_c is always 1.0 (always common cause)
         """
         
+        # Special handling for fusion-only models
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            # Fusion models have fewer parameters (no p_c in params, always 1.0)
+            # Expected: [λ, σa1, σv, σa2, t_min, t_max] (6 params)
+            if len(params) != 6:
+                raise ValueError(f"Fusion-only models expect 6 parameters [λ, σa1, σv, σa2, t_min, t_max], got {len(params)}")
+            
+            lambda_ = params[0]
+            sigma_av_v = params[2]
+            t_min = params[4]
+            t_max = params[5]
+            
+            # Extract sigma_av_a based on SNR
+            if np.isclose(SNR, 0.1):
+                sigma_av_a = params[1]
+            elif np.isclose(SNR, 1.2):
+                sigma_av_a = params[3]
+            else:
+                raise ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2.")
+            
+            # For fusion-only models, p_c is fixed at 1.0 (always assume common cause)
+            p_c = 1.0
+            
+            return lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max
+        
+        # Standard causal inference models
         # Validate parameter array length
         expected_lengths = {
             (True, True): 8,    # sharedLambda=True, freeP_c=True
@@ -179,21 +225,28 @@ class OmerMonteCarlo(fitPychometric):
         print(f"Configuration: sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
         
         # Test parameter array creation
-        if self.freeP_c:
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            expected_length = 6  # Fusion-only models
+        elif self.freeP_c:
             expected_length = 10 if not self.sharedLambda else 8
         else:
             expected_length = 9 if not self.sharedLambda else 7
         print(f"Expected parameter length: {expected_length}")
         
         # Create test parameters
-        test_params = [0.1, 0.5, 0.5, 0.5, 0.8]  # Basic 5 params
-        if not self.sharedLambda:
-            test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
-        if self.freeP_c:
-            test_params.append(0.5)  # Add second p_c
-        test_params.extend([0.2, 1.0])  # Add t_min, t_max
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            # Fusion-only: [λ, σa1, σv, σa2, t_min, t_max]
+            test_params = np.array([0.1, 0.5, 0.5, 0.8, 0.2, 1.0])
+        else:
+            # Causal inference models
+            test_params = [0.1, 0.5, 0.5, 0.5, 0.8]  # Basic 5 params
+            if not self.sharedLambda:
+                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
+            if self.freeP_c:
+                test_params.append(0.5)  # Add second p_c
+            test_params.extend([0.2, 1.0])  # Add t_min, t_max
+            test_params = np.array(test_params)
         
-        test_params = np.array(test_params)
         print(f"Test params length: {len(test_params)}, values: {test_params}")
         
         # Test parameter extraction
@@ -241,6 +294,14 @@ class OmerMonteCarlo(fitPychometric):
         return fused_S_av
 
     def fusionAV_vectorized(self, m_a, m_v, sigma_av_a, sigma_av_v):
+        """
+        Optimal multisensory fusion (MLE).
+        
+        Note: This performs LINEAR-SPACE fusion.
+        For log-space measurements (fusionOnlyLogNorm), the measurements should already be in log space,
+        and this function will return a fused estimate also in log space.
+        The weighted averaging formula is the same in both cases.
+        """
         J_AV_A = 1 / sigma_av_a**2
         J_AV_V = 1 / sigma_av_v**2
         fused_S_av = (J_AV_A * m_a + J_AV_V * m_v) / (J_AV_A + J_AV_V)
@@ -393,7 +454,13 @@ class OmerMonteCarlo(fitPychometric):
             est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
             est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
 
-        elif self.modelName == "fusionOnly":# Linear-Gaussian observer (classic model)
+        elif self.modelName == "fusionOnly":
+            """
+            FusionOnly: Linear-Gaussian observer (classic optimal integration model).
+            - Measurements have Gaussian noise in LINEAR space: m ~ N(S, σ²)
+            - Observer performs optimal MLE fusion in linear space
+            - No causal inference (always assumes common cause)
+            """
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
             m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
@@ -403,22 +470,34 @@ class OmerMonteCarlo(fitPychometric):
             est_standard = self.fusionAV_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
             est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
 
-        elif self.modelName ==  "fusionOnlyLogNorm":## FusionOnlyLogNorm: Log-space observer with Gaussian noise in log space
+        elif self.modelName ==  "fusionOnlyLogNorm":
+            """
+            FusionOnlyLogNorm: Log-space observer with Gaussian noise in log space.
+            - Measurements have Gaussian noise in LOG space: log(m) ~ N(log(S), σ²)
+            - Observer performs optimal fusion in LOG space
+            - Comparison is done in LOG space (comparing log estimates)
+            
+            Note: Measurements stay in log space throughout, and comparison 
+                  log(est_test) > log(est_standard) is equivalent to 
+                  exp(log(est_test)) > exp(log(est_standard)) i.e., est_test > est_standard
+            """
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # Generate measurements in LOG space
             m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
             m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
             m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
             m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
+            # Fusion in log space (fusionAV_vectorized works the same way for log-space values)
             est_standard = self.fusionAV_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
             est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
-
-
+            # Comparison in log space is fine: log(A) > log(B) iff A > B
 
 
         else:
             #break and raise error
-            raise ValueError("Invalid modelName. Choose 'gaussian', 'lognorm', or 'logLinearMismatch'.")
+            raise ValueError(f"Invalid modelName '{self.modelName}'. Choose 'gaussian', 'lognorm', 'logLinearMismatch', 'fusionOnly', or 'fusionOnlyLogNorm'.")
+
 
 
         p_base = np.mean(est_test > est_standard)
@@ -447,8 +526,8 @@ class OmerMonteCarlo(fitPychometric):
             if t_min >= t_max:
                 print(f"Invalid bounds: t_min={t_min:.3f} >= t_max={t_max:.3f}")
                 return 1e10
-            if t_min <= 0 or t_max <= 0:
-                print(f"Non-positive bounds: t_min={t_min:.3f}, t_max={t_max:.3f}")
+            if t_min < 0 or t_max <= 0:
+                #print(f"Non-positive bounds: t_min={t_min:.3f}, t_max={t_max:.3f}")
                 return 1e10
                 
         except Exception as e:
@@ -504,6 +583,9 @@ class OmerMonteCarlo(fitPychometric):
         """
         Fit causal inference model using Monte Carlo simulation with multiple random starts.
         Supports 'scipy' (default) or 'bads' optimization (if installed).
+        
+        For fusion-only models (fusionOnly, fusionOnlyLogNorm), p_c is fixed at 1.0
+        and not included in the parameter array.
         """
         # Debug: Print data bounds information
         print(f"Data bounds: t_min={self.data_t_min:.3f}, t_max={self.data_t_max:.3f}")
@@ -514,7 +596,18 @@ class OmerMonteCarlo(fitPychometric):
             return None
         
         # ---- PARAMETER BOUNDS ----
-        if self.freeP_c:
+        # Special bounds for fusion-only models (no p_c parameter)
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            print(f"Fitting fusion-only model: {self.modelName} (p_c fixed at 1.0)")
+            bounds = np.array([
+                (0, 0.25),      # 0 lambda_
+                (0.1, 1.2),     # 1 sigma_av_a_1
+                (0.1, 1.2),     # 2 sigma_av_v
+                (0.1, 1.7),     # 3 sigma_av_a_2
+                (0, 1),         # 4 t_min
+                (0.05, max(self.data_t_max+1, 10.0)),  # 5 t_max
+            ])
+        elif self.freeP_c:
             print("Fitting with free p_c parameters for each SNR condition.")
             bounds = np.array([
                 (0, 0.4),      # 0 lambda_
@@ -558,13 +651,18 @@ class OmerMonteCarlo(fitPychometric):
             
         # Test the likelihood function with reasonable parameters before optimization
         print("Testing likelihood function with reasonable parameters...")
-        test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters
-        if not self.sharedLambda:
-            test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
-        if self.freeP_c:
-            test_params = np.append(test_params, [0.5])  # Add second p_c
-        # Add t_min and t_max
-        test_params = np.append(test_params, [0.2, 1.0])
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            # Fusion-only models: [λ, σa1, σv, σa2, t_min, t_max] (6 params)
+            test_params = np.array([0.1, 0.5, 0.5, 0.8, 0.2, 1.0])
+        else:
+            # Causal inference models
+            test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters
+            if not self.sharedLambda:
+                test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
+            if self.freeP_c:
+                test_params = np.append(test_params, [0.5])  # Add second p_c
+            # Add t_min and t_max
+            test_params = np.append(test_params, [0.2, 1.0])
         
         try:
             test_ll = self.nLLMonteCarloCausal(test_params, groupedData)
@@ -587,7 +685,17 @@ class OmerMonteCarlo(fitPychometric):
         print("Model is " + self.modelName)
         for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
             # Random x0 initialization within bounds
-            if self.freeP_c==False:
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                # Fusion-only models: [λ, σa1, σv, σa2, t_min, t_max] (6 params)
+                x0 = np.array([
+                    np.random.uniform(0.01, 0.25),  # 0 lambda_
+                    np.random.uniform(0.1, 1.2),    # 1 sigma_av_a_1
+                    np.random.uniform(0.1, 1.2),    # 2 sigma_av_v
+                    np.random.uniform(0.1, 1.7),    # 3 sigma_av_a_2
+                    np.random.uniform(bounds[-2][0], bounds[-2][1]),  # 4 t_min (from bounds)
+                    np.random.uniform(bounds[-1][0], bounds[-1][1]),  # 5 t_max (from bounds)
+                ])
+            elif self.freeP_c==False:
                 x0 = np.array([
                     np.random.uniform(0.01, 0.25),  # 0 lambda_
                     np.random.uniform(0.1, 1.2),    # 1 sigma_av_a_1
@@ -614,7 +722,8 @@ class OmerMonteCarlo(fitPychometric):
                 ])
 
             # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0 and bounds
-            if self.sharedLambda:
+            # (only for causal inference models, not fusion-only)
+            if self.sharedLambda and self.modelName not in ["fusionOnly", "fusionOnlyLogNorm"]:
                 x0= np.delete(x0, [5,6])  # remove lambda_2 and lambda_3 if sharedLambda is True
             
             # Debug: Print initial parameters
