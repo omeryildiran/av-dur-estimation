@@ -9,7 +9,7 @@ def process_single_file(args):
     Returns:
         tuple: (dataFile, success, error_message)
     """
-    dataFile, modelName, nSimul, optimMethod, nStarts, integrationMethod = args
+    dataFile, modelName, nSimul, optimMethod, nStarts, integrationMethod, freeP_c = args
     
     import os
     import numpy as np
@@ -45,7 +45,7 @@ def process_single_file(args):
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
         mc_fitter.integrationMethod= integrationMethod # "numerical" or "analytical"
-        mc_fitter.freeP_c = False  # Free prior probability of common cause
+        mc_fitter.freeP_c = freeP_c  # Free prior probability of common cause
         print(f"Model name set to: {mc_fitter.modelName}")
         print(f"Shared lambda: {mc_fitter.sharedLambda}")
         print(f"Free P(C=1): {mc_fitter.freeP_c}")
@@ -101,16 +101,18 @@ if __name__ == "__main__":
     optimMethod = sys.argv[4] if len(sys.argv) > 4 else "bads"
     nStarts = int(sys.argv[5]) if len(sys.argv) > 5 else 1
     integrationMethod = sys.argv[6] if len(sys.argv) > 6 else "analytical" # "numerical" or "analytical"
+    freeP_c= True  # Whether to fit free prior probability of common cause
+
     n_cores = int(sys.argv[7]) if len(sys.argv) > 7 else min(cpu_count(), len(dataFiles))  # Use all available cores by default, but not more than files
-    
     print(f"Data files: {dataFiles}")
     print(f"Model: {modelName}, Simulations: {nSimul}, Optimizer: {optimMethod}")
+    print(f" Free P(C=1): {freeP_c}")
     print(f"Starts: {nStarts}, Integration: {integrationMethod}")
     print(f"Number of cores to use: {n_cores} (Available: {cpu_count()})")
     print(f"Processing {len(dataFiles)} files in parallel...\n")
 
     # Prepare arguments for parallel processing
-    args_list = [(dataFile, modelName, nSimul, optimMethod, nStarts, integrationMethod) 
+    args_list = [(dataFile, modelName, nSimul, optimMethod, nStarts, integrationMethod,freeP_c) 
                  for dataFile in dataFiles]
     
     # Start timing
