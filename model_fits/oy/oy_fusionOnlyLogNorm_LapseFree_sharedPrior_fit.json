@@ -1,0 +1,16 @@
+{
+    "participantID": "oy",
+    "modelType": "fusionOnlyLogNorm_LapseFree_sharedPrior",
+    "fittedParams": [
+        0.09556171894073487,
+        0.31001899719238274,
+        0.9178258132934569,
+        0.40897430419921876,
+        0.4547249794006348,
+        4.759971542358398
+    ],
+    "AIC": 2323.31937502668,
+    "BIC": 2350.398755692154,
+    "logLikelihood": -1155.65968751334,
+    "n_conditions": 674
+}

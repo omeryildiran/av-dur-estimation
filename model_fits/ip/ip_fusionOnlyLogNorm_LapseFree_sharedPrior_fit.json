@@ -1,0 +1,16 @@
+{
+    "participantID": "ip",
+    "modelType": "fusionOnlyLogNorm_LapseFree_sharedPrior",
+    "fittedParams": [
+        0.023983978305477646,
+        0.3033374437689781,
+        1.141421457719989,
+        0.7394595809280873,
+        0.997341739689,
+        6.30805590785807
+    ],
+    "AIC": 2409.525783995108,
+    "BIC": 2434.728839039364,
+    "logLikelihood": -1198.762891997554,
+    "n_conditions": 493
+}
