@@ -108,9 +108,10 @@ if __name__ == "__main__":
 
     n_cores = int(sys.argv[8]) if len(sys.argv) > 8 else min(cpu_count(), len(dataFiles))  # Use all available cores by default, but not more than files
     print(f"Data files: {dataFiles}")
-    print(f"Model: {modelName}, Simulations: {nSimul}, Optimizer: {optimMethod}")
+    print(f"Model: {modelName}\n, Simulations: {nSimul}\n, Optimizer: {optimMethod}\n")
     print(f" Free P(C=1): {freeP_c}")
-    print(f"Starts: {nStarts}, Integration: {integrationMethod}")
+    
+    print(f"Starts: {nStarts}, \nIntegration: {integrationMethod}")
     print(f"Number of cores to use: {n_cores} (Available: {cpu_count()})")
     print(f"Processing {len(dataFiles)} files in parallel...\n")
 
