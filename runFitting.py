@@ -9,7 +9,7 @@ def process_single_file(args):
     Returns:
         tuple: (dataFile, success, error_message)
     """
-    dataFile, modelName, nSimul, optimMethod, nStarts, integrationMethod, freeP_c = args
+    dataFile, modelName, nSimul, optimMethod, nStarts, freeP_c, integrationMethod = args
     
     import os
     import numpy as np
@@ -81,9 +81,12 @@ if __name__ == "__main__":
     # Example usage: python runFitting.py mt_all.csv lognorm 2000 bad
     
     #python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln_all.csv,LN01_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "lognorm" 500 "bads" 5
-    #python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln2_all.csv, ln1_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "gaussian" 2500 "bads" 10
+    #python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln2_all.csv, ln1_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "probabilityMatchingLogNorm" 2500 "bads" 10 True "analytical"
     # NEW: Add number of cores as optional argument
     #python runFitting.py "file1.csv,file2.csv" "lognorm" 500 "bads" 5 "analytical" 4
+    
+    #"probabilityMatching" 
+    # "probabilityMatchingLogNorm"  # for log-space
 
     # take arguments from command line
     import sys
@@ -100,10 +103,10 @@ if __name__ == "__main__":
     nSimul = int(sys.argv[3]) if len(sys.argv) > 3 else 500
     optimMethod = sys.argv[4] if len(sys.argv) > 4 else "bads"
     nStarts = int(sys.argv[5]) if len(sys.argv) > 5 else 1
-    integrationMethod = sys.argv[6] if len(sys.argv) > 6 else "analytical" # "numerical" or "analytical"
-    freeP_c= True  # Whether to fit free prior probability of common cause
+    freeP_c = sys.argv[6] if len(sys.argv) > 6 else False # "numerical" or "analytical"
+    integrationMethod= sys.argv[7] if len(sys.argv) > 7 else "analytical" # "numeric  # Whether to fit free prior probability of common cause
 
-    n_cores = int(sys.argv[7]) if len(sys.argv) > 7 else min(cpu_count(), len(dataFiles))  # Use all available cores by default, but not more than files
+    n_cores = int(sys.argv[8]) if len(sys.argv) > 8 else min(cpu_count(), len(dataFiles))  # Use all available cores by default, but not more than files
     print(f"Data files: {dataFiles}")
     print(f"Model: {modelName}, Simulations: {nSimul}, Optimizer: {optimMethod}")
     print(f" Free P(C=1): {freeP_c}")
