@@ -7,13 +7,10 @@
 # 3. logLinearMismatch: Log-normal measurements with incorrect linear-space inference
 # 4. fusionOnly: Linear-space optimal fusion without causal inference (p_c=1.0)
 # 5. fusionOnlyLogNorm: Log-space optimal fusion without causal inference (p_c=1.0)
-# 6. probabilityMatching: Linear-space probability matching (samples causal structure from posterior)
-# 7. probabilityMatchingLogNorm: Log-space probability matching (samples causal structure from posterior)
 #
 # Parameter Structure:
 # --------------------
 # Causal Inference Models: [λ, σa1, σv, pc, σa2, (λ2, λ3 if not shared), (pc2 if free), t_min, t_max]
-# Probability Matching Models: [λ, σa1, σv, pc, σa2, (λ2, λ3 if not shared), (pc2 if free), t_min, t_max]
 # Fusion-Only Models: [λ, σa1, σv, σa2, t_min, t_max] (p_c fixed at 1.0, not fitted)
 
 # import necessary libraries
@@ -412,50 +409,6 @@ class OmerMonteCarlo(fitPychometric):
         final_estimate = post_C1 * fused_S_av + (1 - post_C1) * m_a
         return final_estimate
     
-    def probabilityMatching_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
-        """
-        Probability matching model - samples from the posterior distribution over causal structures.
-        
-        Instead of averaging estimates weighted by posterior (as in causal inference),
-        this model samples a causal structure (C=1 or C=2) based on the posterior probability,
-        then reports the estimate corresponding to that sampled structure.
-        
-        Parameters:
-        -----------
-        m_a, m_v : array-like
-            Auditory and visual measurements
-        sigma_a, sigma_v : float
-            Measurement noise standard deviations
-        p_c : float
-            Prior probability of common cause
-        t_min, t_max : float
-            Bounds for duration estimation
-            
-        Returns:
-        --------
-        final_estimate : array
-            Duration estimates based on sampled causal structure
-        """
-        # Calculate posterior probability of common cause
-        post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
-        
-        # Compute estimates for both causal structures
-        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
-        est_separate = m_a
-        
-        # Sample causal structure using Bernoulli distribution based on posterior
-        # For each trial, randomly decide: fused (C=1) or separate (C=2)
-        sampled_C1 = np.random.binomial(1, post_C1)
-        
-        # Select estimate based on sampled causal structure
-        final_estimate = sampled_C1 * fused_S_av + (1 - sampled_C1) * est_separate
-        
-        # Convert back to linear scale if needed (only for probabilityMatchingLogNorm model)
-        if self.modelName == "probabilityMatchingLogNorm":
-            final_estimate = np.exp(final_estimate)
-        
-        return final_estimate
-    
     
     def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max):
         if self.modelName == "gaussian":
@@ -471,18 +424,6 @@ class OmerMonteCarlo(fitPychometric):
             # est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
             ## or est_test computed using causalInference_vectorized
             est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
-        
-        # === Probability Matching Model for Gaussian === #
-        elif self.modelName == "probabilityMatching":
-            nSimul = self.nSimul
-            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-            m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
-            m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
-            m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
-            m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
-
-            est_standard = self.probabilityMatching_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
-            est_test = self.probabilityMatching_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
 
         # === Lognormal (Log-Space Gaussian Measurement) Model === #
         elif self.modelName == "lognorm":
@@ -495,17 +436,6 @@ class OmerMonteCarlo(fitPychometric):
             m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
             est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
-        
-        # === Probability Matching Model for Log-Space === #
-        elif self.modelName == "probabilityMatchingLogNorm":
-            nSimul = self.nSimul
-            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
-            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
-            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
-            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
-            est_standard = self.probabilityMatching_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
-            est_test = self.probabilityMatching_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
 
         #  === Log-Linear Mismatch Model === #
         elif self.modelName =="logLinearMismatch":
@@ -566,7 +496,7 @@ class OmerMonteCarlo(fitPychometric):
 
         else:
             #break and raise error
-            raise ValueError(f"Invalid modelName '{self.modelName}'. Choose 'gaussian', 'lognorm', 'logLinearMismatch', 'fusionOnly', 'fusionOnlyLogNorm', 'probabilityMatching', or 'probabilityMatchingLogNorm'.")
+            raise ValueError(f"Invalid modelName '{self.modelName}'. Choose 'gaussian', 'lognorm', 'logLinearMismatch', 'fusionOnly', or 'fusionOnlyLogNorm'.")
 
 
 
@@ -580,9 +510,6 @@ class OmerMonteCarlo(fitPychometric):
         """Negative log-likelihood for causal inference model"""
         ll = 0
         lenData = len(groupedData)
-        
-        # Convert params to numpy array and ensure it's float type
-        params = np.asarray(params, dtype=float)
         
         # Check for invalid parameters
         if np.any(np.isnan(params)) or np.any(np.isinf(params)):
