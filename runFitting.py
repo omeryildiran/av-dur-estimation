@@ -44,16 +44,21 @@ def process_single_file(args):
         mc_fitter.optimizationMethod= optimMethod  # Use BADS for optimization
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
-        mc_fitter.integrationMethod= integrationMethod # "numerical" or "analytical"
         mc_fitter.freeP_c = freeP_c  # Free prior probability of common cause
         print(f"Model name set to: {mc_fitter.modelName}")
         print(f"Shared lambda: {mc_fitter.sharedLambda}")
         print(f"Free P(C=1): {mc_fitter.freeP_c}")
+        print(f"Integration method: {integrationMethod} (not used in current implementation)")
         
         # Fit the model and time it
         timeStart = time.time()
         print(f"\nFitting Causal Inference Model for {dataName} with {len(mc_fitter.groupedData)} unique conditions")
         fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(mc_fitter.groupedData)
+        
+        # Check if fitting was successful
+        if fittedParams is None:
+            raise RuntimeError(f"Fitting failed for {dataName} - fitCausalInferenceMonteCarlo returned None")
+        
         print(f"\nFitted parameters for {dataName}: {fittedParams}")
         print(f"Time taken to fit: {time.time() - timeStart:.2f} seconds")
         mc_fitter.modelFit= fittedParams
@@ -103,8 +108,8 @@ if __name__ == "__main__":
     nSimul = int(sys.argv[3]) if len(sys.argv) > 3 else 500
     optimMethod = sys.argv[4] if len(sys.argv) > 4 else "bads"
     nStarts = int(sys.argv[5]) if len(sys.argv) > 5 else 1
-    freeP_c = sys.argv[6] if len(sys.argv) > 6 else False # "numerical" or "analytical"
-    integrationMethod= sys.argv[7] if len(sys.argv) > 7 else "analytical" # "numeric  # Whether to fit free prior probability of common cause
+    freeP_c = sys.argv[6].lower() in ['true', '1', 'yes'] if len(sys.argv) > 6 else False  # Convert string to boolean
+    integrationMethod = sys.argv[7] if len(sys.argv) > 7 else "analytical"
 
     n_cores = int(sys.argv[8]) if len(sys.argv) > 8 else min(cpu_count(), len(dataFiles))  # Use all available cores by default, but not more than files
     print(f"Data files: {dataFiles}")
@@ -115,8 +120,8 @@ if __name__ == "__main__":
     print(f"Number of cores to use: {n_cores} (Available: {cpu_count()})")
     print(f"Processing {len(dataFiles)} files in parallel...\n")
 
-    # Prepare arguments for parallel processing
-    args_list = [(dataFile, modelName, nSimul, optimMethod, nStarts, integrationMethod,freeP_c) 
+    # Prepare arguments for parallel processing - Fixed order to match process_single_file signature
+    args_list = [(dataFile, modelName, nSimul, optimMethod, nStarts, freeP_c, integrationMethod) 
                  for dataFile in dataFiles]
     
     # Start timing
