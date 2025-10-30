@@ -1,4 +1,8 @@
 
+""" python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln2_all.csv, ln1_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "probabilityMatching" 2500 "bads" 10 True
+
+"""
+
 def process_single_file(args):
     """
     Process a single data file. This function will be called in parallel.
