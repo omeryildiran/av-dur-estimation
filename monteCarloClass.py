@@ -169,8 +169,8 @@ class OmerMonteCarlo(fitPychometric):
             
             lambda_ = params[0]
             sigma_av_v = params[2]
-            t_min = params[4]
-            t_max = params[5]
+            t_min = params[4]  # Always in linear space
+            t_max = params[5]  # Always in linear space
             
             # Extract sigma_av_a based on SNR
             if np.isclose(SNR, 0.1):
@@ -242,6 +242,10 @@ class OmerMonteCarlo(fitPychometric):
             sigma_av_a=params[4]
         else:
             raise(ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2."))
+
+        # All models store t_min and t_max in linear space as parameters.
+        # Individual model functions handle any needed log-space conversions internally.
+        # For example, lognorm models will call with np.log(t_min), np.log(t_max).
 
         return lambda_,sigma_av_a,sigma_av_v,p_c,t_min,t_max
     
@@ -625,10 +629,14 @@ class OmerMonteCarlo(fitPychometric):
             first_conflict = groupedData["conflictDur"].iloc[0]
             λ, σa, σv, pc, t_min, t_max = self.getParamsCausal(params, first_snr, first_conflict)
             
-            # Stricter bounds checking
-            if t_min >= t_max or t_min <= 0 or t_max <= 0:
+            # All models use linear-space bounds for t_min and t_max parameters
+            # (individual model functions handle log conversions internally if needed)
+            if t_min >= t_max:
                 return 1e10
-            if (t_max - t_min) < 0.01:  # Minimum meaningful range
+            # Allow t_min = 0 for duration bounds, but ensure t_max > t_min    
+            if t_max <= 0:
+                return 1e10
+            if (t_max - t_min) < 0.01:  # Minimum meaningful range in linear space
                 return 1e10
                 
         except Exception as e:
@@ -712,41 +720,44 @@ class OmerMonteCarlo(fitPychometric):
         # Special bounds for fusion-only models (no p_c parameter)
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             print(f"Fitting fusion-only model: {self.modelName} (p_c fixed at 1.0)")
+            # All models use linear-space bounds for t_min and t_max parameters
             bounds = np.array([
                 (0.001, 0.4),    # 0 lambda_ - increased upper bound for better fitting
                 (0.05, 2.0),     # 1 sigma_av_a_1 - broader range for noise conditions
                 (0.05, 2.0),     # 2 sigma_av_v - broader range 
                 (0.05, 2.5),     # 3 sigma_av_a_2 - broader range for high noise
-                (0.05, min(self.data_t_min * 0.8, 0.4)),  # 4 t_min - must be below data range
-                (max(self.data_t_max * 1.2, 1.0), 10.0),  # 5 t_max - must be above data range
+                (0.0, max(self.data_t_min * 0.9, 0.4)),  # 4 t_min - allow 0, but ensure < data_min
+                (max(self.data_t_max * 1.1, 0.6), 10.0),  # 5 t_max - must be above data range
             ])
         elif self.freeP_c:
             print("Fitting with free p_c parameters for each SNR condition.")
+            # All models use linear-space bounds for t_min and t_max parameters
             bounds = np.array([
                 (0.001, 0.4),    # 0 lambda_ - increased upper bound
                 (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
                 (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
-                (0, 1),    # 3 p_c_1 - avoid boundary issues
+                (0, 1),          # 3 p_c_1 - avoid boundary issues
                 (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
                 (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
                 (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
-                (0, 1),    # 7 p_c_2 - avoid boundary issues
-                (0.05, min(self.data_t_min * 0.8, 0.4)),  # 8 t_min
-                (max(self.data_t_max * 1.2, 1.0), 10.0),  # 9 t_max
+                (0, 1),          # 7 p_c_2 - avoid boundary issues
+                (0.0, max(self.data_t_min * 0.9, 0.4)),  # 8 t_min - allow 0
+                (max(self.data_t_max * 1.1, 0.6), 10.0),  # 9 t_max
             ])
 
         elif self.freeP_c==False:
             print("Fitting with shared p_c parameter across SNR conditions.")   
+            # All models use linear-space bounds for t_min and t_max parameters
             bounds = np.array([
                 (0.001, 0.4),    # 0 lambda_ - increased upper bound
                 (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
                 (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
-                (0, 1),    # 3 p_c_1 - avoid boundary issues
+                (0, 1),          # 3 p_c_1 - avoid boundary issues
                 (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
                 (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
                 (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
-                (0.05, min(self.data_t_min * 0.8, 0.4)),  # 7 t_min
-                (max(self.data_t_max * 1.2, 1.0), 10.0),  # 8 t_max
+                (0.0, max(self.data_t_min * 0.9, 0.4)),  # 7 t_min - allow 0
+                (max(self.data_t_max * 1.1, 0.6), 10.0),  # 8 t_max
             ])
 
         if self.sharedLambda:
