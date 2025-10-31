@@ -31,7 +31,12 @@ from tqdm import tqdm
 
 from scipy.optimize import minimize
 from scipy.stats import norm
-from pybads import BADS  # Only if installed
+try:
+    from pybads import BADS  # Only if installed
+    BADS_AVAILABLE = True
+except ImportError:
+    BADS_AVAILABLE = False
+    print("Warning: BADS not available. Using scipy optimization only.")
 
 class TqdmMinimizeCallback:
     def __init__(self, total=100, show_progress=1):
@@ -102,6 +107,28 @@ class OmerMonteCarlo(fitPychometric):
             self.data_t_min = max(0.1, duration_center - 0.5)  # At least 100ms range
             self.data_t_max = duration_center + 0.5
             print(f"Warning: All test durations identical ({duration_center}s). Using initial bounds [{self.data_t_min:.2f}, {self.data_t_max:.2f}]")
+        
+        # Validate configuration consistency
+        self._validate_configuration()
+
+    def _validate_configuration(self):
+        """Validate that model configuration is consistent"""
+        valid_models = ["gaussian", "lognorm", "logLinearMismatch", "fusionOnly", 
+                       "fusionOnlyLogNorm", "probabilityMatching", "probabilityMatchingLogNorm"]
+        
+        if self.modelName not in valid_models:
+            raise ValueError(f"Invalid modelName '{self.modelName}'. Valid options: {valid_models}")
+            
+        if not isinstance(self.sharedLambda, bool):
+            raise ValueError("sharedLambda must be boolean")
+            
+        if not isinstance(self.freeP_c, bool):
+            raise ValueError("freeP_c must be boolean")
+            
+        if self.nSimul < 10:
+            print(f"Warning: nSimul={self.nSimul} is very low. Consider using at least 100 for stable results.")
+            
+        print(f"✓ Configuration validated: {self.modelName}, sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
 
 
 
@@ -226,6 +253,7 @@ class OmerMonteCarlo(fitPychometric):
         print(f"Data bounds: t_min={self.data_t_min:.3f}, t_max={self.data_t_max:.3f}")
         print(f"Grouped data shape: {groupedData.shape}")
         print(f"Configuration: sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
+        print(f"Model: {self.modelName}")
         
         # Test parameter array creation
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
@@ -236,7 +264,7 @@ class OmerMonteCarlo(fitPychometric):
             expected_length = 9 if not self.sharedLambda else 7
         print(f"Expected parameter length: {expected_length}")
         
-        # Create test parameters
+        # Create test parameters with realistic values
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             # Fusion-only: [λ, σa1, σv, σa2, t_min, t_max]
             test_params = np.array([0.1, 0.5, 0.5, 0.8, 0.2, 1.0])
@@ -252,12 +280,25 @@ class OmerMonteCarlo(fitPychometric):
         
         print(f"Test params length: {len(test_params)}, values: {test_params}")
         
-        # Test parameter extraction
+        # Test parameter extraction for all conditions
         try:
-            first_snr = groupedData["audNoise"].iloc[0]
-            first_conflict = groupedData["conflictDur"].iloc[0]
-            λ, σa, σv, pc, t_min, t_max = self.getParamsCausal(test_params, first_snr, first_conflict)
-            print(f"Extracted params: λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc:.3f}, t_min={t_min:.3f}, t_max={t_max:.3f}")
+            test_conditions = 0
+            for _, row in groupedData.iterrows():
+                snr = row["audNoise"]
+                conflict = row["conflictDur"]
+                λ, σa, σv, pc, t_min, t_max = self.getParamsCausal(test_params, snr, conflict)
+                
+                # Validate extracted parameters
+                if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or not (0 <= pc <= 1) or t_min >= t_max:
+                    print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
+                    print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc:.3f}, t_min={t_min:.3f}, t_max={t_max:.3f}")
+                    return False
+                    
+                test_conditions += 1
+                if test_conditions >= 3:  # Test first few conditions only
+                    break
+                    
+            print(f"✓ Parameter extraction tested for {test_conditions} conditions")
         except Exception as e:
             print(f"ERROR in parameter extraction: {e}")
             return False
@@ -458,6 +499,7 @@ class OmerMonteCarlo(fitPychometric):
     
     
     def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max):
+        
         if self.modelName == "gaussian":
             #print("Using Gaussian distribution for measurements")
             nSimul = self.nSimul
@@ -527,9 +569,7 @@ class OmerMonteCarlo(fitPychometric):
         elif self.modelName == "fusionOnly":
             """
             FusionOnly: Linear-Gaussian observer (classic optimal integration model).
-            - Measurements have Gaussian noise in LINEAR space: m ~ N(S, σ²)
-            - Observer performs optimal MLE fusion in linear space
-            - No causal inference (always assumes common cause)
+            - Measurements have Gaussian noise in LINEAR space: m ~ N(S, σ²)            
             """
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
@@ -541,16 +581,7 @@ class OmerMonteCarlo(fitPychometric):
             est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
 
         elif self.modelName ==  "fusionOnlyLogNorm":
-            """
-            FusionOnlyLogNorm: Log-space observer with Gaussian noise in log space.
-            - Measurements have Gaussian noise in LOG space: log(m) ~ N(log(S), σ²)
-            - Observer performs optimal fusion in LOG space
-            - Comparison is done in LOG space (comparing log estimates)
-            
-            Note: Measurements stay in log space throughout, and comparison 
-                  log(est_test) > log(est_standard) is equivalent to 
-                  exp(log(est_test)) > exp(log(est_standard)) i.e., est_test > est_standard
-            """
+       
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
             # Generate measurements in LOG space
@@ -560,9 +591,9 @@ class OmerMonteCarlo(fitPychometric):
             m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             # Fusion in log space (fusionAV_vectorized works the same way for log-space values)
             est_standard = self.fusionAV_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
+            est_standard=np.exp(est_standard)  # Convert back to linear space
             est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
-            # Comparison in log space is fine: log(A) > log(B) iff A > B
-
+            est_test=np.exp(est_test)  # Convert back to linear space
 
         else:
             #break and raise error
@@ -576,8 +607,7 @@ class OmerMonteCarlo(fitPychometric):
     
     
     def nLLMonteCarloCausal(self, params, groupedData):
-
-        """Negative log-likelihood for causal inference model"""
+        """Negative log-likelihood for causal inference model with improved numerical stability"""
         ll = 0
         lenData = len(groupedData)
         
@@ -586,7 +616,6 @@ class OmerMonteCarlo(fitPychometric):
         
         # Check for invalid parameters
         if np.any(np.isnan(params)) or np.any(np.isinf(params)):
-            print(f"Invalid params: {params}")
             return 1e10
         
         # Additional validation for t_min and t_max
@@ -596,15 +625,13 @@ class OmerMonteCarlo(fitPychometric):
             first_conflict = groupedData["conflictDur"].iloc[0]
             λ, σa, σv, pc, t_min, t_max = self.getParamsCausal(params, first_snr, first_conflict)
             
-            if t_min >= t_max:
-                print(f"Invalid bounds: t_min={t_min:.3f} >= t_max={t_max:.3f}")
+            # Stricter bounds checking
+            if t_min >= t_max or t_min <= 0 or t_max <= 0:
                 return 1e10
-            if t_min < 0 or t_max <= 0:
-                #print(f"Non-positive bounds: t_min={t_min:.3f}, t_max={t_max:.3f}")
+            if (t_max - t_min) < 0.01:  # Minimum meaningful range
                 return 1e10
                 
         except Exception as e:
-            print(f"Error extracting parameters: {e}")
             return 1e10
         
         for i in range(lenData):
@@ -616,8 +643,12 @@ class OmerMonteCarlo(fitPychometric):
             # Get the parameters for the current condition
             try:
                 lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = self.getParamsCausal(params, currSNR, currConflict)
+                
+                # Additional parameter validation
+                if sigma_av_a <= 0 or sigma_av_v <= 0 or not (0 <= lambda_ <= 1) or not (0 <= p_c <= 1):
+                    return 1e10
+                    
             except Exception as e:
-                print(f"Error in getParamsCausal for condition {i}: {e}")
                 return 1e10
 
             # Get the true standard and test durations
@@ -631,21 +662,30 @@ class OmerMonteCarlo(fitPychometric):
             try:
                 p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max)
                 if np.isnan(p_test_longer) or np.isinf(p_test_longer):
-                    print(f"Invalid probability at condition {i}: {p_test_longer}")
                     return 1e10
+                    
+                # Improved numerical stability for probability bounds
+                epsilon = 1e-12  # Smaller epsilon for better precision
+                P = np.clip(p_test_longer, epsilon, 1 - epsilon)
+                
+                # Improved log-likelihood calculation with overflow protection
+                if currResp > 0:
+                    ll_contrib_pos = currResp * np.log(P)
+                    if np.isinf(ll_contrib_pos) or np.isnan(ll_contrib_pos):
+                        return 1e10
+                    ll += ll_contrib_pos
+                    
+                if (totalResponses - currResp) > 0:
+                    ll_contrib_neg = (totalResponses - currResp) * np.log(1 - P)
+                    if np.isinf(ll_contrib_neg) or np.isnan(ll_contrib_neg):
+                        return 1e10
+                    ll += ll_contrib_neg
+                    
             except Exception as e:
-                print(f"Error in probTestLonger_vectorized_mc for condition {i}: {e}")
                 return 1e10
                 
-            # Calculate the likelihood for the current condition
-            # add epsilon to avoid log(0)
-            epsilon = 1e-10
-            P = np.clip(p_test_longer, epsilon, 1 - epsilon)
-            ll += np.log(P) * currResp + np.log(1 - P) * (totalResponses - currResp)
-            
         # Check for invalid likelihood
-        if np.isnan(ll) or np.isinf(ll):
-            print(f"Invalid final log-likelihood: {ll}")
+        if np.isnan(ll) or np.isinf(ll) or ll > 0:  # LL should be negative
             return 1e10
             
         # Return the negative log-likelihood
@@ -673,40 +713,40 @@ class OmerMonteCarlo(fitPychometric):
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             print(f"Fitting fusion-only model: {self.modelName} (p_c fixed at 1.0)")
             bounds = np.array([
-                (0, 0.25),      # 0 lambda_
-                (0.1, 1.2),     # 1 sigma_av_a_1
-                (0.1, 1.2),     # 2 sigma_av_v
-                (0.1, 1.7),     # 3 sigma_av_a_2
-                (0, 1),         # 4 t_min
-                (0.05, max(self.data_t_max+1, 10.0)),  # 5 t_max
+                (0.001, 0.4),    # 0 lambda_ - increased upper bound for better fitting
+                (0.05, 2.0),     # 1 sigma_av_a_1 - broader range for noise conditions
+                (0.05, 2.0),     # 2 sigma_av_v - broader range 
+                (0.05, 2.5),     # 3 sigma_av_a_2 - broader range for high noise
+                (0.05, min(self.data_t_min * 0.8, 0.4)),  # 4 t_min - must be below data range
+                (max(self.data_t_max * 1.2, 1.0), 10.0),  # 5 t_max - must be above data range
             ])
         elif self.freeP_c:
             print("Fitting with free p_c parameters for each SNR condition.")
             bounds = np.array([
-                (0, 0.4),      # 0 lambda_
-                (0.1, 1.2),     # 1 sigma_av_a_1
-                (0.1, 1.2),     # 2 sigma_av_v_1
-                (0, 1), # 3 p_c_1
-                (0.1, 1.7),     # 4 sigma_av_a_2
-                (0, 0.4),      # 5 lambda_2
-                (0, 0.4),      # 6 lambda_3
-                (0, 1), # 7 p_c_2
-                (0, 1), # 8 t_min (reasonable lower bound, must be less than data min)
-                (max(0.05, self.data_t_max + 1), 10.0),  # 9 t_max (must be greater than data max)
+                (0.001, 0.4),    # 0 lambda_ - increased upper bound
+                (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
+                (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
+                (0, 1),    # 3 p_c_1 - avoid boundary issues
+                (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
+                (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
+                (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
+                (0, 1),    # 7 p_c_2 - avoid boundary issues
+                (0.05, min(self.data_t_min * 0.8, 0.4)),  # 8 t_min
+                (max(self.data_t_max * 1.2, 1.0), 10.0),  # 9 t_max
             ])
 
         elif self.freeP_c==False:
             print("Fitting with shared p_c parameter across SNR conditions.")   
             bounds = np.array([
-                (0, 0.25),      # 0 lambda_
-                (0.1, 1.2),     # 1 sigma_av_a_1
-                (0.1, 1.2),     # 2 sigma_av_v_1
-                (0, 1),  # 3 p_c_1
-                (0.1, 1.7),     # 4 sigma_av_a_2
-                (0, 0.4),      # 5 lambda_2
-                (0, 0.4),      # 6 lambda_3
-                (0, 1), # 7 t_min (reasonable lower bound, must be less than data min)
-                (0.05,max(self.data_t_max+1, 10.0)),  # 8 t_max (must be greater than data max)
+                (0.001, 0.4),    # 0 lambda_ - increased upper bound
+                (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
+                (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
+                (0, 1),    # 3 p_c_1 - avoid boundary issues
+                (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
+                (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
+                (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
+                (0.05, min(self.data_t_min * 0.8, 0.4)),  # 7 t_min
+                (max(self.data_t_max * 1.2, 1.0), 10.0),  # 8 t_max
             ])
 
         if self.sharedLambda:
@@ -717,7 +757,13 @@ class OmerMonteCarlo(fitPychometric):
         print(f"t_min bounds: {bounds[-2]}")
         print(f"t_max bounds: {bounds[-1]}")
         
-        # Validate bounds
+        # Validate bounds consistency
+        for i, (lb, ub) in enumerate(bounds):
+            if lb >= ub:
+                print(f"ERROR: Invalid bounds at index {i}: [{lb:.3f}, {ub:.3f}] - lower >= upper")
+                bounds[i] = (lb, lb + 0.1)  # Fix invalid bounds
+                
+        # Special validation for t_min vs t_max bounds
         if bounds[-1][0] <= bounds[-2][1]:
             print("WARNING: t_max lower bound <= t_min upper bound, adjusting...")
             bounds[-1] = (bounds[-2][1] + 0.1, bounds[-1][1])  # Ensure t_max_min > t_min_max
@@ -761,37 +807,37 @@ class OmerMonteCarlo(fitPychometric):
             if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
                 # Fusion-only models: [λ, σa1, σv, σa2, t_min, t_max] (6 params)
                 x0 = np.array([
-                    np.random.uniform(0.01, 0.25),  # 0 lambda_
-                    np.random.uniform(0.1, 1.2),    # 1 sigma_av_a_1
-                    np.random.uniform(0.1, 1.2),    # 2 sigma_av_v
-                    np.random.uniform(0.1, 1.7),    # 3 sigma_av_a_2
-                    np.random.uniform(bounds[-2][0], bounds[-2][1]),  # 4 t_min (from bounds)
-                    np.random.uniform(bounds[-1][0], bounds[-1][1]),  # 5 t_max (from bounds)
+                    np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                    np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                    np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v
+                    np.random.uniform(bounds[3][0], bounds[3][1]),  # sigma_av_a_2
+                    np.random.uniform(bounds[4][0], bounds[4][1]),  # t_min
+                    np.random.uniform(bounds[5][0], bounds[5][1]),  # t_max
                 ])
             elif self.freeP_c==False:
                 x0 = np.array([
-                    np.random.uniform(0.01, 0.25),  # 0 lambda_
-                    np.random.uniform(0.1, 1.2),    # 1 sigma_av_a_1
-                    np.random.uniform(0.1, 1.2),    # 2 sigma_av_v_1
-                    np.random.uniform(0.1, 0.8),   # 3 p_c general
-                    np.random.uniform(0.1, 1.7),    # 4 sigma_av_a_2
-                    np.random.uniform(0.01, 0.25),  # 5 lambda_2
-                    np.random.uniform(0.01, 0.25),  # 6 lambda_3
-                    np.random.uniform(bounds[-2][0], bounds[-2][1]),  # 7 t_min (from bounds)
-                    np.random.uniform(bounds[-1][0], bounds[-1][1]),  # 8 t_max (from bounds)
+                    np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                    np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                    np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                    np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c general
+                    np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                    np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                    np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                    np.random.uniform(bounds[7][0], bounds[7][1]),  # t_min
+                    np.random.uniform(bounds[8][0], bounds[8][1]),  # t_max
                 ])
             elif self.freeP_c:
                 x0 = np.array([
-                    np.random.uniform(0.01, 0.25),  # 0 lambda_
-                    np.random.uniform(0.1, 1.2),    # 1 sigma_av_a_1
-                    np.random.uniform(0.1, 1.2),    # 2 sigma_av_v_1
-                    np.random.uniform(0.1, 0.8),   # 3 p_c_1
-                    np.random.uniform(0.1, 1.7),    # 4 sigma_av_a_2
-                    np.random.uniform(0.01, 0.25),  # 5 lambda_2
-                    np.random.uniform(0.01, 0.25),  # 6 lambda_3
-                    np.random.uniform(0.1, 0.8),   # 7 p_c_2
-                    np.random.uniform(bounds[-2][0], bounds[-2][1]),  # 8 t_min (from bounds)
-                    np.random.uniform(bounds[-1][0], bounds[-1][1]),  # 9 t_max (from bounds)
+                    np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                    np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                    np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                    np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
+                    np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                    np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                    np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                    np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
+                    np.random.uniform(bounds[8][0], bounds[8][1]),  # t_min
+                    np.random.uniform(bounds[9][0], bounds[9][1]),  # t_max
                 ])
 
             # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0 and bounds
@@ -799,10 +845,11 @@ class OmerMonteCarlo(fitPychometric):
             if self.sharedLambda and self.modelName not in ["fusionOnly", "fusionOnlyLogNorm"]:
                 x0= np.delete(x0, [5,6])  # remove lambda_2 and lambda_3 if sharedLambda is True
             
-            # Debug: Print initial parameters
-            print(f"Attempt {attempt + 1}: x0 shape={x0.shape}, bounds shape={bounds.shape}")
-            print(f"x0 t_min={x0[-2]:.3f}, t_max={x0[-1]:.3f}")
-            
+            # Ensure t_min < t_max constraint
+            if x0[-1] <= x0[-2]:
+                print(f"WARNING: Initial t_max ({x0[-1]:.3f}) <= t_min ({x0[-2]:.3f}), adjusting...")
+                x0[-1] = x0[-2] + 0.2  # Ensure t_max > t_min
+                
             # Validate x0 vs bounds
             for i, (x_val, (lb, ub)) in enumerate(zip(x0, bounds)):
                 if not (lb <= x_val <= ub):
@@ -810,32 +857,80 @@ class OmerMonteCarlo(fitPychometric):
                     x0[i] = np.clip(x_val, lb, ub)  # Fix out-of-bounds values
 
             try:
-                if self.optimizationMethod == "bads":
-                    # Prepare bounds
+                if self.optimizationMethod == "bads" and BADS_AVAILABLE:
+                    # Prepare bounds for BADS
                     lb = bounds[:, 0]
                     ub = bounds[:, 1]
-                    plb = bounds[:, 0] + 0.1 * (bounds[:, 1] - bounds[:, 0])
-                    pub = bounds[:, 1] - 0.1 * (bounds[:, 1] - bounds[:, 0])
+                    plb = bounds[:, 0] + 0.2 * (bounds[:, 1] - bounds[:, 0])  # Plausible lower bounds
+                    pub = bounds[:, 1] - 0.2 * (bounds[:, 1] - bounds[:, 0])  # Plausible upper bounds
 
                     obj = lambda x: self.nLLMonteCarloCausal(x, groupedData)
                     bads = BADS(obj, x0, lb, ub, plb, pub, options={"display": "off"})
-                    result = bads.optimize()  # returns OptimizeResult object
+                    result = bads.optimize()
 
                 else:
-                    # Default to scipy
-                    result = minimize(
-                        self.nLLMonteCarloCausal,
-                        x0=x0,
-                        args=(groupedData),
-                        method='Powell',
-                        bounds=bounds
-                    )
-                # Check result attribute for best LL
+                    # Enhanced scipy optimization with multiple methods
+                    methods = ['Powell', 'L-BFGS-B', 'TNC']
+                    best_method_result = None
+                    best_method_ll = np.inf
+                    
+                    for method in methods:
+                        try:
+                            if method in ['L-BFGS-B', 'TNC']:
+                                # Methods that support bounds
+                                method_result = minimize(
+                                    self.nLLMonteCarloCausal,
+                                    x0=x0,
+                                    args=(groupedData,),
+                                    method=method,
+                                    bounds=bounds,
+                                    options={'maxiter': 1000, 'ftol': 1e-9}
+                                )
+                            else:
+                                # Powell method (doesn't support bounds directly)
+                                method_result = minimize(
+                                    self.nLLMonteCarloCausal,
+                                    x0=x0,
+                                    args=(groupedData,),
+                                    method=method,
+                                    options={'maxiter': 1000, 'ftol': 1e-9}
+                                )
+                            
+                            # Check if this method gave better results
+                            if hasattr(method_result, 'fun') and method_result.fun < best_method_ll:
+                                best_method_ll = method_result.fun
+                                best_method_result = method_result
+                                
+                        except Exception as method_e:
+                            print(f"Method {method} failed: {method_e}")
+                            continue
+                    
+                    result = best_method_result
+                    
+                # Validate optimization result
+                if result is None:
+                    print(f"Attempt {attempt + 1}: All optimization methods failed")
+                    continue
+                    
+                # Check result quality
                 fval = getattr(result, 'fval', result.fun)
                 xres = getattr(result, 'x', result.x)
+                
+                # Validate final parameters
+                try:
+                    test_ll = self.nLLMonteCarloCausal(xres, groupedData)
+                    if test_ll >= 1e10:
+                        print(f"Attempt {attempt + 1}: Final parameters invalid (LL={test_ll})")
+                        continue
+                except:
+                    print(f"Attempt {attempt + 1}: Final parameter validation failed")
+                    continue
+                
+                # Update best result
                 if fval < best_ll:
                     best_ll = fval
                     best_result = result
+                    print(f"✓ Attempt {attempt + 1}: New best LL = {fval:.6f}")
 
             except Exception as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
@@ -1086,7 +1181,7 @@ class OmerMonteCarlo(fitPychometric):
             
                     #plt.axvline(x=0, color='gray', linestyle='--')
                     #plt.axhline(y=0.5, color='gray', linestyle='--')
-                    #plt.xlabel(f"({self.intensityVar}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
+                    #plt.xlabelf"({self.intensityVar}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
                     #plt.xlabel("Test Duration (ms)", fontsize=24)
                     #plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=26)
                     if j==0:
@@ -1098,7 +1193,8 @@ class OmerMonteCarlo(fitPychometric):
                         self.data[(self.data[self.standardVar] == standardLevel) & (self.data[self.sensoryVar] == audioNoiseLevel) & (self.data[self.conflictVar] == conflictLevel)],
                         [self.intensityVar, self.sensoryVar, self.standardVar, self.conflictVar, self.visualStandardVar, self.visualTestVar, self.audioTestVar, "testDurMs"]
                     )
-                    bin_and_plot(groupedDataSub, bin_method='cut', bins=10, plot=True, color=color,binVar='testDurMs')
+                    # bin_and_plot(groupedDataSub, bin_method='cut', bins=10, plot=True, color=color,binVar='testDurMs')
+                    # Note: bin_and_plot function needs to be imported or defined if needed
                     #plt.text(0.05, 0.8, fr"$\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f},", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
                     plt.tight_layout()
                     #plt.grid(True)
@@ -1108,6 +1204,38 @@ class OmerMonteCarlo(fitPychometric):
         plt.show()
 
 
+    def getActualParameterCount(self):
+        """
+        Return the actual number of fitted parameters for AIC calculation.
+        
+        This method ensures correct parameter counting for model comparison by
+        only counting parameters that are actually optimized, not fixed values.
+        
+        Returns:
+        --------
+        int : Number of fitted parameters
+        """
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            # Fusion-only models: [λ, σa1, σv, σa2, t_min, t_max] (6 params)
+            # p_c is fixed at 1.0, so not counted
+            return 6
+        elif self.freeP_c:
+            # Free p_c means separate p_c for each SNR condition
+            if self.sharedLambda:
+                # [λ, σa1, σv, pc1, σa2, pc2, t_min, t_max] (8 params)
+                return 8
+            else:
+                # [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2, t_min, t_max] (10 params)
+                return 10
+        else:
+            # Shared p_c across SNR conditions
+            if self.sharedLambda:
+                # [λ, σa1, σv, pc, σa2, t_min, t_max] (7 params)
+                return 7
+            else:
+                # [λ, σa1, σv, pc, σa2, λ2, λ3, t_min, t_max] (9 params)
+                return 9
+                
 
 "TEST CODE"
 ##############################

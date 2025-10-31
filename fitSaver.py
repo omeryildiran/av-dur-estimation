@@ -27,7 +27,7 @@ def saveFitResultsSingle(fitter,fittedParams, dataName):
         os.makedirs(save_dir)
 
     # calculate AIC and BIC
-    k=len(fittedParams) # number of parameters
+    k = fitter.getActualParameterCount()  # actual fitted parameters only
     n=len(fitter.groupedData) # number of data points
     fitter.logLikelihood= -fitter.nLLMonteCarloCausal(fittedParams, fitter.groupedData)
     aic= 2*k - 2*fitter.logLikelihood
