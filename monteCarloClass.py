@@ -686,11 +686,11 @@ class OmerMonteCarlo(fitPychometric):
                 (0, 0.4),      # 0 lambda_
                 (0.1, 1.2),     # 1 sigma_av_a_1
                 (0.1, 1.2),     # 2 sigma_av_v_1
-                (0.001, 0.95), # 3 p_c_1
+                (0, 1), # 3 p_c_1
                 (0.1, 1.7),     # 4 sigma_av_a_2
                 (0, 0.4),      # 5 lambda_2
                 (0, 0.4),      # 6 lambda_3
-                (0.001, 0.95), # 7 p_c_2
+                (0, 1), # 7 p_c_2
                 (0, 1), # 8 t_min (reasonable lower bound, must be less than data min)
                 (max(0.05, self.data_t_max + 1), 10.0),  # 9 t_max (must be greater than data max)
             ])
@@ -701,7 +701,7 @@ class OmerMonteCarlo(fitPychometric):
                 (0, 0.25),      # 0 lambda_
                 (0.1, 1.2),     # 1 sigma_av_a_1
                 (0.1, 1.2),     # 2 sigma_av_v_1
-                (0.001, 0.95),  # 3 p_c_1
+                (0, 1),  # 3 p_c_1
                 (0.1, 1.7),     # 4 sigma_av_a_2
                 (0, 0.4),      # 5 lambda_2
                 (0, 0.4),      # 6 lambda_3
