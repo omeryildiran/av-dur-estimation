@@ -448,13 +448,13 @@ class OmerMonteCarlo(fitPychometric):
 
         # convert back to linear scale if measurements are in log scale
         # Note: logLinearMismatch measurements are already in linear scale (generated via exp(log-normal))
-        # Only lognorm needs conversion since measurements are in log space
-        if self.modelName == "lognorm":
-            m_a = np.exp(m_a)
-            fused_S_av = np.exp(fused_S_av)
-        
+
 
         final_estimate = post_C1 * fused_S_av + (1 - post_C1) * m_a
+        # Only lognorm needs conversion since measurements are in log space
+        if self.modelName == "lognorm":
+            final_estimate = np.exp(final_estimate)
+
         return final_estimate
     
     def probabilityMatching_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
