@@ -224,6 +224,8 @@ class fitPychometric:
             Lapse rate parameter
         mu : float  
             Bias parameter (PSE in log space)
+            Represents log(test/standard) at Point of Subjective Equality
+            To convert to PSE bias in time units: bias_ms = standard_ms * mu
         sigma : float
             Discrimination parameter (JND in log space)
             
@@ -479,10 +481,18 @@ class fitPychometric:
                     m += 1        
                     plt.subplot(1, 2, j + 1)
                     color = sns.color_palette("viridis", as_cmap=True)(k / len(self.uniqueConflict))
-                    plt.scatter(conflictLevel * 1000, mu * 1000 / 2, color=color, s=100)
+                    
+                    # Convert mu from log space to milliseconds
+                    # mu is in log space: log(test/standard) = mu at PSE
+                    # So test = standard * exp(mu) at PSE
+                    # PSE bias in ms = standard * (exp(mu) - 1)
+                    # For small mu, exp(mu) ≈ 1 + mu, so bias ≈ standard * mu
+                    pse_bias_ms = standardLevel * 1000 * mu  # Convert to ms
+                    
+                    plt.scatter(conflictLevel * 1000, pse_bias_ms, color=color, s=100)
                     plt.xlabel("Visual Conflict(ms)")
-                    plt.ylabel("PSE (ms)")
-                    plt.title(f"Standard: {standardLevel}, Noise: {audioNoiseLevel}")
+                    plt.ylabel("PSE Bias (ms)")
+                    plt.title(f"Standard: {standardLevel*1000:.0f}ms, Noise: {audioNoiseLevel}")
                     plt.grid()
                     plt.axhline(y=0, color='gray', linestyle='--')
                     plt.axvline(x=0, color='gray', linestyle='--')
@@ -491,11 +501,18 @@ class fitPychometric:
                         lambda_, muBooted, sigma = self.getParams(fit, conflictLevel, audioNoiseLevel)
                         mu_all.append(muBooted)
                     mu_ci = np.percentile(mu_all, [2.5, 97.5])
-                    lower_err = np.maximum(mu*1000/2-mu_ci[0]*1000/2, 0)
-                    upper_err = np.maximum(mu_ci[1]*1000/2-mu*1000/2, 0)
-                    plt.errorbar(conflictLevel*1000, mu*1000/2, yerr=[[lower_err], [upper_err]], fmt='o', color=color, capsize=10
-                                , label=f"95% CI for mu: {mu_ci[0]*1000/2:.2f} - {mu_ci[1]*1000/2:.2f}", linewidth=2)
-                    plt.ylim(-350, 350)
+                    
+                    # Convert confidence intervals to milliseconds
+                    pse_ci_ms = standardLevel * 1000 * np.array(mu_ci)
+                    lower_err = np.maximum(pse_bias_ms - pse_ci_ms[0], 0)
+                    upper_err = np.maximum(pse_ci_ms[1] - pse_bias_ms, 0)
+                    
+                    plt.errorbar(conflictLevel*1000, pse_bias_ms, yerr=[[lower_err], [upper_err]], fmt='o', color=color, capsize=10
+                                , label=f"95% CI: [{pse_ci_ms[0]:.1f}, {pse_ci_ms[1]:.1f}] ms", linewidth=2)
+                    
+                    # Adjust y-limits based on standard duration
+                    max_bias = standardLevel * 1000 * 0.5  # Allow for up to 50% bias
+                    plt.ylim(-max_bias, max_bias)
         plt.show()
     def plotStairCases(self, data):
         uniqueStairs = data['current_stair'].unique()
