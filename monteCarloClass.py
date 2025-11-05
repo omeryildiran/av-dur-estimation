@@ -490,7 +490,9 @@ class OmerMonteCarlo(fitPychometric):
         
         # Sample causal structure using Bernoulli distribution based on posterior
         # For each trial, randomly decide: fused (C=1) or separate (C=2)
-        sampled_C1 = np.random.binomial(1, post_C1)
+        #sampled_C1 = np.random.binomial(1, post_C1)
+        sampled_C1 = np.random.uniform(0,1, size=post_C1.shape) > post_C1
+
         
         # Select estimate based on sampled causal structure
         final_estimate = sampled_C1 * fused_S_av + (1 - sampled_C1) * est_separate
