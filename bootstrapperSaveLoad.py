@@ -68,21 +68,9 @@ def loadBootstrappedParams(mc_fitter, dataName):
     """
     participantID = dataName.split(".csv")[0]
     modelType = mc_fitter.modelName
-    
 
-    if mc_fitter.sharedLambda:
-        modelType += "_LapseFix"
-    else:
-        modelType += "_LapseFree"
 
-    if mc_fitter.freeP_c:
-        modelType += "_contextualPrior"
-    else:
-        modelType += "_sharedPrior"
-    
-    modelType="lognorm_LapseFree_sharedPrior"
-
-    filename = f"{participantID.split('_')[0]}_{modelType}_bootstrapped_params.json"
+    filename = f"{participantID.split('_')[0]}_dataFit_bootstrapped_params.json"
     filename = os.path.join("bootstrapped_params", participantID.split('_')[0], filename)
     
     if not os.path.exists(filename):
