@@ -72,7 +72,6 @@ participant_files = [
 #from monteCarloClass import MonteCarloFitter
 import monteCarloClass
 
-import psychometricFitLoader as pfl_data
 nBoots = 100
 
 def SimpleNamespace(**kwargs):
@@ -98,13 +97,13 @@ def process_participant(dataName):
 
         mc_fitter = monteCarloClass.OmerMonteCarlo(data)
         participant_id = dataName.split("_")[0]
-        mc_fitter.dataFit = pfl_data.load_psychometric_fit(participant_id)
-        a = mc_fitter.dataFit["parameters"]
-        mc_fitter.dataFit = SimpleNamespace(**mc_fitter.dataFit)
-        mc_fitter.dataFit.x = a
+        mc_fitter.dataFit =mc_fitter.fitMultipleStartingPoints(data,1)
+        #a = mc_fitter.dataFit["parameters"]
+        #mc_fitter.dataFit = SimpleNamespace(**mc_fitter.dataFit)
+        #mc_fitter.dataFit.x = a
 
         dataBoots = mc_fitter.paramBootstrap(mc_fitter.dataFit.x, nBoots=nBoots)
-
+        
         saveBootstrappedParams(mc_fitter=None, dataBoots=dataBoots, dataName=dataName)
         print(f"Completed {dataName}")
         return (dataName, True, None)
