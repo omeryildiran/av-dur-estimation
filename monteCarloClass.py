@@ -289,6 +289,12 @@ class OmerMonteCarlo(fitPychometric):
         # Test parameter array creation
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             expected_length = 6  # Fusion-only models
+        elif self.modelName == "switchingWithConflict":
+            # switchingWithConflict model has additional k parameter
+            if self.freeP_c:
+                expected_length = 11 if not self.sharedLambda else 9
+            else:
+                expected_length = 10 if not self.sharedLambda else 8
         elif self.freeP_c:
             expected_length = 10 if not self.sharedLambda else 8
         else:
@@ -306,6 +312,8 @@ class OmerMonteCarlo(fitPychometric):
                 test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
             if self.freeP_c:
                 test_params.append(0.5)  # Add second p_c
+            if self.modelName == "switchingWithConflict":
+                test_params.append(1.0)  # Add k parameter
             test_params.extend([0.2, 1.0])  # Add t_min, t_max
             test_params = np.array(test_params)
         
@@ -317,13 +325,23 @@ class OmerMonteCarlo(fitPychometric):
             for _, row in groupedData.iterrows():
                 snr = row["audNoise"]
                 conflict = row["conflictDur"]
-                λ, σa, σv, pc, t_min, t_max = self.getParamsCausal(test_params, snr, conflict)
                 
-                # Validate extracted parameters
-                if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or not (0 <= pc <= 1) or t_min >= t_max:
-                    print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
-                    print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc:.3f}, t_min={t_min:.3f}, t_max={t_max:.3f}")
-                    return False
+                # Handle different return signatures
+                params_result = self.getParamsCausal(test_params, snr, conflict)
+                if self.modelName == "switchingWithConflict":
+                    λ, σa, σv, pc, k, t_min, t_max = params_result
+                    # Validate extracted parameters including k
+                    if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or not (0 <= pc <= 1) or t_min >= t_max or k <= 0:
+                        print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
+                        print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc:.3f}, k={k:.3f}, t_min={t_min:.3f}, t_max={t_max:.3f}")
+                        return False
+                else:
+                    λ, σa, σv, pc, t_min, t_max = params_result
+                    # Validate extracted parameters
+                    if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or not (0 <= pc <= 1) or t_min >= t_max:
+                        print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
+                        print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc:.3f}, t_min={t_min:.3f}, t_max={t_max:.3f}")
+                        return False
                     
                 test_conditions += 1
                 if test_conditions >= 3:  # Test first few conditions only
@@ -948,19 +966,35 @@ class OmerMonteCarlo(fitPychometric):
             ])
         elif self.freeP_c:
             print("Fitting with free p_c parameters for each SNR condition.")
-            # All models use linear-space bounds for t_min and t_max parameters
-            bounds = np.array([
-                (0.001, 0.4),    # 0 lambda_ - increased upper bound
-                (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
-                (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
-                (0, 1),          # 3 p_c_1 - avoid boundary issues
-                (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
-                (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
-                (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
-                (0, 1),          # 7 p_c_2 - avoid boundary issues
-                (0.0, max(self.data_t_min * 0.9, 0.4)),  # 8 t_min - allow 0
-                (max(self.data_t_max * 1.1, 0.6), 10.0),  # 9 t_max
-            ])
+            if self.modelName == "switchingWithConflict":
+                # Add k parameter bounds for switchingWithConflict model
+                bounds = np.array([
+                    (0.001, 0.4),    # 0 lambda_ - increased upper bound
+                    (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
+                    (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
+                    (0, 1),          # 3 p_c_1 - avoid boundary issues
+                    (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
+                    (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
+                    (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
+                    (0, 1),          # 7 p_c_2 - avoid boundary issues
+                    (0.1, 5.0),      # 8 k - conflict sensitivity parameter
+                    (0.0, max(self.data_t_min * 0.9, 0.4)),  # 9 t_min - allow 0
+                    (max(self.data_t_max * 1.1, 0.6), 10.0),  # 10 t_max
+                ])
+            else:
+                # All models use linear-space bounds for t_min and t_max parameters
+                bounds = np.array([
+                    (0.001, 0.4),    # 0 lambda_ - increased upper bound
+                    (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
+                    (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
+                    (0, 1),          # 3 p_c_1 - avoid boundary issues
+                    (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
+                    (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
+                    (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
+                    (0, 1),          # 7 p_c_2 - avoid boundary issues
+                    (0.0, max(self.data_t_min * 0.9, 0.4)),  # 8 t_min - allow 0
+                    (max(self.data_t_max * 1.1, 0.6), 10.0),  # 9 t_max
+                ])
 
         elif self.freeP_c==False:
             print("Fitting with shared p_c parameter across SNR conditions.")   
@@ -1027,6 +1061,8 @@ class OmerMonteCarlo(fitPychometric):
                 test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
             if self.freeP_c:
                 test_params = np.append(test_params, [0.5])  # Add second p_c
+            if self.modelName == "switchingWithConflict":
+                test_params = np.append(test_params, [1.0])  # Add k parameter
             # Add t_min and t_max
             test_params = np.append(test_params, [0.2, 1.0])
         
@@ -1089,18 +1125,34 @@ class OmerMonteCarlo(fitPychometric):
                         np.random.uniform(bounds[8][0], bounds[8][1]),  # t_max
                     ])
             elif self.freeP_c:
-                x0 = np.array([
-                    np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                    np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                    np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
-                    np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
-                    np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                    np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
-                    np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
-                    np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
-                    np.random.uniform(bounds[8][0], bounds[8][1]),  # t_min
-                    np.random.uniform(bounds[9][0], bounds[9][1]),  # t_max
-                ])
+                if self.modelName == "switchingWithConflict":
+                    # switchingWithConflict model with k parameter and free p_c
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                        np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
+                        np.random.uniform(bounds[8][0], bounds[8][1]),  # k
+                        np.random.uniform(bounds[9][0], bounds[9][1]),  # t_min
+                        np.random.uniform(bounds[10][0], bounds[10][1]),  # t_max
+                    ])
+                else:
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                        np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
+                        np.random.uniform(bounds[8][0], bounds[8][1]),  # t_min
+                        np.random.uniform(bounds[9][0], bounds[9][1]),  # t_max
+                    ])
 
             # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0 and bounds
             # (only for causal inference models, not fusion-only)
@@ -1226,7 +1278,11 @@ class OmerMonteCarlo(fitPychometric):
 
   
             # Unpack fitted parameters for the current audio noise level
-            lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = self.getParamsCausal(fittedParams, audioNoiseLevel, conflictLevel)
+            params_result = self.getParamsCausal(fittedParams, audioNoiseLevel, conflictLevel)
+            if self.modelName == "switchingWithConflict":
+                lambda_, sigma_av_a, sigma_av_v, p_c, k, t_min, t_max = params_result
+            else:
+                lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = params_result
 
             nSamples = 30 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
             # Simulate responses for the current trial
@@ -1236,7 +1292,10 @@ class OmerMonteCarlo(fitPychometric):
                 S_a_t = S_a_s + deltaDurS
                 S_v_t = S_a_t
                 trueStims = (S_a_s, S_a_t, S_v_s, S_v_t)
-                p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max)
+                if self.modelName == "switchingWithConflict":
+                    p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max, k)
+                else:
+                    p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max)
                 chose_test = np.random.binomial(1, p_test_longer)
                 simData.append({
                     'standardDur': S_a_s,
@@ -1269,7 +1328,11 @@ class OmerMonteCarlo(fitPychometric):
         unique_conflicts = np.sort(data["conflictDur"].unique())
         for snr in snr_list:
             for conflict in unique_conflicts:
-                λ, σa, σv, pc, t_min, t_max = self.getParamsCausal(best_params, snr, conflict)
+                params_result = self.getParamsCausal(best_params, snr, conflict)
+                if self.modelName == "switchingWithConflict":
+                    λ, σa, σv, pc, k, t_min, t_max = params_result
+                else:
+                    λ, σa, σv, pc, t_min, t_max = params_result
 
                 S_std = 0.5
                 S_v = S_std + conflict
@@ -1441,7 +1504,11 @@ class OmerMonteCarlo(fitPychometric):
 
 
                     "plot the monte carlo"
-                    lambda_, sigma_av_a, sigma_av_v, p_c ,tmin,tmax= self.getParamsCausal(self.modelFit, audioNoiseLevel, conflictLevel)
+                    params_result = self.getParamsCausal(self.modelFit, audioNoiseLevel, conflictLevel)
+                    if self.modelName == "switchingWithConflict":
+                        lambda_, sigma_av_a, sigma_av_v, p_c, k, tmin, tmax = params_result
+                    else:
+                        lambda_, sigma_av_a, sigma_av_v, p_c, tmin, tmax = params_result
 
             
                     #plt.axvline(x=0, color='gray', linestyle='--')
