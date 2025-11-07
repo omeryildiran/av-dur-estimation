@@ -114,7 +114,8 @@ class OmerMonteCarlo(fitPychometric):
     def _validate_configuration(self):
         """Validate that model configuration is consistent"""
         valid_models = ["gaussian", "lognorm", "logLinearMismatch", "fusionOnly", 
-                       "fusionOnlyLogNorm", "probabilityMatching", "probabilityMatchingLogNorm"]
+                       "fusionOnlyLogNorm", "probabilityMatching", "probabilityMatchingLogNorm",
+                       "selection", "switching", "switchingWithConflict"]
         
         if self.modelName not in valid_models:
             raise ValueError(f"Invalid modelName '{self.modelName}'. Valid options: {valid_models}")
@@ -503,6 +504,136 @@ class OmerMonteCarlo(fitPychometric):
         
         return final_estimate
     
+    def selection_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
+        """
+        Selection model - choose the estimate from the most probable causal structure.
+        
+        Instead of averaging estimates weighted by posterior (as in causal inference),
+        this model determines which causal structure is most probable (C=1 or C=2)
+        and returns the estimate corresponding to that structure.
+        
+        Parameters:
+        -----------
+        m_a, m_v : array-like
+            Auditory and visual measurements
+        sigma_a, sigma_v : float
+            Measurement noise standard deviations
+        p_c : float
+            Prior probability of common cause
+        t_min, t_max : float
+            Bounds for duration estimation
+            
+        Returns:
+        --------
+        final_estimate : array
+            Duration estimates based on most probable causal structure
+        """
+        # Calculate posterior probability of common cause
+        post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+        
+        # Compute estimates for both causal structures
+        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
+        est_separate = m_a
+        
+        # Determine which causal structure is more probable
+        # Handle both scalar and array cases
+        if np.isscalar(post_C1):
+            selection = post_C1 > 0.5
+        else:
+            selection = post_C1 > 0.5
+        
+        # Select estimate based on most probable causal structure
+        final_estimate = selection * fused_S_av + (1 - selection) * est_separate
+        
+        return final_estimate
+
+    def switching_vectorized(self, m_a, m_v, sigma_a, sigma_v):
+        """
+        Switching model - switch between auditory and visual estimates based on reliability.
+        
+        This model randomly chooses between auditory and visual modalities for each trial,
+        with the probability of choosing each modality based on their relative reliabilities.
+        More reliable modalities (lower noise) are chosen more often.
+        
+        Parameters:
+        -----------
+        m_a, m_v : array-like
+            Auditory and visual measurements
+        sigma_a, sigma_v : float
+            Measurement noise standard deviations
+            
+        Returns:
+        --------
+        final_estimate : array
+            Duration estimates based on chosen modality
+        """
+        # Determine which modality is more reliable (lower noise = higher reliability)
+        # Probability of using visual = auditory noise^2 / (auditory noise^2 + visual noise^2)
+        p_use_visual = sigma_a**2 / (sigma_a**2 + sigma_v**2)
+        
+        # Handle array shape for random sampling
+        if np.isscalar(m_a):
+            shape = 1
+        else:
+            shape = m_a.shape
+        
+        # Randomly decide which modality to use based on reliability
+        use_visual = np.random.uniform(0, 1, size=shape) < p_use_visual
+        
+        # Select estimate based on chosen modality
+        final_estimate = (1 - use_visual) * m_a + use_visual * m_v
+        
+        return final_estimate
+
+    def switching_with_conflict_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max, k):
+        """
+        Switching model with conflict sensitivity - bias towards auditory with higher conflict.
+        
+        This model extends the basic switching model by incorporating conflict sensitivity.
+        The probability of switching between modalities is modulated by the posterior
+        probability of common cause and a conflict sensitivity parameter k.
+        
+        Parameters:
+        -----------
+        m_a, m_v : array-like
+            Auditory and visual measurements
+        sigma_a, sigma_v : float
+            Measurement noise standard deviations
+        p_c : float
+            Prior probability of common cause
+        t_min, t_max : float
+            Bounds for duration estimation
+        k : float
+            Conflict sensitivity parameter
+            
+        Returns:
+        --------
+        final_estimate : array
+            Duration estimates based on conflict-modulated modality choice
+        """
+        # Determine base reliability-based switching probability
+        base_p_visual = sigma_a**2 / (sigma_a**2 + sigma_v**2)
+        
+        # Calculate posterior probability of common cause
+        post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+        
+        # Modulate switching probability based on conflict and sensitivity
+        p_visual = np.clip(base_p_visual * post_C1 * k, 0, 1)
+        
+        # Handle array shape for random sampling
+        if np.isscalar(m_a):
+            shape = 1
+        else:
+            shape = m_a.shape
+        
+        # Randomly decide which modality to use based on conflict-modulated probability
+        use_visual = np.random.uniform(0, 1, size=shape) < p_visual
+        
+        # Select estimate based on chosen modality
+        final_estimate = (1 - use_visual) * m_a + use_visual * m_v
+        
+        return final_estimate
+    
     
     def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max):
         
@@ -601,9 +732,49 @@ class OmerMonteCarlo(fitPychometric):
             est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
             est_test=np.exp(est_test)  # Convert back to linear space
 
+        elif self.modelName == "selection":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # Generate measurements with noise
+            m_a_s = np.random.normal(S_a_s, scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(S_a_t, scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(S_v_s, scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(S_v_t, scale=sigma_av_v, size=nSimul)
+            
+            # Selection model estimates
+            est_standard = self.selection_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+            est_test = self.selection_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+
+        elif self.modelName == "switching":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # Generate measurements with noise
+            m_a_s = np.random.normal(S_a_s, scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(S_a_t, scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(S_v_s, scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(S_v_t, scale=sigma_av_v, size=nSimul)
+            
+            # Switching model estimates
+            est_standard = self.switching_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
+            est_test = self.switching_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+
+        elif self.modelName == "switchingWithConflict":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # Generate measurements with noise
+            m_a_s = np.random.normal(S_a_s, scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(S_a_t, scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(S_v_s, scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(S_v_t, scale=sigma_av_v, size=nSimul)
+            
+            # Switching with conflict model estimates (k parameter needed)
+            k = 1.0  # Default conflict sensitivity parameter
+            est_standard = self.switching_with_conflict_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max, k)
+            est_test = self.switching_with_conflict_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max, k)
+
         else:
             #break and raise error
-            raise ValueError(f"Invalid modelName '{self.modelName}'. Choose 'gaussian', 'lognorm', 'logLinearMismatch', 'fusionOnly', 'fusionOnlyLogNorm', 'probabilityMatching', or 'probabilityMatchingLogNorm'.")
+            raise ValueError(f"Invalid modelName '{self.modelName}'. Choose 'gaussian', 'lognorm', 'logLinearMismatch', 'fusionOnly', 'fusionOnlyLogNorm', 'probabilityMatching', 'probabilityMatchingLogNorm', 'selection', 'switching', or 'switchingWithConflict'.")
 
 
 
