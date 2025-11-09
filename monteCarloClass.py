@@ -168,6 +168,10 @@ class OmerMonteCarlo(fitPychometric):
                 Note: For fusion-only models, p_c is always 1.0 (always common cause)
         """
         
+        # Validate params is not None
+        if params is None:
+            raise ValueError("params cannot be None. Model fitting may have failed.")
+        
         # Special handling for fusion-only models
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             # Fusion models have fewer parameters (no p_c, no t_min/t_max - they don't use bounds)
@@ -1060,6 +1064,19 @@ class OmerMonteCarlo(fitPychometric):
                 (0.05, 2.0),     # 2 sigma_av_v - visual noise 
                 (0.05, 2.5),     # 3 sigma_av_a_2 - auditory noise (low SNR)
             ])
+        elif self.modelName == "switchingFree":
+            print(f"Fitting switchingFree model: {self.modelName} (uses p_switch parameters, no t_min/t_max)")
+            # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
+            bounds = np.array([
+                (0.001, 0.4),    # 0 lambda_ - lapse rate
+                (0.05, 2.0),     # 1 sigma_av_a_1 - auditory noise (high SNR)
+                (0.05, 2.0),     # 2 sigma_av_v - visual noise
+                (0.0, 1.0),      # 3 p_switch1 - switching probability (high SNR)
+                (0.05, 2.5),     # 4 sigma_av_a_2 - auditory noise (low SNR)
+                (0.001, 0.4),    # 5 lambda_2 - lapse rate (conflict condition 2)
+                (0.001, 0.4),    # 6 lambda_3 - lapse rate (conflict condition 3)
+                (0.0, 1.0),      # 7 p_switch2 - switching probability (low SNR)
+            ])
         elif self.freeP_c:
             print("Fitting with free p_c parameters for each SNR condition.")
             if self.modelName == "switchingWithConflict":
@@ -1126,13 +1143,18 @@ class OmerMonteCarlo(fitPychometric):
             if self.modelName == "switchingWithConflict":
                 # Remove lambda_2 and lambda_3, but keep k parameter
                 bounds = np.delete(bounds, [5,6], axis=0)
-            else:
+            elif self.modelName == "switchingFree":
+                # Remove lambda_2 and lambda_3 for switchingFree
+                bounds = np.delete(bounds, [5,6], axis=0)
+            elif self.modelName not in ["fusionOnly", "fusionOnlyLogNorm"]:
+                # Standard causal models: remove lambda_2 and lambda_3
                 bounds = np.delete(bounds, [5,6], axis=0)
         
         # Debug: Print bounds information
         print(f"Bounds shape: {bounds.shape}")
-        print(f"t_min bounds: {bounds[-2]}")
-        print(f"t_max bounds: {bounds[-1]}")
+        if self.modelName not in ["fusionOnly", "fusionOnlyLogNorm", "switchingFree"]:
+            print(f"t_min bounds: {bounds[-2]}")
+            print(f"t_max bounds: {bounds[-1]}")
         
         # Validate bounds consistency (skip for fusion models that don't have t_min/t_max)
         for i, (lb, ub) in enumerate(bounds):
@@ -1151,6 +1173,12 @@ class OmerMonteCarlo(fitPychometric):
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             # Fusion-only models: [λ, σa1, σv, σa2] (4 params)
             test_params = np.array([0.1, 0.5, 0.5, 0.8])
+        elif self.modelName == "switchingFree":
+            # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
+            test_params = np.array([0.1, 0.5, 0.5, 0.3, 0.8])  # λ, σa1, σv, p_switch1, σa2
+            if not self.sharedLambda:
+                test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
+            test_params = np.append(test_params, [0.7])  # Add p_switch2 (no t_min/t_max)
         else:
             # Causal inference models
             test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters
@@ -1160,7 +1188,7 @@ class OmerMonteCarlo(fitPychometric):
                 test_params = np.append(test_params, [0.5])  # Add second p_c
             if self.modelName == "switchingWithConflict":
                 test_params = np.append(test_params, [1.0])  # Add k parameter
-            # Add t_min and t_max
+            # Add t_min and t_max for causal models
             test_params = np.append(test_params, [0.2, 1.0])
         
         try:
@@ -1185,13 +1213,37 @@ class OmerMonteCarlo(fitPychometric):
         for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
             # Random x0 initialization within bounds
             if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-                # Fusion-only models: [λ, σa1, σv, σa2] (4 params)
+                # Fusion-only models: [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params)
                 x0 = np.array([
                     np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
                     np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
                     np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v
                     np.random.uniform(bounds[3][0], bounds[3][1]),  # sigma_av_a_2
                 ])
+                # Add lambda_2, lambda_3 if not sharedLambda
+                if not self.sharedLambda:
+                    x0 = np.append(x0, [
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # lambda_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_3
+                    ])
+            elif self.modelName == "switchingFree":
+                # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
+                x0 = np.array([
+                    np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                    np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                    np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v
+                    np.random.uniform(bounds[3][0], bounds[3][1]),  # p_switch1
+                    np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                ])
+                # Add lambda_2, lambda_3 if not sharedLambda
+                if not self.sharedLambda:
+                    x0 = np.append(x0, [
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                    ])
+                # Always add p_switch2 at the end
+                final_index = 7 if not self.sharedLambda else 5
+                x0 = np.append(x0, np.random.uniform(bounds[final_index][0], bounds[final_index][1]))  # p_switch2
             elif self.freeP_c==False:
                 if self.modelName == "switchingWithConflict":
                     # switchingWithConflict model with k parameter
@@ -1249,9 +1301,9 @@ class OmerMonteCarlo(fitPychometric):
                         np.random.uniform(bounds[9][0], bounds[9][1]),  # t_max
                     ])
 
-            # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0 and bounds
-            # (only for causal inference models, not fusion-only)
-            if self.sharedLambda and self.modelName not in ["fusionOnly", "fusionOnlyLogNorm"]:
+            # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0
+            # (only for standard causal inference models - fusion and switchingFree already handled above)
+            if self.sharedLambda and self.modelName not in ["fusionOnly", "fusionOnlyLogNorm", "switchingFree"]:
                 if self.modelName == "switchingWithConflict":
                     x0 = np.delete(x0, [5,6])  # remove lambda_2 and lambda_3, but keep k
                 else:
@@ -1361,7 +1413,27 @@ class OmerMonteCarlo(fitPychometric):
         return xres
 
 
-    def simulateMonteCarloData(self, fittedParams, data, nSamples=10000):        
+    def simulateMonteCarloData(self, fittedParams, data, nSamples=10000):
+        """
+        Simulate data based on fitted parameters.
+        
+        Parameters:
+        -----------
+        fittedParams : array-like or None
+            Fitted parameters from optimization
+        data : DataFrame
+            Original data
+        nSamples : int
+            Number of samples per trial
+            
+        Returns:
+        --------
+        DataFrame : Simulated data
+        """
+        # Check if fittedParams is None (fitting failed)
+        if fittedParams is None:
+            raise ValueError("Cannot simulate data: fittedParams is None. Model fitting may have failed.")
+        
         simData = []
         # Extract unique combinations of trials from the dataset
     
@@ -1375,10 +1447,20 @@ class OmerMonteCarlo(fitPychometric):
   
             # Unpack fitted parameters for the current audio noise level
             params_result = self.getParamsCausal(fittedParams, audioNoiseLevel, conflictLevel)
+            
+            # Handle different model types
             if self.modelName == "switchingWithConflict":
                 lambda_, sigma_av_a, sigma_av_v, p_c, k, t_min, t_max = params_result
+            elif self.modelName == "switchingFree":
+                lambda_, sigma_av_a, sigma_av_v, p_switch, t_min, t_max = params_result
+                p_c = p_switch  # For compatibility with probTestLonger_vectorized_mc
+                k = None
+            elif self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = params_result
+                k = None
             else:
                 lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = params_result
+                k = None
 
             nSamples = 30 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
             # Simulate responses for the current trial
@@ -1761,7 +1843,7 @@ if __name__ == "__main__":
 
     
 
-    mc_fitter.modelName = "lognorm"  # Set measurement distribution to Gaussian
+    mc_fitter.modelName = "switchingFree"  # Set measurement distribution to Gaussian
     timeStart = time.time()
     print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
     fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
