@@ -39,7 +39,7 @@ def loadData(dataName):
 	data["realConflictDur"]=data['recordedDurVisualStandard'] -data["standardDur"]-data["VisualPSE"]
 	data["realConflictDurMs"]=data["realConflictDur"]*1000
 
-	data = data.round({'standardDur': 3, 'conflictDur': 3})
+	data = data.round({'standardDur': 3, 'conflictDur': 2})
 
 	print(f"\n Total trials before cleaning\n: {len(data)}")
 	data= data[data['audNoise'] != 0]
