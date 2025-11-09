@@ -28,23 +28,21 @@ def loadData(dataName):
 	data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
 
 
-
 	data["unbiasedVisualStandardDur"]= data["recordedDurVisualStandard"] - data["visualPSEBias"]
 	data["unbiasedVisualTestDur"]= data["recordedDurVisualTest"] - data["visualPSEBiasTest"]
 
 	data["unbiasedVisualStandardDurMs"]= data["unbiasedVisualStandardDur"]*1000
 	data["unbiasedVisualTestDurMs"]= data["unbiasedVisualTestDur"]*1000
 
+	data = data.round({'standardDur': 2, 'conflictDur': 2})
+
 	# SV=SA+c+PSE
 	data["realConflictDur"]=data['recordedDurVisualStandard'] -data["standardDur"]-data["VisualPSE"]
 	data["realConflictDurMs"]=data["realConflictDur"]*1000
 
-	data = data.round({'standardDur': 3, 'conflictDur': 2})
-
 	print(f"\n Total trials before cleaning\n: {len(data)}")
 	data= data[data['audNoise'] != 0]
 	data=data[data['standardDur'] != 0]
-
 	data[standardVar] = data[standardVar].round(2)
 	data[conflictVar] = data[conflictVar].round(3)
 	uniqueSensory = data[sensoryVar].unique()
@@ -93,8 +91,8 @@ def loadData(dataName):
 	
 	data[standardVar] = round(data[standardVar], 2)
 
-	data['standard_dur']=round(data['standardDur'],3)
-	data["delta_dur_percents"]=round(data["delta_dur_percents"],3)
+	data['standard_dur']=round(data['standardDur'],2)
+	data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
 	# try:
 	# 	print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
 	# 	print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
@@ -116,8 +114,8 @@ def loadData(dataName):
 		data=data[data['recordedDurVisualTest'] <=998]
 		data=data[data['recordedDurVisualTest'] >=0]
 		#clean trials where standardDurCheck and testDurSCheck are false
-		data=data[data['standardDurCompare'] < 0.003]
-		data=data[data['testDurSCompare']< 0.003]
+		data=data[data['standardDurCompare'] < 0.00003]
+		data=data[data['testDurSCompare']< 0.00003]
 	except:
 		pass
 
