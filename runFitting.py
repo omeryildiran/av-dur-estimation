@@ -24,6 +24,7 @@ def process_single_file(args):
     import fitSaver
     
     try:
+        print("\n"+60*"="+"\n")
         print(f"\n=== Processing file: {dataFile} ===")
 
         # Load the data
@@ -49,7 +50,7 @@ def process_single_file(args):
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
         mc_fitter.freeP_c = freeP_c  # Free prior probability of common cause
-        print(f"Model name set to: {mc_fitter.modelName}")
+        print(f"Model name set to: {mc_fitter.modelName}\n")
         print(f"Shared lambda: {mc_fitter.sharedLambda}")
         print(f"Free P(C=1): {mc_fitter.freeP_c}")
         print(f"Integration method: {integrationMethod} (not used in current implementation)")
