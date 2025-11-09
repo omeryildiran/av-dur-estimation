@@ -9,6 +9,9 @@
 # 5. fusionOnlyLogNorm: Log-space optimal fusion without causal inference (p_c=1.0)
 # 6. probabilityMatching: Linear-space probability matching (samples causal structure from posterior)
 # 7. probabilityMatchingLogNorm: Log-space probability matching (samples causal structure from posterior)
+# 8. switching: Log-space modality switching based on reliability (Gaussian noise in log space)
+# 9. switchingWithConflict: Log-space switching with conflict sensitivity (Gaussian noise in log space)
+# 10. switchingFree: Log-space switching with free probability parameters (Gaussian noise in log space)
 #
 # Parameter Structure:
 # --------------------
@@ -872,44 +875,56 @@ class OmerMonteCarlo(fitPychometric):
         elif self.modelName == "switching":
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-            # Generate measurements with noise
-            m_a_s = np.random.normal(S_a_s, scale=sigma_av_a, size=nSimul)
-            m_a_t = np.random.normal(S_a_t, scale=sigma_av_a, size=nSimul)
-            m_v_s = np.random.normal(S_v_s, scale=sigma_av_v, size=nSimul)
-            m_v_t = np.random.normal(S_v_t, scale=sigma_av_v, size=nSimul)
+            # Generate measurements with noise in LOG SPACE (like lognorm model)
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             
-            # Switching model estimates
+            # Switching model estimates (in log space)
             est_standard = self.switching_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
             est_test = self.switching_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            
+            # Convert back to linear space
+            est_standard = np.exp(est_standard)
+            est_test = np.exp(est_test)
 
         elif self.modelName == "switchingWithConflict":
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-            # Generate measurements with noise
-            m_a_s = np.random.normal(S_a_s, scale=sigma_av_a, size=nSimul)
-            m_a_t = np.random.normal(S_a_t, scale=sigma_av_a, size=nSimul)
-            m_v_s = np.random.normal(S_v_s, scale=sigma_av_v, size=nSimul)
-            m_v_t = np.random.normal(S_v_t, scale=sigma_av_v, size=nSimul)
+            # Generate measurements with noise in LOG SPACE (like lognorm model)
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             
             # Use k parameter passed from getParamsCausal
             if k is None:
                 raise ValueError("switchingWithConflict model requires k parameter")
-            est_standard = self.switching_with_conflict_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max, k)
-            est_test = self.switching_with_conflict_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max, k)
+            est_standard = self.switching_with_conflict_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max), k)
+            est_test = self.switching_with_conflict_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max), k)
+            
+            # Convert back to linear space
+            est_standard = np.exp(est_standard)
+            est_test = np.exp(est_test)
 
         elif self.modelName == "switchingFree":
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-            # Generate measurements with noise
-            m_a_s = np.random.normal(S_a_s, scale=sigma_av_a, size=nSimul)
-            m_a_t = np.random.normal(S_a_t, scale=sigma_av_a, size=nSimul)
-            m_v_s = np.random.normal(S_v_s, scale=sigma_av_v, size=nSimul)
-            m_v_t = np.random.normal(S_v_t, scale=sigma_av_v, size=nSimul)
+            # Generate measurements with noise in LOG SPACE (like lognorm model)
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             
             # For switchingFree, p_c is actually p_switch passed in
             p_switch = p_c
             est_standard = self.switching_free_vectorized(m_a_s, m_v_s, p_switch)
             est_test = self.switching_free_vectorized(m_a_t, m_v_t, p_switch)
+            
+            # Convert back to linear space
+            est_standard = np.exp(est_standard)
+            est_test = np.exp(est_test)
 
         else:
             #break and raise error
