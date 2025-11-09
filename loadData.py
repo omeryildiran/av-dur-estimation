@@ -17,7 +17,6 @@ def loadData(dataName):
 	data["conflictDurMs"]= data["conflictDur"]*1000
 	data["DeltaDurMs"]= data["testDurMs"] - data["standardDurMs"]
 
-	data = data.round({'standardDur': 2, 'conflictDur': 2})
 	# if nan in conflictDur remove those rows
 	data = data[~data['conflictDur'].isna()]
 
@@ -27,6 +26,7 @@ def loadData(dataName):
 		data["VisualPSE"]=data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
 	data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
 	data['visualPSEBiasTest'] = data['recordedDurVisualTest'] -data["testDurS"]
+
 
 
 	data["unbiasedVisualStandardDur"]= data["recordedDurVisualStandard"] - data["visualPSEBias"]
@@ -39,9 +39,12 @@ def loadData(dataName):
 	data["realConflictDur"]=data['recordedDurVisualStandard'] -data["standardDur"]-data["VisualPSE"]
 	data["realConflictDurMs"]=data["realConflictDur"]*1000
 
+	data = data.round({'standardDur': 3, 'conflictDur': 3})
+
 	print(f"\n Total trials before cleaning\n: {len(data)}")
 	data= data[data['audNoise'] != 0]
 	data=data[data['standardDur'] != 0]
+
 	data[standardVar] = data[standardVar].round(2)
 	data[conflictVar] = data[conflictVar].round(3)
 	uniqueSensory = data[sensoryVar].unique()
@@ -90,8 +93,8 @@ def loadData(dataName):
 	
 	data[standardVar] = round(data[standardVar], 2)
 
-	data['standard_dur']=round(data['standardDur'],2)
-	data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
+	data['standard_dur']=round(data['standardDur'],3)
+	data["delta_dur_percents"]=round(data["delta_dur_percents"],3)
 	# try:
 	# 	print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
 	# 	print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
@@ -113,8 +116,8 @@ def loadData(dataName):
 		data=data[data['recordedDurVisualTest'] <=998]
 		data=data[data['recordedDurVisualTest'] >=0]
 		#clean trials where standardDurCheck and testDurSCheck are false
-		data=data[data['standardDurCompare'] < 0.03]
-		data=data[data['testDurSCompare']< 0.03]
+		data=data[data['standardDurCompare'] < 0.003]
+		data=data[data['testDurSCompare']< 0.003]
 	except:
 		pass
 
