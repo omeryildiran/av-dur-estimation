@@ -15,6 +15,7 @@ def loadData(dataName):
 	data["testDurMs"]= data["testDurS"]*1000
 	data["standardDurMs"]= data["standardDur"]*1000
 	data["conflictDurMs"]= data["conflictDur"]*1000
+	data["conflictPreMod"]=data["conflictDur"]
 	data["DeltaDurMs"]= data["testDurMs"] - data["standardDurMs"]
 
 	# if nan in conflictDur remove those rows
@@ -66,7 +67,7 @@ def loadData(dataName):
 
 		data["standardDurCheck"] = (abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur']) < 0.03)
 		data["testDurSCompare"] = abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"])
-		data["standardDurCompare"] = abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data['conflictDur'])
+		data["standardDurCompare"] = abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data["conflictPreMod"])
 
 		# #print len of testDurSCheck and standardDurCheck false
 		# print("")
@@ -114,8 +115,8 @@ def loadData(dataName):
 		data=data[data['recordedDurVisualTest'] <=998]
 		data=data[data['recordedDurVisualTest'] >=0]
 		#clean trials where standardDurCheck and testDurSCheck are false
-		data=data[data['standardDurCompare'] < 0.00003]
-		data=data[data['testDurSCompare']< 0.00003]
+		data=data[data['standardDurCompare'] < 0.017]
+		data=data[data['testDurSCompare']< 0.017]
 	except:
 		pass
 
