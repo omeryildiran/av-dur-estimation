@@ -177,12 +177,21 @@ class OmerMonteCarlo(fitPychometric):
         
         # Special handling for fusion-only models
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-            # Fusion models have fewer parameters (no p_c, no t_min/t_max - they don't use bounds)
-            # Expected: [λ, σa1, σv, σa2] (4 params)
-            if len(params) != 4:
-                raise ValueError(f"Fusion-only models expect 4 parameters [λ, σa1, σv, σa2], got {len(params)}")
+            # Fusion models: [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params)
+            expected_len = 4 if self.sharedLambda else 6
+            if len(params) != expected_len:
+                raise ValueError(f"Fusion-only models expect {expected_len} parameters, got {len(params)}")
             
+            # Extract lambda based on conflict level
             lambda_ = params[0]
+            if not self.sharedLambda:
+                if conflict in [0, -0.17, 0.25]:
+                    lambda_ = params[0]
+                elif conflict in [-0.08, 0.17]:
+                    lambda_ = params[4]  # lambda_2
+                elif conflict in [-0.25, 0.08]:
+                    lambda_ = params[5]  # lambda_3
+            
             sigma_av_v = params[2]
             
             # Extract sigma_av_a based on SNR
@@ -321,7 +330,7 @@ class OmerMonteCarlo(fitPychometric):
         
         # Test parameter array creation
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-            expected_length = 4  # Fusion-only models: [λ, σa1, σv, σa2]
+            expected_length = 6 if not self.sharedLambda else 4  # Fusion-only models: [λ, σa1, σv, σa2, (λ2, λ3)]
         elif self.modelName == "switchingWithConflict":
             # switchingWithConflict model has additional k parameter
             if self.freeP_c:
@@ -339,8 +348,11 @@ class OmerMonteCarlo(fitPychometric):
         
         # Create test parameters with realistic values
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-            # Fusion-only: [λ, σa1, σv, σa2] - no t_min/t_max needed
-            test_params = np.array([0.1, 0.5, 0.5, 0.8])
+            # Fusion-only: [λ, σa1, σv, σa2, (λ2, λ3)] - no t_min/t_max needed
+            test_params = [0.1, 0.5, 0.5, 0.8]  # λ, σa1, σv, σa2
+            if not self.sharedLambda:
+                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
+            test_params = np.array(test_params)
         elif self.modelName == "switchingFree":
             # SwitchingFree: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2] - no t_min/t_max
             test_params = [0.1, 0.5, 0.5, 0.3, 0.8]  # λ, σa1, σv, p_switch1, σa2
@@ -385,9 +397,19 @@ class OmerMonteCarlo(fitPychometric):
                         print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
                         print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, p_switch={p_switch:.3f}")
                         return False
+                elif self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                    λ, σa, σv, pc, t_min, t_max = params_result
+                    # Validate extracted parameters (fusion models have t_min=None, t_max=None)
+                    if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or pc != 1.0:
+                        print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
+                        print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc} (should be 1.0)")
+                        return False
+                    if t_min is not None or t_max is not None:
+                        print(f"ERROR: Fusion models should have t_min=None and t_max=None")
+                        return False
                 else:
                     λ, σa, σv, pc, t_min, t_max = params_result
-                    # Validate extracted parameters
+                    # Validate extracted parameters (standard causal models have real t_min/t_max bounds)
                     if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or not (0 <= pc <= 1) or t_min >= t_max:
                         print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
                         print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc:.3f}, t_min={t_min:.3f}, t_max={t_max:.3f}")
@@ -949,30 +971,33 @@ class OmerMonteCarlo(fitPychometric):
         if np.any(np.isnan(params)) or np.any(np.isinf(params)):
             return 1e10
         
-        # Additional validation for t_min and t_max
-        try:
-            # Get first condition to extract t_min and t_max
-            first_snr = groupedData["audNoise"].iloc[0]
-            first_conflict = groupedData["conflictDur"].iloc[0]
-            params_result = self.getParamsCausal(params, first_snr, first_conflict)
-            
-            if self.modelName == "switchingWithConflict":
-                λ, σa, σv, pc, k, t_min, t_max = params_result
-            else:
-                λ, σa, σv, pc, t_min, t_max = params_result
-            
-            # All models use linear-space bounds for t_min and t_max parameters
-            # (individual model functions handle log conversions internally if needed)
-            if t_min >= t_max:
-                return 1e10
-            # Allow t_min = 0 for duration bounds, but ensure t_max > t_min    
-            if t_max <= 0:
-                return 1e10
-            if (t_max - t_min) < 0.01:  # Minimum meaningful range in linear space
-                return 1e10
+        # Additional validation for t_min and t_max (skip for fusion models)
+        if self.modelName not in ["fusionOnly", "fusionOnlyLogNorm"]:
+            try:
+                # Get first condition to extract t_min and t_max
+                first_snr = groupedData["audNoise"].iloc[0]
+                first_conflict = groupedData["conflictDur"].iloc[0]
+                params_result = self.getParamsCausal(params, first_snr, first_conflict)
                 
-        except Exception as e:
-            return 1e10
+                if self.modelName == "switchingWithConflict":
+                    λ, σa, σv, pc, k, t_min, t_max = params_result
+                else:
+                    λ, σa, σv, pc, t_min, t_max = params_result
+                
+                # All models use linear-space bounds for t_min and t_max parameters
+                # (individual model functions handle log conversions internally if needed)
+                # Skip validation for switchingFree which has t_min=None, t_max=None
+                if self.modelName != "switchingFree":
+                    if t_min >= t_max:
+                        return 1e10
+                    # Allow t_min = 0 for duration bounds, but ensure t_max > t_min    
+                    if t_max <= 0:
+                        return 1e10
+                    if (t_max - t_min) < 0.01:  # Minimum meaningful range in linear space
+                        return 1e10
+                    
+            except Exception as e:
+                return 1e10
         
         for i in range(lenData):
             currSNR = groupedData["audNoise"].iloc[i]
@@ -1072,13 +1097,20 @@ class OmerMonteCarlo(fitPychometric):
         # Special bounds for fusion-only models (no p_c parameter, no t_min/t_max)
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             print(f"Fitting fusion-only model: {self.modelName} (p_c fixed at 1.0, no bounds needed)")
-            # Fusion models only need: [λ, σa1, σv, σa2]
+            # Fusion models base: [λ, σa1, σv, σa2] + optional [λ2, λ3] if not sharedLambda
             bounds = np.array([
                 (0.001, 0.4),    # 0 lambda_ - lapse rate
                 (0.05, 2.0),     # 1 sigma_av_a_1 - auditory noise (high SNR)
                 (0.05, 2.0),     # 2 sigma_av_v - visual noise 
                 (0.05, 2.5),     # 3 sigma_av_a_2 - auditory noise (low SNR)
             ])
+            # Add lambda_2 and lambda_3 bounds if not shared
+            if not self.sharedLambda:
+                bounds = np.vstack([
+                    bounds,
+                    [(0.001, 0.4),   # 4 lambda_2
+                     (0.001, 0.4)]   # 5 lambda_3
+                ])
         elif self.modelName == "switchingFree":
             print(f"Fitting switchingFree model: {self.modelName} (uses p_switch parameters, no t_min/t_max)")
             # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
@@ -1186,8 +1218,11 @@ class OmerMonteCarlo(fitPychometric):
         # Test the likelihood function with reasonable parameters before optimization
         print("Testing likelihood function with reasonable parameters...")
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-            # Fusion-only models: [λ, σa1, σv, σa2] (4 params)
-            test_params = np.array([0.1, 0.5, 0.5, 0.8])
+            # Fusion-only models: [λ, σa1, σv, σa2, (λ2, λ3)]
+            test_params = [0.1, 0.5, 0.5, 0.8]  # λ, σa1, σv, σa2
+            if not self.sharedLambda:
+                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
+            test_params = np.array(test_params)
         elif self.modelName == "switchingFree":
             # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
             test_params = np.array([0.1, 0.5, 0.5, 0.3, 0.8])  # λ, σa1, σv, p_switch1, σa2
@@ -1844,7 +1879,7 @@ if __name__ == "__main__":
     )
     mc_fitter.dataName = dataName
     mc_fitter.nSimul = 100
-    mc_fitter.optimizationMethod= "normal"  # Use BADS for optimization
+    mc_fitter.optimizationMethod= "bads"  # Use BADS for optimization
     mc_fitter.nStart = 1  # Number of random starts for optimization
 
 
@@ -1858,7 +1893,7 @@ if __name__ == "__main__":
 
     
 
-    mc_fitter.modelName = "switchingFree"  # Set measurement distribution to Gaussian
+    mc_fitter.modelName = "fusionOnlyLogNorm"  # Set measurement distribution to Gaussian
     timeStart = time.time()
     print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
     fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
