@@ -72,7 +72,7 @@ class OmerMonteCarlo(fitPychometric):
         self.fitType = 'Monte Carlo'
         self.nStart = 3  # Number of random starts for optimization (increased for debugging)
         self.nSimul = 10  # Number of simulations for Monte Carlo approximation
-        self.optimizationMethod = 'scipy'  # Use scipy for better debugging (BADS can be harder to debug)
+        self.optimizationMethod = 'bads'  # Use scipy for better debugging (BADS can be harder to debug)
         self.modelFit = None  # Placeholder for fitted model
         self.simulatedData = None  # Placeholder for simulated data
         self.dataFit = None  # Placeholder for fitted data
@@ -1116,10 +1116,10 @@ class OmerMonteCarlo(fitPychometric):
             # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
             bounds = np.array([
                 (0.001, 0.4),    # 0 lambda_ - lapse rate
-                (0.05, 2.0),     # 1 sigma_av_a_1 - auditory noise (high SNR)
-                (0.05, 2.0),     # 2 sigma_av_v - visual noise
+                (0.0001, 2.0),     # 1 sigma_av_a_1 - auditory noise (high SNR)
+                (0.0001, 2.0),     # 2 sigma_av_v - visual noise
                 (0.0, 1.0),      # 3 p_switch1 - switching probability (high SNR)
-                (0.05, 2.5),     # 4 sigma_av_a_2 - auditory noise (low SNR)
+                (0.0001, 2.5),     # 4 sigma_av_a_2 - auditory noise (low SNR)
                 (0.001, 0.4),    # 5 lambda_2 - lapse rate (conflict condition 2)
                 (0.001, 0.4),    # 6 lambda_3 - lapse rate (conflict condition 3)
                 (0.0, 1.0),      # 7 p_switch2 - switching probability (low SNR)
@@ -1138,22 +1138,22 @@ class OmerMonteCarlo(fitPychometric):
                     (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
                     (0, 1),          # 7 p_c_2 - avoid boundary issues
                     (0.1, 5.0),      # 8 k - conflict sensitivity parameter
-                    (0.0, max(self.data_t_min * 0.9, 0.4)),  # 9 t_min - allow 0
-                    (0.01, 10.0),  # 10 t_max
+                    (0.0, 0.4),  # 9 t_min - allow 0
+                    (0.01, 2),  # 10 t_max
                 ])
             else:
                 # All models use linear-space bounds for t_min and t_max parameters
                 bounds = np.array([
                     (0.001, 0.4),    # 0 lambda_ - increased upper bound
-                    (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
-                    (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
+                    (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
+                    (0.0001, 2.0),     # 2 sigma_av_v_1 - broader range
                     (0, 1),          # 3 p_c_1 - avoid boundary issues
-                    (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
+                    (0.0001, 2),     # 4 sigma_av_a_2 - broader range for high noise
                     (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
                     (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
                     (0, 1),          # 7 p_c_2 - avoid boundary issues
-                    (0.0, max(self.data_t_min * 0.9, 0.4)),  # 8 t_min - allow 0
-                    (0.01, 10.0),  # 9 t_max
+                    (0.0,  0.4),  # 8 t_min - allow 0
+                    (0.001, 2),  # 9 t_max
                 ])
 
         elif self.freeP_c==False:
@@ -1162,28 +1162,28 @@ class OmerMonteCarlo(fitPychometric):
                 # Add k parameter bounds for switchingWithConflict model
                 bounds = np.array([
                     (0.001, 0.4),    # 0 lambda_ - increased upper bound
-                    (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
-                    (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
+                    (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
+                    (0.0001, 2.0),     # 2 sigma_av_v_1 - broader range
                     (0, 1),          # 3 p_c_1 - avoid boundary issues
-                    (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
+                    (0.0001, 2.0),     # 4 sigma_av_a_2 - broader range for high noise
                     (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
                     (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
                     (0.1, 5.0),      # 7 k - conflict sensitivity parameter
-                    (0.0, max(self.data_t_min * 0.9, 0.4)),  # 8 t_min - allow 0
-                    (0.001, 10.0),  # 9 t_max
+                    (0.0,  0.4),  # 8 t_min - allow 0
+                    (0.001, 2),  # 9 t_max
                 ])
             else:
                 # All models use linear-space bounds for t_min and t_max parameters
                 bounds = np.array([
                     (0.001, 0.4),    # 0 lambda_ - increased upper bound
-                    (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
-                    (0.05, 2.0),     # 2 sigma_av_v_1 - broader range
+                    (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
+                    (0.0001, 2.0),     # 2 sigma_av_v_1 - broader range
                     (0, 1),          # 3 p_c_1 - avoid boundary issues
-                    (0.05, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
+                    (0.0001, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
                     (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
                     (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
-                    (0.0, max(self.data_t_min * 0.9, 0.4)),  # 7 t_min - allow 0
-                    (0.001, 10.0),  # 8 t_max
+                    (0.0,  0.4),  # 7 t_min - allow 0
+                    (0.001, 2),  # 8 t_max
                 ])
 
         if self.sharedLambda:

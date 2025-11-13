@@ -11,7 +11,7 @@ warnings.filterwarnings('ignore')
 from loadData import loadData
 
 class fitPychometric:
-    def __init__(self, data, intensityVar='logDurRatio', allIndependent=True, sharedSigma=False,sensoryVar = 'audNoise', 
+    def __init__(self, data, intensityVar='logDurRatio', allIndependent=False, sharedSigma=True,sensoryVar = 'audNoise', 
                  standardVar = 'standardDur', conflictVar = 'conflictDur', dataName=None):
         # Create log ratio intensity variable for Weber's law compliance
         data = self._create_log_ratio_variable(data)
@@ -26,8 +26,8 @@ class fitPychometric:
         self.uniqueSensory = data[self.sensoryVar].unique()
         self.uniqueStandard = data[self.standardVar].unique()
         self.uniqueConflict = sorted(data[self.conflictVar].unique())
-        self.nLambda = len(self.uniqueSensory)
-        self.nSigma = len(self.uniqueStandard)
+        self.nLambda = 3  # Now fixed to 3 lambda groups based on conflict ranges
+        self.nSigma = len(self.uniqueSensory)  # Sigma varies by sensory condition
         self.nMu = len(self.uniqueConflict) * len(self.uniqueSensory) 
         self.dataName= None # placeholder for data name if needed 
         
@@ -149,6 +149,32 @@ class fitPychometric:
         return [lapse_rate_guess, mu_guess, sigma_guess]
     
 
+    def _get_lambda_index(self, conflict):
+        """
+        Determine which lambda parameter to use based on conflict value.
+        
+        Parameters:
+        -----------
+        conflict : float
+            The conflict value
+            
+        Returns:
+        --------
+        int
+            Index of the lambda parameter to use (0, 1, or 2)
+        """
+        # Group 1: lambda[0] for conflicts [0, -0.17, 0.25]
+        if np.isclose(conflict, 0.0, atol=1e-3) or np.isclose(conflict, -0.17, atol=1e-3) or np.isclose(conflict, 0.25, atol=1e-3):
+            return 0
+        # Group 2: lambda[1] for conflicts [-0.08, 0.17]
+        elif np.isclose(conflict, -0.08, atol=1e-3) or np.isclose(conflict, 0.17, atol=1e-3):
+            return 1
+        # Group 3: lambda[2] for conflicts [-0.25, 0.08]
+        elif np.isclose(conflict, -0.25, atol=1e-3) or np.isclose(conflict, 0.08, atol=1e-3):
+            return 2
+        else:
+            raise ValueError(f"Conflict value {conflict} does not match any predefined group")
+
     def getParams(self, params, conflict, audio_noise):
         if self.allIndependent and not self.sharedSigma:
             noise_idx = np.where(self.uniqueSensory == round(audio_noise, 3))[0][0]
@@ -160,22 +186,33 @@ class fitPychometric:
             sigma  = params[cond_idx * 3 + 2]
             return lambda_, mu, sigma
         elif not self.allIndependent and self.sharedSigma:
-            lambda_ = params[0]
+            # Use conflict-based lambda grouping
+            lambda_idx = self._get_lambda_index(conflict)
+            lambda_ = params[lambda_idx]
+            
             noise_idx_array = np.where(self.uniqueSensory == audio_noise)[0]
             if len(noise_idx_array) == 0:
                 raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
             noise_idx = noise_idx_array[0]
-            sigma = params[noise_idx + 1]
+            
+            # Sigma starts after the 3 lambda parameters
+            sigma = params[3 + noise_idx]
+            
             conflict_idx_array = np.where(np.isclose(self.uniqueConflict, conflict, atol=1e-1))[0]
             if len(conflict_idx_array) == 0:
                 raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
             conflict_idx = conflict_idx_array[0]
             noise_offset = noise_idx * len(self.uniqueConflict)
-            mu_idx = self.nLambda + self.nSigma + noise_offset + conflict_idx
+            
+            # Mu starts after lambdas and sigmas
+            mu_idx = 3 + len(self.uniqueSensory) + noise_offset + conflict_idx
             mu = params[mu_idx]
             return lambda_, mu, sigma
         elif not self.allIndependent and not self.sharedSigma:
-            lambda_ = params[0]
+            # Use conflict-based lambda grouping
+            lambda_idx = self._get_lambda_index(conflict)
+            lambda_ = params[lambda_idx]
+            
             noise_idx_array = np.where(self.uniqueSensory == round(audio_noise, 3))[0]
             if len(noise_idx_array) == 0:
                 raise ValueError(f"audio_noise value {audio_noise} not found in uniqueSensory.")
@@ -186,8 +223,11 @@ class fitPychometric:
             conflict_idx = conflict_idx_array[0]
             nConditions = len(self.uniqueConflict) * len(self.uniqueSensory)
             cond_idx = conflict_idx * len(self.uniqueSensory) + noise_idx
-            mu = params[self.nLambda + cond_idx]
-            sigma = params[self.nLambda + nConditions + cond_idx]
+            
+            # Mu starts after the 3 lambda parameters
+            mu = params[3 + cond_idx]
+            # Sigma starts after lambdas and mus
+            sigma = params[3 + nConditions + cond_idx]
             return lambda_, mu, sigma
         else:
             raise ValueError("Parameter configuration not supported.")
@@ -257,7 +297,7 @@ class fitPychometric:
 
     # Fit psychometric function
     def fit_psychometric_function(self, levels, nResp, totalResp, init_guesses=[0, 0, 0]):
-        bounds = [(0, 0.25), (-2, +2), (0.01, 1)]  # Reasonable bounds
+        bounds = [(0, 0.5), (-2, +2), (0.01, 1)]  # Reasonable bounds
         result = minimize(
             self.negative_log_likelihood,
             x0=init_guesses,
@@ -279,29 +319,32 @@ class fitPychometric:
             noise_levels = grouped_data[self.sensoryVar]
             bounds = []
             for _ in range(nCond):
-                bounds.extend([(0, 0.25), (-2, 2), (0.01, 2)])
+                bounds.extend([(0, 0.4), (-2, 2), (0.01, 2)])
         elif self.sharedSigma:
             nSensoryVar = len(self.uniqueSensory)
             nConflictVar = len(self.uniqueConflict)
-            nLambda = self.nLambda
-            initGuesses = [initGuesses[0]] * nLambda + [initGuesses[1]] * nSensoryVar + [initGuesses[2]] * nSensoryVar * nConflictVar
+            nLambda = 3  # Fixed to 3 lambda groups
+            # Structure: [lambda1, lambda2, lambda3, sigma1, sigma2, ..., mu1, mu2, ...]
+            initGuesses = [initGuesses[0]] * nLambda + [initGuesses[2]] * nSensoryVar + [initGuesses[1]] * nSensoryVar * nConflictVar
             intensities = grouped_data[self.intensityVar]
             chose_tests = grouped_data['num_of_chose_test']
             total_responses = grouped_data['total_responses']
             conflicts = grouped_data[self.conflictVar]
             noise_levels = grouped_data[self.sensoryVar]
-            bounds = [(0, 0.25)] * nLambda + [(0.01, +1)] * nSensoryVar + [(-1, +1)] * nSensoryVar * nConflictVar
+            bounds = [(0, 0.4)] * nLambda + [(0.01, +1)] * nSensoryVar + [(-1, +1)] * nSensoryVar * nConflictVar
         else:
             nSensoryVar = len(self.uniqueSensory)
             nConflictVar = len(self.uniqueConflict)
-            nLambda = self.nLambda
-            initGuesses = [initGuesses[0]] * nLambda + [initGuesses[1]] * nSensoryVar * nConflictVar + [initGuesses[2]] * nSensoryVar * nConflictVar
+            nLambda = 3  # Fixed to 3 lambda groups
+            nConditions = nSensoryVar * nConflictVar
+            # Structure: [lambda1, lambda2, lambda3, mu1, mu2, ..., sigma1, sigma2, ...]
+            initGuesses = [initGuesses[0]] * nLambda + [initGuesses[1]] * nConditions + [initGuesses[2]] * nConditions
             intensities = grouped_data[self.intensityVar]
             chose_tests = grouped_data['num_of_chose_test']
             total_responses = grouped_data['total_responses']
             conflicts = grouped_data[self.conflictVar]
             noise_levels = grouped_data[self.sensoryVar]
-            bounds = [(0, 0.25)] * nLambda + [(-2, +2)] * nSensoryVar * nConflictVar + [(0.01, +2)] * nSensoryVar * nConflictVar
+            bounds = [(0, 0.4)] * nLambda + [(-2, +2)] * nConditions + [(0.01, +2)] * nConditions
 
         result = minimize(
             self.nLLJoint,
@@ -440,7 +483,7 @@ class fitPychometric:
                     
                     plt.tight_layout()
                     plt.grid(True, alpha=0.3)
-                    print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Mu: {mu:.3f}, Sigma: {sigma:.3f}")
+                    print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, lambda: {lambda_:.3f} Mu: {mu:.3f}, Sigma: {sigma:.3f}")
         plt.show()
         
     def simulate_dataset(self, params, gdf):
@@ -554,22 +597,35 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dataName = args.dataName
-    allIndependent = True
+    allIndependent = False
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "HH_all.csv"
+        dataName = "mu_all.csv"
     pltTitle = dataName.split("_")[0] + " " + dataName.split("_")[1]
 
     # Load data (assuming loadData returns a DataFrame)
     # You may need to adjust this line to match your actual loadData implementation
-    data, dataName = loadData("HH_all.csv")
+    data, dataName = loadData("dt_all.csv")
 
-    fit_model = fitPychometric(data, sharedSigma=sharedSigma, allIndependent=allIndependent)
+    fit_model = fitPychometric(data, sharedSigma=1, allIndependent=0)
     fit_model.dataName = dataName
 
+    # Print model configuration
+    print(f"\nModel Configuration:")
+    print(f"  - Lambda parameters: {fit_model.nLambda} (grouped by conflict ranges)")
+    print(f"  - Sigma parameters: {fit_model.nSigma} (one per sensory noise level)")
+    print(f"  - Mu parameters: {fit_model.nMu} (one per sensory×conflict combination)")
+    print(f"  - Total parameters: {fit_model.nLambda + fit_model.nSigma + fit_model.nMu}")
+    print(f"  - Unique conflicts: {fit_model.uniqueConflict}")
+    print(f"  - Unique sensory levels: {fit_model.uniqueSensory}\n")
+
     best_fit = fit_model.fitMultipleStartingPoints(nStart=1)
-    print(f"Fitted parameters: {best_fit.x}")
+    print(f"\nFitted parameters: {best_fit.x}")
+    print(f"Number of parameters: {len(best_fit.x)}")
+    print(f"  - Lambda (3): {best_fit.x[0:3]}")
+    print(f"  - Sigma ({fit_model.nSigma}): {best_fit.x[3:3+fit_model.nSigma]}")
+    print(f"  - Mu ({fit_model.nMu}): first 5 shown {best_fit.x[3+fit_model.nSigma:3+fit_model.nSigma+5]}...")
 
     fit_model.plot_fitted_psychometric(best_fit, pltTitle=pltTitle)
     #fit_model.plotStairCases(data)
