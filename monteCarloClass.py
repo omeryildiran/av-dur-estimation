@@ -99,8 +99,8 @@ class OmerMonteCarlo(fitPychometric):
                     ]
                     )
         
-        # t_min and t_max are now fitted parameters instead of fixed values from data
-        # Store data bounds for initial parameter estimation and bounds constraints
+        # t_min and t_max are fixed values from data, not fitted parameters
+        # Store data bounds for use in causal inference calculations
         self.data_t_min = data["testDurS"].min()
         self.data_t_max = data["testDurS"].max()
         
@@ -145,19 +145,19 @@ class OmerMonteCarlo(fitPychometric):
             Parameter array with layout depending on configuration and model type:
             
             For causal inference models (gaussian, lognorm, logLinearMismatch, selection, probabilityMatching, etc.):
-            - sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3, t_min, t_max] (9 params)
-            - sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2, t_min, t_max] (7 params)
-            - sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2, t_min, t_max] (10 params)
-            - sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2, t_min, t_max] (8 params)
+            - sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3] (7 params)
+            - sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2] (5 params)
+            - sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2] (8 params)
+            - sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2] (6 params)
             
             For switchingWithConflict model (adds k parameter):
-            - sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3, k, t_min, t_max] (10 params)
-            - sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2, k, t_min, t_max] (8 params)
-            - sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2, k, t_min, t_max] (11 params)
-            - sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2, k, t_min, t_max] (9 params)
+            - sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3, k] (8 params)
+            - sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2, k] (6 params)
+            - sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2, k] (9 params)
+            - sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2, k] (7 params)
             
             For fusion-only models (fusionOnly, fusionOnlyLogNorm):
-            - [λ, σa1, σv, σa2, t_min, t_max] (6 params) - p_c is fixed at 1.0
+            - [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params) - p_c is fixed at 1.0
             
         SNR : float
             Signal-to-noise ratio (0.1 or 1.2)
@@ -169,6 +169,7 @@ class OmerMonteCarlo(fitPychometric):
         tuple : For most models: (lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
                 For switchingWithConflict: (lambda_, sigma_av_a, sigma_av_v, p_c, k, t_min, t_max)
                 Note: For fusion-only models, p_c is always 1.0 (always common cause)
+                Note: t_min and t_max are fixed from data (self.data_t_min, self.data_t_max)
         """
         
         # Validate params is not None
@@ -203,10 +204,10 @@ class OmerMonteCarlo(fitPychometric):
                 raise ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2.")
             
             # For fusion-only models, p_c is fixed at 1.0 (always assume common cause)
-            # t_min and t_max are not used/needed for fusion models
+            # t_min and t_max are fixed from data
             p_c = 1.0
-            t_min = None
-            t_max = None
+            t_min = self.data_t_min
+            t_max = self.data_t_max
             
             return lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max
         
@@ -215,10 +216,10 @@ class OmerMonteCarlo(fitPychometric):
         if self.modelName == "switchingWithConflict":
             # switchingWithConflict model has additional k parameter
             expected_lengths = {
-                (True, True): 9,    # sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2, k, t_min, t_max]
-                (True, False): 8,   # sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2, k, t_min, t_max]
-                (False, True): 11,  # sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2, k, t_min, t_max]
-                (False, False): 10  # sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3, k, t_min, t_max]
+                (True, True): 7,    # sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2, k]
+                (True, False): 6,   # sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2, k]
+                (False, True): 9,   # sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2, k]
+                (False, False): 8   # sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3, k]
             }
         elif self.modelName == "switchingFree":
             # switchingFree model has p_switch1 and p_switch2 parameters, no t_min/t_max needed
@@ -232,10 +233,10 @@ class OmerMonteCarlo(fitPychometric):
         else:
             # Standard causal inference models
             expected_lengths = {
-                (True, True): 8,    # sharedLambda=True, freeP_c=True
-                (True, False): 7,   # sharedLambda=True, freeP_c=False
-                (False, True): 10,  # sharedLambda=False, freeP_c=True
-                (False, False): 9   # sharedLambda=False, freeP_c=False
+                (True, True): 6,    # sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2]
+                (True, False): 5,   # sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2]
+                (False, True): 8,   # sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2]
+                (False, False): 7   # sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3]
             }
         
         config_key = (self.sharedLambda, self.freeP_c)
@@ -244,13 +245,13 @@ class OmerMonteCarlo(fitPychometric):
         if len(params) != expected_length:
             raise ValueError(f"Parameter array length {len(params)} doesn't match expected length {expected_length} for configuration sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}, modelName={self.modelName}")
 
-        # Extract t_min and t_max (always last two parameters)
-        t_min = params[-2]
-        t_max = params[-1]
+        # Use fixed t_min and t_max from data
+        t_min = self.data_t_min
+        t_max = self.data_t_max
         
-        # Extract k parameter for switchingWithConflict model (third from end)
+        # Extract k parameter for switchingWithConflict model (last parameter)
         if self.modelName == "switchingWithConflict":
-            k = params[-3]
+            k = params[-1]
         else:
             k = None
 
@@ -298,7 +299,7 @@ class OmerMonteCarlo(fitPychometric):
         # For example, lognorm models will call with np.log(t_min), np.log(t_max).
 
         if self.modelName == "switchingFree":
-            # For switchingFree, return p_switch instead of p_c based on SNR, no t_min/t_max
+            # For switchingFree, return p_switch instead of p_c based on SNR
             # Parameter layout: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
             if np.isclose(SNR, 0.1):
                 p_switch = params[3]  # p_switch1 for high SNR (SNR=0.1)
@@ -310,8 +311,8 @@ class OmerMonteCarlo(fitPychometric):
             else:
                 raise ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2.")
             
-            # SwitchingFree doesn't use t_min/t_max, return dummy values
-            return lambda_, sigma_av_a, sigma_av_v, p_switch, 0.1, 2.0
+            # SwitchingFree uses fixed t_min/t_max from data
+            return lambda_, sigma_av_a, sigma_av_v, p_switch, self.data_t_min, self.data_t_max
         
         elif self.modelName == "switchingWithConflict":
             return lambda_,sigma_av_a,sigma_av_v,p_c,k,t_min,t_max
@@ -332,23 +333,23 @@ class OmerMonteCarlo(fitPychometric):
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             expected_length = 6 if not self.sharedLambda else 4  # Fusion-only models: [λ, σa1, σv, σa2, (λ2, λ3)]
         elif self.modelName == "switchingWithConflict":
-            # switchingWithConflict model has additional k parameter
+            # switchingWithConflict model has additional k parameter, no t_min/t_max
             if self.freeP_c:
-                expected_length = 11 if not self.sharedLambda else 9
+                expected_length = 9 if not self.sharedLambda else 7
             else:
-                expected_length = 10 if not self.sharedLambda else 8
+                expected_length = 8 if not self.sharedLambda else 6
         elif self.modelName == "switchingFree":
             # switchingFree model has two p_switch parameters, no t_min/t_max
             expected_length = 8 if not self.sharedLambda else 6
         elif self.freeP_c:
-            expected_length = 10 if not self.sharedLambda else 8
+            expected_length = 8 if not self.sharedLambda else 6
         else:
-            expected_length = 9 if not self.sharedLambda else 7
+            expected_length = 7 if not self.sharedLambda else 5
         print(f"Expected parameter length: {expected_length}")
         
         # Create test parameters with realistic values
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-            # Fusion-only: [λ, σa1, σv, σa2, (λ2, λ3)] - no t_min/t_max needed
+            # Fusion-only: [λ, σa1, σv, σa2, (λ2, λ3)] - no t_min/t_max
             test_params = [0.1, 0.5, 0.5, 0.8]  # λ, σa1, σv, σa2
             if not self.sharedLambda:
                 test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
@@ -358,18 +359,17 @@ class OmerMonteCarlo(fitPychometric):
             test_params = [0.1, 0.5, 0.5, 0.3, 0.8]  # λ, σa1, σv, p_switch1, σa2
             if not self.sharedLambda:
                 test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
-            test_params.append(0.7)  # Add p_switch2 only
+            test_params.append(0.7)  # Add p_switch2
             test_params = np.array(test_params)
         else:
-            # Causal inference models
-            test_params = [0.1, 0.5, 0.5, 0.5, 0.8]  # Basic 5 params
+            # Causal inference models - no t_min/t_max
+            test_params = [0.1, 0.5, 0.5, 0.5, 0.8]  # Basic 5 params: λ, σa1, σv, pc, σa2
             if not self.sharedLambda:
                 test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
             if self.freeP_c:
                 test_params.append(0.5)  # Add second p_c
             if self.modelName == "switchingWithConflict":
                 test_params.append(1.0)  # Add k parameter
-            test_params.extend([0.2, 1.0])  # Add t_min, t_max
             test_params = np.array(test_params)
         
         print(f"Test params length: {len(test_params)}, values: {test_params}")
@@ -399,20 +399,23 @@ class OmerMonteCarlo(fitPychometric):
                         return False
                 elif self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
                     λ, σa, σv, pc, t_min, t_max = params_result
-                    # Validate extracted parameters (fusion models have t_min=None, t_max=None)
+                    # Validate extracted parameters (fusion models now use fixed data bounds)
                     if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or pc != 1.0:
                         print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
                         print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc} (should be 1.0)")
                         return False
-                    if t_min is not None or t_max is not None:
-                        print(f"ERROR: Fusion models should have t_min=None and t_max=None")
+                    if t_min != self.data_t_min or t_max != self.data_t_max:
+                        print(f"ERROR: Fusion models should have t_min={self.data_t_min} and t_max={self.data_t_max}")
                         return False
                 else:
                     λ, σa, σv, pc, t_min, t_max = params_result
-                    # Validate extracted parameters (standard causal models have real t_min/t_max bounds)
+                    # Validate extracted parameters (standard causal models use fixed data bounds)
                     if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or not (0 <= pc <= 1) or t_min >= t_max:
                         print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
                         print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc:.3f}, t_min={t_min:.3f}, t_max={t_max:.3f}")
+                        return False
+                    if t_min != self.data_t_min or t_max != self.data_t_max:
+                        print(f"ERROR: Standard causal models should have t_min={self.data_t_min} and t_max={self.data_t_max}")
                         return False
                     
                 test_conditions += 1
@@ -543,15 +546,18 @@ class OmerMonteCarlo(fitPychometric):
         # posterior with numerical stability
         denominator = L1*p_c + L2*(1-p_c)
         
-        # Handle both scalar and array cases
-        if np.isscalar(denominator):
-            if denominator == 0:
-                postC1 = p_c
-            else:
-                postC1 = L1*p_c / denominator
-        else:
-            # Array case - use np.where to handle element-wise
-            postC1 = np.where(denominator == 0, p_c, L1*p_c / denominator)
+        lratio = L1 / (L2 + L1+1e-20)
+        postC1=lratio * p_c / (lratio * p_c + (1 - p_c))
+        return postC1
+        # # Handle both scalar and array cases
+        # if np.isscalar(denominator):
+        #     if denominator == 0:
+        #         postC1 = p_c
+        #     else:
+        #         postC1 = L1*p_c / denominator
+        # else:
+        #     # Array case - use np.where to handle element-wise
+        #     postC1 = np.where(denominator == 0, p_c, L1*p_c / denominator)
         
         return postC1
             
@@ -971,33 +977,7 @@ class OmerMonteCarlo(fitPychometric):
         if np.any(np.isnan(params)) or np.any(np.isinf(params)):
             return 1e10
         
-        # Additional validation for t_min and t_max (skip for fusion models)
-        if self.modelName not in ["fusionOnly", "fusionOnlyLogNorm"]:
-            try:
-                # Get first condition to extract t_min and t_max
-                first_snr = groupedData["audNoise"].iloc[0]
-                first_conflict = groupedData["conflictDur"].iloc[0]
-                params_result = self.getParamsCausal(params, first_snr, first_conflict)
-                
-                if self.modelName == "switchingWithConflict":
-                    λ, σa, σv, pc, k, t_min, t_max = params_result
-                else:
-                    λ, σa, σv, pc, t_min, t_max = params_result
-                
-                # All models use linear-space bounds for t_min and t_max parameters
-                # (individual model functions handle log conversions internally if needed)
-                # Skip validation for switchingFree which has t_min=None, t_max=None
-                if self.modelName != "switchingFree":
-                    if t_min >= t_max:
-                        return 1e10
-                    # Allow t_min = 0 for duration bounds, but ensure t_max > t_min    
-                    if t_max <= 0:
-                        return 1e10
-                    if (t_max - t_min) < 0.01:  # Minimum meaningful range in linear space
-                        return 1e10
-                    
-            except Exception as e:
-                return 1e10
+        # No additional validation needed since t_min and t_max are now fixed from data
         
         for i in range(lenData):
             currSNR = groupedData["audNoise"].iloc[i]
@@ -1127,7 +1107,7 @@ class OmerMonteCarlo(fitPychometric):
         elif self.freeP_c:
             print("Fitting with free p_c parameters for each SNR condition.")
             if self.modelName == "switchingWithConflict":
-                # Add k parameter bounds for switchingWithConflict model
+                # Add k parameter bounds for switchingWithConflict model (no t_min/t_max)
                 bounds = np.array([
                     (0.001, 0.4),    # 0 lambda_ - increased upper bound
                     (0.05, 2.0),     # 1 sigma_av_a_1 - broader range
@@ -1138,11 +1118,9 @@ class OmerMonteCarlo(fitPychometric):
                     (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
                     (0, 1),          # 7 p_c_2 - avoid boundary issues
                     (0.1, 5.0),      # 8 k - conflict sensitivity parameter
-                    (0.0, 0.4),  # 9 t_min - allow 0
-                    (0.01, 2),  # 10 t_max
                 ])
             else:
-                # All models use linear-space bounds for t_min and t_max parameters
+                # Standard causal inference models (no t_min/t_max parameters)
                 bounds = np.array([
                     (0.001, 0.4),    # 0 lambda_ - increased upper bound
                     (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
@@ -1152,14 +1130,12 @@ class OmerMonteCarlo(fitPychometric):
                     (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
                     (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
                     (0, 1),          # 7 p_c_2 - avoid boundary issues
-                    (0.0,  0.4),  # 8 t_min - allow 0
-                    (0.001, 2),  # 9 t_max
                 ])
 
         elif self.freeP_c==False:
             print("Fitting with shared p_c parameter across SNR conditions.")   
             if self.modelName == "switchingWithConflict":
-                # Add k parameter bounds for switchingWithConflict model
+                # Add k parameter bounds for switchingWithConflict model (no t_min/t_max)
                 bounds = np.array([
                     (0.001, 0.4),    # 0 lambda_ - increased upper bound
                     (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
@@ -1169,11 +1145,9 @@ class OmerMonteCarlo(fitPychometric):
                     (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
                     (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
                     (0.1, 5.0),      # 7 k - conflict sensitivity parameter
-                    (0.0,  0.4),  # 8 t_min - allow 0
-                    (0.001, 2),  # 9 t_max
                 ])
             else:
-                # All models use linear-space bounds for t_min and t_max parameters
+                # Standard causal inference models (no t_min/t_max parameters)
                 bounds = np.array([
                     (0.001, 0.4),    # 0 lambda_ - increased upper bound
                     (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
@@ -1182,8 +1156,6 @@ class OmerMonteCarlo(fitPychometric):
                     (0.0001, 2.5),     # 4 sigma_av_a_2 - broader range for high noise
                     (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
                     (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
-                    (0.0,  0.4),  # 7 t_min - allow 0
-                    (0.001, 2),  # 8 t_max
                 ])
 
         if self.sharedLambda:
@@ -1199,21 +1171,13 @@ class OmerMonteCarlo(fitPychometric):
         
         # Debug: Print bounds information
         print(f"Bounds shape: {bounds.shape}")
-        if self.modelName not in ["fusionOnly", "fusionOnlyLogNorm", "switchingFree"]:
-            print(f"t_min bounds: {bounds[-2]}")
-            print(f"t_max bounds: {bounds[-1]}")
+        print(f"Using fixed t_min={self.data_t_min:.3f}, t_max={self.data_t_max:.3f} from data")
         
-        # Validate bounds consistency (skip for fusion models that don't have t_min/t_max)
+        # Validate bounds consistency
         for i, (lb, ub) in enumerate(bounds):
             if lb >= ub:
                 print(f"ERROR: Invalid bounds at index {i}: [{lb:.3f}, {ub:.3f}] - lower >= upper")
                 bounds[i] = (lb, lb + 0.1)  # Fix invalid bounds
-                
-        # Special validation for t_min vs t_max bounds (only for models that use them)
-        if self.modelName not in ["fusionOnly", "fusionOnlyLogNorm", "switchingFree"]:
-            if bounds[-1][0] <= bounds[-2][1]:
-                print("WARNING: t_max lower bound <= t_min upper bound, adjusting...")
-                bounds[-1] = (bounds[-2][1] + 0.1, bounds[-1][1])  # Ensure t_max_min > t_min_max
             
         # Test the likelihood function with reasonable parameters before optimization
         print("Testing likelihood function with reasonable parameters...")
@@ -1230,16 +1194,14 @@ class OmerMonteCarlo(fitPychometric):
                 test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
             test_params = np.append(test_params, [0.7])  # Add p_switch2 (no t_min/t_max)
         else:
-            # Causal inference models
-            test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters
+            # Causal inference models (no t_min/t_max parameters)
+            test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters: λ, σa1, σv, pc, σa2
             if not self.sharedLambda:
                 test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
             if self.freeP_c:
                 test_params = np.append(test_params, [0.5])  # Add second p_c
             if self.modelName == "switchingWithConflict":
                 test_params = np.append(test_params, [1.0])  # Add k parameter
-            # Add t_min and t_max for causal models
-            test_params = np.append(test_params, [0.2, 1.0])
         
         try:
             test_ll = self.nLLMonteCarloCausal(test_params, groupedData)
@@ -1296,7 +1258,7 @@ class OmerMonteCarlo(fitPychometric):
                 x0 = np.append(x0, np.random.uniform(bounds[final_index][0], bounds[final_index][1]))  # p_switch2
             elif self.freeP_c==False:
                 if self.modelName == "switchingWithConflict":
-                    # switchingWithConflict model with k parameter
+                    # switchingWithConflict model with k parameter (no t_min/t_max)
                     x0 = np.array([
                         np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
                         np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
@@ -1306,8 +1268,6 @@ class OmerMonteCarlo(fitPychometric):
                         np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
                         np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
                         np.random.uniform(bounds[7][0], bounds[7][1]),  # k
-                        np.random.uniform(bounds[8][0], bounds[8][1]),  # t_min
-                        np.random.uniform(bounds[9][0], bounds[9][1]),  # t_max
                     ])
                 else:
                     x0 = np.array([
@@ -1318,12 +1278,10 @@ class OmerMonteCarlo(fitPychometric):
                         np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
                         np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
                         np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
-                        np.random.uniform(bounds[7][0], bounds[7][1]),  # t_min
-                        np.random.uniform(bounds[8][0], bounds[8][1]),  # t_max
                     ])
             elif self.freeP_c:
                 if self.modelName == "switchingWithConflict":
-                    # switchingWithConflict model with k parameter and free p_c
+                    # switchingWithConflict model with k parameter and free p_c (no t_min/t_max)
                     x0 = np.array([
                         np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
                         np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
@@ -1334,8 +1292,6 @@ class OmerMonteCarlo(fitPychometric):
                         np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
                         np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
                         np.random.uniform(bounds[8][0], bounds[8][1]),  # k
-                        np.random.uniform(bounds[9][0], bounds[9][1]),  # t_min
-                        np.random.uniform(bounds[10][0], bounds[10][1]),  # t_max
                     ])
                 else:
                     x0 = np.array([
@@ -1347,8 +1303,6 @@ class OmerMonteCarlo(fitPychometric):
                         np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
                         np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
                         np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
-                        np.random.uniform(bounds[8][0], bounds[8][1]),  # t_min
-                        np.random.uniform(bounds[9][0], bounds[9][1]),  # t_max
                     ])
 
             # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0
@@ -1358,12 +1312,6 @@ class OmerMonteCarlo(fitPychometric):
                     x0 = np.delete(x0, [5,6])  # remove lambda_2 and lambda_3, but keep k
                 else:
                     x0 = np.delete(x0, [5,6])  # remove lambda_2 and lambda_3 if sharedLambda is True
-            
-            # Ensure t_min < t_max constraint (only for models that use t_min/t_max)
-            if self.modelName not in ["fusionOnly", "fusionOnlyLogNorm", "switchingFree"]:
-                if x0[-1] <= x0[-2]:
-                    print(f"WARNING: Initial t_max ({x0[-1]:.3f}) <= t_min ({x0[-2]:.3f}), adjusting...")
-                    x0[-1] = x0[-2] + 0.2  # Ensure t_max > t_min
                 
             # Validate x0 vs bounds
             for i, (x_val, (lb, ub)) in enumerate(zip(x0, bounds)):
@@ -1773,6 +1721,8 @@ class OmerMonteCarlo(fitPychometric):
         2. sharedLambda flag (whether lambda is shared across conflict conditions)
         3. freeP_c flag (whether p_c varies with SNR) - only applicable to causal inference models
         
+        Note: t_min and t_max are now fixed from data and not counted as fitted parameters.
+        
         Returns:
         --------
         int : Number of fitted parameters
@@ -1780,7 +1730,7 @@ class OmerMonteCarlo(fitPychometric):
         
         # === FUSION MODELS ===
         # Always: [λ, σa1, σv, σa2] + optional [λ2, λ3]
-        # No p_c (fixed at 1.0), no t_min/t_max (don't use bounds)
+        # No p_c (fixed at 1.0), no t_min/t_max (fixed from data)
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             if self.sharedLambda:
                 # [λ, σa1, σv, σa2] = 4 params
@@ -1791,7 +1741,7 @@ class OmerMonteCarlo(fitPychometric):
         
         # === SWITCHING FREE MODEL ===
         # Always: [λ, σa1, σv, p_switch1, σa2, p_switch2] + optional [λ2, λ3]
-        # Uses p_switch instead of p_c, no t_min/t_max (doesn't use bounds)
+        # Uses p_switch instead of p_c, no t_min/t_max (fixed from data)
         elif self.modelName == "switchingFree":
             if self.sharedLambda:
                 # [λ, σa1, σv, p_switch1, σa2, p_switch2] = 6 params
@@ -1801,11 +1751,11 @@ class OmerMonteCarlo(fitPychometric):
                 return 8
         
         # === SWITCHING WITH CONFLICT MODEL ===
-        # Base: [λ, σa1, σv, σa2, k, t_min, t_max] = 7 params (no p_c yet)
+        # Base: [λ, σa1, σv, σa2, k] = 5 params (no t_min/t_max - fixed from data)
         # + optional [λ2, λ3] if not sharedLambda
         # + optional p_c parameters
         elif self.modelName == "switchingWithConflict":
-            base_count = 7  # λ, σa1, σv, σa2, k, t_min, t_max
+            base_count = 5  # λ, σa1, σv, σa2, k (no t_min/t_max)
             
             # Add lambda parameters
             if not self.sharedLambda:
@@ -1820,11 +1770,11 @@ class OmerMonteCarlo(fitPychometric):
             return base_count
         
         # === STANDARD CAUSAL INFERENCE MODELS ===
-        # Base: [λ, σa1, σv, σa2, t_min, t_max] = 6 params (no p_c yet)
+        # Base: [λ, σa1, σv, σa2] = 4 params (no t_min/t_max - fixed from data)
         # + optional [λ2, λ3] if not sharedLambda
         # + optional p_c parameters
         else:
-            base_count = 6  # λ, σa1, σv, σa2, t_min, t_max
+            base_count = 4  # λ, σa1, σv, σa2 (no t_min/t_max)
             
             # Add lambda parameters
             if not self.sharedLambda:

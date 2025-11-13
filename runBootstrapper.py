@@ -68,6 +68,7 @@ participant_files = [
     "ip_all.csv", "ln1_all.csv", "ln2_all.csv", "mh_all.csv", 
     "ml_all.csv", "mt_all.csv", "qs_all.csv", "sx_all.csv"
 ]
+#participant_files=["dt_all.csv"]  # For testing only
 
 #from monteCarloClass import MonteCarloFitter
 import monteCarloClass
