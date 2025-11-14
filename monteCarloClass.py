@@ -65,7 +65,7 @@ class OmerMonteCarlo(fitPychometric):
     Inherits from fitPychometric.
     """
     
-    def __init__(self, data, intensityVar='deltaDurS', allIndependent=True, sharedSigma=0, sensoryVar='audNoise', 
+    def __init__(self, data, intensityVar='deltaDurS', allIndependent=False, sharedSigma=1, sensoryVar='audNoise', 
                  standardVar='standardDur', conflictVar='conflictDur',dataName=None):
         super().__init__(data, intensityVar, allIndependent, sharedSigma, sensoryVar, standardVar, conflictVar,dataName) 
         

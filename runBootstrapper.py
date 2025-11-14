@@ -62,7 +62,7 @@ def saveBootstrappedParams(mc_fitter=None, dataBoots=None, dataName=None):
 
 
 
-# List of all participant filenames
+# List of all participant filenameshape
 participant_files = [
     "as_all.csv", "oy_all.csv", "dt_all.csv", "HH_all.csv", 
     "ip_all.csv", "ln1_all.csv", "ln2_all.csv", "mh_all.csv", 
@@ -73,7 +73,7 @@ participant_files = [
 #from monteCarloClass import MonteCarloFitter
 import monteCarloClass
 
-nBoots = 100
+nBoots = 50
 
 def SimpleNamespace(**kwargs):
     class Namespace:
@@ -104,6 +104,7 @@ def process_participant(dataName):
         #mc_fitter.dataFit.x = a
 
         dataBoots = mc_fitter.paramBootstrap(mc_fitter.dataFit.x, nBoots=nBoots)
+        #print(f"Bootstrapped data shape for {dataName}: {dataBoots.shape}")
         
         saveBootstrappedParams(mc_fitter=None, dataBoots=dataBoots, dataName=dataName)
         print(f"Completed {dataName}")
