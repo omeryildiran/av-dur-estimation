@@ -71,8 +71,8 @@ class fitPychometric:
         if 'deltaDurS' not in data.columns:
             data['deltaDurS'] = data['testDurS'] - data['standardDur']
             
-        print(f"Created logDurRatio variable: range [{data['logDurRatio'].min():.3f}, {data['logDurRatio'].max():.3f}]")
-        print(f"  → This represents log(test/standard) for Weber's law compliance")
+        #print(f"Created logDurRatio variable: range [{data['logDurRatio'].min():.3f}, {data['logDurRatio'].max():.3f}]")
+        #print(f"  → This represents log(test/standard) for Weber's law compliance")
             
         return data
 

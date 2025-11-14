@@ -11,7 +11,7 @@ def loadFitResults(fitter,dataName, modelName="lognorm"):
         modelName += "_contextualPrior"
     else:
         modelName += "_sharedPrior"
-    print(f"Looking for saved fit: {dataName} with model {modelName}")
+    #print(f"Looking for saved fit: {dataName} with model {modelName}")
 
     participantID = dataName.split('_')[0]
     filepath = os.path.join("model_fits", participantID, f"{participantID}_{modelName}_fit.json")

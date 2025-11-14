@@ -132,7 +132,7 @@ class OmerMonteCarlo(fitPychometric):
         if self.nSimul < 10:
             print(f"Warning: nSimul={self.nSimul} is very low. Consider using at least 100 for stable results.")
             
-        print(f"✓ Configuration validated: {self.modelName}, sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
+        #print(f"✓ Configuration validated: {self.modelName}, sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
 
 
 
