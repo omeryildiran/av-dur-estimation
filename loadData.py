@@ -2,14 +2,16 @@
 import pandas as pd
 import numpy as np
 
-def loadData(dataName):	
+def loadData(dataName, verbose=True):	
 	sensoryVar="audNoise"
 	standardVar="standardDur"
 	conflictVar="conflictDur"
 	pltTitle=dataName.split("_")[1]
-	pltTitle=dataName.split("_")[0]+str(" ")+pltTitle    
+	pltTitle=dataName.split("_")[0]+str(" ")+pltTitle
 
-
+	def _print(*args, **kwargs):
+		if verbose:
+			print(*args, **kwargs)
 
 	data = pd.read_csv("data/"+dataName)
 	data["testDurMs"]= data["testDurS"]*1000
@@ -41,7 +43,7 @@ def loadData(dataName):
 	data["realConflictDur"]=data['recordedDurVisualStandard'] -data["standardDur"]-data["VisualPSE"]
 	data["realConflictDurMs"]=data["realConflictDur"]*1000
 
-	print(f"\n Total trials before cleaning\n: {len(data)}")
+	_print(f"\n Total trials before cleaning\n: {len(data)}")
 	data= data[data['audNoise'] != 0]
 	data=data[data['standardDur'] != 0]
 	data[standardVar] = data[standardVar].round(2)
@@ -49,11 +51,7 @@ def loadData(dataName):
 	uniqueSensory = data[sensoryVar].unique()
 	uniqueStandard = data[standardVar].unique()
 	uniqueConflict = sorted(data[conflictVar].unique())
-	print(f"uniqueSensory: {uniqueSensory} \n uniqueStandard: {uniqueStandard} \n uniqueConflict: {uniqueConflict}")
-
-	#data['avgAVDeltaS'] = (data['deltaDurS'] + (data['recordedDurVisualTest'] - data['recordedDurVisualStandard'])) / 2
-	#data['deltaDurPercentVisual'] = ((data['recordedDurVisualTest'] - data['recordedDurVisualStandard']) / data['recordedDurVisualStandard'])
-	#data['avgAVDeltaPercent'] = data[['delta_dur_percents', 'deltaDurPercentVisual']].mean(axis=1)
+	_print(f"uniqueSensory: {uniqueSensory} \n uniqueStandard: {uniqueStandard} \n uniqueConflict: {uniqueConflict}")
 
 	# Define columns for chosing test or standard
 	data['chose_test'] = (data['responses'] == data['order']).astype(int)
@@ -69,18 +67,8 @@ def loadData(dataName):
 		data["testDurSCompare"] = abs(data['recordedDurVisualTest'] - data['testDurS']-data["VisualPSE"])
 		data["standardDurCompare"] = abs(data['recordedDurVisualStandard'] - data['standardDur']-data["VisualPSE"]-data["conflictPreMod"])
 
-		# #print len of testDurSCheck and standardDurCheck false
-		# print("")
-		# print(len(data[data['testDurSCheck'] == False]), " trials with testDurSCheck False")
-		# print(len(data[data['standardDurCheck'] == False]), " trials with standardDurCheck False\n")
-		# # print number of abs(testDurSCompare
-		# print(len(data[abs(data['testDurSCompare']) > 0.03]), " trials with abs(testDurSCompare) > 0.05")
-		# print(len(data[abs(data['standardDurCompare']) > 0.03]), " trials with abs(standardDurCompare) > 0.05")
-		# print("")
-		# print(len(data[data['testDurSCheckBias'] == False]), " trials with testDurSCheckBias False")
-
 	except:
-		print("Bias check failed!!!! No bias check columns found. Skipping bias check.")
+		_print("Bias check failed!!!! No bias check columns found. Skipping bias check.")
 		pass
 	data['conflictDur'] = data['conflictDur'].round(3)
 	data['standard_dur']=data['standardDur']
@@ -89,27 +77,13 @@ def loadData(dataName):
 		data["riseDur"]>1
 	except:
 		data["riseDur"]=1
-	
+
 	data[standardVar] = round(data[standardVar], 2)
 
 	data['standard_dur']=round(data['standardDur'],2)
 	data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
-	# try:
-	# 	print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
-	# 	print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
-	# except:
-	# 	print("No negative visual test or standard duration found.")
-
-
-
 
 	try:
-		#print(f'testdurCompare > 0.05: {len(data[data["testDurSCompare"] > 0.05])} trials')
-
-		#print(len(data[data['recordedDurVisualStandard']<0]), " trials with negative visual standard duration")
-		#print(len(data[data['recordedDurVisualTest']<0]), " trials with negative visual test duration")
-
-
 		data=data[data['recordedDurVisualStandard'] <=998]
 		data=data[data['recordedDurVisualStandard'] >=0]
 		data=data[data['recordedDurVisualTest'] <=998]
@@ -120,11 +94,11 @@ def loadData(dataName):
 	except:
 		pass
 
-	print(f"total trials after cleaning: {len(data)}")
+	_print(f"total trials after cleaning: {len(data)}")
 	nLambda=len(uniqueStandard)
 	nSigma=len(uniqueSensory)
 	nMu=len(uniqueConflict)*nSigma
-	
+
 	data["logStandardDur"] = np.log(data[standardVar])
 	data["logConflictDur"] = np.log(data[conflictVar])
 	data["logTestDur"] = np.log(data["testDurS"])
