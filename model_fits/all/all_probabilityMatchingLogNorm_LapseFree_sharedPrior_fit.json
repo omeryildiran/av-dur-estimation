@@ -1,0 +1,17 @@
+{
+    "participantID": "all",
+    "modelType": "probabilityMatchingLogNorm_LapseFree_sharedPrior",
+    "fittedParams": [
+        0.11419664388172532,
+        0.22578756098146557,
+        0.4759401626269609,
+        0.08672526084264964,
+        0.5687921438741717,
+        0.11639519850886428,
+        0.21572435235069862
+    ],
+    "AIC": 20307.0022032448,
+    "BIC": 20351.655762469807,
+    "logLikelihood": -10146.5011016224,
+    "n_conditions": 4355
+}
