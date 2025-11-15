@@ -606,7 +606,7 @@ if __name__ == "__main__":
 
     # Load data (assuming loadData returns a DataFrame)
     # You may need to adjust this line to match your actual loadData implementation
-    data, dataName = loadData("dt_all.csv")
+    data, dataName = loadData("all_woBiasedParticipants.csv")
 
     fit_model = fitPychometric(data, sharedSigma=1, allIndependent=0)
     fit_model.dataName = dataName
