@@ -1454,10 +1454,10 @@ class OmerMonteCarlo(fitPychometric):
                 p_c = p_switch  # For compatibility with probTestLonger_vectorized_mc
                 k = None
             elif self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-                lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = params_result
+                lambda_, sigma_av_a, sigma_av_v, p_c, lambda_2,lambda_3 = params_result
                 k = None
             else:
-                lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = params_result
+                lambda_, sigma_av_a, sigma_av_v, p_c,  = params_result
                 k = None
 
             nSamples = 30 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
