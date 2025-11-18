@@ -148,6 +148,56 @@ class fitPychometric:
 
         return [lapse_rate_guess, mu_guess, sigma_guess]
     
+    def debug_parameter_structure(self, params=None):
+        """
+        Debug method to understand parameter structure and indexing.
+        Helps identify why mu parameters might be identical across conditions.
+        """
+        print("\n=== PARAMETER STRUCTURE DEBUG ===")
+        print(f"Configuration: allIndependent={self.allIndependent}, sharedSigma={self.sharedSigma}")
+        print(f"Number of sensory levels: {len(self.uniqueSensory)} - {self.uniqueSensory}")
+        print(f"Number of conflict levels: {len(self.uniqueConflict)} - {self.uniqueConflict}")
+        print(f"Expected structure for sharedSigma=True:")
+        print(f"  - Lambdas: 3 parameters (indices 0-2) - grouped by conflict")
+        print(f"  - Sigmas: {len(self.uniqueSensory)} parameters (indices 3-{3+len(self.uniqueSensory)-1}) - one per noise level")
+        print(f"  - Mus: {len(self.uniqueSensory)*len(self.uniqueConflict)} parameters (indices {3+len(self.uniqueSensory)}-{3+len(self.uniqueSensory)+len(self.uniqueSensory)*len(self.uniqueConflict)-1}) - one per condition")
+        
+        if params is not None:
+            print(f"\nActual parameter array (length {len(params)}):")
+            print(f"  Lambdas: {params[0:3]}")
+            print(f"  Sigmas: {params[3:3+len(self.uniqueSensory)]}")
+            print(f"  Mus: {params[3+len(self.uniqueSensory):3+len(self.uniqueSensory)+len(self.uniqueSensory)*len(self.uniqueConflict)]}")
+            
+            print("\nMu parameter mapping:")
+            mu_start_idx = 3 + len(self.uniqueSensory)
+            for noise_idx, noise in enumerate(self.uniqueSensory):
+                for conflict_idx, conflict in enumerate(self.uniqueConflict):
+                    noise_offset = noise_idx * len(self.uniqueConflict)
+                    mu_idx = mu_start_idx + noise_offset + conflict_idx
+                    if mu_idx < len(params):
+                        mu_value = params[mu_idx]
+                        print(f"  noise={noise}, conflict={conflict} -> mu_idx={mu_idx}, mu={mu_value:.4f}")
+                    else:
+                        print(f"  noise={noise}, conflict={conflict} -> mu_idx={mu_idx} OUT OF BOUNDS")
+        
+        print("\nTesting getParams method:")
+        # Enable debug mode temporarily
+        self._debug_indexing = True
+        
+        if params is not None:
+            for noise in self.uniqueSensory:
+                print(f"\n--- Noise level: {noise} ---")
+                for conflict in self.uniqueConflict:
+                    try:
+                        lambda_, mu, sigma = self.getParams(params, conflict, noise)
+                        print(f"  conflict {conflict:+.2f}: λ={lambda_:.4f}, μ={mu:.4f}, σ={sigma:.4f}")
+                    except Exception as e:
+                        print(f"  conflict {conflict:+.2f}: ERROR - {e}")
+        
+        # Disable debug mode
+        self._debug_indexing = False
+        print("\n=== DEBUG COMPLETE ===")
+    
 
     def _get_lambda_index(self, conflict):
         """
@@ -198,14 +248,29 @@ class fitPychometric:
             # Sigma starts after the 3 lambda parameters
             sigma = params[3 + noise_idx]
             
-            conflict_idx_array = np.where(np.isclose(self.uniqueConflict, conflict, atol=1e-1))[0]
+            # Find exact conflict index - use much smaller tolerance for precise matching
+            conflict_idx_array = np.where(np.isclose(self.uniqueConflict, conflict, atol=1e-6))[0]
             if len(conflict_idx_array) == 0:
-                raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
-            conflict_idx = conflict_idx_array[0]
+                # If no exact match, find the closest one and warn
+                distances = [abs(c - conflict) for c in self.uniqueConflict]
+                closest_idx = np.argmin(distances)
+                closest_conflict = self.uniqueConflict[closest_idx]
+                print(f"Warning: conflict {conflict} not found exactly. Using closest: {closest_conflict} (distance: {distances[closest_idx]})")
+                conflict_idx = closest_idx
+            else:
+                conflict_idx = conflict_idx_array[0]
+                
             noise_offset = noise_idx * len(self.uniqueConflict)
             
             # Mu starts after lambdas and sigmas
             mu_idx = 3 + len(self.uniqueSensory) + noise_offset + conflict_idx
+            
+            # Debug output to help identify indexing issues
+            if hasattr(self, '_debug_indexing') and self._debug_indexing:
+                print(f"Debug: conflict={conflict}, conflict_idx={conflict_idx}, noise_idx={noise_idx}, mu_idx={mu_idx}")
+                print(f"  uniqueConflict: {self.uniqueConflict}")
+                print(f"  mu_param_value: {params[mu_idx] if mu_idx < len(params) else 'OUT_OF_BOUNDS'}")
+            
             mu = params[mu_idx]
             return lambda_, mu, sigma
         elif not self.allIndependent and not self.sharedSigma:
@@ -601,12 +666,12 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "mu_all.csv"
+        dataName = "as_all.csv"
     pltTitle = dataName.split("_")[0] + " " + dataName.split("_")[1]
 
     # Load data (assuming loadData returns a DataFrame)
     # You may need to adjust this line to match your actual loadData implementation
-    data, dataName = loadData("all_woBiasedParticipants.csv")
+    data, dataName = loadData("as_all.csv")
 
     fit_model = fitPychometric(data, sharedSigma=1, allIndependent=0)
     fit_model.dataName = dataName

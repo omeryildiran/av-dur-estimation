@@ -44,9 +44,7 @@ def saveFitResultsSingle(fitter,fittedParams, dataName):
         "BIC": float(bic),
         "logLikelihood": fitter.logLikelihood,
         "n_conditions": n
-
     }
-
 
     # Save JSON
     with open(filepath, 'w') as f:
@@ -55,7 +53,7 @@ def saveFitResultsSingle(fitter,fittedParams, dataName):
     print(f"✅ Saved fit for {participantID} ({modelType}) to: {filepath}")
 
 def saveSimulatedData(fitter, dataName):
-    
+    print(f"Generating SimData based on model  {fitter.modelName}")
     # generate simulated data
     simulatedData= fitter.simulateMonteCarloData(fitter.modelFit, fitter.data)
 
