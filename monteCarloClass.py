@@ -340,7 +340,7 @@ class OmerMonteCarlo(fitPychometric):
                 (False, True): 8,   # [λ, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2]
                 (False, False): 8   # [λ, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2]
             }
-        else:
+        elif self.modelName in ["lognorm", "gaussian", "logLinearMismatch", "selection", "probabilityMatching", "probabilityMatchingLogNorm"]:
             # Standard causal inference models
             expected_lengths = {
                 (True, True): 6,    # sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2]
@@ -348,6 +348,7 @@ class OmerMonteCarlo(fitPychometric):
                 (False, True): 8,   # sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2]
                 (False, False): 7   # sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3]
             }
+
         
         config_key = (self.sharedLambda, self.freeP_c)
         expected_length = expected_lengths[config_key]
@@ -1066,7 +1067,12 @@ class OmerMonteCarlo(fitPychometric):
             #break and raise error
             raise ValueError(f"Invalid modelName '{self.modelName}'. Choose 'gaussian', 'lognorm', 'logLinearMismatch', 'fusionOnly', 'fusionOnlyLogNorm', 'probabilityMatching', 'probabilityMatchingLogNorm', 'selection', 'switching', 'switchingWithConflict', or 'switchingFree'.")
 
-
+    
+        if self.modelName in ["lognorm", "logLinearMismatch", "probabilityMatchingLogNorm", "switching", "switchingWithConflict", "switchingFree"]:
+            # For log-space models, ensure estimates are in linear space
+            est_standard = np.exp(est_standard)
+            est_test = np.exp(est_test)
+            
 
         p_base = np.mean(est_test > est_standard)
         p_final = (1 - lambda_) * p_base + lambda_ / 2
@@ -1472,17 +1478,9 @@ class OmerMonteCarlo(fitPychometric):
 
 
     def simulateMonteCarloData(self, fittedParams, data, nSamples=10000):
-        # try:
-        #     fittedParams=model.fittedParams
-        #     print("Model Name:", model.modelName)
-        #     modelName=model.modelName
-        # except AttributeError:
-        #     print("Model does not have fittedParams attribute. Using model as fittedParams directly.")
-        #     fittedParams=model
-        #     break
 
-        print("Simulating data using fitted parameters:", fittedParams)
-        print(f"modelName: {self.modelName}")
+        print("\nSimulating data using fitted parameters:", fittedParams)
+        print(f"\nmodelName: {self.modelName}")
 
         """
         Simulate data based on fitted parameters.
@@ -1530,7 +1528,7 @@ class OmerMonteCarlo(fitPychometric):
             elif self.modelName in ["gaussian", "lognorm", "logLinearMismatch", "probabilityMatching", "probabilityMatchingLogNorm", "selection"]:
                 lambda_, sigma_av_a, sigma_av_v, p_c, tmin, tmax = params_result
 
-            nSamples = 30 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
+            nSamples = 100 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
             # Simulate responses for the current trial
             for _ in range(nSamples):
                 S_a_s = 0.5
