@@ -1641,7 +1641,7 @@ class OmerMonteCarlo(fitPychometric):
                 lambda_, sigma_av_a, sigma_av_v, p_c, tmin, tmax = params_result
                 # p_c should already be 1.0 from getParamsCausal for fusion models
                 assert p_c == 1.0, f"Error: fusion-only model should have p_c=1.0, got {p_c}"
-            elif self.modelName in ["gaussian", "lognorm", "logLinearMismatch", "probabilityMatching", "probabilityMatchingLogNorm", "selection"]:
+            elif self.modelName in ["gaussian", "lognorm", "logLinearMismatch", "probabilityMatching", "probabilityMatchingLogNorm", "selection", "switching"]:
                 lambda_, sigma_av_a, sigma_av_v, p_c, tmin, tmax = params_result
 
             nSamples = 100 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
