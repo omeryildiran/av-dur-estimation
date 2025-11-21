@@ -684,9 +684,6 @@ class OmerMonteCarlo(fitPychometric):
 
 
         final_estimate = post_C1 * fused_S_av + (1 - post_C1) * m_a
-        # Only lognorm needs conversion since measurements are in log space
-        if self.modelName == "lognorm":
-            final_estimate = np.exp(final_estimate)
 
         return final_estimate
     
