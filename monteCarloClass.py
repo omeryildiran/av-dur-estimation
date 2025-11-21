@@ -656,7 +656,7 @@ class OmerMonteCarlo(fitPychometric):
         # posterior with numerical stability
         denominator = L1*p_c + L2*(1-p_c)
         
-        lratio = L1 / (L2 + L1+1e-20)
+        lratio = L1 / (L2+1e-20)
         postC1=lratio * p_c / (lratio * p_c + (1 - p_c))
         return postC1
         # # Handle both scalar and array cases
