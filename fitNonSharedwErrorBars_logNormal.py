@@ -710,7 +710,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     fixedMu = 1 # Set to True to ignore the bias in the model (overrides global setting)
-    dataName = args.data
+    dataName = "SX_auditoryDurEst_2025-06-04_15h03.27.972.csv" #args.data
     show_error_bars  =  not args.no_error_bars  # Invert the flag
     
     # Load and prepare data
