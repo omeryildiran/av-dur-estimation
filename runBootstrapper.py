@@ -66,14 +66,13 @@ def saveBootstrappedParams(mc_fitter=None, dataBoots=None, dataName=None):
 participant_files = [
     "as_all.csv", "oy_all.csv", "dt_all.csv", "HH_all.csv", 
     "ip_all.csv", "ln1_all.csv", "ln2_all.csv", "mh_all.csv", 
-    "ml_all.csv", "mt_all.csv", "qs_all.csv", "sx_all.csv"
-,"all_woBiasedParticipants.csv"]
+    "ml_all.csv", "mt_all.csv", "qs_all.csv", "sx_all.csv" ,"all_woBiasedParticipants.csv"]
 #participant_files=["all_woBiasedParticipants.csv"]  # For testing only
 
 #from monteCarloClass import MonteCarloFitter
 import monteCarloClass
 
-nBoots = 50
+nBoots = 1000
 
 def SimpleNamespace(**kwargs):
     class Namespace:
