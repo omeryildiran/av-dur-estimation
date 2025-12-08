@@ -1509,6 +1509,10 @@ class OmerMonteCarlo(fitPychometric):
                     obj = lambda x: self.nLLMonteCarloCausal(x, groupedData)
                     bads = BADS(obj, x0, lb, ub, plb, pub, options={"display": "off"})
                     result = bads.optimize()
+                    
+                    # ENFORCE BOUNDS after BADS (BADS sometimes violates hard bounds)
+                    if hasattr(result, 'x'):
+                        result.x = np.clip(result.x, lb, ub)
 
                 else:
                     # Enhanced scipy optimization with multiple methods
@@ -1558,6 +1562,14 @@ class OmerMonteCarlo(fitPychometric):
                 fval = getattr(result, 'fval', result.fun)
                 xres = getattr(result, 'x', result.x)
                 
+                # ENFORCE BOUNDS: Clip parameters to valid range (Powell ignores bounds!)
+                xres_clipped = np.clip(xres, bounds[:, 0], bounds[:, 1])
+                if not np.allclose(xres, xres_clipped):
+                    print(f"WARNING: Parameters clipped to bounds. Original: {xres}, Clipped: {xres_clipped}")
+                    xres = xres_clipped
+                    # Re-evaluate likelihood with clipped parameters
+                    fval = self.nLLMonteCarloCausal(xres, groupedData)
+                
                 # Validate final parameters
                 try:
                     test_ll = self.nLLMonteCarloCausal(xres, groupedData)
@@ -1568,7 +1580,8 @@ class OmerMonteCarlo(fitPychometric):
                     print(f"Attempt {attempt + 1}: Final parameter validation failed")
                     continue
                 
-                # Update best result
+                # Update best result (with clipped parameters)
+                result.x = xres  # Update result with clipped values
                 if fval < best_ll:
                     best_ll = fval
                     best_result = result
@@ -1583,7 +1596,11 @@ class OmerMonteCarlo(fitPychometric):
 
         fval = getattr(best_result, 'fval', best_result.fun)
         xres = getattr(best_result, 'x', best_result.x)
-        print(f"\n✅ Best result from {nStart} attem           spts:")
+        
+        # Final bounds enforcement
+        xres = np.clip(xres, bounds[:, 0], bounds[:, 1])
+        
+        print(f"\n✅ Best result from {nStart} attempts:")
         print(f"  → Final parameters: {xres}")
         print(f"  → Final log-likelihood: {fval:.6f}")
 

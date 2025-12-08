@@ -666,12 +666,14 @@ if __name__ == "__main__":
     sharedSigma = args.sharedSigma
 
     if not dataName:
-        dataName = "as_all.csv"
+        dataName = "all_wo_ln1.csv"
     pltTitle = dataName.split("_")[0] + " " + dataName.split("_")[1]
 
     # Load data (assuming loadData returns a DataFrame)
     # You may need to adjust this line to match your actual loadData implementation
-    data, dataName = loadData("as_all.csv")
+    data, dataName = loadData("all_wo_ln1.csv")
+    #data = data[data['testDurS'] > 0.1]
+
 
     fit_model = fitPychometric(data, sharedSigma=1, allIndependent=0)
     fit_model.dataName = dataName

@@ -5,6 +5,7 @@ import seaborn as sns
 import pandas as pd
 import os
 import argparse
+import scipy.io
 
 # function for loading data
 def loadData(dataName):
@@ -18,6 +19,10 @@ def loadData(dataName):
 
 
     data = pd.read_csv("data/"+dataName)
+    # delete first 20 rows trials
+    #data = data[5:]
+    #only take testDurS >0.1
+    #data = data[data['testDurS'] > 0.1]
     # ignore firts 3 rows
     data= data[data['audNoise'] != 0]
     data=data[data['standardDur'] != 0]
@@ -25,7 +30,7 @@ def loadData(dataName):
     data["standardDurMs"]= data["standardDur"]*1000
     
     #round standardDur to 2 decimal places
-    data = data.round({'standardDur': 2, 'audNoise': 2, 'conflictDur': 2, 'delta_dur_percents': 2})
+    data = data.round({ 'audNoise': 2, 'conflictDur': 2, 'delta_dur_percents': 2})
     
     uniqueSensory = data[sensoryVar].unique()
     uniqueStandard = data[standardVar].unique()
@@ -58,7 +63,7 @@ def loadData(dataName):
     
     data[standardVar] = round(data[standardVar], 2)
 
-    data['standard_dur']=round(data['standardDur'],2)
+    #data['standard_dur']=round(data['standardDur'],2)
     data["delta_dur_percents"]=round(data["delta_dur_percents"],2)
     data['conflictDur']=round(data['conflictDur'],2)
 
@@ -126,7 +131,8 @@ def bin_and_plot_with_error_bars(data, bin_method='cut', bins=10, bin_range=None
     participant_data = groupByChooseTestWithParticipants(data)
     
     if bin_method == 'cut':
-        participant_data['bin'] = pd.cut(participant_data[binVar], bins=bins, labels=False, include_lowest=True, retbins=False)
+        # Use quantile-based binning for more balanced trial distribution
+        participant_data['bin'] = pd.qcut(participant_data[binVar], q=bins, labels=False, duplicates='drop')
     elif bin_method == 'manual':
         participant_data['bin'] = np.digitize(participant_data[binVar], bins=bin_range) - 1
     
@@ -137,8 +143,12 @@ def bin_and_plot_with_error_bars(data, bin_method='cut', bins=10, bin_range=None
         y_sem=('p_choose_test', lambda x: np.std(x) / np.sqrt(len(x)) if len(x) > 1 else 0),  # Standard error
         y_std=('p_choose_test', 'std'),
         n_participants=('participantID', 'nunique'),
-        total_resp=('total_responses', 'sum')
+        total_resp=('total_responses', 'sum'),
+        n_datapoints=('p_choose_test', 'count')  # Number of datapoints in bin
     ).reset_index()
+    
+    # Filter out bins with very few datapoints (too noisy)
+    bin_summary = bin_summary[bin_summary['n_datapoints'] >= 3]
     
     if plot and len(bin_summary) > 0:
         # Plot with error bars
@@ -167,7 +177,8 @@ def bin_and_plot(data, bin_method='cut', bins=10, bin_range=None, plot=True, col
             data = groupByChooseTest(data)
         
         if bin_method == 'cut':
-            data['bin'] = pd.cut(data[binVar], bins=bins, labels=False, include_lowest=True, retbins=False)
+            # Use quantile-based binning for more balanced trial distribution  
+            data['bin'] = pd.qcut(data[binVar], q=bins, labels=False, duplicates='drop')
         elif bin_method == 'manual':
             data['bin'] = np.digitize(data[binVar], bins=bin_range) - 1
         
@@ -259,7 +270,7 @@ def getParamIndexes(params, conflict, audio_noise, nLambda, nSigma):
     
     # Get conflict index safely
     conflict_idx_array = np.where(uniqueConflict==conflict)[0]
-    if len(conflict_idx_array) == 0:
+    if len(conflict_idx_array) == 0:    
         raise ValueError(f"conflict value {conflict} not found in uniqueConflict.")
     conflict_idx = conflict_idx_array[0]
     
@@ -296,8 +307,8 @@ def psychometric_function(test_dur, standard_dur, lambda_, mu, sigma):
         mu = 0
     
     # Ensure positive durations
-    test_dur = np.maximum(test_dur, 1e-10)
-    standard_dur = np.maximum(standard_dur, 1e-10)
+    #test_dur = np.maximum(test_dur, 1e-10)
+    #standard_dur = np.maximum(standard_dur, 1e-10)
     
     # Calculate the log ratio of durations
     log_ratio = np.log(test_dur / standard_dur)
@@ -421,7 +432,7 @@ def fit_psychometric_function(test_durations, standard_durations, nResp, totalRe
     # then fits the psychometric function
     # order is lambda mu sigma
     #initial_guess = [0, -0.2, 0.05]  # Initial guess for [lambda, mu, sigma]
-    bounds = [(0, 0.25), (-1.0, +1.0), (0.01, 2.0)]  # Bounds for log-normal model
+    bounds = [(0, 0.25), (-1.0, +1.0), (0.01, 3.0)]  # Bounds for log-normal model
     if fixedMu:
         bounds = [(0, 0.25), (0.01, 1.5)]
         init_guesses = [init_guesses[0],  init_guesses[2]]  # Set mu to 0 if fixed
@@ -473,6 +484,7 @@ def fitJoint(grouped_data,  initGuesses):
     # Initialize guesses for parameters 
     # lambda, sigma, mu
     initGuesses= [initGuesses[0]]*nLambda + [initGuesses[2]]*nSensoryVar*nConflictVar+ [initGuesses[1]]*nSensoryVar*nConflictVar
+
     
     test_durations = grouped_data[intensityVariable]  # Raw test durations
     standard_durations = grouped_data[standardVar]    # Standard durations
@@ -483,7 +495,7 @@ def fitJoint(grouped_data,  initGuesses):
     
     
     # Set bounds for parameters
-    bounds = [(0, 0.25)]*nLambda + [(0.01, +2.0)]*nSensoryVar*nConflictVar + [(-1, +1)]*nSensoryVar*nConflictVar
+    bounds = [(0, 0.25)]*nLambda + [(0.01, +3.5)]*nSensoryVar*nConflictVar + [(-1, +1)]*nSensoryVar*nConflictVar
 
 
     # Minimize negative log-likelihood
@@ -634,7 +646,8 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 y = psychometric_function(x_smooth, standard_dur_array, lambda_, mu, sigma)
 
                 color = colors[j]
-                #plt.plot(x, y, color=color, label=f"Noise: {audioNoiseLevel}\n $\\mu$: {mu:.2f}, $\\sigma$: {sigma:.2f}", linewidth=4)
+                # plt.plot(x, y, color=color, label=f"Noise: {audioNoiseLevel}\n $\\mu$: {mu:.2f}, $\\sigma$: {sigma:.2f}", linewidth=4)
+                plt.plot(0,0,color=color,label=f"Noise: {audioNoiseLevel}\n $\\lambda$: {lambda_:.2f}\n $\\mu$: {mu:.2f}\n $\\sigma$: {sigma:.2f}\n Weber frac.: {weberFraction:.2f}",linewidth=0)
                 labelsDict={0.1:"Auditory (low noise)",1.2:"Auditory (high noise)",99:"Visual",0.03:"High noise"}
                 plt.plot(x_smooth*1000, y, color=color, linewidth=4, label=f"{labelsDict.get(audioNoiseLevel,audioNoiseLevel)}" )
                 #plt.axvline(x=0, color='gray', linestyle='--')
@@ -710,7 +723,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     fixedMu = 1 # Set to True to ignore the bias in the model (overrides global setting)
-    dataName = "SX_auditoryDurEst_2025-06-04_15h03.27.972.csv" #args.data
+    dataName = "as_auditory.csv" #args.data
     show_error_bars  =  not args.no_error_bars  # Invert the flag
     
     # Load and prepare data
@@ -747,8 +760,8 @@ if __name__ == "__main__":
         data, fit, nLambda, nSigma, uniqueSensory, uniqueStandard, uniqueConflict,
         standardVar, sensoryVar, conflictVar, intensityVariable, show_error_bars=show_error_bars)
     
-    # Optionally plot staircase data
-    # plotStairCases(data)
+    #Optionally plot staircase data
+    plotStairCases(data)
 
 
 
@@ -766,4 +779,26 @@ if __name__ == "__main__":
 #     lambda_, mu, sigma = getFittedParams(fit)
     
 #     print(f"Fitted parameters: lambda={lambda_}, mu={mu}, sigma={sigma}")
+# run the code and save the fitted parameters to a file for each participant
+# if __name__ == "__main__":
+#     participantIds=['as','dt','hh','ip','ln2','mh','ml','mt','oy','qs','sx']
+#     fittedParams = {}
+#     for participantId in participantIds:
+#         dataName = f"{participantId}_auditory.csv"
+#         print(f"Loading data from {dataName}...")
+#         data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
+#         print(f"Fitting psychometric model for participant {participantId}...")
+#         fixedMu=1 # Set to True to ignore bias for individual fits
+
+#         fit = fitMultipleStartingPoints(data, nStart=3)
+#         fittedParams[participantId] = fit.x
+#         print(f"Fitted parameters for {participantId}: {fit.x}")
+
+#         # Save fitted parameters to a matlab file
+#         outputFilename = f"data/{participantId}_auditory_fits.mat"
+#         scipy.io.savemat(outputFilename, {'fittedParams': fit.x})
+#         print(f"Saved fitted parameters to {outputFilename}")
+#         #print(f"Saved fitted parameters to {dataName}_fits.mat")
+
+
 
