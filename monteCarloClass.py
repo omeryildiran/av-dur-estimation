@@ -127,8 +127,8 @@ class OmerMonteCarlo(fitPychometric):
         try:
             auditory_fit_data = scipy.io.loadmat(auditory_fit_path)
             auditory_fit_params = auditory_fit_data['fittedParams'].flatten()
-            self.sigma_a_high = auditory_fit_params[2]  # High noise
-            self.sigma_a_low = auditory_fit_params[1]   # Low noise
+            self.sigma_a_high = auditory_fit_params[2]/np.sqrt(2)  # High noise
+            self.sigma_a_low = auditory_fit_params[1]/np.sqrt(2)   # Low noise
         except Exception as e:
             pass  # Silently fail - will warn in validation if knownSigma=True
 
@@ -137,7 +137,7 @@ class OmerMonteCarlo(fitPychometric):
         try:
             visual_fit_data = scipy.io.loadmat(visual_fit_path)
             visual_fit_params = visual_fit_data['fittedParams'].flatten()
-            self.sigma_v = visual_fit_params[1]
+            self.sigma_v = visual_fit_params[1]/np.sqrt(2)
         except Exception as e:
             pass  # Silently fail - will warn in validation if knownSigma=True
         
