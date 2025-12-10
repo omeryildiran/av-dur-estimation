@@ -357,8 +357,7 @@ class OmerMonteCarlo(fitPychometric):
         # === HANDLE COMPACT FORMAT (during optimization with knownSigma=True) ===
         if use_compact_format:
             # Get sigma values from unimodal fits
-            # SNR=0.1 corresponds to high noise condition (sigma_a_high)
-            # SNR=1.2 corresponds to low noise condition (sigma_a_low)
+   
             if np.isclose(SNR, 0.1):
                 sigma_av_a = self.sigma_a_high
             elif np.isclose(SNR, 1.2):
@@ -720,8 +719,8 @@ class OmerMonteCarlo(fitPychometric):
             return fitted_params  # No expansion needed
             
         # Get sigma values from unimodal fits
-        sigma_a1 = self.sigma_a_low   # Low noise condition (SNR=1.2)
-        sigma_a2 = self.sigma_a_high  # High noise condition (SNR=0.1)
+        sigma_a2 = self.sigma_a_low   # Low noise condition (SNR=1.2)
+        sigma_a1 = self.sigma_a_high  # High noise condition (SNR=0.1)
         sigma_v = self.sigma_v
         
         fitted_params = np.array(fitted_params)
