@@ -41,8 +41,8 @@ def process_single_file(args):
         audioTestVar = "testDurS"
 
 
-        ## Initialize the Monte Carlo fitter
-        mc_fitter = monteCarloClass.OmerMonteCarlo(data)
+        ## Initialize the Monte Carlo fitter - pass dataName to load sigma files
+        mc_fitter = monteCarloClass.OmerMonteCarlo(data, dataName=dataName)
 
         # Set fitter parameters
         mc_fitter.nSimul = nSimul
@@ -50,9 +50,12 @@ def process_single_file(args):
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
         mc_fitter.freeP_c = freeP_c  # Free prior probability of common cause
+        mc_fitter.knownSigma = False  # Set to True to use sigmas from unimodal fits
         print(f"Model name set to: {mc_fitter.modelName}\n")
         print(f"Shared lambda: {mc_fitter.sharedLambda}")
         print(f"Free P(C=1): {mc_fitter.freeP_c}")
+        print(f"Known sigma: {mc_fitter.knownSigma}")
+        print(f"Loaded sigmas: sigma_a_high={mc_fitter.sigma_a_high}, sigma_a_low={mc_fitter.sigma_a_low}, sigma_v={mc_fitter.sigma_v}")
         print(f"Integration method: {integrationMethod} (not used in current implementation)")
         
         # Fit the model and time it

@@ -79,13 +79,14 @@ class OmerMonteCarlo(fitPychometric):
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
         self.modelName = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
-        
+        self.knownSigma = False  # Whether to use known sigmas from unimodal fits (default: False for backward compatibility)
     
         
         self.visualStandardVar = "unbiasedVisualStandardDur"
         self.visualTestVar = "unbiasedVisualTestDur"
         self.audioTestVar = "testDurS"
         self.dataName = dataName if dataName else "default_data"
+        self.participanID=dataName.split("_")[0] if dataName else "default_participant"
         self.data = data
         self.sharedSigma_v=True
         self.freeP_c = False  # Fix: Add missing attribute for parameter configuration
@@ -111,8 +112,41 @@ class OmerMonteCarlo(fitPychometric):
             self.data_t_max = duration_center + 0.5
             print(f"Warning: All test durations identical ({duration_center}s). Using initial bounds [{self.data_t_min:.2f}, {self.data_t_max:.2f}]")
         
-        # Validate configuration consistency
+        # Load unimodal fits for auditory and visual modalities BEFORE validation
+        # This way knownSigma validation can check if sigmas are available
+        self.auditory_fit= None
+        self.visual_fit= None
+        self.sigma_a_high = None
+        self.sigma_a_low = None
+        self.sigma_v = None
+        
+        import os
+        import scipy.io
+        # Load unimodal auditory fits
+        auditory_fit_path = os.path.join("data", f"{self.participanID}_auditory_fits.mat")
+        try:
+            auditory_fit_data = scipy.io.loadmat(auditory_fit_path)
+            auditory_fit_params = auditory_fit_data['fittedParams'].flatten()
+            self.sigma_a_high = auditory_fit_params[2]  # High noise
+            self.sigma_a_low = auditory_fit_params[1]   # Low noise
+        except Exception as e:
+            pass  # Silently fail - will warn in validation if knownSigma=True
+
+        # Load unimodal visual fits
+        visual_fit_path = os.path.join("data", f"{self.participanID}_visual_fits.mat")
+        try:
+            visual_fit_data = scipy.io.loadmat(visual_fit_path)
+            visual_fit_params = visual_fit_data['fittedParams'].flatten()
+            self.sigma_v = visual_fit_params[1]
+        except Exception as e:
+            pass  # Silently fail - will warn in validation if knownSigma=True
+        
+        # Validate configuration consistency (AFTER sigma loading)
         self._validate_configuration()
+        
+
+
+
 
     def _validate_configuration(self):
         """Validate that model configuration is consistent"""
@@ -122,17 +156,37 @@ class OmerMonteCarlo(fitPychometric):
         
         if self.modelName not in valid_models:
             raise ValueError(f"Invalid modelName '{self.modelName}'. Valid options: {valid_models}")
+        
+        # Convert boolean-like values (0/1) to actual booleans for consistency
+        if self.sharedLambda in (0, 1):
+            self.sharedLambda = bool(self.sharedLambda)
+        if self.freeP_c in (0, 1):
+            self.freeP_c = bool(self.freeP_c)
+        if self.knownSigma in (0, 1):
+            self.knownSigma = bool(self.knownSigma)
             
         if not isinstance(self.sharedLambda, bool):
-            raise ValueError("sharedLambda must be boolean")
+            raise ValueError("sharedLambda must be boolean (or 0/1)")
             
         if not isinstance(self.freeP_c, bool):
-            raise ValueError("freeP_c must be boolean")
+            raise ValueError("freeP_c must be boolean (or 0/1)")
+            
+        if not isinstance(self.knownSigma, bool):
+            raise ValueError("knownSigma must be boolean (or 0/1)")
+            
+        # Validate that sigma values are loaded if knownSigma is True
+        if self.knownSigma:
+            if not hasattr(self, 'sigma_a_high') or self.sigma_a_high is None:
+                print("Warning: knownSigma=True but sigma_a_high not loaded. Will attempt to load during fitting.")
+            if not hasattr(self, 'sigma_a_low') or self.sigma_a_low is None:
+                print("Warning: knownSigma=True but sigma_a_low not loaded. Will attempt to load during fitting.")
+            if not hasattr(self, 'sigma_v') or self.sigma_v is None:
+                print("Warning: knownSigma=True but sigma_v not loaded. Will attempt to load during fitting.")
             
         if self.nSimul < 10:
             print(f"Warning: nSimul={self.nSimul} is very low. Consider using at least 100 for stable results.")
             
-        #print(f"✓ Configuration validated: {self.modelName}, sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
+        #print(f"✓ Configuration validated: {self.modelName}, sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}, knownSigma={self.knownSigma}")
 
 
 
@@ -258,16 +312,23 @@ class OmerMonteCarlo(fitPychometric):
         Parameters:
         -----------
         params : array-like
-            Parameter array with layout depending on configuration and model type:
+            Parameter array. After fitting with fitCausalInferenceMonteCarlo(), parameters 
+            are ALWAYS returned in the expanded format (same as knownSigma=False), regardless
+            of knownSigma setting. The sigma values from unimodal fits are inserted into 
+            the array for consistency.
             
-            For causal inference models (gaussian, lognorm, logLinearMismatch, selection, probabilityMatching, etc.):
+            Standard format (used after fitting):
+            For causal inference models:
             - sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3] (7 params)
             - sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2] (5 params)
             - sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2] (8 params)
             - sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2] (6 params)
   
-            For fusion-only models (fusionOnly, fusionOnlyLogNorm):
-            - [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params) - no p_c
+            For fusion-only models:
+            - [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params)
+            
+            During optimization (internal use only) with knownSigma=True, params may be 
+            in the compact format without sigma values.
             
         SNR : float
             Signal-to-noise ratio (0.1 or 1.2)
@@ -286,6 +347,151 @@ class OmerMonteCarlo(fitPychometric):
         if params is None:
             raise ValueError("params cannot be None. Model fitting may have failed.")
         
+        # Calculate expected lengths for both formats
+        expected_expanded_len = self._calculate_expected_param_length_expanded()
+        expected_compact_len = self._calculate_expected_param_length() if self.knownSigma else expected_expanded_len
+        
+        # Auto-detect format: if length matches expanded format, use knownSigma=False code path
+        use_compact_format = self.knownSigma and len(params) == expected_compact_len and len(params) != expected_expanded_len
+        
+        # === HANDLE COMPACT FORMAT (during optimization with knownSigma=True) ===
+        if use_compact_format:
+            # Get sigma values from unimodal fits
+            # SNR=0.1 corresponds to high noise condition (sigma_a_high)
+            # SNR=1.2 corresponds to low noise condition (sigma_a_low)
+            if np.isclose(SNR, 0.1):
+                sigma_av_a = self.sigma_a_high
+            elif np.isclose(SNR, 1.2):
+                sigma_av_a = self.sigma_a_low
+            else:
+                raise ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2.")
+            sigma_av_v = self.sigma_v
+            
+            # Use fixed t_min and t_max from data
+            t_min = self.data_t_min
+            t_max = self.data_t_max
+            
+            # Special handling for fusion-only models with knownSigma
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                # Fusion models with knownSigma: [λ] (1 param) or [λ, λ2, λ3] (3 params)
+                expected_len = 1 if self.sharedLambda else 3
+                if len(params) != expected_len:
+                    raise ValueError(f"Fusion-only models with knownSigma expect {expected_len} parameters, got {len(params)}")
+                
+                # Extract lambda based on conflict level
+                lambda_ = params[0]
+                if not self.sharedLambda:
+                    if conflict in [0, -0.17, 0.25]:
+                        lambda_ = params[0]
+                    elif conflict in [-0.08, 0.17]:
+                        lambda_ = params[1]  # lambda_2
+                    elif conflict in [-0.25, 0.08]:
+                        lambda_ = params[2]  # lambda_3
+                
+                p_c = 1.0
+                return lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max
+            
+            # Standard causal inference models with knownSigma
+            # Parameter layouts with knownSigma=True (no sigma params):
+            # - sharedLambda=True, freeP_c=False: [λ, pc] (2 params)
+            # - sharedLambda=True, freeP_c=True: [λ, pc1, pc2] (3 params)
+            # - sharedLambda=False, freeP_c=False: [λ, pc, λ2, λ3] (4 params)
+            # - sharedLambda=False, freeP_c=True: [λ, pc1, λ2, λ3, pc2] (5 params)
+            
+            if self.modelName == "switchingWithConflict":
+                # switchingWithConflict adds k parameter at the end
+                expected_lengths = {
+                    (True, True): 4,    # [λ, pc1, pc2, k]
+                    (True, False): 3,   # [λ, pc, k]
+                    (False, True): 6,   # [λ, pc1, λ2, λ3, pc2, k]
+                    (False, False): 5   # [λ, pc, λ2, λ3, k]
+                }
+            elif self.modelName == "switchingFree":
+                # switchingFree has p_switch1 and p_switch2
+                expected_lengths = {
+                    (True, True): 3,    # [λ, p_switch1, p_switch2]
+                    (True, False): 3,   # [λ, p_switch1, p_switch2]
+                    (False, True): 5,   # [λ, p_switch1, λ2, λ3, p_switch2]
+                    (False, False): 5   # [λ, p_switch1, λ2, λ3, p_switch2]
+                }
+            else:
+                expected_lengths = {
+                    (True, True): 3,    # [λ, pc1, pc2]
+                    (True, False): 2,   # [λ, pc]
+                    (False, True): 5,   # [λ, pc1, λ2, λ3, pc2]
+                    (False, False): 4   # [λ, pc, λ2, λ3]
+                }
+            
+            config_key = (self.sharedLambda, self.freeP_c)
+            expected_length = expected_lengths[config_key]
+            
+            if len(params) != expected_length:
+                raise ValueError(f"Parameter array length {len(params)} doesn't match expected length {expected_length} for knownSigma=True, sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}, modelName={self.modelName}")
+            
+            # Extract lambda
+            lambda_ = params[0]
+            
+            # Extract additional lambdas if not shared
+            if not self.sharedLambda:
+                if self.modelName == "switchingFree":
+                    # [λ, p_switch1, λ2, λ3, p_switch2]
+                    if conflict in [0, -0.17, 0.25]:
+                        lambda_ = params[0]
+                    elif conflict in [-0.08, 0.17]:
+                        lambda_ = params[2]  # lambda_2
+                    elif conflict in [-0.25, 0.08]:
+                        lambda_ = params[3]  # lambda_3
+                elif self.modelName == "switchingWithConflict":
+                    # [λ, pc, λ2, λ3, k] or [λ, pc1, λ2, λ3, pc2, k]
+                    if conflict in [0, -0.17, 0.25]:
+                        lambda_ = params[0]
+                    elif conflict in [-0.08, 0.17]:
+                        lambda_ = params[2]  # lambda_2
+                    elif conflict in [-0.25, 0.08]:
+                        lambda_ = params[3]  # lambda_3
+                else:
+                    # Standard causal: [λ, pc, λ2, λ3] or [λ, pc1, λ2, λ3, pc2]
+                    if conflict in [0, -0.17, 0.25]:
+                        lambda_ = params[0]
+                    elif conflict in [-0.08, 0.17]:
+                        lambda_ = params[2]  # lambda_2
+                    elif conflict in [-0.25, 0.08]:
+                        lambda_ = params[3]  # lambda_3
+            
+            # Extract p_c or p_switch
+            if self.modelName == "switchingFree":
+                # p_switch1 is at index 1, p_switch2 at end
+                if np.isclose(SNR, 0.1):
+                    p_switch = params[1]
+                elif np.isclose(SNR, 1.2):
+                    p_switch = params[-1]
+                return lambda_, sigma_av_a, sigma_av_v, p_switch, t_min, t_max
+            
+            elif self.modelName == "switchingWithConflict":
+                k = params[-1]
+                if self.freeP_c:
+                    # [λ, pc1, (λ2, λ3), pc2, k]
+                    if np.isclose(SNR, 0.1):
+                        p_c = params[1]
+                    elif np.isclose(SNR, 1.2):
+                        p_c = params[-2]
+                else:
+                    p_c = params[1]
+                return lambda_, sigma_av_a, sigma_av_v, p_c, k, t_min, t_max
+            
+            else:
+                # Standard causal inference models
+                if self.freeP_c:
+                    # p_c1 at index 1, p_c2 at end
+                    if np.isclose(SNR, 0.1):
+                        p_c = params[1]
+                    elif np.isclose(SNR, 1.2):
+                        p_c = params[-1]
+                else:
+                    p_c = params[1]
+                return lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max
+        
+        # === ORIGINAL CODE FOR knownSigma=False ===
         # Special handling for fusion-only models
         if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             # Fusion models: [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params)
@@ -429,6 +635,208 @@ class OmerMonteCarlo(fitPychometric):
         else:
             return lambda_,sigma_av_a,sigma_av_v,p_c,t_min,t_max
     
+    def _calculate_expected_param_length(self):
+        """Calculate expected parameter array length based on model configuration."""
+        if self.knownSigma:
+            # When sigmas are known, we don't fit them
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                # Just lambda(s)
+                return 1 if self.sharedLambda else 3
+            elif self.modelName == "switchingFree":
+                # λ, p_switch1, (λ2, λ3), p_switch2
+                return 3 if self.sharedLambda else 5
+            elif self.modelName == "switchingWithConflict":
+                # λ, pc(s), (λ2, λ3), k
+                if self.sharedLambda and not self.freeP_c:
+                    return 3  # λ, pc, k
+                elif self.sharedLambda and self.freeP_c:
+                    return 4  # λ, pc1, pc2, k
+                elif not self.sharedLambda and not self.freeP_c:
+                    return 5  # λ, pc, λ2, λ3, k
+                else:
+                    return 6  # λ, pc1, λ2, λ3, pc2, k
+            else:
+                # Standard causal inference: λ, pc(s), (λ2, λ3)
+                if self.sharedLambda and not self.freeP_c:
+                    return 2  # λ, pc
+                elif self.sharedLambda and self.freeP_c:
+                    return 3  # λ, pc1, pc2
+                elif not self.sharedLambda and not self.freeP_c:
+                    return 4  # λ, pc, λ2, λ3
+                else:
+                    return 5  # λ, pc1, λ2, λ3, pc2
+        else:
+            # Original logic when sigmas are fitted
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                return 4 if self.sharedLambda else 6
+            elif self.modelName == "switchingWithConflict":
+                if self.freeP_c:
+                    return 7 if self.sharedLambda else 9
+                else:
+                    return 6 if self.sharedLambda else 8
+            elif self.modelName == "switchingFree":
+                return 6 if self.sharedLambda else 8
+            elif self.freeP_c:
+                return 6 if self.sharedLambda else 8
+            else:
+                return 5 if self.sharedLambda else 7
+    
+    def _calculate_expected_param_length_expanded(self):
+        """Calculate expected parameter length for expanded format (always includes sigma values)."""
+        # This is the same as knownSigma=False format
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            return 4 if self.sharedLambda else 6
+        elif self.modelName == "switchingWithConflict":
+            if self.freeP_c:
+                return 7 if self.sharedLambda else 9
+            else:
+                return 6 if self.sharedLambda else 8
+        elif self.modelName == "switchingFree":
+            return 6 if self.sharedLambda else 8
+        elif self.freeP_c:
+            return 6 if self.sharedLambda else 8
+        else:
+            return 5 if self.sharedLambda else 7
+    
+    def _expand_knownSigma_params(self, fitted_params):
+        """
+        Expand parameters fitted with knownSigma=True to the full format (same as knownSigma=False).
+        This inserts the known sigma values into the appropriate positions for plotting consistency.
+        
+        Parameters:
+        -----------
+        fitted_params : array-like
+            Parameters fitted with knownSigma=True (without sigma values)
+            
+        Returns:
+        --------
+        array : Full parameter array with sigma values inserted
+        
+        Example layouts:
+        - Fusion knownSigma=True: [λ] → [λ, σa1, σv, σa2]
+        - Causal knownSigma=True: [λ, pc] → [λ, σa1, σv, pc, σa2]
+        """
+        if not self.knownSigma:
+            return fitted_params  # No expansion needed
+            
+        # Get sigma values from unimodal fits
+        sigma_a1 = self.sigma_a_low   # Low noise condition (SNR=1.2)
+        sigma_a2 = self.sigma_a_high  # High noise condition (SNR=0.1)
+        sigma_v = self.sigma_v
+        
+        fitted_params = np.array(fitted_params)
+        
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            # Fusion knownSigma: [λ] or [λ, λ2, λ3]
+            # Expand to: [λ, σa1, σv, σa2] or [λ, σa1, σv, σa2, λ2, λ3]
+            if self.sharedLambda:
+                # [λ] → [λ, σa1, σv, σa2]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, sigma_a2])
+            else:
+                # [λ, λ2, λ3] → [λ, σa1, σv, σa2, λ2, λ3]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, sigma_a2, 
+                                fitted_params[1], fitted_params[2]])
+        
+        elif self.modelName == "switchingFree":
+            # SwitchingFree knownSigma: [λ, p_switch1, p_switch2] or [λ, p_switch1, λ2, λ3, p_switch2]
+            # Expand to: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
+            if self.sharedLambda:
+                # [λ, p_switch1, p_switch2] → [λ, σa1, σv, p_switch1, σa2, p_switch2]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1],
+                                sigma_a2, fitted_params[2]])
+            else:
+                # [λ, p_switch1, λ2, λ3, p_switch2] → [λ, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1],
+                                sigma_a2, fitted_params[2], fitted_params[3], fitted_params[4]])
+        
+        elif self.modelName == "switchingWithConflict":
+            # SwitchingWithConflict knownSigma layouts vary, but all have k at the end
+            k = fitted_params[-1]
+            
+            if self.sharedLambda and not self.freeP_c:
+                # [λ, pc, k] → [λ, σa1, σv, pc, σa2, k]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1],
+                                sigma_a2, k])
+            elif self.sharedLambda and self.freeP_c:
+                # [λ, pc1, pc2, k] → [λ, σa1, σv, pc1, σa2, pc2, k]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1],
+                                sigma_a2, fitted_params[2], k])
+            elif not self.sharedLambda and not self.freeP_c:
+                # [λ, pc, λ2, λ3, k] → [λ, σa1, σv, pc, σa2, λ2, λ3, k]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1],
+                                sigma_a2, fitted_params[2], fitted_params[3], k])
+            else:  # not sharedLambda and freeP_c
+                # [λ, pc1, λ2, λ3, pc2, k] → [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2, k]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1],
+                                sigma_a2, fitted_params[2], fitted_params[3], fitted_params[4], k])
+        
+        else:
+            # Standard causal inference models
+            if self.sharedLambda and not self.freeP_c:
+                # [λ, pc] → [λ, σa1, σv, pc, σa2]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1], sigma_a2])
+            elif self.sharedLambda and self.freeP_c:
+                # [λ, pc1, pc2] → [λ, σa1, σv, pc1, σa2, pc2]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1],
+                                sigma_a2, fitted_params[2]])
+            elif not self.sharedLambda and not self.freeP_c:
+                # [λ, pc, λ2, λ3] → [λ, σa1, σv, pc, σa2, λ2, λ3]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1],
+                                sigma_a2, fitted_params[2], fitted_params[3]])
+            else:  # not sharedLambda and freeP_c
+                # [λ, pc1, λ2, λ3, pc2] → [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2]
+                return np.array([fitted_params[0], sigma_a1, sigma_v, fitted_params[1],
+                                sigma_a2, fitted_params[2], fitted_params[3], fitted_params[4]])
+    
+    def _create_test_params(self):
+        """Create test parameters with realistic values based on configuration."""
+        if self.knownSigma:
+            # Parameters WITHOUT sigma values
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                test_params = [0.1]  # Just λ
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])  # λ2, λ3
+            elif self.modelName == "switchingFree":
+                test_params = [0.1, 0.3]  # λ, p_switch1
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])  # λ2, λ3
+                test_params.append(0.7)  # p_switch2
+            elif self.modelName == "switchingWithConflict":
+                test_params = [0.1, 0.5]  # λ, pc
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])  # λ2, λ3
+                if self.freeP_c:
+                    test_params.append(0.5)  # pc2
+                test_params.append(1.0)  # k
+            else:
+                # Standard causal inference
+                test_params = [0.1, 0.5]  # λ, pc
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])  # λ2, λ3
+                if self.freeP_c:
+                    test_params.append(0.5)  # pc2
+        else:
+            # Original test_params with sigma values
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                test_params = [0.1, 0.5, 0.5, 0.8]  # λ, σa1, σv, σa2
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])
+            elif self.modelName == "switchingFree":
+                test_params = [0.1, 0.5, 0.5, 0.3, 0.8]  # λ, σa1, σv, p_switch1, σa2
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])
+                test_params.append(0.7)  # p_switch2
+            else:
+                test_params = [0.1, 0.5, 0.5, 0.5, 0.8]  # λ, σa1, σv, pc, σa2
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])
+                if self.freeP_c:
+                    test_params.append(0.5)
+                if self.modelName == "switchingWithConflict":
+                    test_params.append(1.0)  # k
+        
+        return np.array(test_params)
+
     def test_fitting_components(self, groupedData):
         """Test individual components of the fitting process for debugging"""
         print("=== DEBUGGING FITTING COMPONENTS ===")
@@ -436,51 +844,25 @@ class OmerMonteCarlo(fitPychometric):
         # Test data bounds
         print(f"Data bounds: t_min={self.data_t_min:.3f}, t_max={self.data_t_max:.3f}")
         print(f"Grouped data shape: {groupedData.shape}")
-        print(f"Configuration: sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
+        print(f"Configuration: sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}, knownSigma={self.knownSigma}")
         print(f"Model: {self.modelName}")
         
-        # Test parameter array creation
-        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-            expected_length = 6 if not self.sharedLambda else 4  # Fusion-only models: [λ, σa1, σv, σa2, (λ2, λ3)]
-        elif self.modelName == "switchingWithConflict":
-            # switchingWithConflict model has additional k parameter, no t_min/t_max
-            if self.freeP_c:
-                expected_length = 9 if not self.sharedLambda else 7
-            else:
-                expected_length = 8 if not self.sharedLambda else 6
-        elif self.modelName == "switchingFree":
-            # switchingFree model has two p_switch parameters, no t_min/t_max
-            expected_length = 8 if not self.sharedLambda else 6
-        elif self.freeP_c:
-            expected_length = 8 if not self.sharedLambda else 6
-        else:
-            expected_length = 7 if not self.sharedLambda else 5
+        if self.knownSigma:
+            # Check if sigmas are actually loaded
+            if self.sigma_a_high is None or self.sigma_a_low is None or self.sigma_v is None:
+                print(f"ERROR: knownSigma=True but sigmas not loaded!")
+                print(f"  sigma_a_high={self.sigma_a_high}, sigma_a_low={self.sigma_a_low}, sigma_v={self.sigma_v}")
+                print(f"  Participant ID: {self.participanID}")
+                print(f"  Please check that data/{self.participanID}_auditory_fits.mat and data/{self.participanID}_visual_fits.mat exist.")
+                return False
+            print(f"Known sigmas: sigma_a_high={self.sigma_a_high:.4f}, sigma_a_low={self.sigma_a_low:.4f}, sigma_v={self.sigma_v:.4f}")
+        
+        # Calculate expected parameter length based on configuration
+        expected_length = self._calculate_expected_param_length()
         print(f"Expected parameter length: {expected_length}")
         
-        # Create test parameters with realistic values
-        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-            # Fusion-only: [λ, σa1, σv, σa2, (λ2, λ3)] - no t_min/t_max
-            test_params = [0.1, 0.5, 0.5, 0.8]  # λ, σa1, σv, σa2
-            if not self.sharedLambda:
-                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
-            test_params = np.array(test_params)
-        elif self.modelName == "switchingFree":
-            # SwitchingFree: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2] - no t_min/t_max
-            test_params = [0.1, 0.5, 0.5, 0.3, 0.8]  # λ, σa1, σv, p_switch1, σa2
-            if not self.sharedLambda:
-                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
-            test_params.append(0.7)  # Add p_switch2
-            test_params = np.array(test_params)
-        else:
-            # Causal inference models - 
-            test_params = [0.1, 0.5, 0.5, 0.5, 0.8]  # Basic 5 params: λ, σa1, σv, pc, σa2
-            if not self.sharedLambda:
-                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
-            if self.freeP_c:
-                test_params.append(0.5)  # Add second p_c
-            if self.modelName == "switchingWithConflict":
-                test_params.append(1.0)  # Add k parameter
-            test_params = np.array(test_params)
+        # Create test parameters with realistic values based on knownSigma flag
+        test_params = self._create_test_params()
         
         print(f"Test params length: {len(test_params)}, values: {test_params}")
         
@@ -1179,8 +1561,100 @@ class OmerMonteCarlo(fitPychometric):
             return None
         
         # ---- PARAMETER BOUNDS ----
+        # Handle knownSigma case first - significantly fewer parameters when sigmas are fixed
+        if self.knownSigma:
+            print(f"Fitting with knownSigma=True: using sigma_a_high={self.sigma_a_high:.4f}, sigma_a_low={self.sigma_a_low:.4f}, sigma_v={self.sigma_v:.4f}")
+            
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                # Fusion with knownSigma: [λ] or [λ, λ2, λ3]
+                if self.sharedLambda:
+                    bounds = np.array([(0.001, 0.4)])  # Just lambda
+                else:
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.001, 0.4),   # lambda_2
+                        (0.001, 0.4),   # lambda_3
+                    ])
+            elif self.modelName == "switchingFree":
+                # SwitchingFree with knownSigma: [λ, p_switch1, p_switch2] or [λ, p_switch1, λ2, λ3, p_switch2]
+                if self.sharedLambda:
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_switch1
+                        (0.0, 1.0),     # p_switch2
+                    ])
+                else:
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_switch1
+                        (0.001, 0.4),   # lambda_2
+                        (0.001, 0.4),   # lambda_3
+                        (0.0, 1.0),     # p_switch2
+                    ])
+            elif self.modelName == "switchingWithConflict":
+                # SwitchingWithConflict with knownSigma: [λ, pc, k] or with more params
+                if self.sharedLambda and not self.freeP_c:
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_c
+                        (0.1, 10.0),    # k
+                    ])
+                elif self.sharedLambda and self.freeP_c:
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_c1
+                        (0.0, 1.0),     # p_c2
+                        (0.1, 10.0),    # k
+                    ])
+                elif not self.sharedLambda and not self.freeP_c:
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_c
+                        (0.001, 0.4),   # lambda_2
+                        (0.001, 0.4),   # lambda_3
+                        (0.1, 10.0),    # k
+                    ])
+                else:  # not sharedLambda and freeP_c
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_c1
+                        (0.001, 0.4),   # lambda_2
+                        (0.001, 0.4),   # lambda_3
+                        (0.0, 1.0),     # p_c2
+                        (0.1, 10.0),    # k
+                    ])
+            else:
+                # Standard causal inference models with knownSigma
+                if self.sharedLambda and not self.freeP_c:
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_c
+                    ])
+                elif self.sharedLambda and self.freeP_c:
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_c1
+                        (0.0, 1.0),     # p_c2
+                    ])
+                elif not self.sharedLambda and not self.freeP_c:
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_c
+                        (0.001, 0.4),   # lambda_2
+                        (0.001, 0.4),   # lambda_3
+                    ])
+                else:  # not sharedLambda and freeP_c
+                    bounds = np.array([
+                        (0.001, 0.4),   # lambda
+                        (0.0, 1.0),     # p_c1
+                        (0.001, 0.4),   # lambda_2
+                        (0.001, 0.4),   # lambda_3
+                        (0.0, 1.0),     # p_c2
+                    ])
+        
+        # knownSigma=False: Original bounds with sigma parameters
         # Special bounds for fusion-only models (no p_c parameter, no t_min/t_max)
-        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+        elif self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
             print(f"Fitting fusion-only model: {self.modelName} (p_c fixed at 1.0, no bounds needed)")
             # Fusion models base: [λ, σa1, σv, σa2] + optional [λ2, λ3] if not sharedLambda
             bounds = np.array([
@@ -1269,8 +1743,8 @@ class OmerMonteCarlo(fitPychometric):
                     (0.1, 10.0),     # 8 k - conflict sensitivity parameter
                 ])
 
-
-        if self.sharedLambda:
+        # Apply sharedLambda adjustments only when knownSigma=False
+        if not self.knownSigma and self.sharedLambda:
             if self.modelName == "switchingFree":
                 # Remove lambda_2 and lambda_3 for switchingFree
                 bounds = np.delete(bounds, [5,6], axis=0)
@@ -1299,6 +1773,8 @@ class OmerMonteCarlo(fitPychometric):
         # Debug: Print bounds information
         print(f"Bounds shape: {bounds.shape}")
         print(f"Using fixed t_min={self.data_t_min:.3f}, t_max={self.data_t_max:.3f} from data")
+        if self.knownSigma:
+            print(f"Using known sigmas: sigma_a_high={self.sigma_a_high:.4f}, sigma_a_low={self.sigma_a_low:.4f}, sigma_v={self.sigma_v:.4f}")
         
         # Validate bounds consistency
         for i, (lb, ub) in enumerate(bounds):
@@ -1308,27 +1784,57 @@ class OmerMonteCarlo(fitPychometric):
             
         # Test the likelihood function with reasonable parameters before optimization
         print("Testing likelihood function with reasonable parameters...")
-        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-            # Fusion-only models: [λ, σa1, σv, σa2, (λ2, λ3)]
-            test_params = [0.1, 0.5, 0.5, 0.8]  # λ, σa1, σv, σa2
-            if not self.sharedLambda:
-                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
+        
+        # Build test_params based on knownSigma flag
+        if self.knownSigma:
+            # Parameters WITHOUT sigma values (they come from unimodal fits)
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                test_params = [0.1]  # Just λ
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])  # λ2, λ3
+            elif self.modelName == "switchingFree":
+                test_params = [0.1, 0.3]  # λ, p_switch1
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])  # λ2, λ3
+                test_params.append(0.7)  # p_switch2
+            elif self.modelName == "switchingWithConflict":
+                test_params = [0.1, 0.5]  # λ, pc
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])  # λ2, λ3
+                if self.freeP_c:
+                    test_params.append(0.5)  # pc2
+                test_params.append(1.0)  # k
+            else:
+                # Standard causal inference
+                test_params = [0.1, 0.5]  # λ, pc
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])  # λ2, λ3
+                if self.freeP_c:
+                    test_params.append(0.5)  # pc2
             test_params = np.array(test_params)
-        elif self.modelName == "switchingFree":
-            # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
-            test_params = np.array([0.1, 0.5, 0.5, 0.3, 0.8])  # λ, σa1, σv, p_switch1, σa2
-            if not self.sharedLambda:
-                test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
-            test_params = np.append(test_params, [0.7])  # Add p_switch2 (no t_min/t_max)
         else:
-            # Causal inference models (no t_min/t_max parameters)
-            test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters: λ, σa1, σv, pc, σa2
-            if not self.sharedLambda:
-                test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
-            if self.freeP_c:
-                test_params = np.append(test_params, [0.5])  # Add second p_c
-            if self.modelName == "switchingWithConflict":
-                test_params = np.append(test_params, [1.0])  # Add k parameter
+            # Original test_params with sigma values
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                # Fusion-only models: [λ, σa1, σv, σa2, (λ2, λ3)]
+                test_params = [0.1, 0.5, 0.5, 0.8]  # λ, σa1, σv, σa2
+                if not self.sharedLambda:
+                    test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
+                test_params = np.array(test_params)
+            elif self.modelName == "switchingFree":
+                # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
+                test_params = np.array([0.1, 0.5, 0.5, 0.3, 0.8])  # λ, σa1, σv, p_switch1, σa2
+                if not self.sharedLambda:
+                    test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
+                test_params = np.append(test_params, [0.7])  # Add p_switch2 (no t_min/t_max)
+            else:
+                # Causal inference models (no t_min/t_max parameters)
+                test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters: λ, σa1, σv, pc, σa2
+                if not self.sharedLambda:
+                    test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
+                if self.freeP_c:
+                    test_params = np.append(test_params, [0.5])  # Add second p_c
+                if self.modelName == "switchingWithConflict":
+                    test_params = np.append(test_params, [1.0])  # Add k parameter
         
         try:
             test_ll = self.nLLMonteCarloCausal(test_params, groupedData)
@@ -1349,148 +1855,11 @@ class OmerMonteCarlo(fitPychometric):
         optimizer = self.optimizationMethod if hasattr(self, 'optimizationMethod') else 'scipy'
         print(f"\nStarting {nStart} optimization attempts using '{optimizer}'...")
         print("Model is " + self.modelName)
-        for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
-            # Random x0 initialization within bounds
-            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-                # Fusion-only models: [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params)
-                x0 = np.array([
-                    np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                    np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                    np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v
-                    np.random.uniform(bounds[3][0], bounds[3][1]),  # sigma_av_a_2
-                ])
-                # Add lambda_2, lambda_3 if not sharedLambda
-                if not self.sharedLambda:
-                    x0 = np.append(x0, [
-                        np.random.uniform(bounds[4][0], bounds[4][1]),  # lambda_2
-                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_3
-                    ])
-            elif self.modelName == "switchingFree":
-                # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
-                x0 = np.array([
-                    np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                    np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                    np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v
-                    np.random.uniform(bounds[3][0], bounds[3][1]),  # p_switch1
-                    np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                ])
-                # Add lambda_2, lambda_3 if not sharedLambda
-                if not self.sharedLambda:
-                    x0 = np.append(x0, [
-                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
-                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
-                    ])
-                # Always add p_switch2 at the end
-                final_index = 7 if not self.sharedLambda else 5
-                x0 = np.append(x0, np.random.uniform(bounds[final_index][0], bounds[final_index][1]))  # p_switch2
-
-            elif self.modelName in ["gaussian", "lognorm", "logLinearMismatch", "probabilityMatching", "probabilityMatchingLogNorm", "selection", "switching"]:
-                # Standard causal inference models (no t_min/t_max parameters)
-                if self.freeP_c==False and not self.sharedLambda:
-                    # standard causal inference model with shared p_c (no t_min/t_max)
-                    x0 = np.array([
-                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
-                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c general
-                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
-                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
-                    ])
-                elif self.freeP_c==False and self.sharedLambda:
-                    # standard causal inference model with shared p_c and shared lambda
-                    x0 = np.array([
-                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
-                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c general
-                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                    ])
-                elif self.freeP_c==True and not self.sharedLambda:
-                    # standard causal inference model with free p_c
-                    x0 = np.array([
-                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
-                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
-                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
-                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
-                        np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
-                    ])
-                elif self.freeP_c==True and self.sharedLambda:
-                    # standard causal inference model with free p_c and shared lambda
-                    x0 = np.array([
-                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
-                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
-                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                        np.random.uniform(bounds[5][0], bounds[5][1]),  # p_c_2
-                    ])
-                else:
-                    raise NotImplementedError("Invalid parameter configuration.")
-                    
-            elif self.modelName == "switchingWithConflict":
-                # switchingWithConflict models with k parameter
-                if self.freeP_c==False and not self.sharedLambda:
-                    # switchingWithConflict with shared p_c
-                    x0 = np.array([
-                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
-                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c general
-                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
-                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
-                        np.random.uniform(bounds[7][0], bounds[7][1]),  # k
-                    ])
-                elif self.freeP_c==False and self.sharedLambda:
-                    # switchingWithConflict with shared p_c and shared lambda
-                    x0 = np.array([
-                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
-                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c general
-                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                        np.random.uniform(bounds[5][0], bounds[5][1]),  # k
-                    ])
-                elif self.freeP_c==True and not self.sharedLambda:
-                    # switchingWithConflict with free p_c
-                    x0 = np.array([
-                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
-                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
-                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
-                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
-                        np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
-                        np.random.uniform(bounds[8][0], bounds[8][1]),  # k
-                    ])
-                elif self.freeP_c==True and self.sharedLambda:
-                    # switchingWithConflict with free p_c and shared lambda
-                    x0 = np.array([
-                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
-                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
-                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
-                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
-                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
-                        np.random.uniform(bounds[5][0], bounds[5][1]),  # p_c_2
-                        np.random.uniform(bounds[6][0], bounds[6][1]),  # k
-                    ])
-                else:
-                    raise NotImplementedError("Invalid parameter configuration.")
-            else:
-                raise ValueError(f"Unknown model name: {self.modelName}")
+        print(f"knownSigma={self.knownSigma}, sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
         
-            # # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0
-            # # (only for standard causal inference models - fusion and switchingFree already handled above)
-            # if self.sharedLambda and self.modelName not in ["fusionOnly", "fusionOnlyLogNorm", "switchingFree"]:
-            #     if self.modelName == "switchingWithConflict":
-            #         x0 = np.delete(x0, [5,6])  # remove lambda_2 and lambda_3, but keep k
-            #     else:
-            #         x0 = np.delete(x0, [5,6])  # remove lambda_2 and lambda_3 if sharedLambda is True
+        for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
+            # Random x0 initialization within bounds - simplified: just sample from bounds
+            x0 = np.array([np.random.uniform(lb, ub) for lb, ub in bounds])
                 
             # Validate x0 vs bounds
             for i, (x_val, (lb, ub)) in enumerate(zip(x0, bounds)):
@@ -1601,9 +1970,15 @@ class OmerMonteCarlo(fitPychometric):
         xres = np.clip(xres, bounds[:, 0], bounds[:, 1])
         
         print(f"\n✅ Best result from {nStart} attempts:")
-        print(f"  → Final parameters: {xres}")
+        print(f"  → Fitted parameters (raw): {xres}")
         print(f"  → Final log-likelihood: {fval:.6f}")
-
+        
+        # If knownSigma=True, expand parameters to full format for consistency
+        if self.knownSigma:
+            xres_expanded = self._expand_knownSigma_params(xres)
+            print(f"  → Expanded parameters (with known sigmas): {xres_expanded}")
+            return xres_expanded
+        
         return xres
 
 
@@ -1908,68 +2283,15 @@ class OmerMonteCarlo(fitPychometric):
         plt.show()
 
 
-    def getActualParameterCount(self):        
-        # === FUSION MODELS ===
-        # Always: [λ, σa1, σv, σa2] + optional [λ2, λ3]
-        # No p_c (fixed at 1.0), no t_min/t_max (fixed from data)
-        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
-            if self.sharedLambda:
-                # [λ, σa1, σv, σa2] = 4 params
-                return 4
-            else:
-                # [λ, σa1, σv, σa2, λ2, λ3] = 6 params
-                return 6
+    def getActualParameterCount(self):
+        """Return the number of free parameters in the model.
         
-        # === SWITCHING FREE MODEL ===
-        # Always: [λ, σa1, σv, p_switch1, σa2, p_switch2] + optional [λ2, λ3]
-        # Uses p_switch instead of p_c, no t_min/t_max (fixed from data)
-        elif self.modelName == "switchingFree":
-            if self.sharedLambda:
-                # [λ, σa1, σv, p_switch1, σa2, p_switch2] = 6 params
-                return 6
-            else:
-                # [λ, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2] = 8 params
-                return 8
-        
-        # === SWITCHING WITH CONFLICT MODEL ===
-        # Base: [λ, σa1, σv, σa2, k] = 5 params (no t_min/t_max - fixed from data)
-        # + optional [λ2, λ3] if not sharedLambda
-        # + optional p_c parameters
-        elif self.modelName == "switchingWithConflict":
-            base_count = 5  # λ, σa1, σv, σa2, k (no t_min/t_max)
-            
-            # Add lambda parameters
-            if not self.sharedLambda:
-                base_count += 2  # Add λ2, λ3
-            
-            # Add p_c parameters
-            if self.freeP_c:
-                base_count += 2  # Add p_c1, p_c2 (separate for each SNR)
-            else:
-                base_count += 1  # Add p_c (shared across SNR)
-            
-            return base_count
-        
-        # === STANDARD CAUSAL INFERENCE MODELS (including switching) ===
-        # Base: [λ, σa1, σv, σa2] = 4 params (no t_min/t_max - fixed from data)
-        # + optional [λ2, λ3] if not sharedLambda
-        # + optional p_c parameters
-        else:
-            base_count = 4  # λ, σa1, σv, σa2 (no t_min/t_max)
-            
-            # Add lambda parameters
-            if not self.sharedLambda:
-                base_count += 2  # Add λ2, λ3
-            
-            # Add p_c parameters
-            if self.freeP_c:
-                base_count += 2  # Add p_c1, p_c2 (separate for each SNR)
-            else:
-                base_count += 1  # Add p_c (shared across SNR)
-            
-            return base_count
+        When knownSigma=True, sigma parameters are fixed from unimodal fits
+        and not counted as free parameters.
+        """
+        # Use the centralized calculation method
+        return self._calculate_expected_param_length()
                 
-
 "TEST CODE"
 ##############################
 
@@ -1999,20 +2321,22 @@ if __name__ == "__main__":
     audioStandardVar = "standardDur"
     audioTestVar = "testDurS"
 
-
-    # Instantiate the Monte Carlo class
+    # Instantiate the Monte Carlo class - pass dataName to load sigma files
     mc_fitter = OmerMonteCarlo(
         data,
-        intensityVar=intensityVariable
-        # sensoryVar=sensoryVar,
-        # standardVar=standardVar,
-        # conflictVar=conflictVar
+        intensityVar=intensityVariable,
+        dataName=dataName  # Required for loading sigma files from unimodal fits
     )
-    mc_fitter.dataName = dataName
+    
+    # Configuration
     mc_fitter.nSimul = 100
-    mc_fitter.optimizationMethod= "bads"  # Use BADS for optimization
+    mc_fitter.optimizationMethod = "bads"  # Use BADS for optimization
     mc_fitter.nStart = 1  # Number of random starts for optimization
-
+    mc_fitter.modelName = "fusionOnlyLogNorm"  # Model type
+    mc_fitter.knownSigma = False  # Set to True to use sigmas from unimodal fits
+    
+    # Print loaded sigma values (available even if knownSigma=False)
+    print(f"Loaded sigmas: sigma_a_high={mc_fitter.sigma_a_high}, sigma_a_low={mc_fitter.sigma_a_low}, sigma_v={mc_fitter.sigma_v}")
 
     groupedData = mc_fitter.groupByChooseTest(
         x=data,
@@ -2022,46 +2346,35 @@ if __name__ == "__main__":
         ]
     )
 
-    
-
-    mc_fitter.modelName = "fusionOnlyLogNorm"  # Set measurement distribution to Gaussian
+    # Fit the model
     timeStart = time.time()
     print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
+    print(f"Model: {mc_fitter.modelName}, knownSigma: {mc_fitter.knownSigma}")
     fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
     mc_fitter.modelFit = fittedParams  # Store the fitted parameters in the class instance
     print(f"\nFitted parameters for {dataName}: {fittedParams}")
     print(f"Time taken to fit: {time.time() - timeStart:.2f} seconds")
 
-    # uniqueStandard = groupedData[standardVar].unique()
-    # uniqueSensory = groupedData[sensoryVar].unique()
-    # uniqueConflict = sorted(groupedData[conflictVar].unique())
-
-    # simulate data for psychometric curve
-    mc_fitter.simulatedData = mc_fitter.simulateMonteCarloData(fittedParams, mc_fitter.data ,nSamples=100)
+    # Simulate data for psychometric curve
+    mc_fitter.simulatedData = mc_fitter.simulateMonteCarloData(fittedParams, mc_fitter.data, nSamples=100)
     # Create a temporary fitter for simulated data
     temp_fitter = fitPychometric(mc_fitter.simulatedData)
     mc_fitter.simDataFit = temp_fitter.fitMultipleStartingPoints(nStart=1)
 
-    "psychometric fit"
+    # Psychometric fit on original data
     mc_fitter.dataFit = mc_fitter.fitMultipleStartingPoints(nStart=1)
-
 
     # Plotting the results
     mc_fitter.plotPsychometrics_MC_Data()
 
-
-                
-
-
-
-
     # Plot posterior vs conflict
     mc_fitter.plot_posterior_vs_conflict(data, fittedParams, snr_list=[1.2, 0.1])
-    # Simulate and plot psychometric data
+    
+    # Get unique values for reference
     uniqueSensory = np.unique(data[sensoryVar])
     uniqueConflict = np.unique(data[conflictVar])
-
-
+    print(f"Unique sensory levels: {uniqueSensory}")
+    print(f"Unique conflict levels: {uniqueConflict}")
 
 
 
