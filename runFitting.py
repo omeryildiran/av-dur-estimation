@@ -50,7 +50,7 @@ def process_single_file(args):
         mc_fitter.nStart = nStarts # Number of random starts for optimization
         mc_fitter.modelName = modelName  # Set measurement distribution to Gaussian
         mc_fitter.freeP_c = freeP_c  # Free prior probability of common cause
-        mc_fitter.knownSigma = False  # Set to True to use sigmas from unimodal fits
+        mc_fitter.knownSigma = 1  # Set to True to use sigmas from unimodal fits
         print(f"Model name set to: {mc_fitter.modelName}\n")
         print(f"Shared lambda: {mc_fitter.sharedLambda}")
         print(f"Free P(C=1): {mc_fitter.freeP_c}")
