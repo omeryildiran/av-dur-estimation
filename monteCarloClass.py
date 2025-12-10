@@ -78,7 +78,7 @@ class OmerMonteCarlo(fitPychometric):
         self.dataFit = None  # Placeholder for fitted data
         self.simDataFit = None  # Placeholder for simulated data fit
         self.groupedData = None  # Placeholder for grouped data
-        self.modelName = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
+        self.modelName = "None"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
         self.knownSigma = False  # Whether to use known sigmas from unimodal fits (default: False for backward compatibility)
     
         
@@ -142,7 +142,7 @@ class OmerMonteCarlo(fitPychometric):
             pass  # Silently fail - will warn in validation if knownSigma=True
         
         # Validate configuration consistency (AFTER sigma loading)
-        self._validate_configuration()
+        #self._validate_configuration()
         
 
 

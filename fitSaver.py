@@ -53,6 +53,7 @@ def saveFitResultsSingle(fitter,fittedParams, dataName):
     print(f"✅ Saved fit for {participantID} ({modelType}) to: {filepath}")
 
 def saveSimulatedData(fitter, dataName):
+    
     print(f"Generating SimData based on model  {fitter.modelName}")
     # generate simulated data
     simulatedData= fitter.simulateMonteCarloData(fitter.modelFit, fitter.data)
