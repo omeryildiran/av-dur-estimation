@@ -614,33 +614,34 @@ class OmerMonteCarlo(fitPychometric):
         expo = np.exp(-(m_a-m_v)**2/(2*(sigma_a**2+sigma_v**2)))
         
         prior = 1/(t_max-t_min)
-
-        if self.modelName == "logLinearMismatch":
-            # Log-Linear Mismatch: Observer assumes linear Gaussian noise
-            # but measurements were actually generated with log-normal noise
-            # 
-            # Here we compute L(m_a, m_v | C=1) using the OBSERVER'S INCORRECT MODEL:
-            #   - Observer thinks: m ~ N(y, σ²) in linear space
-            #   - Prior over y: p(y) = 1/(y * log(t_max/t_min)) (uniform in log space)
-            #
-            # We integrate: L(m_a, m_v | C=1) = ∫ N(m_a; y, σ_a²) * N(m_v; y, σ_v²) * p(y) dy
+        
+        ##. initially wanted to use the prior over y  calculate priors differently as well but no not necessary
+        # if self.modelName == "logLinearMismatch":
+        #     # Log-Linear Mismatch: Observer assumes linear Gaussian noise
+        #     # but measurements were actually generated with log-normal noise
+        #     # 
+        #     # Here we compute L(m_a, m_v | C=1) using the OBSERVER'S INCORRECT MODEL:
+        #     #   - Observer thinks: m ~ N(y, σ²) in linear space
+        #     #   - Prior over y: p(y) = 1/(y * log(t_max/t_min)) (uniform in log space)
+        #     #
+        #     # We integrate: L(m_a, m_v | C=1) = ∫ N(m_a; y, σ_a²) * N(m_v; y, σ_v²) * p(y) dy
             
-            y_vals = np.linspace(t_min, t_max, self.nSimul) 
-            dy=y_vals[1] - y_vals[0]
-            log_norm_const=np.log(t_max / t_min)
+        #     y_vals = np.linspace(t_min, t_max, self.nSimul) 
+        #     dy=y_vals[1] - y_vals[0]
+        #     log_norm_const=np.log(t_max / t_min)
 
-            # Likelihoods: observer assumes Gaussian noise in linear space
-            L_m_a=  norm.pdf(m_a, loc=y_vals, scale=sigma_a)  # shape: (n_points,)
-            L_m_v = norm.pdf(m_v, loc=y_vals, scale=sigma_v)
+        #     # Likelihoods: observer assumes Gaussian noise in linear space
+        #     L_m_a=  norm.pdf(m_a, loc=y_vals, scale=sigma_a)  # shape: (n_points,)
+        #     L_m_v = norm.pdf(m_v, loc=y_vals, scale=sigma_v)
 
-            # Prior: uniform in log space means 1/(y * log(t_max/t_min)) in linear space
-            prior = 1/ ((y_vals +1e-10)*log_norm_const)  
+        #     # Prior: uniform in log space means 1/(y * log(t_max/t_min)) in linear space
+        #     prior = 1/ ((y_vals +1e-10)*log_norm_const)  
             
-            # Numerical integration
-            integrand=L_m_a * L_m_v * prior
-            integral = np.sum(integrand*dy)
-            integral = max(integral, 1e-10)
-            return integral
+        #     # Numerical integration
+        #     integrand=L_m_a * L_m_v * prior
+        #     integral = np.sum(integrand*dy)
+        #     integral = max(integral, 1e-10)
+        #     return integral
                 
         return prior * sigma_c/np.sqrt(sigma_a**2 * sigma_v**2) * (hi_cdf-lo_cdf) * expo
 
@@ -721,7 +722,7 @@ class OmerMonteCarlo(fitPychometric):
         # Sample causal structure using Bernoulli distribution based on posterior
         # For each trial, randomly decide: fused (C=1) or separate (C=2)
         #sampled_C1 = np.random.binomial(1, post_C1)
-        sampled_C1 = np.random.uniform(0,1, size=post_C1.shape) > post_C1
+        sampled_C1 = np.random.uniform(0,1, size=post_C1.shape) > post_C1 #
 
         
         # Select estimate based on sampled causal structure
