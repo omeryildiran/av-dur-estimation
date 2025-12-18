@@ -1610,8 +1610,8 @@ class OmerMonteCarlo(fitPychometric):
 
     def simulateMonteCarloData(self, fittedParams, data, nSamples=10000):
 
-        print("\nSimulating data using fitted parameters:", fittedParams)
-        print(f"\nmodelName: {self.modelName}")
+        #print("\nSimulating data using fitted parameters:", fittedParams)
+        #print(f"\nmodelName: {self.modelName}")
 
         """
         Simulate data based on fitted parameters.
