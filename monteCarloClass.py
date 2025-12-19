@@ -1659,7 +1659,7 @@ class OmerMonteCarlo(fitPychometric):
             elif self.modelName in ["gaussian", "lognorm", "logLinearMismatch", "probabilityMatching", "probabilityMatchingLogNorm", "selection", "switching"]:
                 lambda_, sigma_av_a, sigma_av_v, p_c, tmin, tmax = params_result
 
-            nSamples = 30 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
+            nSamples = 3 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
             # Simulate responses for the current trial
             for _ in range(nSamples):
                 S_a_s = 0.5
