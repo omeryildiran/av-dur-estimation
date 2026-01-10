@@ -25,7 +25,7 @@ def loadData(dataName):
     #data = data[data['testDurS'] > 0.1]
     # ignore firts 3 rows
     data= data[data['audNoise'] != 0]
-    data=data[data['standardDur'] != 0]
+    data=data[data['standardDur'] != 0].round(2)
     data["testDurMs"]= data["testDurS"]*1000
     data["standardDurMs"]= data["standardDur"]*1000
     
@@ -54,7 +54,7 @@ def loadData(dataName):
     data['chose_standard'] = (data['responses'] != data['order']).astype(int)
     data['visualPSEBias'] = data['recordedDurVisualStandard'] -data["standardDur"]-data['conflictDur']
     data['conflictDur'] = data['conflictDur'].round(2)
-    data['standard_dur']=data['standardDur']
+    data['standard_dur']=data['standardDur'].round(2)
 
     try:
         data["riseDur"]>1
@@ -779,26 +779,27 @@ if __name__ == "__main__":
 #     lambda_, mu, sigma = getFittedParams(fit)
     
 #     print(f"Fitted parameters: lambda={lambda_}, mu={mu}, sigma={sigma}")
-# run the code and save the fitted parameters to a file for each participant
-# if __name__ == "__main__":
-#     participantIds=['as','dt','hh','ip','ln2','mh','ml','mt','oy','qs','sx']
-#     fittedParams = {}
-#     for participantId in participantIds:
-#         dataName = f"{participantId}_auditory.csv"
-#         print(f"Loading data from {dataName}...")
-#         data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
-#         print(f"Fitting psychometric model for participant {participantId}...")
-#         fixedMu=1 # Set to True to ignore bias for individual fits
+#run the code and save the fitted parameters to a file for each participant
+if __name__ == "__main__":
+    #participantIds=['as','dt','hh','ip','ln2','mh','ml','mt','oy','qs','sx']
+    participantIds=['all']
+    fittedParams = {}
+    for participantId in participantIds:
+        dataName = f"{participantId}_visual.csv"
+        print(f"Loading data from {dataName}...")
+        data, sensoryVar, standardVar, conflictVar, uniqueSensory, uniqueStandard, uniqueConflict, nLambda, nSigma, nMu = loadData(dataName)
+        print(f"Fitting psychometric model for participant {participantId}...")
+        fixedMu=1 # Set to True to ignore bias for individual fits
 
-#         fit = fitMultipleStartingPoints(data, nStart=3)
-#         fittedParams[participantId] = fit.x
-#         print(f"Fitted parameters for {participantId}: {fit.x}")
+        fit = fitMultipleStartingPoints(data, nStart=3)
+        fittedParams[participantId] = fit.x
+        print(f"Fitted parameters for {participantId}: {fit.x}")
 
-#         # Save fitted parameters to a matlab file
-#         outputFilename = f"data/{participantId}_auditory_fits.mat"
-#         scipy.io.savemat(outputFilename, {'fittedParams': fit.x})
-#         print(f"Saved fitted parameters to {outputFilename}")
-#         #print(f"Saved fitted parameters to {dataName}_fits.mat")
+        # Save fitted parameters to a matlab file
+        outputFilename = f"data/{participantId}_visual_fits.mat"
+        scipy.io.savemat(outputFilename, {'fittedParams': fit.x})
+        print(f"Saved fitted parameters to {outputFilename}")
+        #print(f"Saved fitted parameters to {dataName}_fits.mat")
 
 
 
