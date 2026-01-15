@@ -37,10 +37,26 @@ def sample_random_parameters(model_name, seed=None):
     """
     Sample random parameters from prior distributions for a given model.
     
-    Each model has different parameters with biologically/psychophysically plausible ranges.
+    Based on monteCarloClass.py parameter structure with:
+    - sharedLambda=False (3 separate lambda values for different conflict levels)
+    - freeP_c=False (single p_c shared across conditions)
+    
+    Parameter layouts (from getParamsCausal):
+    - lognorm/gaussian/probabilityMatching/selection: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
+    - fusionOnlyLogNorm/fusionOnly: [λ1, σa1, σv, σa2, λ2, λ3] (6 params) - no p_c
+    - switching: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
+    - switchingFree: [λ1, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2] (8 params)
+    
+    Where:
+    - λ1, λ2, λ3: response scaling for different conflict levels
+    - σa1: auditory noise for SNR=0.1 (high noise)
+    - σa2: auditory noise for SNR=1.2 (low noise)
+    - σv: visual noise (shared across conditions)
+    - pc: prior probability of common cause
+    - p_switch1/2: switching probabilities for different SNR conditions
     
     Args:
-        model_name: Name of the model (e.g., 'lognorm', 'fusionOnlyLogNorm', 'switching')
+        model_name: Name of the model
         seed: Optional random seed for reproducibility
     
     Returns:
@@ -49,81 +65,115 @@ def sample_random_parameters(model_name, seed=None):
     if seed is not None:
         np.random.seed(seed)
     
-    # Define parameter priors for each model
-    # Format: (min, max) for uniform sampling, or (mean, std) for normal
+    # Common parameter ranges (psychophysically plausible)
+    lambda_range = (0.5, 1.5)       # Response scaling
+    sigma_a_range = (0.05, 0.35)    # Auditory noise (in log space for lognorm)
+    sigma_v_range = (0.05, 0.35)    # Visual noise
+    p_common_range = (0.3, 0.95)    # Prior on common cause
+    p_switch_range = (0.1, 0.9)     # Switching probability
     
     if model_name == 'lognorm':
-        # Parameters: [lambda1, sigma_a, sigma_v, p_common, sigma_a2, lambda2, lambda3]
         # Full causal inference model with log-normal prior
+        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
         params = np.array([
-            np.random.uniform(0.3, 1.5),      # lambda1: audio weight (0.3-1.5)
-            np.random.uniform(0.05, 0.4),     # sigma_a: auditory noise (0.05-0.4)
-            np.random.uniform(0.05, 0.4),     # sigma_v: visual noise (0.05-0.4)
-            np.random.uniform(0.2, 0.9),      # p_common: prior probability of common cause (0.2-0.9)
-            np.random.uniform(0.1, 0.5),      # sigma_a2: prior width (0.1-0.5)
-            np.random.uniform(0.3, 1.5),      # lambda2: visual weight (0.3-1.5)
-            np.random.uniform(0.3, 1.5),      # lambda3: bimodal weight (0.3-1.5)
+            np.random.uniform(*lambda_range),     # λ1: lambda for conflict set 1
+            np.random.uniform(*sigma_a_range),    # σa1: auditory noise (SNR=0.1, high noise)
+            np.random.uniform(*sigma_v_range),    # σv: visual noise (shared)
+            np.random.uniform(*p_common_range),   # pc: prior probability of common cause
+            np.random.uniform(*sigma_a_range),    # σa2: auditory noise (SNR=1.2, low noise)
+            np.random.uniform(*lambda_range),     # λ2: lambda for conflict set 2
+            np.random.uniform(*lambda_range),     # λ3: lambda for conflict set 3
         ])
         
-    elif model_name == 'fusionOnlyLogNorm':
-        # Fusion-only model: always assumes common cause (p_common=1 effectively)
-        # Parameters: [lambda1, sigma_a, sigma_v, sigma_prior, lambda2, lambda3]
+    elif model_name == 'fusionOnlyLogNorm' or model_name == 'fusionOnly':
+        # Fusion-only model: always assumes common cause (p_c=1.0, not fitted)
+        # Parameters: [λ1, σa1, σv, σa2, λ2, λ3] (6 params)
         params = np.array([
-            np.random.uniform(0.3, 1.5),      # lambda1
-            np.random.uniform(0.05, 0.4),     # sigma_a
-            np.random.uniform(0.05, 0.4),     # sigma_v
-            np.random.uniform(0.1, 0.5),      # sigma_prior
-            np.random.uniform(0.3, 1.5),      # lambda2
-            np.random.uniform(0.3, 1.5),      # lambda3
+            np.random.uniform(*lambda_range),     # λ1
+            np.random.uniform(*sigma_a_range),    # σa1: auditory noise (SNR=0.1)
+            np.random.uniform(*sigma_v_range),    # σv: visual noise
+            np.random.uniform(*sigma_a_range),    # σa2: auditory noise (SNR=1.2)
+            np.random.uniform(*lambda_range),     # λ2
+            np.random.uniform(*lambda_range),     # λ3
         ])
         
-    elif model_name == 'switching' or model_name == 'switchingFree':
-        # Switching model: probabilistically switches between modalities
-        # Parameters: [lambda1, sigma_a, sigma_v, p_audio, lambda2, lambda3]
+    elif model_name == 'switching':
+        # Switching model: switches based on reliability (same as lognorm structure)
+        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
         params = np.array([
-            np.random.uniform(0.3, 1.5),      # lambda1
-            np.random.uniform(0.05, 0.4),     # sigma_a
-            np.random.uniform(0.05, 0.4),     # sigma_v
-            np.random.uniform(0.1, 0.9),      # p_audio: probability of using audio
-            np.random.uniform(0.3, 1.5),      # lambda2
-            np.random.uniform(0.3, 1.5),      # lambda3
+            np.random.uniform(*lambda_range),     # λ1
+            np.random.uniform(*sigma_a_range),    # σa1
+            np.random.uniform(*sigma_v_range),    # σv
+            np.random.uniform(*p_common_range),   # pc (used for reliability weighting)
+            np.random.uniform(*sigma_a_range),    # σa2
+            np.random.uniform(*lambda_range),     # λ2
+            np.random.uniform(*lambda_range),     # λ3
         ])
         
-    elif model_name == 'probabilityMatchingLogNorm':
-        # Probability matching: responds proportionally to posterior
-        # Parameters: [lambda1, sigma_a, sigma_v, p_common, sigma_prior, lambda2, lambda3]
+    elif model_name == 'switchingFree':
+        # Switching model with free probability parameters
+        # Parameters: [λ1, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2] (8 params)
         params = np.array([
-            np.random.uniform(0.3, 1.5),      # lambda1
-            np.random.uniform(0.05, 0.4),     # sigma_a
-            np.random.uniform(0.05, 0.4),     # sigma_v
-            np.random.uniform(0.2, 0.9),      # p_common
-            np.random.uniform(0.1, 0.5),      # sigma_prior
-            np.random.uniform(0.3, 1.5),      # lambda2
-            np.random.uniform(0.3, 1.5),      # lambda3
+            np.random.uniform(*lambda_range),     # λ1
+            np.random.uniform(*sigma_a_range),    # σa1
+            np.random.uniform(*sigma_v_range),    # σv
+            np.random.uniform(*p_switch_range),   # p_switch1: switching prob for SNR=0.1
+            np.random.uniform(*sigma_a_range),    # σa2
+            np.random.uniform(*lambda_range),     # λ2
+            np.random.uniform(*lambda_range),     # λ3
+            np.random.uniform(*p_switch_range),   # p_switch2: switching prob for SNR=1.2
+        ])
+        
+    elif model_name == 'probabilityMatchingLogNorm' or model_name == 'probabilityMatching':
+        # Probability matching: samples from posterior (same structure as lognorm)
+        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
+        params = np.array([
+            np.random.uniform(*lambda_range),     # λ1
+            np.random.uniform(*sigma_a_range),    # σa1
+            np.random.uniform(*sigma_v_range),    # σv
+            np.random.uniform(*p_common_range),   # pc
+            np.random.uniform(*sigma_a_range),    # σa2
+            np.random.uniform(*lambda_range),     # λ2
+            np.random.uniform(*lambda_range),     # λ3
         ])
         
     elif model_name == 'selection':
-        # Selection model: always picks one modality
-        # Parameters: [lambda1, sigma_a, sigma_v, lambda2, lambda3]
+        # Selection model (same structure as lognorm)
+        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
         params = np.array([
-            np.random.uniform(0.3, 1.5),      # lambda1
-            np.random.uniform(0.05, 0.4),     # sigma_a
-            np.random.uniform(0.05, 0.4),     # sigma_v
-            np.random.uniform(0.3, 1.5),      # lambda2
-            np.random.uniform(0.3, 1.5),      # lambda3
+            np.random.uniform(*lambda_range),     # λ1
+            np.random.uniform(*sigma_a_range),    # σa1
+            np.random.uniform(*sigma_v_range),    # σv
+            np.random.uniform(*p_common_range),   # pc
+            np.random.uniform(*sigma_a_range),    # σa2
+            np.random.uniform(*lambda_range),     # λ2
+            np.random.uniform(*lambda_range),     # λ3
+        ])
+        
+    elif model_name == 'gaussian':
+        # Linear-space causal inference (same structure as lognorm)
+        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
+        params = np.array([
+            np.random.uniform(*lambda_range),     # λ1
+            np.random.uniform(*sigma_a_range),    # σa1
+            np.random.uniform(*sigma_v_range),    # σv
+            np.random.uniform(*p_common_range),   # pc
+            np.random.uniform(*sigma_a_range),    # σa2
+            np.random.uniform(*lambda_range),     # λ2
+            np.random.uniform(*lambda_range),     # λ3
         ])
         
     else:
-        # Generic fallback: sample 7 parameters with reasonable defaults
-        print(f"  Warning: Unknown model '{model_name}', using generic parameter sampling")
+        # Generic fallback with 7 parameters (standard causal inference layout)
+        print(f"  Warning: Unknown model '{model_name}', using 7-param causal inference layout")
         params = np.array([
-            np.random.uniform(0.3, 1.5),      # lambda1
-            np.random.uniform(0.05, 0.4),     # sigma_a
-            np.random.uniform(0.05, 0.4),     # sigma_v
-            np.random.uniform(0.2, 0.9),      # p_common or similar
-            np.random.uniform(0.1, 0.5),      # sigma_prior or similar
-            np.random.uniform(0.3, 1.5),      # lambda2
-            np.random.uniform(0.3, 1.5),      # lambda3
+            np.random.uniform(*lambda_range),     # λ1
+            np.random.uniform(*sigma_a_range),    # σa1
+            np.random.uniform(*sigma_v_range),    # σv
+            np.random.uniform(*p_common_range),   # pc
+            np.random.uniform(*sigma_a_range),    # σa2
+            np.random.uniform(*lambda_range),     # λ2
+            np.random.uniform(*lambda_range),     # λ3
         ])
     
     return params
@@ -163,6 +213,7 @@ def run_model_recovery_single(participantID, generating_model, models_to_test,
     mc_gen.dataName = dataName
     mc_gen.nSimul = nSimul
     mc_gen.nStart = nStarts
+    mc_gen.optimizationMethod = 'scipy'
     
     print(f"  Running {n_recovery} recovery iterations with RANDOM parameters...")
     recovery_iterations = []
