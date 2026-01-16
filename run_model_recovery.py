@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 """
-Model Recovery Analysis Script (Random Parameter Sampling)
-==========================================================
-Run this script overnight to perform comprehensive model recovery analysis.
+Model Recovery Analysis Script (Group-Level Parameter Sampling)
+===============================================================
+Run this script to perform comprehensive model recovery analysis.
 
-This version samples RANDOM parameters from prior distributions for each iteration,
-rather than using fitted parameters. This provides a more rigorous test of model
-discriminability across the full parameter space.
+This version samples parameters from distributions based on group-level statistics
+(mean/SD of fitted parameters across participants). This provides a realistic test 
+of model discriminability across the empirically-observed parameter space.
+
+No participant loop is needed - we simply run N iterations per generating model,
+sampling parameters from group distributions each time.
 
 Usage:
-    python run_model_recovery.py [--participants PARTICIPANT_IDS] [--n_recovery N]
+    python run_model_recovery.py [--n_recovery N] [--n_jobs N]
     
 Example:
-    python run_model_recovery.py --participants as dt hh ip --n_recovery 50
-    python run_model_recovery.py --participants as --n_recovery 100 --n_jobs 8
+    python run_model_recovery.py --n_recovery 100 --n_jobs 8
+    python run_model_recovery.py --n_recovery 50  # Uses default CPU count
 """
 
 import numpy as np
@@ -29,35 +32,69 @@ from functools import partial
 
 # Import project modules
 import loadData
-import loadResults
 import monteCarloClass
 
 
-def sample_random_parameters(model_name, seed=None):
+def load_group_parameter_statistics(model_name, participants=None):
     """
-    Sample random parameters from prior distributions for a given model.
-    
-    Based on monteCarloClass.py parameter structure with:
-    - sharedLambda=False (3 separate lambda values for different conflict levels)
-    - freeP_c=False (single p_c shared across conditions)
-    
-    Parameter layouts (from getParamsCausal):
-    - lognorm/gaussian/probabilityMatching/selection: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
-    - fusionOnlyLogNorm/fusionOnly: [λ1, σa1, σv, σa2, λ2, λ3] (6 params) - no p_c
-    - switching: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
-    - switchingFree: [λ1, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2] (8 params)
-    
-    Where:
-    - λ1, λ2, λ3: response scaling for different conflict levels
-    - σa1: auditory noise for SNR=0.1 (high noise)
-    - σa2: auditory noise for SNR=1.2 (low noise)
-    - σv: visual noise (shared across conditions)
-    - pc: prior probability of common cause
-    - p_switch1/2: switching probabilities for different SNR conditions
+    Load fitted parameters for all participants and compute group statistics.
     
     Args:
-        model_name: Name of the model
-        seed: Optional random seed for reproducibility
+        model_name: Name of the model (e.g., 'lognorm', 'fusionOnlyLogNorm')
+        participants: Optional list of participant IDs. If None, loads all available.
+    
+    Returns:
+        dict with 'mean', 'std', 'n_participants', 'all_params' for each parameter
+    """
+    # Model name to filename mapping
+    model_suffix = f"{model_name}_LapseFree_sharedPrior"
+    
+    # Find all participant directories
+    model_fits_dir = "model_fits"
+    if participants is None:
+        participant_dirs = [d for d in os.listdir(model_fits_dir) 
+                          if os.path.isdir(os.path.join(model_fits_dir, d)) 
+                          and d not in ['.DS_Store', 'all']]
+    else:
+        participant_dirs = participants
+    
+    # Load parameters from each participant
+    all_params = []
+    loaded_participants = []
+    
+    for pid in participant_dirs:
+        filepath = os.path.join(model_fits_dir, pid, f"{pid}_{model_suffix}_fit.json")
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'r') as f:
+                    results = json.load(f)
+                all_params.append(results['fittedParams'])
+                loaded_participants.append(pid)
+            except Exception as e:
+                print(f"  Warning: Could not load {filepath}: {e}")
+    
+    if len(all_params) == 0:
+        raise ValueError(f"No fitted parameters found for model '{model_name}'")
+    
+    all_params = np.array(all_params)
+    
+    return {
+        'mean': np.mean(all_params, axis=0),
+        'std': np.std(all_params, axis=0),
+        'n_participants': len(loaded_participants),
+        'participants': loaded_participants,
+        'all_params': all_params
+    }
+
+
+def sample_parameters_from_group(group_stats, seed=None, clip_to_bounds=True):
+    """
+    Sample parameters from Normal distributions based on group statistics.
+    
+    Args:
+        group_stats: Dict with 'mean' and 'std' arrays from load_group_parameter_statistics
+        seed: Optional random seed
+        clip_to_bounds: Whether to clip parameters to valid ranges
     
     Returns:
         np.array: Sampled parameter vector
@@ -65,224 +102,199 @@ def sample_random_parameters(model_name, seed=None):
     if seed is not None:
         np.random.seed(seed)
     
-    # Common parameter ranges (psychophysically plausible)
-    lambda_range = (0.5, 1.5)       # Response scaling
-    sigma_a_range = (0.05, 0.35)    # Auditory noise (in log space for lognorm)
-    sigma_v_range = (0.05, 0.35)    # Visual noise
-    p_common_range = (0.3, 0.95)    # Prior on common cause
-    p_switch_range = (0.1, 0.9)     # Switching probability
+    mean = group_stats['mean']
+    std = group_stats['std']
     
-    if model_name == 'lognorm':
-        # Full causal inference model with log-normal prior
-        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
-        params = np.array([
-            np.random.uniform(*lambda_range),     # λ1: lambda for conflict set 1
-            np.random.uniform(*sigma_a_range),    # σa1: auditory noise (SNR=0.1, high noise)
-            np.random.uniform(*sigma_v_range),    # σv: visual noise (shared)
-            np.random.uniform(*p_common_range),   # pc: prior probability of common cause
-            np.random.uniform(*sigma_a_range),    # σa2: auditory noise (SNR=1.2, low noise)
-            np.random.uniform(*lambda_range),     # λ2: lambda for conflict set 2
-            np.random.uniform(*lambda_range),     # λ3: lambda for conflict set 3
-        ])
+    # Sample from normal distributions
+    # Use at least a small std to avoid degenerate sampling
+    std_safe = np.maximum(std, 0.01)
+    params = np.random.normal(mean, std_safe)
+    
+    if clip_to_bounds:
+        # Get number of params to determine model type
+        n_params = len(params)
         
-    elif model_name == 'fusionOnlyLogNorm' or model_name == 'fusionOnly':
-        # Fusion-only model: always assumes common cause (p_c=1.0, not fitted)
-        # Parameters: [λ1, σa1, σv, σa2, λ2, λ3] (6 params)
-        params = np.array([
-            np.random.uniform(*lambda_range),     # λ1
-            np.random.uniform(*sigma_a_range),    # σa1: auditory noise (SNR=0.1)
-            np.random.uniform(*sigma_v_range),    # σv: visual noise
-            np.random.uniform(*sigma_a_range),    # σa2: auditory noise (SNR=1.2)
-            np.random.uniform(*lambda_range),     # λ2
-            np.random.uniform(*lambda_range),     # λ3
-        ])
-        
-    elif model_name == 'switching':
-        # Switching model: switches based on reliability (same as lognorm structure)
-        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
-        params = np.array([
-            np.random.uniform(*lambda_range),     # λ1
-            np.random.uniform(*sigma_a_range),    # σa1
-            np.random.uniform(*sigma_v_range),    # σv
-            np.random.uniform(*p_common_range),   # pc (used for reliability weighting)
-            np.random.uniform(*sigma_a_range),    # σa2
-            np.random.uniform(*lambda_range),     # λ2
-            np.random.uniform(*lambda_range),     # λ3
-        ])
-        
-    elif model_name == 'switchingFree':
-        # Switching model with free probability parameters
-        # Parameters: [λ1, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2] (8 params)
-        params = np.array([
-            np.random.uniform(*lambda_range),     # λ1
-            np.random.uniform(*sigma_a_range),    # σa1
-            np.random.uniform(*sigma_v_range),    # σv
-            np.random.uniform(*p_switch_range),   # p_switch1: switching prob for SNR=0.1
-            np.random.uniform(*sigma_a_range),    # σa2
-            np.random.uniform(*lambda_range),     # λ2
-            np.random.uniform(*lambda_range),     # λ3
-            np.random.uniform(*p_switch_range),   # p_switch2: switching prob for SNR=1.2
-        ])
-        
-    elif model_name == 'probabilityMatchingLogNorm' or model_name == 'probabilityMatching':
-        # Probability matching: samples from posterior (same structure as lognorm)
-        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
-        params = np.array([
-            np.random.uniform(*lambda_range),     # λ1
-            np.random.uniform(*sigma_a_range),    # σa1
-            np.random.uniform(*sigma_v_range),    # σv
-            np.random.uniform(*p_common_range),   # pc
-            np.random.uniform(*sigma_a_range),    # σa2
-            np.random.uniform(*lambda_range),     # λ2
-            np.random.uniform(*lambda_range),     # λ3
-        ])
-        
-    elif model_name == 'selection':
-        # Selection model (same structure as lognorm)
-        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
-        params = np.array([
-            np.random.uniform(*lambda_range),     # λ1
-            np.random.uniform(*sigma_a_range),    # σa1
-            np.random.uniform(*sigma_v_range),    # σv
-            np.random.uniform(*p_common_range),   # pc
-            np.random.uniform(*sigma_a_range),    # σa2
-            np.random.uniform(*lambda_range),     # λ2
-            np.random.uniform(*lambda_range),     # λ3
-        ])
-        
-    elif model_name == 'gaussian':
-        # Linear-space causal inference (same structure as lognorm)
-        # Parameters: [λ1, σa1, σv, pc, σa2, λ2, λ3] (7 params)
-        params = np.array([
-            np.random.uniform(*lambda_range),     # λ1
-            np.random.uniform(*sigma_a_range),    # σa1
-            np.random.uniform(*sigma_v_range),    # σv
-            np.random.uniform(*p_common_range),   # pc
-            np.random.uniform(*sigma_a_range),    # σa2
-            np.random.uniform(*lambda_range),     # λ2
-            np.random.uniform(*lambda_range),     # λ3
-        ])
-        
-    else:
-        # Generic fallback with 7 parameters (standard causal inference layout)
-        print(f"  Warning: Unknown model '{model_name}', using 7-param causal inference layout")
-        params = np.array([
-            np.random.uniform(*lambda_range),     # λ1
-            np.random.uniform(*sigma_a_range),    # σa1
-            np.random.uniform(*sigma_v_range),    # σv
-            np.random.uniform(*p_common_range),   # pc
-            np.random.uniform(*sigma_a_range),    # σa2
-            np.random.uniform(*lambda_range),     # λ2
-            np.random.uniform(*lambda_range),     # λ3
-        ])
+        if n_params == 6:
+            # fusionOnlyLogNorm: [λ1, σa1, σv, σa2, λ2, λ3]
+            params[0] = np.clip(params[0], 0.01, 2.0)   # λ1
+            params[1] = np.clip(params[1], 0.01, 0.5)   # σa1
+            params[2] = np.clip(params[2], 0.01, 0.5)   # σv
+            params[3] = np.clip(params[3], 0.01, 0.5)   # σa2
+            params[4] = np.clip(params[4], 0.01, 2.0)   # λ2
+            params[5] = np.clip(params[5], 0.01, 2.0)   # λ3
+            
+        elif n_params == 7:
+            # lognorm/gaussian/switching/etc: [λ1, σa1, σv, pc, σa2, λ2, λ3]
+            params[0] = np.clip(params[0], 0.01, 2.0)   # λ1
+            params[1] = np.clip(params[1], 0.01, 0.5)   # σa1
+            params[2] = np.clip(params[2], 0.01, 0.5)   # σv
+            params[3] = np.clip(params[3], 0.01, 0.99)  # pc (probability)
+            params[4] = np.clip(params[4], 0.01, 0.5)   # σa2
+            params[5] = np.clip(params[5], 0.01, 2.0)   # λ2
+            params[6] = np.clip(params[6], 0.01, 2.0)   # λ3
+            
+        elif n_params == 8:
+            # switchingFree: [λ1, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2]
+            params[0] = np.clip(params[0], 0.01, 2.0)   # λ1
+            params[1] = np.clip(params[1], 0.01, 0.5)   # σa1
+            params[2] = np.clip(params[2], 0.01, 0.5)   # σv
+            params[3] = np.clip(params[3], 0.01, 0.99)  # p_switch1
+            params[4] = np.clip(params[4], 0.01, 0.5)   # σa2
+            params[5] = np.clip(params[5], 0.01, 2.0)   # λ2
+            params[6] = np.clip(params[6], 0.01, 2.0)   # λ3
+            params[7] = np.clip(params[7], 0.01, 0.99)  # p_switch2
     
     return params
 
 
-def run_model_recovery_single(participantID, generating_model, models_to_test, 
-                               n_recovery=10, nSimul=500, nStarts=1, 
-                               save_dir="model_recovery_results"):
+def run_single_recovery_iteration(args):
     """
-    Run model recovery for a single participant-generating_model combination.
+    Run a single model recovery iteration (worker function for parallel execution).
     
-    For each iteration:
-      1. Sample RANDOM parameters from prior distributions
-      2. Simulate data using those parameters
-      3. Fit all competing models
-      4. Record which model wins by AIC/BIC
+    Args:
+        args: tuple of (iteration_idx, generating_model, group_stats, models_to_test, 
+                       template_data, nSimul, nStarts)
+    
+    Returns:
+        dict with iteration results or None if failed
     """
-    result_path = os.path.join(save_dir, f"{participantID}_{generating_model}_model_recovery.json")
+    (iteration_idx, generating_model, group_stats, models_to_test, 
+     template_data, nSimul, nStarts) = args
     
-    # Check if already exists
-    if os.path.exists(result_path):
-        print(f"  Results already exist for {participantID} - {generating_model}, skipping...")
-        return None
-    
-    # Load original data structure (we need the experimental design/conditions)
-    try:
-        data, dataName = loadData.loadData(participantID + "_all.csv", verbose=False)
-    except Exception as e:
-        print(f"  Could not load data for {participantID}: {e}")
-        return None
+    # Sample parameters from group distribution
+    sampled_params = sample_parameters_from_group(group_stats, seed=None)
     
     # Set up the Monte Carlo fitter for the generating model
-    mc_gen = monteCarloClass.OmerMonteCarlo(data)
+    mc_gen = monteCarloClass.OmerMonteCarlo(template_data)
     mc_gen.modelName = generating_model
     mc_gen.freeP_c = False
     mc_gen.sharedLambda = False
-    mc_gen.dataName = dataName
     mc_gen.nSimul = nSimul
     mc_gen.nStart = nStarts
     mc_gen.optimizationMethod = 'scipy'
     
-    print(f"  Running {n_recovery} recovery iterations with RANDOM parameters...")
-    recovery_iterations = []
-    all_sampled_params = []
+    # Simulate data from generating model with sampled parameters
+    try:
+        sim_data = mc_gen.simulateMonteCarloData(sampled_params, template_data)
+    except Exception as e:
+        return None
     
-    for iter_idx in tqdm(range(n_recovery), desc=f"  {participantID}-{generating_model}", leave=False):
-        # Sample RANDOM parameters for this iteration
-        sampled_params = sample_random_parameters(generating_model, seed=None)
-        all_sampled_params.append(sampled_params.tolist())
+    # Fit all competing models to simulated data
+    model_fits = {}
+    
+    for fit_model in models_to_test:
+        mc_fit = monteCarloClass.OmerMonteCarlo(sim_data)
+        mc_fit.modelName = fit_model
+        mc_fit.freeP_c = False
+        mc_fit.sharedLambda = False
+        mc_fit.nSimul = nSimul
+        mc_fit.nStart = nStarts
+        mc_fit.optimizationMethod = 'scipy'
         
-        # Simulate data from generating model with sampled parameters
         try:
-            sim_data = mc_gen.simulateMonteCarloData(sampled_params, data)
+            fitted_params = mc_fit.fitCausalInferenceMonteCarlo(mc_fit.groupedData)
+            if fitted_params is not None:
+                # Calculate log-likelihood and AIC
+                nLL = mc_fit.nLLMonteCarloCausal(fitted_params, mc_fit.groupedData)
+                LL = -nLL
+                n_params = len(fitted_params)
+                AIC = 2 * n_params - 2 * LL
+                BIC = n_params * np.log(len(sim_data)) - 2 * LL
+                
+                model_fits[fit_model] = {
+                    'fittedParams': fitted_params.tolist(),
+                    'logLikelihood': float(LL),
+                    'AIC': float(AIC),
+                    'BIC': float(BIC),
+                    'nParams': n_params
+                }
         except Exception as e:
-            print(f"    Simulation failed for iteration {iter_idx}: {e}")
             continue
+    
+    if len(model_fits) > 0:
+        # Find best model by AIC/BIC
+        best_model_aic = min(model_fits.keys(), key=lambda m: model_fits[m]['AIC'])
+        best_model_bic = min(model_fits.keys(), key=lambda m: model_fits[m]['BIC'])
         
-        # Fit all competing models to simulated data
-        model_fits = {}
-        
-        for fit_model in models_to_test:
-            mc_fit = monteCarloClass.OmerMonteCarlo(sim_data)
-            mc_fit.modelName = fit_model
-            mc_fit.freeP_c = False
-            mc_fit.sharedLambda = False
-            mc_fit.nSimul = nSimul
-            mc_fit.nStart = nStarts
-            mc_fit.optimizationMethod = 'scipy'
-            mc_fit.dataName = f"{participantID}_recovery"
-            
-            try:
-                fitted_params = mc_fit.fitCausalInferenceMonteCarlo(mc_fit.groupedData)
-                if fitted_params is not None:
-                    # Calculate log-likelihood and AIC
-                    nLL = mc_fit.nLLMonteCarloCausal(fitted_params, mc_fit.groupedData)
-                    LL = -nLL
-                    n_params = len(fitted_params)
-                    AIC = 2 * n_params - 2 * LL
-                    BIC = n_params * np.log(len(sim_data)) - 2 * LL
-                    
-                    model_fits[fit_model] = {
-                        'fittedParams': fitted_params.tolist(),
-                        'logLikelihood': float(LL),
-                        'AIC': float(AIC),
-                        'BIC': float(BIC),
-                        'nParams': n_params
-                    }
-            except Exception as e:
-                print(f"    Fit failed for {fit_model}: {e}")
-                continue
-        
-        if len(model_fits) > 0:
-            # Find best model by AIC
-            best_model_aic = min(model_fits.keys(), key=lambda m: model_fits[m]['AIC'])
-            best_model_bic = min(model_fits.keys(), key=lambda m: model_fits[m]['BIC'])
-            
-            recovery_iterations.append({
-                'iteration': iter_idx,
-                'sampled_params': sampled_params.tolist(),  # Store the params used for this iteration
-                'model_fits': model_fits,
-                'best_model_aic': best_model_aic,
-                'best_model_bic': best_model_bic
-            })
+        return {
+            'iteration': iteration_idx,
+            'sampled_params': sampled_params.tolist(),
+            'model_fits': model_fits,
+            'best_model_aic': best_model_aic,
+            'best_model_bic': best_model_bic
+        }
+    
+    return None
+
+
+def run_model_recovery_for_model(generating_model, models_to_test, group_stats_dict,
+                                  template_data, n_recovery=50, nSimul=500, nStarts=1,
+                                  save_dir="model_recovery_results", n_jobs=1):
+    """
+    Run model recovery for a single generating model.
+    
+    Args:
+        generating_model: Name of the model that generates the data
+        models_to_test: List of model names to fit to the simulated data
+        group_stats_dict: Dict mapping model names to their group statistics
+        template_data: DataFrame with experimental design (used as template for simulation)
+        n_recovery: Number of recovery iterations
+        nSimul: Number of Monte Carlo simulations for fitting
+        nStarts: Number of optimization starting points
+        save_dir: Directory to save results
+        n_jobs: Number of parallel workers
+    
+    Returns:
+        dict with recovery results
+    """
+    result_path = os.path.join(save_dir, f"group_{generating_model}_model_recovery.json")
+    
+    # Check if already exists
+    if os.path.exists(result_path):
+        print(f"  Results already exist for {generating_model}, loading...")
+        with open(result_path, 'r') as f:
+            return json.load(f)
+    
+    group_stats = group_stats_dict[generating_model]
+    
+    print(f"\n  Running {n_recovery} iterations for {generating_model}...")
+    print(f"  Group stats based on {group_stats['n_participants']} participants")
+    print(f"  Parameter means: {np.round(group_stats['mean'], 3)}")
+    print(f"  Parameter SDs:   {np.round(group_stats['std'], 3)}")
+    
+    # Prepare arguments for parallel execution
+    iteration_args = [
+        (i, generating_model, group_stats, models_to_test, 
+         template_data, nSimul, nStarts)
+        for i in range(n_recovery)
+    ]
+    
+    # Run iterations
+    if n_jobs > 1:
+        with Pool(processes=n_jobs) as pool:
+            results = list(tqdm(
+                pool.imap(run_single_recovery_iteration, iteration_args),
+                total=n_recovery,
+                desc=f"  {generating_model}",
+                leave=False
+            ))
+    else:
+        results = []
+        for args in tqdm(iteration_args, desc=f"  {generating_model}", leave=False):
+            results.append(run_single_recovery_iteration(args))
+    
+    # Filter out None results
+    recovery_iterations = [r for r in results if r is not None]
     
     if len(recovery_iterations) > 0:
         result = {
-            'participantID': participantID,
             'generating_model': generating_model,
-            'sampled_params': all_sampled_params,  # Store all sampled parameter sets
+            'group_stats': {
+                'mean': group_stats['mean'].tolist(),
+                'std': group_stats['std'].tolist(),
+                'n_participants': group_stats['n_participants'],
+                'participants': group_stats['participants']
+            },
             'n_iterations': len(recovery_iterations),
             'iterations': recovery_iterations,
             'best_model_counts_aic': {},
@@ -310,22 +322,22 @@ def run_model_recovery_single(participantID, generating_model, models_to_test,
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Run model recovery analysis')
-    parser.add_argument('--participants', nargs='+', default=['as', 'dt', 'hh', 'ip', 'oy','ln2','mh','ml','mt','qs', 'sx' ],
-                        help='Participant IDs to process')
+    parser = argparse.ArgumentParser(description='Run model recovery analysis with group-level parameter sampling')
     parser.add_argument('--models', nargs='+', 
-                        default=['lognorm', 'fusionOnlyLogNorm', 'switching', 'probabilityMatchingLogNorm'],
-                        help='Models to test')
-    parser.add_argument('--n_recovery', type=int, default=10,
-                        help='Number of recovery iterations per participant-model')
+                        default=['lognorm', 'fusionOnlyLogNorm', 'switchingFree', 'probabilityMatchingLogNorm', 'selection'],
+                        help='Models to test (both as generating and fitting models)')
+    parser.add_argument('--n_recovery', type=int, default=50,
+                        help='Number of recovery iterations per generating model')
     parser.add_argument('--nSimul', type=int, default=500,
                         help='Monte Carlo simulations for fitting')
     parser.add_argument('--nStarts', type=int, default=1,
                         help='Optimization starting points')
-    parser.add_argument('--save_dir', type=str, default='model_recovery_results',
+    parser.add_argument('--save_dir', type=str, default='model_recovery_results_group',
                         help='Directory to save results')
     parser.add_argument('--n_jobs', type=int, default=None,
                         help='Number of parallel jobs (default: number of CPUs - 1)')
+    parser.add_argument('--template_participant', type=str, default='as',
+                        help='Participant ID to use as template for experimental design')
     
     args = parser.parse_args()
     
@@ -333,56 +345,66 @@ def main():
     n_jobs = args.n_jobs if args.n_jobs else max(1, cpu_count() - 1)
     
     print("="*70)
-    print("MODEL RECOVERY ANALYSIS")
+    print("MODEL RECOVERY ANALYSIS (Group-Level Parameter Sampling)")
     print("="*70)
-    print(f"Participants: {args.participants}")
     print(f"Models to test: {args.models}")
-    print(f"Recovery iterations: {args.n_recovery}")
+    print(f"Recovery iterations per model: {args.n_recovery}")
     print(f"Monte Carlo simulations: {args.nSimul}")
     print(f"Optimization starts: {args.nStarts}")
     print(f"Parallel jobs: {n_jobs} (CPUs available: {cpu_count()})")
+    print(f"Template participant: {args.template_participant}")
     print("="*70)
     
     start_time = time.time()
     
-    # Create all participant-model combinations
-    combinations = [
-        (pid, gen_model) 
-        for gen_model in args.models 
-        for pid in args.participants
-    ]
+    # Load template data (experimental design)
+    print(f"\nLoading template data from {args.template_participant}...")
+    try:
+        template_data, _ = loadData.loadData(f"{args.template_participant}_all.csv", verbose=False)
+        print(f"  Template data: {len(template_data)} trials")
+    except Exception as e:
+        print(f"Error loading template data: {e}")
+        return
     
-    print(f"\nTotal combinations to process: {len(combinations)}")
+    # Load group statistics for each model
+    print("\nLoading group parameter statistics...")
+    group_stats_dict = {}
+    for model in args.models:
+        try:
+            stats = load_group_parameter_statistics(model)
+            group_stats_dict[model] = stats
+            print(f"  {model}: {stats['n_participants']} participants, {len(stats['mean'])} params")
+        except Exception as e:
+            print(f"  Warning: Could not load stats for {model}: {e}")
     
-    # Create partial function with fixed arguments
-    worker_func = partial(
-        run_model_recovery_single,
-        models_to_test=args.models,
-        n_recovery=args.n_recovery,
-        nSimul=args.nSimul,
-        nStarts=args.nStarts,
-        save_dir=args.save_dir
-    )
+    if len(group_stats_dict) == 0:
+        print("Error: No group statistics loaded. Check that model_fits directory exists.")
+        return
     
-    # Run in parallel
-    results = []
-    if n_jobs > 1:
-        print(f"\nRunning in parallel with {n_jobs} workers...")
-        with Pool(processes=n_jobs) as pool:
-            # Use starmap for multiple arguments
-            results = list(tqdm(
-                pool.starmap(worker_func, combinations),
-                total=len(combinations),
-                desc="Model Recovery"
-            ))
-    else:
-        print("\nRunning sequentially...")
-        for pid, gen_model in tqdm(combinations, desc="Model Recovery"):
-            result = worker_func(pid, gen_model)
-            results.append(result)
+    # Run model recovery for each generating model
+    print("\n" + "-"*70)
+    print("Running Model Recovery")
+    print("-"*70)
     
-    # Filter out None results
-    results = [r for r in results if r is not None]
+    all_results = []
+    for gen_model in args.models:
+        if gen_model not in group_stats_dict:
+            print(f"\nSkipping {gen_model} (no group statistics available)")
+            continue
+            
+        result = run_model_recovery_for_model(
+            generating_model=gen_model,
+            models_to_test=args.models,
+            group_stats_dict=group_stats_dict,
+            template_data=template_data,
+            n_recovery=args.n_recovery,
+            nSimul=args.nSimul,
+            nStarts=args.nStarts,
+            save_dir=args.save_dir,
+            n_jobs=n_jobs
+        )
+        if result is not None:
+            all_results.append(result)
     
     elapsed = time.time() - start_time
     
@@ -391,20 +413,55 @@ def main():
     print("="*70)
     print(f"Total time: {elapsed/60:.1f} minutes")
     print(f"Results saved to: {args.save_dir}/")
-    print(f"Successful recoveries: {len(results)}")
+    print(f"Successful recoveries: {len(all_results)} models")
     
-    # Print summary
-    if results:
-        print("\nRecovery Summary (by AIC):")
-        print("-"*50)
+    # Print confusion matrix summary
+    if all_results:
+        print("\n" + "-"*70)
+        print("Recovery Confusion Matrix (AIC)")
+        print("-"*70)
         
-        for gen_model in args.models:
-            gen_results = [r for r in results if r['generating_model'] == gen_model]
-            if gen_results:
-                correct = sum(r['best_model_counts_aic'].get(gen_model, 0) for r in gen_results)
-                total = sum(r['n_iterations'] for r in gen_results)
-                pct = correct / total * 100 if total > 0 else 0
-                print(f"  {gen_model}: {correct}/{total} ({pct:.1f}%) correctly recovered")
+        # Header
+        header = "Generated \\ Recovered"
+        model_abbrevs = {
+            'lognorm': 'CI',
+            'fusionOnlyLogNorm': 'Fus',
+            'switchingFree': 'SwF',
+            'probabilityMatchingLogNorm': 'PM',
+            'selection': 'Sel'
+        }
+        
+        print(f"{'Generating':<25}", end="")
+        for m in args.models:
+            abbrev = model_abbrevs.get(m, m[:4])
+            print(f"{abbrev:>8}", end="")
+        print(f"{'Correct':>10}")
+        print("-"*70)
+        
+        for result in all_results:
+            gen_model = result['generating_model']
+            total = result['n_iterations']
+            print(f"{gen_model:<25}", end="")
+            
+            correct_count = 0
+            for fit_model in args.models:
+                count = result['best_model_counts_aic'].get(fit_model, 0)
+                pct = count / total * 100 if total > 0 else 0
+                if fit_model == gen_model:
+                    correct_count = count
+                    print(f"{pct:>7.0f}%", end="")
+                else:
+                    print(f"{pct:>7.0f}%", end="")
+            
+            correct_pct = correct_count / total * 100 if total > 0 else 0
+            print(f"{correct_pct:>9.1f}%")
+        
+        # Overall accuracy
+        print("-"*70)
+        total_correct = sum(r['best_model_counts_aic'].get(r['generating_model'], 0) for r in all_results)
+        total_iterations = sum(r['n_iterations'] for r in all_results)
+        overall_pct = total_correct / total_iterations * 100 if total_iterations > 0 else 0
+        print(f"{'Overall Accuracy:':<25}{' '*len(args.models)*8}{overall_pct:>9.1f}%")
 
 
 if __name__ == "__main__":

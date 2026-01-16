@@ -1,0 +1,3198 @@
+{
+  "config": {
+    "models": [
+      "lognorm",
+      "fusionOnlyLogNorm",
+      "switchingFree",
+      "probabilityMatchingLogNorm",
+      "selection"
+    ],
+    "n_datasets": 100,
+    "n_simul": 500,
+    "n_starts": 1
+  },
+  "group_statistics": {
+    "lognorm": {
+      "mean": [
+        0.10922477650365493,
+        0.2736880359187166,
+        0.6457393601505141,
+        0.711701365312066,
+        1.0724072528127602,
+        0.07656310545756675,
+        0.13238314560809095
+      ],
+      "std": [
+        0.08221718497557655,
+        0.1130942483455466,
+        0.36117368766378694,
+        0.2099271606084205,
+        0.9740097890932269,
+        0.06628377856345355,
+        0.09152661636010392
+      ],
+      "n_participants": 12
+    },
+    "fusionOnlyLogNorm": {
+      "mean": [
+        0.09588471586413654,
+        0.27743018809067976,
+        0.6992148575315205,
+        0.9043089072690665,
+        0.07376394144173533,
+        0.13096086059269435
+      ],
+      "std": [
+        0.09163886540817268,
+        0.10978193882272103,
+        0.34464543008845383,
+        0.5944679238584566,
+        0.07293015407108751,
+        0.09020790807892984
+      ],
+      "n_participants": 12
+    },
+    "switchingFree": {
+      "mean": [
+        0.08903042926971959,
+        0.17789967341113347,
+        0.3551527077557672,
+        0.2100607243828615,
+        0.3890973213089324,
+        0.08020557161298007,
+        0.11711800442233511,
+        0.54855065418129
+      ],
+      "std": [
+        0.08727240274521025,
+        0.08861244534966647,
+        0.2701486894290637,
+        0.19246978720166807,
+        0.3814091854735332,
+        0.0768368451402026,
+        0.08510417705764368,
+        0.2892079608095847
+      ],
+      "n_participants": 12
+    },
+    "probabilityMatchingLogNorm": {
+      "mean": [
+        0.11613780441006544,
+        0.25774303255503256,
+        0.5623193331346883,
+        0.1508516225994365,
+        0.6639852038949747,
+        0.09462649745211273,
+        0.1442392587266452
+      ],
+      "std": [
+        0.09766114665608772,
+        0.10431457372060982,
+        0.3617358172494449,
+        0.21717068169987477,
+        0.3605168482792791,
+        0.09016717333207258,
+        0.10720368135696848
+      ],
+      "n_participants": 12
+    },
+    "selection": {
+      "mean": [
+        0.12096465219032919,
+        0.12344199936085132,
+        0.2956705432554168,
+        0.7294220158128318,
+        0.7551922468573679,
+        0.11140419811240204,
+        0.11530792940645394
+      ],
+      "std": [
+        0.1147345312788239,
+        0.04324377951862387,
+        0.1298273147084523,
+        0.20222572995765514,
+        0.7098100559232857,
+        0.09791724152090726,
+        0.1172523155910796
+      ],
+      "n_participants": 12
+    }
+  },
+  "confusion_matrix_aic": [
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  ],
+  "confusion_matrix_bic": [
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  ],
+  "results": [
+    {
+      "generating_model": "lognorm",
+      "iteration": 4,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 8,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 9,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 10,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 3,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 12,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 11,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 14,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 13,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 15,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 17,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 16,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 18,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 19,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 20,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 22,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 23,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 21,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 24,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 25,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 26,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 27,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 28,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 29,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 30,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 31,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 32,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 33,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 35,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 34,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 36,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 37,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 38,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 39,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 40,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 7,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 41,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 42,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 43,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 44,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 45,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 46,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 47,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 48,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 51,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 50,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 49,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 53,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 52,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 55,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 54,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 56,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 57,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 58,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 0,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 60,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 59,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 61,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 62,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 63,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 64,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 65,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 6,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 1,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 66,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 68,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 69,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 67,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 71,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 72,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 70,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 73,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 74,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 75,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 76,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 77,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 78,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 79,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 82,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 80,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 83,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 81,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 86,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 84,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 87,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 5,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 85,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 92,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 89,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 88,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 91,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 93,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 94,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 90,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 95,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 96,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 97,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 98,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 0,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 99,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 3,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 5,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 6,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 8,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 4,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 2,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 1,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 7,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 9,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 11,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 10,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 12,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 13,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 14,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 15,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 16,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 17,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 18,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 19,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 20,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 21,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 23,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 22,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 24,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 25,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 26,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 27,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 28,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 31,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 29,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 33,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 34,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 30,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 35,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 32,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 36,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 37,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 38,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 39,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 41,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 40,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 42,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 43,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 44,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 45,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 46,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 48,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 47,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 49,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 50,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 51,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 52,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 53,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 55,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 57,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 54,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 56,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 58,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 59,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 61,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 62,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 60,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 63,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 66,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 68,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 64,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 65,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 67,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 70,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 69,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 71,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 72,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 73,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 74,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 76,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 77,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 79,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 75,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 78,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 81,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 82,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 80,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 83,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 84,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 85,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 86,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 87,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 89,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 88,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 90,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 91,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 92,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 93,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 94,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 96,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 95,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 99,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 0,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 97,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "fusionOnlyLogNorm",
+      "iteration": 98,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 1,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 2,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 3,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 5,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 4,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 8,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 9,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 7,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 11,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 6,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 10,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 12,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 13,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 15,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 16,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 14,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 17,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 18,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 19,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 20,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 21,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 22,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 23,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 25,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 24,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 26,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 27,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 28,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 30,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 31,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 32,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 35,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 29,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 37,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 38,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 36,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 41,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 33,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 34,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 40,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 42,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 43,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 39,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 44,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 45,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 48,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 49,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 46,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 50,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 51,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 47,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 53,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 54,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 55,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 52,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 56,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 57,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 58,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 59,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 63,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 62,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 60,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 65,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 61,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 68,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 64,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 69,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 66,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 70,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 67,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 72,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 71,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 73,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 74,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 75,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 76,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 77,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "lognorm",
+      "iteration": 2,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 78,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 79,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 80,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 81,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 83,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 84,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 82,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 88,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 85,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 87,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 90,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 92,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 89,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 86,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 91,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 93,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 95,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 94,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 96,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 97,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 98,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "switchingFree",
+      "iteration": 99,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 2,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 1,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 0,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 4,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 5,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 3,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 6,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 7,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 8,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 9,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 10,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 11,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 12,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 14,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 13,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 15,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 16,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 18,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 17,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 19,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 20,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 21,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 22,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 23,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 24,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 25,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 26,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 27,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 28,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 29,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 30,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 31,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 32,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 33,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 34,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 35,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 37,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 36,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 38,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 40,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 41,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 39,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 42,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 43,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 44,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 45,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 47,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 48,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 50,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 51,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 49,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 46,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 52,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 53,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 54,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 55,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 56,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 57,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 59,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 58,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 61,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 60,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 62,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 63,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 64,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 65,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 67,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 66,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 68,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 69,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 70,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 71,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 72,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 73,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 74,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 75,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 76,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 77,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 78,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 79,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 80,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 81,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 82,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 83,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 84,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 85,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 86,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 87,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 88,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 89,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 90,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 91,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 92,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 93,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 94,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 95,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 96,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 97,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 98,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "iteration": 99,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 0,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 1,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 2,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 3,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 4,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 5,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 7,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 6,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 8,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 9,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 10,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 11,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 12,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 13,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 14,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 15,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 16,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 17,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 18,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 19,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 20,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 21,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 22,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 23,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 24,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 25,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 26,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 27,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 28,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 29,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 30,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 31,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 32,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 33,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 34,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 35,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 36,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 38,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 37,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 39,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 40,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 41,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 42,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 43,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 44,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 45,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 46,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 47,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 48,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 49,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 50,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 51,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 52,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 53,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 55,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 54,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 57,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 56,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 58,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 59,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 60,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 61,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 62,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 63,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 65,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 64,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 67,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 66,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 68,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 70,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 69,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 71,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 72,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 73,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 74,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 75,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 76,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 77,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 78,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 79,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 80,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 81,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 82,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 83,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 84,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 85,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 86,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 87,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 88,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 89,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 90,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 91,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 92,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 93,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 94,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 95,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 96,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 97,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 98,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    },
+    {
+      "generating_model": "selection",
+      "iteration": 99,
+      "success": false,
+      "error": "Data must contain 'testDurS' and 'standardDur' columns"
+    }
+  ],
+  "timestamp": "2026-01-15T02:05:53.588101"
+}
