@@ -116,30 +116,30 @@ def sample_parameters_from_group(group_stats, seed=None, clip_to_bounds=True):
         
         if n_params == 6:
             # fusionOnlyLogNorm: [λ1, σa1, σv, σa2, λ2, λ3]
-            params[0] = np.clip(params[0], 0.01, 2.0)   # λ1
-            params[1] = np.clip(params[1], 0.01, 0.5)   # σa1
-            params[2] = np.clip(params[2], 0.01, 0.5)   # σv
-            params[3] = np.clip(params[3], 0.01, 0.5)   # σa2
+            params[0] = np.clip(params[0], 0.01, 0.4)   # λ1
+            params[1] = np.clip(params[1], 0.01, 2)   # σa1
+            params[2] = np.clip(params[2], 0.01, 2)   # σv
+            params[3] = np.clip(params[3], 0.01, 2)   # σa2
             params[4] = np.clip(params[4], 0.01, 2.0)   # λ2
             params[5] = np.clip(params[5], 0.01, 2.0)   # λ3
             
         elif n_params == 7:
             # lognorm/gaussian/switching/etc: [λ1, σa1, σv, pc, σa2, λ2, λ3]
-            params[0] = np.clip(params[0], 0.01, 2.0)   # λ1
-            params[1] = np.clip(params[1], 0.01, 0.5)   # σa1
-            params[2] = np.clip(params[2], 0.01, 0.5)   # σv
+            params[0] = np.clip(params[0], 0.01, 0.4)   # λ1
+            params[1] = np.clip(params[1], 0.01, 2)   # σa1
+            params[2] = np.clip(params[2], 0.01, 2)   # σv
             params[3] = np.clip(params[3], 0.01, 0.99)  # pc (probability)
-            params[4] = np.clip(params[4], 0.01, 0.5)   # σa2
+            params[4] = np.clip(params[4], 0.01, 2)   # σa2
             params[5] = np.clip(params[5], 0.01, 2.0)   # λ2
             params[6] = np.clip(params[6], 0.01, 2.0)   # λ3
             
         elif n_params == 8:
             # switchingFree: [λ1, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2]
-            params[0] = np.clip(params[0], 0.01, 2.0)   # λ1
-            params[1] = np.clip(params[1], 0.01, 0.5)   # σa1
-            params[2] = np.clip(params[2], 0.01, 0.5)   # σv
+            params[0] = np.clip(params[0], 0.01, 0.4)   # λ1
+            params[1] = np.clip(params[1], 0.01, 2)   # σa1
+            params[2] = np.clip(params[2], 0.01, 2)   # σv
             params[3] = np.clip(params[3], 0.01, 0.99)  # p_switch1
-            params[4] = np.clip(params[4], 0.01, 0.5)   # σa2
+            params[4] = np.clip(params[4], 0.01, 2)   # σa2
             params[5] = np.clip(params[5], 0.01, 2.0)   # λ2
             params[6] = np.clip(params[6], 0.01, 2.0)   # λ3
             params[7] = np.clip(params[7], 0.01, 0.99)  # p_switch2

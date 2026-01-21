@@ -1,0 +1,375 @@
+% Mathematical Modeling of Causal Inference for Audiovisual Duration Perception
+% This section can be included in an appendix
+
+We model audiovisual duration perception in the case of conflicting cues informing different durations. In our experiment, we had two modality cues: auditory and visual. Each elicits a latent duration $y$. For simplicity we describe the model in which the observer perceives the latent duration $y$ with normal Gaussian noise and the prior over $y$ is bounded by perceived minimum ($t_{\min}$) and maximum durations of a stimulus interval ($t_{\max}$).
+
+\subsection{Generative Model}
+
+\subsubsection{Generative Model for Same Source}
+
+In the case of a common source, both auditory and visual measurements arise from a single audiovisual source $s_{av}$:
+\begin{itemize}
+    \item $s_{av}$ generates both $m_a$ (auditory measurement) and $m_v$ (visual measurement)
+    \item These measurements are then fused into an integrated audiovisual estimate
+\end{itemize}
+
+where:
+\begin{equation}
+p(m_{av}|s_{av}) = \mathcal{N}(m_{av}, s_{av}, \sigma_{av}^2)
+\end{equation}
+
+While this case is straightforward to solve, we are primarily interested in the assumption of separate sources, as it is essentially a categorization problem.
+
+\subsubsection{Generative Model for Separate Sources}
+
+When sources are separate:
+\begin{itemize}
+    \item $s_{av}$ splits into separate auditory source $s_a$ and visual source $s_v$
+    \item $s_a$ generates $m_a$ (auditory measurement), leading to auditory estimate
+    \item $s_v$ generates $m_v$ (visual measurement), leading to visual estimate
+\end{itemize}
+
+\subsubsection{Generative Model with Categorization}
+
+The complete model includes a categorical variable $c$ that determines whether stimuli come from common or separate sources:
+\begin{itemize}
+    \item When $c=1$: Common source model (fusion)
+    \item When $c=2$: Separate sources model (segregation)
+\end{itemize}
+
+The final estimate is obtained by averaging over categories.
+
+\paragraph{Notation}
+\begin{itemize}
+    \item $s_a, s_v$: true durations of \textbf{auditory} and \textbf{visual} stimuli
+    \item $m_a, m_v$: noisy \textbf{measurements} (in observer's representation space)
+    \item $\sigma_a, \sigma_v$: sensory noise standard deviations
+\end{itemize}
+
+\begin{equation}
+m_a \sim \mathcal{N}(s_a, \sigma_a^2)
+\end{equation}
+\begin{equation}
+m_v \sim \mathcal{N}(s_v, \sigma_v^2)
+\end{equation}
+
+\subsection{Bayesian Inference}
+
+\subsubsection{Likelihood of Common Cause $p(m_a, m_v | C=1)$}
+
+If the durations are coming from the same source, instead of $s_a$ and $s_v$ we have a single latent duration $y$. Thus the measurements arise from normal distributions around $y$:
+
+\begin{equation}
+\label{eq:ma_given_y}
+m_a \sim \mathcal{N}(y, \sigma_a^2)
+\end{equation}
+
+\begin{equation}
+\label{eq:mv_given_y}
+m_v \sim \mathcal{N}(y, \sigma_v^2)
+\end{equation}
+
+If we assume the ``true'' value $y$ has a \textbf{flat prior} on $[t_{\min}, t_{\max}]$:
+\begin{equation}
+p(y) = \frac{1}{t_{\max} - t_{\min}}
+\end{equation}
+
+To find the likelihood of common causes, we need a single integrand bounded between $t_{\min}$ and $t_{\max}$:
+\begin{equation}
+\label{eq:likelihood_c1_integral}
+p(m_a, m_v | C=1) = \int_{t_{\min}}^{t_{\max}} p(m_a | y) p(m_v | y) p(y) \, dy
+\end{equation}
+
+Taking the prior out of the integral:
+\begin{equation}
+p(m_a, m_v | C=1) = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} p(m_a | y) p(m_v | y) \, dy
+\end{equation}
+
+Writing the likelihoods as Gaussians:
+\begin{equation}
+p(m_a, m_v | C=1) = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(m_a; y, \sigma_a^2) \mathcal{N}(m_v; y, \sigma_v^2) \, dy
+\end{equation}
+
+Because a Gaussian is symmetric in its arguments (mathematically):
+\begin{equation}
+\mathcal{N}(m_a; y, \sigma_a^2) = \mathcal{N}(y; m_a, \sigma_a^2)
+\end{equation}
+
+it is identical to write the likelihood as:
+\begin{equation}
+p(m_a, m_v | C=1) = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y; m_a, \sigma_a^2) \mathcal{N}(y; m_v, \sigma_v^2) \, dy
+\end{equation}
+
+\subsubsection{Product of Two Gaussians in the Same Variable}
+
+Within the integrand is the product of two Gaussians in the same variable, so let:
+\begin{equation}
+f(y) = \mathcal{N}(y; m_a, \sigma_a^2) \mathcal{N}(y; m_v, \sigma_v^2) = \frac{1}{2\pi \sigma_a \sigma_v} \exp\left[-\frac{1}{2}\left(\frac{(y-m_a)^2}{\sigma_a^2} + \frac{(y-m_v)^2}{\sigma_v^2}\right)\right]
+\end{equation}
+
+We rewrite this in the form of a \textbf{Gaussian in $y$ times a constant} that doesn't depend on $y$.
+
+Taking the logarithm and expanding the exponent:
+\begin{equation}
+\log(f(y)) = -\frac{1}{2}\left[\frac{(y-m_a)^2}{\sigma_a^2} + \frac{(y-m_v)^2}{\sigma_v^2}\right] - \frac{1}{2}\log(2\pi\sigma_a^2) - \frac{1}{2}\log(2\pi\sigma_v^2)
+\end{equation}
+
+\begin{multline}
+= -\frac{1}{2} \left( \left(\frac{1}{\sigma_a^2} + \frac{1}{\sigma_v^2}\right) y^2 - 2 \left(\frac{m_a}{\sigma_a^2} + \frac{m_v}{\sigma_v^2}\right) y \right. \\
+\left. + \left(\frac{m_a^2}{\sigma_a^2} + \frac{m_v^2}{\sigma_v^2}\right) \right) - \text{norm consts}
+\end{multline}
+
+Using precisions:
+\begin{equation}
+\frac{1}{\sigma_a^2} = J_a, \quad \frac{1}{\sigma_v^2} = J_v
+\end{equation}
+
+Completing the square for the quadratic in $y$:
+\begin{equation}
+(J_a + J_v)\left(y^2 - 2\mu_c y + \mu_c^2\right) + \left(\frac{m_a^2}{\sigma_a^2} + \frac{m_v^2}{\sigma_v^2} - (J_a + J_v)\mu_c^2\right)
+\end{equation}
+
+with:
+\begin{equation}
+\mu_c = \frac{J_a m_a + J_v m_v}{J_a + J_v} = \frac{m_a\sigma_v^2 + m_v\sigma_a^2}{\sigma_a^2 + \sigma_v^2}, \quad \sigma_c^2 = \frac{1}{J_a + J_v} = \frac{\sigma_a^2 \sigma_v^2}{\sigma_a^2 + \sigma_v^2}
+\end{equation}
+
+\paragraph{Simplifying the Constant Term}
+
+The constant term:
+\begin{equation}
+\frac{m_a^2}{\sigma_a^2} + \frac{m_v^2}{\sigma_v^2} - (J_a + J_v)\mu_c^2
+\end{equation}
+
+Substituting $\mu_c = \frac{J_a m_a + J_v m_v}{J_a + J_v}$:
+\begin{equation}
+\frac{m_a^2}{\sigma_a^2} + \frac{m_v^2}{\sigma_v^2} - (J_a + J_v) \cdot \left[\frac{m_a/\sigma_a^2 + m_v/\sigma_v^2}{J_a + J_v}\right]^2 = \frac{m_a^2}{\sigma_a^2} + \frac{m_v^2}{\sigma_v^2} - \frac{(m_a/\sigma_a^2 + m_v/\sigma_v^2)^2}{J_a + J_v}
+\end{equation}
+
+Under common denominator $J_a + J_v$:
+\begin{equation}
+= J_a m_a^2 + J_v m_v^2 - \frac{(m_a/\sigma_a^2 + m_v/\sigma_v^2)^2}{J_a + J_v} = \frac{(J_a + J_v)(J_a m_a^2 + J_v m_v^2) - (J_a m_a + J_v m_v)^2}{J_a + J_v}
+\end{equation}
+
+Expanding the numerator:
+\begin{multline}
+[J_a^2 m_a^2 + J_a J_v m_v^2 + J_a J_v m_a^2 + J_v^2 m_v^2] \\
+- [J_a^2 m_a^2 + 2J_a J_v m_a m_v + J_v^2 m_v^2]
+\end{multline}
+
+After cancellation:
+\begin{equation}
+= J_a J_v m_v^2 + J_a J_v m_a^2 - 2J_a J_v m_a m_v = J_a J_v(m_a - m_v)^2
+\end{equation}
+
+Substituting back:
+\begin{equation}
+\frac{J_a J_v(m_a - m_v)^2}{J_a + J_v} = \frac{\frac{1}{\sigma_a^2 \sigma_v^2}(m_a - m_v)^2}{\frac{1}{\sigma_a^2} + \frac{1}{\sigma_v^2}} = \frac{(m_a - m_v)^2}{\sigma_a^2 + \sigma_v^2}
+\end{equation}
+
+So the quadratic becomes:
+\begin{equation}
+-\frac{1}{2}\left[(J_a + J_v)(y - \mu_c)^2 + \frac{(m_a - m_v)^2}{\sigma_a^2 + \sigma_v^2}\right]
+\end{equation}
+
+Therefore:
+\begin{multline}
+\mathcal{N}(y; m_a, \sigma_a^2) \mathcal{N}(y; m_v, \sigma_v^2) = \frac{1}{2\pi \sigma_a \sigma_v} \exp\left[-\frac{1}{2}(J_a + J_v)(y - \mu_c)^2\right] \\
+\times \exp\left[-\frac{1}{2}\frac{(m_a - m_v)^2}{\sigma_a^2 + \sigma_v^2}\right]
+\end{multline}
+
+The term in $y$ is a Gaussian:
+\begin{equation}
+\exp\left[-\frac{1}{2}(J_a + J_v)(y - \mu_c)^2\right] = \sqrt{2\pi \sigma_c^2} \cdot \mathcal{N}(y; \mu_c, \sigma_c^2)
+\end{equation}
+
+The second exponential (the constant term) is a \textbf{Gaussian in} $m_a - m_v$ with mean 0 and variance $\sigma_a^2 + \sigma_v^2$:
+\begin{equation}
+\exp\left[-\frac{1}{2}\frac{(m_a - m_v)^2}{\sigma_a^2 + \sigma_v^2}\right] = \sqrt{2\pi(\sigma_a^2 + \sigma_v^2)} \cdot \mathcal{N}(m_a - m_v; 0, \sigma_a^2 + \sigma_v^2)
+\end{equation}
+
+Combining the terms:
+\begin{multline}
+= \frac{1}{2\pi \sigma_a \sigma_v} \sqrt{2\pi \sigma_c^2} \cdot \sqrt{2\pi(\sigma_a^2 + \sigma_v^2)} \\
+\times \mathcal{N}(y; \mu_c, \sigma_c^2) \cdot \mathcal{N}(m_a - m_v; 0, \sigma_a^2 + \sigma_v^2)
+\end{multline}
+
+Handling the constant part:
+\begin{equation}
+\frac{1}{2\pi \sigma_a \sigma_v} \sqrt{2\pi \sigma_c^2} \cdot \sqrt{2\pi(\sigma_a^2 + \sigma_v^2)} = \frac{2\pi \cdot \sigma_c \cdot \sqrt{(\sigma_a^2 + \sigma_v^2)}}{2\pi \sigma_a \sigma_v}
+\end{equation}
+
+Substituting $\sigma_c$:
+\begin{equation}
+= \frac{\frac{\sigma_a \sigma_v}{\sqrt{(\sigma_a^2 + \sigma_v^2)}} \cdot \sqrt{(\sigma_a^2 + \sigma_v^2)}}{\sigma_a \sigma_v} = 1
+\end{equation}
+
+We are left with:
+\begin{equation}
+\label{eq:product_gaussians_factorization}
+\mathcal{N}(y; m_a, \sigma_a^2) \mathcal{N}(y; m_v, \sigma_v^2) = \mathcal{N}(m_a - m_v; 0, \sigma_a^2 + \sigma_v^2) \mathcal{N}(y; \mu_c, \sigma_c^2)
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\mathcal{N}(m_a - m_v; 0, \sigma_a^2 + \sigma_v^2)$ is a \textbf{constant w.r.t. $y$} that measures how compatible the two measurements are (how close $m_a$ and $m_v$ are relative to their noise).
+    \item $\mathcal{N}(y; \mu_c, \sigma_c^2)$ is a \textbf{Gaussian in $y$} with the familiar precision-weighted mean and variance.
+\end{itemize}
+
+\subsubsection{Use the Factorization Inside the Integral}
+
+We can now take the constant term out of the integral in the likelihood:
+\begin{equation}
+p(m_a, m_v | C=1) = \frac{1}{t_{\max} - t_{\min}} \mathcal{N}(m_a - m_v; 0, \sigma_a^2 + \sigma_v^2) \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y; \mu_c, \sigma_c^2) \, dy
+\end{equation}
+
+\subsubsection{Evaluate the Gaussian Integral over a Finite Interval}
+
+\begin{equation}
+\int_{t_{\min}}^{t_{\max}} \mathcal{N}(y; \mu_c, \sigma_c^2) \, dy = \Phi\left(\frac{t_{\max} - \mu_c}{\sigma_c}\right) - \Phi\left(\frac{t_{\min} - \mu_c}{\sigma_c}\right)
+\end{equation}
+
+where $\Phi$ is the cumulative distribution function of the standard normal distribution.
+
+\subsubsection{Final Formulation for Likelihood}
+
+\begin{multline}
+\label{eq:likelihood_c1_final}
+p(m_a, m_v | C=1) = \frac{1}{t_{\max} - t_{\min}} \mathcal{N}(m_a - m_v; 0, \sigma_a^2 + \sigma_v^2) \\
+\times \left[\Phi\left(\frac{t_{\max} - \mu_c}{\sigma_c}\right) - \Phi\left(\frac{t_{\min} - \mu_c}{\sigma_c}\right)\right]
+\end{multline}
+
+\subsection{Separate Causes $C=2$}
+
+\subsubsection{Generative Model under $C=2$}
+
+Now assuming two separate sources, we estimate two latent durations for each modality ($y_a$ and $y_v$).
+
+These latent durations $y_a$ and $y_v$ are independent of each other but both are bounded by the same $t_{\min}$ and $t_{\max}$, and they generate measurements from noisy Gaussian distributions:
+
+\begin{equation}
+m_a | y_a \sim \mathcal{N}(y_a, \sigma_a^2)
+\end{equation}
+
+\begin{equation}
+m_v | y_v \sim \mathcal{N}(y_v, \sigma_v^2)
+\end{equation}
+
+Since they are bounded by the same max/min durations, the uniform prior densities are:
+\begin{equation}
+p(y_a) = p(y_v) = \frac{1}{t_{\max} - t_{\min}}
+\end{equation}
+on $[t_{\min}, t_{\max}]$.
+
+The \textbf{likelihood} of the two measurements under $C=2$ is:
+\begin{equation}
+p(m_a, m_v | C=2) = \int \int p(m_a | y_a) p(m_v | y_v) p(y_a) p(y_v) \, dy_a \, dy_v
+\end{equation}
+
+\subsubsection{Factor the Double Integral}
+
+Because the integrand separates into a function of $y_a$ times a function of $y_v$ and the domains (boundaries) are independent:
+\begin{multline}
+p(m_a, m_v | C=2) = \left[\int_{t_{\min}}^{t_{\max}} p(m_a | y_a) p(y_a) \, dy_a\right] \\
+\times \left[\int_{t_{\min}}^{t_{\max}} p(m_v | y_v) p(y_v) \, dy_v\right]
+\end{multline}
+
+\subsubsection{Evaluate Each Integral}
+
+Again using the symmetry of Gaussians:
+\begin{equation}
+\mathcal{N}(m_a; y, \sigma_a^2) = \mathcal{N}(y; m_a, \sigma_a^2)
+\end{equation}
+
+Then:
+\begin{equation}
+\int_{t_{\min}}^{t_{\max}} p(m_a | y_a) p(y_a) \, dy_a = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y_a; m_a, \sigma_a^2) \, dy_a
+\end{equation}
+
+So $p(m_a, m_v | C=2)$ becomes:
+\begin{multline}
+p(m_a, m_v | C=2) = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y_a; m_a, \sigma_a^2) \, dy_a \\
+\times \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y_v; m_v, \sigma_v^2) \, dy_v
+\end{multline}
+
+\begin{multline}
+= \left(\frac{1}{t_{\max} - t_{\min}}\right)^2 \left[\Phi\left(\frac{t_{\max} - m_a}{\sigma_a}\right) - \Phi\left(\frac{t_{\min} - m_a}{\sigma_a}\right)\right] \\
+\times \left[\Phi\left(\frac{t_{\max} - m_v}{\sigma_v}\right) - \Phi\left(\frac{t_{\min} - m_v}{\sigma_v}\right)\right]
+\end{multline}
+
+\begin{equation}
+\label{eq:likelihood_c2_final}
+= \prod_{x \in \{m_a, m_v\}} \frac{1}{t_{\max} - t_{\min}} \left[\Phi\left(\frac{t_{\max} - x}{\sigma_x}\right) - \Phi\left(\frac{t_{\min} - x}{\sigma_x}\right)\right]
+\end{equation}
+
+\subsection{Posterior Probability of Common Cause}
+
+\begin{equation}
+\label{eq:posterior_c1}
+p(C=1 | m_a, m_v) = \frac{p(m_a, m_v | C=1) p_c}{p(m_a, m_v | C=1) p_c + (1 - p_c) p(m_a, m_v | C=2)}
+\end{equation}
+
+where $p_c$ is the prior probability of a common cause.
+
+\subsection{Estimates}
+
+\subsubsection{Estimate via Model Averaging}
+
+\begin{equation}
+\label{eq:estimate_averaging}
+\hat{S} = p(C=1 | m_a, m_v) \cdot \hat{S}_{c=1} + (1 - p(C=1 | m_a, m_v)) \cdot m_a
+\end{equation}
+
+where $\hat{S}_{c=1}$ is the fused estimate:
+\begin{equation}
+\hat{S}_{c=1} = \frac{\sigma_v^2}{\sigma_a^2 + \sigma_v^2} m_a + \frac{\sigma_a^2}{\sigma_a^2 + \sigma_v^2} m_v = \frac{J_a}{J_a + J_v} m_a + \frac{J_v}{J_a + J_v} m_v
+\end{equation}
+
+where $J_a, J_v$ are the precisions.
+
+\subsubsection{Estimate via Probability Matching}
+
+Probability matching is a stochastic strategy where the observer samples the causal structure from the posterior distribution on each trial:
+
+\begin{equation}
+\label{eq:probability_matching_sample}
+C \sim \text{Bernoulli}(p(C=1 | m_a, m_v))
+\end{equation}
+
+Then the estimate is determined by the sampled causal structure:
+
+\begin{equation}
+\label{eq:estimate_matching}
+\hat{S} = \begin{cases}
+\hat{S}_{c=1}, & \text{if } C = 1 \text{ (sampled)} \\
+\hat{S}_{c=2}, & \text{if } C = 2 \text{ (sampled)}
+\end{cases}
+\end{equation}
+
+where $\hat{S}_{c=2}$ is the separate estimate (auditory only in our case):
+\begin{equation}
+\hat{S}_{c=2} = m_a
+\end{equation}
+
+Note that while the expected value of probability matching over many trials equals the model averaging estimate (Equation \ref{eq:estimate_averaging}), the two strategies differ in their trial-by-trial behavior. Probability matching produces discrete choices on each trial, whereas model averaging produces a continuous weighted estimate.
+
+\subsubsection{Estimate via Model Selection}
+
+Model selection is a deterministic strategy that selects the most probable causal structure and then uses the estimate corresponding to that structure:
+
+\begin{equation}
+\label{eq:model_selection_rule}
+C^* = \arg\max_{C \in \{1,2\}} p(C | m_a, m_v)
+\end{equation}
+
+This leads to a hard decision rule based on a 0.5 threshold:
+
+\begin{equation}
+\label{eq:estimate_selection}
+\hat{S} = \begin{cases}
+\hat{S}_{c=1}, & \text{if } p(C=1 | m_a, m_v) > 0.5 \\
+\hat{S}_{c=2}, & \text{otherwise}
+\end{cases}
+\end{equation}
+
+This strategy differs from both model averaging and probability matching. Unlike model averaging, which always produces a weighted combination, model selection commits to a single causal structure on each trial. Unlike probability matching, which stochastically samples the causal structure, model selection deterministically chooses the more probable structure. This makes model selection more sensitive to the reliability of the posterior: when $p(C=1 | m_a, m_v)$ is near 0.5, small changes in sensory evidence can cause discrete switches in behavior.
