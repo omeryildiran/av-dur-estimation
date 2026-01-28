@@ -722,8 +722,8 @@ if __name__ == "__main__":
                        help='Data file to use (default: all_auditory.csv)')
     args = parser.parse_args()
     
-    fixedMu = 1 # Set to True to ignore the bias in the model (overrides global setting)
-    dataName = "as_auditory.csv" #args.data
+    fixedMu = 0 # Set to True to ignore the bias in the model (overrides global setting)
+    dataName = "all_all.csv" #args.data
     show_error_bars  =  not args.no_error_bars  # Invert the flag
     
     # Load and prepare data

@@ -13,11 +13,19 @@
 # 9. switchingWithConflict: Log-space switching with conflict sensitivity (Gaussian noise in log space)
 # 10. switchingFree: Log-space switching with free probability parameters (Gaussian noise in log space)
 #
-# Parameter Structure:
-# --------------------
-# Causal Inference Models: [λ, σa1, σv, pc, σa2, (λ2, λ3 if not shared), (pc2 if free), t_min, t_max]
-# Probability Matching Models: [λ, σa1, σv, pc, σa2, (λ2, λ3 if not shared), (pc2 if free), t_min, t_max]
-# Fusion-Only Models: [λ, σa1, σv, σa2, t_min, t_max] (p_c fixed at 1.0, not fitted)
+# Parameter Structure (default: sharedLambda=True):
+# -------------------------------------------------
+# When sharedLambda=True (default):
+#   - Causal Inference Models: [λ, σa1, σv, pc, σa2] (5 params) or [λ, σa1, σv, pc1, σa2, pc2] if freeP_c
+#   - Fusion-Only Models: [λ, σa1, σv, σa2] (4 params, p_c fixed at 1.0)
+#   - switchingFree: [λ, σa1, σv, p_switch1, σa2, p_switch2] (6 params)
+#   - switchingWithConflict: [λ, σa1, σv, pc, σa2, k] (6 params) or [λ, σa1, σv, pc1, σa2, pc2, k] if freeP_c
+#
+# When sharedLambda=False:
+#   - Causal Inference Models: [λ, σa1, σv, pc, σa2, λ2, λ3] (7 params) or +[pc2] if freeP_c
+#   - Fusion-Only Models: [λ, σa1, σv, σa2, λ2, λ3] (6 params)
+#   - switchingFree: [λ, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2] (8 params)
+#   - switchingWithConflict: [λ, σa1, σv, pc, σa2, λ2, λ3, k] (8 params) or +[pc2] if freeP_c
 
 # import necessary libraries
 import numpy as np
@@ -90,7 +98,7 @@ class OmerMonteCarlo(fitPychometric):
         self.sharedSigma_v=True
         self.freeP_c = False  # Fix: Add missing attribute for parameter configuration
         self.logLikelihood= None  # Placeholder for log-likelihood
-        self.sharedLambda=False
+        self.sharedLambda=True  # Use shared lambda across conflict conditions (reduces parameters)
 
         self.groupedData= self.groupByChooseTest(x=data,
                 groupArgs=[

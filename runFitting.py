@@ -1,6 +1,8 @@
 
-""" python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln2_all.csv, ln1_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "probabilityMatching" 2500 "bads" 10 True
+""" python runFitting.py "as_all.csv,oy_all.csv,dt_all.csv,HH_all.csv,ip_all.csv,ln2_all.csv, ln1_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "probabilityMatching" 2500 "bads" 10 
+TEST:
 
+    python runFitting.py "mt_all.csv" "lognorm" 200 "bads" 2
 """
 
 def process_single_file(args):
@@ -14,7 +16,7 @@ def process_single_file(args):
         tuple: (dataFile, success, error_message)
     """
     dataFile, modelName, nSimul, optimMethod, nStarts, freeP_c, integrationMethod = args
-    
+    print(f"Starting processing for {dataFile} with args model {modelName}, nSimul {nSimul}, optimMethod {optimMethod}, nStarts {nStarts}, freeP_c {freeP_c}, integrationMethod {integrationMethod}")
     import os
     import numpy as np
     import pandas as pd
