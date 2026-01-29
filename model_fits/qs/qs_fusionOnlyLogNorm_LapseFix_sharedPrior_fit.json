@@ -1,0 +1,14 @@
+{
+    "participantID": "qs",
+    "modelType": "fusionOnlyLogNorm_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.08611896807361795,
+        0.2377649814278685,
+        1.2163536010839349,
+        0.6881845535535933
+    ],
+    "AIC": 2498.5420892288707,
+    "BIC": 2515.295145721201,
+    "logLikelihood": -1245.2710446144354,
+    "n_conditions": 487
+}
