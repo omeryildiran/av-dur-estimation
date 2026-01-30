@@ -1,0 +1,15 @@
+{
+    "participantID": "ip",
+    "modelType": "probabilityMatchingLogNorm_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.025519642805105214,
+        0.2992069944266893,
+        1.4199904957911167,
+        0.04687729218794623,
+        0.7269844461705721
+    ],
+    "AIC": 2403.411868308194,
+    "BIC": 2424.4144141784072,
+    "logLikelihood": -1196.705934154097,
+    "n_conditions": 493
+}

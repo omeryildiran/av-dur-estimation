@@ -1,0 +1,15 @@
+{
+    "participantID": "ip",
+    "modelType": "logLinearMismatch_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.05010683084130285,
+        0.2854829676774143,
+        0.9880870519012211,
+        0.3630961313843727,
+        0.7486960513781009
+    ],
+    "AIC": 2407.3113992768026,
+    "BIC": 2428.313945147016,
+    "logLikelihood": -1198.6556996384013,
+    "n_conditions": 493
+}

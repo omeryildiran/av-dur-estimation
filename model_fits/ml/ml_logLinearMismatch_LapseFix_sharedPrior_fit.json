@@ -1,0 +1,15 @@
+{
+    "participantID": "ml",
+    "modelType": "logLinearMismatch_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.09466870645917952,
+        0.4837409567161648,
+        0.5566784951908885,
+        0.9987048845738173,
+        0.7277875274441017
+    ],
+    "AIC": 2534.912087641851,
+    "BIC": 2556.8883956324285,
+    "logLikelihood": -1262.4560438209255,
+    "n_conditions": 599
+}

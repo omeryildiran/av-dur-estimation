@@ -1,0 +1,15 @@
+{
+    "participantID": "oy",
+    "modelType": "probabilityMatchingLogNorm_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.0976972419284124,
+        0.30413242938761964,
+        0.6539499894873055,
+        0.29708596738782944,
+        0.4064677546424148
+    ],
+    "AIC": 2322.137538344092,
+    "BIC": 2344.703688898653,
+    "logLikelihood": -1156.068769172046,
+    "n_conditions": 674
+}
