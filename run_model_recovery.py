@@ -170,7 +170,7 @@ def run_single_recovery_iteration(args):
     mc_gen.sharedLambda = True  # Use shared lambda across conflict conditions
     mc_gen.nSimul = nSimul
     mc_gen.nStart = nStarts
-    mc_gen.optimizationMethod = 'scipy'
+    mc_gen.optimizationMethod = 'bads'
     
     # Simulate data from generating model with sampled parameters
     try:
@@ -188,7 +188,7 @@ def run_single_recovery_iteration(args):
         mc_fit.sharedLambda = True  # Use shared lambda across conflict conditions
         mc_fit.nSimul = nSimul
         mc_fit.nStart = nStarts
-        mc_fit.optimizationMethod = 'scipy'
+        mc_fit.optimizationMethod = 'bads'
         
         try:
             fitted_params = mc_fit.fitCausalInferenceMonteCarlo(mc_fit.groupedData)
