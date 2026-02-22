@@ -18,26 +18,26 @@ temporal precision.
 \subsubsection{Bootstrap Analysis on Pooled Data}
 
 Psychometric functions were first fitted to pooled data across all participants 
-using maximum likelihood estimation. Bootstrap resampling ($N = 500$ 
+using maximum likelihood estimation. Bootstrap resampling ($N = 5$ 
 iterations, resampling participants with replacement) was used to estimate 
 95\% confidence intervals for the discrimination threshold $\sigma$.
 
 Results revealed a clear ordering of temporal precision across conditions 
 (Table~\ref{tab:precision}). The \textit{low-noise} auditory condition 
-showed the best discrimination precision ($\sigma = 144$~ms, 
-95\% CI $[124, 166]$), 
+showed the best discrimination precision ($\sigma = 140$~ms, 
+95\% CI $[127, 152]$), 
 corresponding to a Weber fraction of 0.27. The visual condition 
-showed intermediate precision ($\sigma = 283$~ms, 95\% CI 
-$[221, 342]$; Weber fraction 
-= 0.50). The \textit{high-noise} auditory condition showed the 
-worst precision ($\sigma = 362$~ms, 95\% CI 
-$[284, 457]$; Weber fraction 
-= 0.97).
+showed intermediate precision ($\sigma = 291$~ms, 95\% CI 
+$[244, 351]$; Weber fraction 
+= 0.68). The \textit{high-noise} auditory condition showed the 
+worst precision ($\sigma = 367$~ms, 95\% CI 
+$[291, 457]$; Weber fraction 
+= 1.74).
 
 Bootstrap comparisons confirmed that precision in the high-noise auditory 
 condition was significantly worse than in the low-noise condition, with 
 non-overlapping 95\% confidence intervals ($P(\sigma_{\text{high}} > 
-\sigma_{\text{low}}) = 1.000$). This 2.5-fold 
+\sigma_{\text{low}}) = 1.000$). This 2.6-fold 
 difference in discrimination threshold demonstrates the effectiveness of our 
 auditory reliability manipulation.
 
@@ -49,26 +49,26 @@ participants, we fitted psychometric functions separately for each participant
 participant equally, regardless of the number of trials completed.
 
 A Friedman test revealed a significant overall difference in $\sigma$ across 
-the three conditions ($\chi^2(2) = 10.36$, $p = 0.006$). 
+the three conditions ($\chi^2(2) = 18.73$, $p < .001$). 
 Follow-up pairwise comparisons were conducted using Wilcoxon signed-rank tests 
 with Bonferroni correction ($\alpha = .0167$).
 
 The auditory reliability manipulation produced a robust effect at the 
 individual participant level: discrimination thresholds were significantly 
-lower in the low-noise condition (median $= 147$~ms, 
-$M = 149$~ms, $SD = 29$~ms) compared 
-to the high-noise condition (median $= 398$~ms, 
-$M = 427$~ms, $SD = 178$~ms; 
-$W = 1$, $p = 0.0020$, $r = 0.97$). The large effect size 
-($r = 0.97$) indicates that 10 of 11 participants 
+lower in the low-noise condition (median $= 123$~ms, 
+$M = 134$~ms, $SD = 51$~ms) compared 
+to the high-noise condition (median $= 939$~ms, 
+$M = 868$~ms, $SD = 565$~ms; 
+$W = 0$, $p = 0.0010$, $r = 1.00$). The large effect size 
+($r = 1.00$) indicates that 11 of 11 participants 
 showed the expected pattern of worse precision under high-noise conditions.
 
-Visual duration discrimination (median $\sigma = 257$~ms, 
-$M = 278$~ms, $SD = 114$~ms) was 
-significantly worse than the low-noise auditory condition ($W = 5$, 
-$p = 0.0098$, $r = 0.85$). The comparison between visual and high-noise 
+Visual duration discrimination (median $\sigma = 263$~ms, 
+$M = 341$~ms, $SD = 157$~ms) was 
+significantly worse than the low-noise auditory condition ($W = 0$, 
+$p = 0.0010$, $r = 1.00$). The comparison between visual and high-noise 
 auditory conditions did not reach significance after Bonferroni correction 
-($W = 15$, $p = 0.1230$), suggesting that visual precision was 
+($W = 7$, $p = 0.0186$), suggesting that visual precision was 
 intermediate between the two auditory conditions.
 
 \subsubsection{Just Noticeable Differences}
@@ -76,8 +76,8 @@ intermediate between the two auditory conditions.
 The 75\% just noticeable differences (JNDs) were calculated as 
 $\text{JND} = 0.6745 \times \sigma \times T_s$, where $T_s = 500$~ms 
 is the standard duration. Based on the individual participant fits, the JNDs 
-were 92~ms for the low-noise auditory condition, 
-170~ms for the visual condition, and 327~ms for 
+were 90~ms for the low-noise auditory condition, 
+230~ms for the visual condition, and 586~ms for 
 the high-noise auditory condition.
 
 %% =============================================================================
@@ -88,7 +88,7 @@ the high-noise auditory condition.
 \centering
 \caption{Temporal discrimination precision ($\sigma$) across experimental 
 conditions. Bootstrap estimates are based on pooled data with participant-level 
-resampling ($N = 500$ iterations). Individual participant statistics are 
+resampling ($N = 5$ iterations). Individual participant statistics are 
 computed across $N = 11$ participants. Weber fractions are 
 calculated as $\sigma / T_s$ where $T_s = 500$~ms.}
 \label{tab:precision}
@@ -98,9 +98,9 @@ calculated as $\sigma / T_s$ where $T_s = 500$~ms.}
 \cline{2-3} \cline{4-6}
 Condition & $\sigma$ (ms) & 95\% CI & $M$ (ms) & $SD$ & Median & Weber \\
 \hline
-Auditory Low-Noise  & 144 & [124, 166] & 149 & 29 & 147 & 0.27 \\
-Visual              & 283 & [221, 342] & 278 & 114 & 257 & 0.50 \\
-Auditory High-Noise & 362 & [284, 457] & 427 & 178 & 398 & 0.97 \\
+Auditory Low-Noise  & 140 & [127, 152] & 134 & 51 & 123 & 0.27 \\
+Visual              & 291 & [244, 351] & 341 & 157 & 263 & 0.68 \\
+Auditory High-Noise & 367 & [291, 457] & 868 & 565 & 939 & 1.74 \\
 \hline
 \end{tabular}
 \end{table}
@@ -117,9 +117,9 @@ first condition showed higher $\sigma$ than the second.}
 \hline
 Comparison & $W$ & $p$ & $r$ & Bootstrap $P$ & Sig. \\
 \hline
-Aud High-Noise vs Low-Noise & 1 & 0.0020 & 0.97 & 1.000 & Yes \\
-Visual vs Aud Low-Noise     & 5 & 0.0098 & 0.85 & 1.000 & Yes \\
-Visual vs Aud High-Noise    & 15 & 0.1230 & 0.55 & 0.064 & No$^\dagger$ \\
+Aud High-Noise vs Low-Noise & 0 & 0.0010 & 1.00 & 1.000 & Yes \\
+Visual vs Aud Low-Noise     & 0 & 0.0010 & 1.00 & 1.000 & Yes \\
+Visual vs Aud High-Noise    & 7 & 0.0186 & 0.79 & 0.400 & No$^\dagger$ \\
 \hline
 \multicolumn{6}{l}{$^\dagger$Not significant after Bonferroni correction}
 \end{tabular}
@@ -130,30 +130,30 @@ Visual vs Aud High-Noise    & 15 & 0.1230 & 0.55 & 0.064 & No$^\dagger$ \\
 %% =============================================================================
 
 %% Bootstrap results:
-%% - Auditory Low-Noise: sigma = 144 ms [95% CI: 124-166]
-%% - Visual: sigma = 283 ms [95% CI: 221-342]
-%% - Auditory High-Noise: sigma = 362 ms [95% CI: 284-457]
-%% - Reliability effect ratio: 2.5x
+%% - Auditory Low-Noise: sigma = 140 ms [95% CI: 127-152]
+%% - Visual: sigma = 291 ms [95% CI: 244-351]
+%% - Auditory High-Noise: sigma = 367 ms [95% CI: 291-457]
+%% - Reliability effect ratio: 2.6x
 
 %% Individual participant results:
-%% - Auditory Low-Noise: M = 149 ms, SD = 29, Median = 147
-%% - Visual: M = 278 ms, SD = 114, Median = 257
-%% - Auditory High-Noise: M = 427 ms, SD = 178, Median = 398
-%% - Reliability effect ratio: 2.9x
-%% - Effect consistency: 10/11 participants showed expected effect
+%% - Auditory Low-Noise: M = 134 ms, SD = 51, Median = 123
+%% - Visual: M = 341 ms, SD = 157, Median = 263
+%% - Auditory High-Noise: M = 868 ms, SD = 565, Median = 939
+%% - Reliability effect ratio: 6.5x
+%% - Effect consistency: 11/11 participants showed expected effect
 
 %% Statistical tests:
-%% - Friedman: chi2(2) = 10.36, p = 0.0056
-%% - Aud High vs Low: W = 1, p = 0.0020, r = 0.97
-%% - Vis vs Aud Low: W = 5, p = 0.0098, r = 0.85
-%% - Vis vs Aud High: W = 15, p = 0.1230, r = 0.55
+%% - Friedman: chi2(2) = 18.73, p = 0.0001
+%% - Aud High vs Low: W = 0, p = 0.0010, r = 1.00
+%% - Vis vs Aud Low: W = 0, p = 0.0010, r = 1.00
+%% - Vis vs Aud High: W = 7, p = 0.0186, r = 0.79
 
 %% Weber fractions:
-%% - Auditory Low-Noise: 0.273
-%% - Visual: 0.505
-%% - Auditory High-Noise: 0.971
+%% - Auditory Low-Noise: 0.267
+%% - Visual: 0.682
+%% - Auditory High-Noise: 1.737
 
 %% JNDs (75%):
-%% - Auditory Low-Noise: 92 ms
-%% - Visual: 170 ms
-%% - Auditory High-Noise: 327 ms
+%% - Auditory Low-Noise: 90 ms
+%% - Visual: 230 ms
+%% - Auditory High-Noise: 586 ms
