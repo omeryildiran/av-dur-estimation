@@ -202,7 +202,7 @@ def build_param_ranges_from_data(models, n_sigma=3, fits_dir='model_fits'):
 
 
 
-def sample_free_parameters(model_name, rng=None):
+def sample_free_parameters(model_name, rng=None, param_ranges=None):
     """
     Draw one parameter vector from wide uniform distributions.
 
@@ -217,7 +217,9 @@ def sample_free_parameters(model_name, rng=None):
     if rng is None:
         rng = np.random.default_rng()
 
-    ranges = PARAM_RANGES_UNIQUE[model_name]
+    if param_ranges is None:
+        param_ranges = PARAM_RANGES_UNIQUE
+    ranges = param_ranges[model_name]
     unique = np.array([rng.uniform(lo, hi) for lo, hi in ranges])
 
     # Expand to the full parameter vector expected by monteCarloClass
@@ -276,12 +278,13 @@ def run_single_recovery_iteration(args):
     Returns dict with iteration results, or None on failure.
     """
     (iteration_idx, generating_model, models_to_test,
-     template_data, nSimul, nStarts) = args
+     template_data, nSimul, nStarts, param_ranges) = args
 
     rng = np.random.default_rng()
 
-    # 1. Sample ground-truth parameters from wide uniform priors
-    sampled_unique, sampled_params = sample_free_parameters(generating_model, rng=rng)
+    # 1. Sample ground-truth parameters from data-informed uniform ranges
+    sampled_unique, sampled_params = sample_free_parameters(
+        generating_model, rng=rng, param_ranges=param_ranges)
 
     # 2. Simulate data from the generating model
     mc_gen = monteCarloClass.OmerMonteCarlo(template_data)
@@ -365,8 +368,10 @@ def run_model_recovery_for_model(generating_model, models_to_test,
     names_unique = PARAM_NAMES_UNIQUE[generating_model]
     names_full = PARAM_NAMES[generating_model]
 
+    # Pass the ranges dict to workers so subprocesses have the data
     iteration_args = [
-        (i, generating_model, models_to_test, template_data, nSimul, nStarts)
+        (i, generating_model, models_to_test, template_data, nSimul, nStarts,
+         PARAM_RANGES_UNIQUE)
         for i in range(n_recovery)
     ]
 
