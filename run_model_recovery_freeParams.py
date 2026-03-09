@@ -51,33 +51,33 @@ PARAM_RANGES_UNIQUE = {
     # fusionOnlyLogNorm: [λ, σa, σv]   →  expanded to [λ, σa, σv, σa]
     'fusionOnlyLogNorm': [
         (0.02, 0.35),   # λ  – lapse rate
-        (0.01, 1.5),    # σa – auditory noise (single)
-        (0.01, 1.5),    # σv – visual noise
+        (0.05, 0.8),    # σa – auditory noise (single)
+        (0.05, 0.8),    # σv – visual noise
     ],
     # CI models: [λ, σa, σv, p_c]  →  expanded to [λ, σa, σv, p_c, σa]
     'lognorm': [
         (0.02, 0.35),   # λ
-        (0.01, 1.5),    # σa
-        (0.01, 1.5),    # σv
+        (0.05, 0.8),    # σa
+        (0.05, 0.8),    # σv
         (0.1, 0.9),     # p_c  – wide range to test recovery
     ],
     'probabilityMatchingLogNorm': [
         (0.02, 0.35),
-        (0.01, 1.5),
-        (0.01, 1.5),
+        (0.05, 0.8),
+        (0.05, 0.8),
         (0.1, 0.9),
     ],
     'selection': [
         (0.02, 0.35),
-        (0.01, 1.5),
-        (0.01, 1.5),
+        (0.05, 0.8),
+        (0.05, 0.8),
         (0.1, 0.9),
     ],
     # switchingFree: [λ, σa, σv, p_switch]  →  expanded to [λ, σa, σv, p_sw, σa, p_sw]
     'switchingFree': [
         (0.02, 0.35),   # λ
-        (0.05, 1.5),    # σa
-        (0.05, 1.5),    # σv
+        (0.05, 0.8),    # σa
+        (0.05, 0.8),    # σv
         (0.1, 0.9),     # p_switch (single)
     ],
 }
