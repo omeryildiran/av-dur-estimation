@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
 """
-Model Recovery Analysis Script (Free / Wide-Range Parameter Sampling)
-=====================================================================
+Model Recovery Analysis Script (Data-Informed Wide-Range Parameter Sampling)
+===========================================================================
 Run this script to perform model recovery using parameters drawn from
-wide, plausible uniform distributions — NOT from the distribution of
-fitted participant parameters.
+wide uniform distributions centred on the group-level fitted means,
+with range = mean +/- n_sigma * std (default 3), clipped to valid
+optimiser bounds.
 
 Motivation:
     If p_c recovery fails when parameters are centred on data-fitted values
-    but succeeds here, we can conclude that the experimental range (not the
-    model) is the limiting factor.
+    (group-level recovery with Normal sampling) but succeeds under this wider
+    uniform sampling, the experimental range — not the model — is the
+    limiting factor.
 
 Key differences from run_model_recovery.py:
-    - Parameters are sampled from wide uniform priors (no participant data needed).
-    - Boundary-clipping diagnostics are reported (how many fitted values sit at the
-      boundary, which would indicate the optimizer is stuck).
+    - Parameters are sampled from U(mean - 3*std, mean + 3*std) instead of
+      N(mean, std).  This covers a much wider range while still being
+      anchored to real data.
+    - Boundary-clipping diagnostics are reported.
     - Dedicated parameter-recovery scatter analysis for p_c (and all params).
 
 Usage:
     python run_model_recovery_freeParams.py [--n_recovery N] [--n_jobs N]
 
 Example:
-    python run_model_recovery_freeParams.py --n_recovery 100 --n_jobs 8
+    python run_model_recovery_freeParams.py --n_recovery 100 --n_jobs 8 --n_sigma 3
 """
 
 import numpy as np
@@ -46,41 +49,10 @@ import monteCarloClass
 # dimensionality and focuses the test on identifiability of the key params.
 # ---------------------------------------------------------------------------
 
-# Unique parameters that we actually sample  (label → uniform range)
-PARAM_RANGES_UNIQUE = {
-    # fusionOnlyLogNorm: [λ, σa, σv]   →  expanded to [λ, σa, σv, σa]
-    'fusionOnlyLogNorm': [
-        (0.02, 0.35),   # λ  – lapse rate
-        (0.05, 0.8),    # σa – auditory noise (single)
-        (0.05, 0.8),    # σv – visual noise
-    ],
-    # CI models: [λ, σa, σv, p_c]  →  expanded to [λ, σa, σv, p_c, σa]
-    'lognorm': [
-        (0.02, 0.35),   # λ
-        (0.05, 0.8),    # σa
-        (0.05, 0.8),    # σv
-        (0.1, 0.9),     # p_c  – wide range to test recovery
-    ],
-    'probabilityMatchingLogNorm': [
-        (0.02, 0.35),
-        (0.05, 0.8),
-        (0.05, 0.8),
-        (0.1, 0.9),
-    ],
-    'selection': [
-        (0.02, 0.35),
-        (0.05, 0.8),
-        (0.05, 0.8),
-        (0.1, 0.9),
-    ],
-    # switchingFree: [λ, σa, σv, p_switch]  →  expanded to [λ, σa, σv, p_sw, σa, p_sw]
-    'switchingFree': [
-        (0.02, 0.35),   # λ
-        (0.05, 0.8),    # σa
-        (0.05, 0.8),    # σv
-        (0.1, 0.9),     # p_switch (single)
-    ],
-}
+# The actual sampling ranges are computed at runtime from participant data
+# via build_param_ranges_from_data().  PARAM_RANGES_UNIQUE will be populated
+# in main() after loading the fits.
+PARAM_RANGES_UNIQUE = {}          # filled by build_param_ranges_from_data()
 
 # Human-readable names for the *unique* parameters we sample
 PARAM_NAMES_UNIQUE = {
@@ -142,8 +114,93 @@ FITTING_BOUNDS = {
 
 
 # ---------------------------------------------------------------------------
-# Sampling
+# Loading fitted data & building parameter ranges
 # ---------------------------------------------------------------------------
+
+# Mapping: for each model, which full-vector indices to average into each
+# unique parameter.  Each entry is (unique_name, [full_indices_to_average]).
+UNIQUE_FROM_FULL = {
+    # fusionOnlyLogNorm full: [λ(0), σa1(1), σv(2), σa2(3)]
+    'fusionOnlyLogNorm': [('lambda', [0]), ('sigma_a', [1, 3]), ('sigma_v', [2])],
+    # CI models full: [λ(0), σa1(1), σv(2), p_c(3), σa2(4)]
+    'lognorm':                      [('lambda', [0]), ('sigma_a', [1, 4]), ('sigma_v', [2]), ('p_c', [3])],
+    'probabilityMatchingLogNorm':   [('lambda', [0]), ('sigma_a', [1, 4]), ('sigma_v', [2]), ('p_c', [3])],
+    'selection':                    [('lambda', [0]), ('sigma_a', [1, 4]), ('sigma_v', [2]), ('p_c', [3])],
+    # switchingFree full: [λ(0), σa1(1), σv(2), p_sw1(3), σa2(4), p_sw2(5)]
+    'switchingFree': [('lambda', [0]), ('sigma_a', [1, 4]), ('sigma_v', [2]), ('p_sw', [3, 5])],
+}
+
+
+def load_group_parameter_statistics(model_name, fits_dir='model_fits'):
+    """
+    Load fitted parameters for all participants and return the full array.
+    """
+    suffix = f"{model_name}_LapseFix_sharedPrior"
+    pids = [d for d in os.listdir(fits_dir)
+            if os.path.isdir(os.path.join(fits_dir, d))
+            and d not in ['.DS_Store', 'all']]
+
+    all_params = []
+    for pid in pids:
+        fp = os.path.join(fits_dir, pid, f"{pid}_{suffix}_fit.json")
+        if os.path.exists(fp):
+            with open(fp) as f:
+                r = json.load(f)
+            all_params.append(r['fittedParams'])
+
+    if not all_params:
+        raise ValueError(f"No fitted params found for '{model_name}' in {fits_dir}")
+    return np.array(all_params)
+
+
+def build_param_ranges_from_data(models, n_sigma=3, fits_dir='model_fits'):
+    """
+    For each model, load participant fits, compute unique-parameter
+    mean and std, then set range = [mean - n_sigma*std, mean + n_sigma*std]
+    clipped to the optimizer hard bounds.
+
+    Populates the global PARAM_RANGES_UNIQUE dict and returns a summary
+    dict for saving into the results JSON.
+    """
+    global PARAM_RANGES_UNIQUE
+    summary = {}
+
+    for model in models:
+        if model not in UNIQUE_FROM_FULL:
+            continue
+        full_params = load_group_parameter_statistics(model, fits_dir)
+        mapping = UNIQUE_FROM_FULL[model]
+        names = PARAM_NAMES_UNIQUE[model]
+        bounds_full = FITTING_BOUNDS[model]
+
+        ranges = []
+        info = []
+        for (uname, fidxs), pname in zip(mapping, names):
+            # Average the full-vector columns that map to this unique param
+            vals = np.mean(full_params[:, fidxs], axis=1)
+            mu = float(np.mean(vals))
+            sigma = float(np.std(vals))
+            sigma = max(sigma, 0.01)  # avoid degenerate zero-width range
+
+            lo = mu - n_sigma * sigma
+            hi = mu + n_sigma * sigma
+
+            # Clip to fitting bounds (take the tightest among mapped indices)
+            bound_lo = max(bounds_full[idx][0] for idx in fidxs)
+            bound_hi = min(bounds_full[idx][1] for idx in fidxs)
+            lo = max(lo, bound_lo)
+            hi = min(hi, bound_hi)
+
+            ranges.append((lo, hi))
+            info.append({'name': pname, 'mean': round(mu, 4),
+                         'std': round(sigma, 4), 'range': [round(lo, 4), round(hi, 4)]})
+
+        PARAM_RANGES_UNIQUE[model] = ranges
+        summary[model] = info
+
+    return summary
+
+
 
 def sample_free_parameters(model_name, rng=None):
     """
@@ -428,8 +485,10 @@ def main():
                         help='Recovery iterations per generating model')
     parser.add_argument('--nSimul', type=int, default=500,
                         help='Monte Carlo simulations for fitting')
-    parser.add_argument('--nStarts', type=int, default=1,
+    parser.add_argument('--nStarts', type=int, default=5,
                         help='Optimisation starting points')
+    parser.add_argument('--n_sigma', type=float, default=3.0,
+                        help='Range width in std devs around group mean (default: 3)')
     parser.add_argument('--save_dir', type=str,
                         default='model_recovery_results_freeParams',
                         help='Directory to save results')
@@ -443,9 +502,16 @@ def main():
 
     print(f"Free-param model recovery | {len(args.models)} models x "
           f"{args.n_recovery} iters | nSimul={args.nSimul} nStarts={args.nStarts} "
-          f"jobs={n_jobs}")
+          f"n_sigma={args.n_sigma} jobs={n_jobs}")
 
     start_time = time.time()
+
+    # ---- Build sampling ranges from fitted participant data ----
+    range_summary = build_param_ranges_from_data(
+        args.models, n_sigma=args.n_sigma)
+    for model, info in range_summary.items():
+        rng_str = "  ".join(f"{p['name']}:[{p['range'][0]:.3f},{p['range'][1]:.3f}]" for p in info)
+        print(f"  {model}: {rng_str}")
 
     # ---- Load template data ----
     try:
