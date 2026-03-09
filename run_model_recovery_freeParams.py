@@ -301,17 +301,12 @@ def run_model_recovery_for_model(generating_model, models_to_test,
     result_path = os.path.join(save_dir, f"freeParam_{generating_model}_model_recovery.json")
 
     if os.path.exists(result_path):
-        print(f"  Results already exist for {generating_model}, loading …")
         with open(result_path, 'r') as f:
             return json.load(f)
 
     ranges = PARAM_RANGES_UNIQUE[generating_model]
     names_unique = PARAM_NAMES_UNIQUE[generating_model]
     names_full = PARAM_NAMES[generating_model]
-    print(f"\n  Running {n_recovery} iterations for {generating_model} …")
-    print(f"  Unique free parameters sampled (duplicated σa / p_switch for full vector):")
-    for nm, (lo, hi) in zip(names_unique, ranges):
-        print(f"    {nm}: U({lo}, {hi})")
 
     iteration_args = [
         (i, generating_model, models_to_test, template_data, nSimul, nStarts)
@@ -323,12 +318,14 @@ def run_model_recovery_for_model(generating_model, models_to_test,
             results = list(tqdm(
                 pool.imap(run_single_recovery_iteration, iteration_args),
                 total=n_recovery,
-                desc=f"  {generating_model}",
-                leave=False,
+                desc=f"  {generating_model:<30}",
+                bar_format='{l_bar}{bar:30}{r_bar}',
+                leave=True,
             ))
     else:
         results = []
-        for a in tqdm(iteration_args, desc=f"  {generating_model}", leave=False):
+        for a in tqdm(iteration_args, desc=f"  {generating_model:<30}",
+                      bar_format='{l_bar}{bar:30}{r_bar}', leave=True):
             results.append(run_single_recovery_iteration(a))
 
     recovery_iterations = [r for r in results if r is not None]
@@ -413,7 +410,6 @@ def run_model_recovery_for_model(generating_model, models_to_test,
     os.makedirs(save_dir, exist_ok=True)
     with open(result_path, 'w') as f:
         json.dump(result, f, indent=2)
-    print(f"  Saved results to {result_path}")
     return result
 
 
@@ -445,38 +441,24 @@ def main():
 
     n_jobs = args.n_jobs if args.n_jobs else max(1, cpu_count() - 1)
 
-    print("=" * 70)
-    print("MODEL RECOVERY – FREE / WIDE-RANGE PARAMETER SAMPLING")
-    print("=" * 70)
-    print(f"Models to test:     {args.models}")
-    print(f"Iterations / model: {args.n_recovery}")
-    print(f"MC simulations:     {args.nSimul}")
-    print(f"Optim starts:       {args.nStarts}")
-    print(f"Parallel jobs:      {n_jobs} (CPUs: {cpu_count()})")
-    print(f"Template participant: {args.template_participant}")
-    print("=" * 70)
+    print(f"Free-param model recovery | {len(args.models)} models x "
+          f"{args.n_recovery} iters | nSimul={args.nSimul} nStarts={args.nStarts} "
+          f"jobs={n_jobs}")
 
     start_time = time.time()
 
     # ---- Load template data ----
-    print(f"\nLoading template data from {args.template_participant} …")
     try:
         template_data, _ = loadData.loadData(
             f"{args.template_participant}_all.csv", verbose=False)
-        print(f"  Template data: {len(template_data)} trials")
     except Exception as e:
         print(f"Error loading template data: {e}")
         return
 
     # ---- Run recovery per generating model ----
-    print("\n" + "-" * 70)
-    print("Running Model Recovery (free params)")
-    print("-" * 70)
-
     all_results = []
     for gen_model in args.models:
         if gen_model not in PARAM_RANGES_UNIQUE:
-            print(f"\nSkipping {gen_model} (no PARAM_RANGES_UNIQUE defined)")
             continue
         result = run_model_recovery_for_model(
             generating_model=gen_model,
@@ -494,85 +476,47 @@ def main():
     elapsed = time.time() - start_time
 
     # ==================================================================
-    # SUMMARY
+    # SUMMARY (compact)
     # ==================================================================
-    print("\n" + "=" * 70)
-    print("MODEL RECOVERY COMPLETE")
-    print("=" * 70)
-    print(f"Total time: {elapsed / 60:.1f} minutes")
-    print(f"Results saved to: {args.save_dir}/")
-    print(f"Successful recoveries: {len(all_results)} models")
+    print(f"\nDone in {elapsed / 60:.1f} min — saved to {args.save_dir}/")
 
-    # ---- Confusion matrix (AIC) ----
     if all_results:
-        model_abbrevs = {
-            'lognorm': 'CI',
-            'fusionOnlyLogNorm': 'Fus',
-            'switchingFree': 'SwF',
-            'probabilityMatchingLogNorm': 'PM',
-            'selection': 'Sel',
-        }
+        abbr = {'lognorm': 'CI', 'fusionOnlyLogNorm': 'Fus',
+                'switchingFree': 'SwF', 'probabilityMatchingLogNorm': 'PM',
+                'selection': 'Sel'}
 
-        print("\n" + "-" * 70)
-        print("Recovery Confusion Matrix (AIC)")
-        print("-" * 70)
-        print(f"{'Generating':<25}", end="")
-        for m in args.models:
-            print(f"{model_abbrevs.get(m, m[:4]):>8}", end="")
-        print(f"{'Correct':>10}")
-        print("-" * 70)
-
+        # Confusion matrix
+        header = f"{'Gen':<12}" + "".join(f"{abbr.get(m, m[:4]):>6}" for m in args.models) + f"{'%OK':>7}"
+        print(f"\nConfusion (AIC):\n{header}")
         for result in all_results:
             gen = result['generating_model']
             total = result['n_iterations']
-            print(f"{gen:<25}", end="")
+            row = f"{abbr.get(gen, gen[:4]):<12}"
             correct = 0
             for fit_m in args.models:
                 cnt = result['best_model_counts_aic'].get(fit_m, 0)
-                pct = cnt / total * 100 if total > 0 else 0
                 if fit_m == gen:
                     correct = cnt
-                print(f"{pct:>7.0f}%", end="")
-            c_pct = correct / total * 100 if total > 0 else 0
-            print(f"{c_pct:>9.1f}%")
+                row += f"{cnt / total * 100 if total else 0:>5.0f}%"
+            row += f"{correct / total * 100 if total else 0:>6.0f}%"
+            print(row)
 
-        print("-" * 70)
-        tot_correct = sum(
-            r['best_model_counts_aic'].get(r['generating_model'], 0) for r in all_results)
-        tot_iters = sum(r['n_iterations'] for r in all_results)
-        overall = tot_correct / tot_iters * 100 if tot_iters > 0 else 0
-        print(f"{'Overall Accuracy:':<25}{' ' * len(args.models) * 8}{overall:>9.1f}%")
-
-        # ---- Parameter recovery table ----
-        print("\n" + "-" * 70)
-        print("Parameter Recovery (same-model fits)")
-        print("-" * 70)
-        print(f"{'Model':<25} {'Param':<8} {'Corr':>7} {'RMSE':>8} {'Bias':>8}")
-        print("-" * 70)
+        # Parameter recovery
+        print(f"\n{'Model':<12} {'Param':<6} {'r':>6} {'RMSE':>7} {'Bias':>7}")
         for result in all_results:
             gen = result['generating_model']
-            pr = result.get('param_recovery', {})
-            for pname, stats in pr.items():
-                print(f"{gen:<25} {pname:<8} {stats['correlation']:>7.3f} "
-                      f"{stats['rmse']:>8.4f} {stats['bias']:>8.4f}")
+            for pname, s in result.get('param_recovery', {}).items():
+                print(f"{abbr.get(gen, gen[:4]):<12} {pname:<6} "
+                      f"{s['correlation']:>6.3f} {s['rmse']:>7.4f} {s['bias']:>7.4f}")
 
-        # ---- Boundary clip summary ----
-        print("\n" + "-" * 70)
-        print("Boundary Clipping Summary (same-model fits)")
-        print("-" * 70)
-        print(f"{'Model':<25} {'Iters':>6} {'Lower':>7} {'Upper':>7} {'Details'}")
-        print("-" * 70)
+        # Boundary clips (one-liner per model)
+        print(f"\nBoundary clips:")
         for result in all_results:
-            gen = result['generating_model']
             bc = result.get('boundary_clip_summary', {})
-            n_it = bc.get('total_iterations', 0)
-            lo = bc.get('total_lower', 0)
-            hi = bc.get('total_upper', 0)
-            details_str = ", ".join(
-                f"{k}:{v}" for k, v in sorted(bc.get('clipped_params', {}).items(),
-                                               key=lambda x: -x[1])
-            ) or "none"
-            print(f"{gen:<25} {n_it:>6} {lo:>7} {hi:>7} {details_str}")
+            lo, hi = bc.get('total_lower', 0), bc.get('total_upper', 0)
+            top = sorted(bc.get('clipped_params', {}).items(), key=lambda x: -x[1])[:3]
+            detail = ", ".join(f"{k}:{v}" for k, v in top) or "none"
+            print(f"  {abbr.get(result['generating_model'], '?'):<5} lo={lo} hi={hi}  {detail}")
 
 
 if __name__ == "__main__":
