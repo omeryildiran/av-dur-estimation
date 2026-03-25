@@ -66,11 +66,22 @@ def main():
                         help="Number of bootstrap iterations per model")
     args = parser.parse_args()
 
-    print(f"Running {args.nboots} bootstraps for {len(MODELS)} models sequentially")
+    parser.add_argument("--sequential", action="store_true",
+                        help="Run models one at a time (default: parallel)")
+    args = parser.parse_args()
 
-    results = []
-    for name in MODELS:
-        results.append(run_bootstrap((name, args.nboots)))
+    jobs = [(name, args.nboots) for name in MODELS]
+
+    if args.sequential:
+        print(f"Running {args.nboots} bootstraps for {len(MODELS)} models sequentially")
+        results = [run_bootstrap(j) for j in jobs]
+    else:
+        n_workers = min(len(MODELS), mp.cpu_count() - 1)
+        print(f"Running {args.nboots} bootstraps for {len(MODELS)} models "
+              f"using {n_workers} parallel workers")
+        mp.set_start_method("spawn", force=True)
+        with mp.Pool(processes=n_workers) as pool:
+            results = pool.map(run_bootstrap, jobs)
 
     print("\n=== SUMMARY ===")
     total = 0
