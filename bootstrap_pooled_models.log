@@ -1,0 +1,5 @@
+Running 200 bootstraps for 3 models sequentially
+[lognorm] Loading simulated data from simulated_data/all/all_lognorm_LapseFree_sharedPrior_simulated.csv
+[lognorm] Starting 200 bootstrap iterations...
+Bootstrapping:   0%|          | 0/200 [00:00<?, ?iteration/s]Bootstrapping:   0%|          | 1/200 [01:03<3:29:59, 63.31s/iteration]Bootstrapping:   1%|          | 2/200 [02:02<3:21:41, 61.12s/iteration]Bootstrapping:   2%|▏         | 3/200 [03:02<3:18:48, 60.55s/iteration]Bootstrapping:   2%|▏         | 4/200 [04:07<3:23:19, 62.24s/iteration]/opt/miniconda3/lib/python3.12/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

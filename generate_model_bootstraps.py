@@ -1,5 +1,6 @@
 import json
 import os
+from multiprocessing import Pool, cpu_count
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,7 @@ import monteCarloClass
 PARTICIPANT_IDS = ["as", "oy", "dt", "HH", "ip", "ln2", "mh", "ml", "mt", "qs", "sx"]
 MODELS = ["lognorm", "switchingFree", "fusionOnlyLognorm"]
 N_BOOTS = 1000
+N_WORKERS = max(1, cpu_count() - 1)
 
 
 def save_bootstraps(path: Path, values):
@@ -21,40 +23,39 @@ def save_bootstraps(path: Path, values):
     return arr.shape
 
 
-def main():
-    print(f"Generating model bootstraps for {len(PARTICIPANT_IDS)} participants x {len(MODELS)} models")
-    print(f"Bootstrap iterations per fit: {N_BOOTS}")
+def process_job(job):
+    participant_id, model_name, n_boots = job
+    csv_name = f"{participant_id}_all.csv"
+    sim_fit_path = Path("psychometric_fits_simulated") / participant_id / f"{participant_id}_{model_name}_psychometricFits.json"
+    if not sim_fit_path.exists():
+        return (participant_id, model_name, False, "missing simulated fit")
 
-    results = []
-    for participant_id in PARTICIPANT_IDS:
-        csv_name = f"{participant_id}_all.csv"
-        print(f"\n=== Participant {participant_id} ({csv_name}) ===")
+    try:
+        with open(sim_fit_path, "r") as f:
+            sim_fit = json.load(f)
+
         data, data_name = loadData.loadData(csv_name, verbose=False)
         mc_fitter = monteCarloClass.OmerMonteCarlo(data)
         mc_fitter.freeP_c = False
         mc_fitter.sharedLambda = True
         mc_fitter.dataName = data_name
 
-        for model_name in MODELS:
-            sim_fit_path = Path("psychometric_fits_simulated") / participant_id / f"{participant_id}_{model_name}_psychometricFits.json"
-            if not sim_fit_path.exists():
-                print(f"  Missing simulated fit for {model_name}: {sim_fit_path}")
-                results.append((participant_id, model_name, False, "missing simulated fit"))
-                continue
+        boot_values = mc_fitter.paramBootstrap(sim_fit["fitParams"], nBoots=n_boots)
+        out_path = Path("bootstrapped_params") / participant_id / f"{participant_id}_{model_name}_sharedPrior_bootstrapped_params.json"
+        shape = save_bootstraps(out_path, boot_values)
+        return (participant_id, model_name, True, f"{out_path} shape={shape}")
+    except Exception as e:
+        return (participant_id, model_name, False, str(e))
 
-            with open(sim_fit_path, "r") as f:
-                sim_fit = json.load(f)
 
-            print(f"  Bootstrapping {model_name} from {sim_fit_path}")
-            try:
-                boot_values = mc_fitter.paramBootstrap(sim_fit["fitParams"], nBoots=N_BOOTS)
-                out_path = Path("bootstrapped_params") / participant_id / f"{participant_id}_{model_name}_sharedPrior_bootstrapped_params.json"
-                shape = save_bootstraps(out_path, boot_values)
-                print(f"    Saved {out_path} shape={shape}")
-                results.append((participant_id, model_name, True, str(shape)))
-            except Exception as e:
-                print(f"    ERROR: {e}")
-                results.append((participant_id, model_name, False, str(e)))
+def main():
+    print(f"Generating model bootstraps for {len(PARTICIPANT_IDS)} participants x {len(MODELS)} models")
+    print(f"Bootstrap iterations per fit: {N_BOOTS}")
+    print(f"Using {N_WORKERS} worker processes out of {cpu_count()} CPUs")
+
+    jobs = [(participant_id, model_name, N_BOOTS) for participant_id in PARTICIPANT_IDS for model_name in MODELS]
+    with Pool(processes=N_WORKERS) as pool:
+        results = pool.map(process_job, jobs)
 
     print("\n=== SUMMARY ===")
     ok = sum(1 for _, _, success, _ in results if success)
