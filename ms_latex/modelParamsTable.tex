@@ -1,0 +1,31 @@
+\begin{table}[htbp]
+\centering
+\caption{Parameter configuration for causal inference models in audiovisual duration-conflict task}
+\label{tab:model_parameters}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Model} & \textbf{$\boldsymbol{\lambda}$} & \textbf{$\boldsymbol{\sigma_a}$} & \textbf{$\boldsymbol{\sigma_v}$} & \textbf{$\boldsymbol{p_{common}}$} & \textbf{Total Parameters} \\
+\midrule
+\multicolumn{6}{l}{\textbf{Gaussian Observer Model}} \\
+\quad Shared Prior & 3 & 2 & 1 & 1 & 7 \\
+\quad Contextual Prior & 3 & 2 & 1 & 2 & 8 \\
+\midrule
+\multicolumn{6}{l}{\textbf{Log-Space Gaussian Observer Model}} \\
+\quad Shared Prior & 3 & 2 & 1 & 1 & 7 \\
+\quad Contextual Prior & 3 & 2 & 1 & 2 & 8 \\
+\midrule
+\multicolumn{6}{l}{\textbf{Log-Linear Mismatch Model}} \\
+\quad Shared Prior & 3 & 2 & 1 & 1 & 7 \\
+\quad Contextual Prior & 3 & 2 & 1 & 2 & 8 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\small
+\item $\lambda$: Lapse rate parameters (one for each of three sessions)
+\item $\sigma_a$: Auditory duration noise parameters (one for each auditory SNR condition)
+\item $\sigma_v$: Visual duration noise parameter (single parameter across conditions)
+\item $p_{common}$: Prior probability that auditory and visual cues originate from a common source
+\item Shared Prior: $p_{common}$ fitted once across all auditory SNR conditions
+\item Contextual Prior: $p_{common}$ fitted separately for each auditory SNR condition
+\end{tablenotes}
+\end{table}

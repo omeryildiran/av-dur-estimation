@@ -82,7 +82,6 @@ def main():
         mp.set_start_method("spawn", force=True)
         with mp.Pool(processes=n_workers) as pool:
             results = pool.map(run_bootstrap, jobs)
-
     print("\n=== SUMMARY ===")
     total = 0
     for name, shape, elapsed in results:

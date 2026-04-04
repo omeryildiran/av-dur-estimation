@@ -1,0 +1,41 @@
+% \begin{table}[htbp]
+% \centering
+% \footnotesize
+% \caption{Trial-level variables and definitions. Durations are in seconds unless noted.}
+% \label{tab:data-dictionary-elife}
+% \begin{tabularx}{\textwidth}{@{} l l X @{}}
+% \toprule
+% \textbf{Column} & \textbf{Units/Type} & \textbf{Description} \\
+% \midrule
+% \texttt{trial\_num} & integer & Sequential trial index within the session or block.\\
+% \texttt{order} & categorical & Position of the \emph{test} interval (e.g., 1 = first, 2 = second).\\
+% \texttt{standardDur} & s & Nominal duration of the auditory standard (fixed at 0.5 s).\\
+% \texttt{testDurS} & s & Nominal duration of the auditory test interval on that trial (varies via staircase).\\
+% \texttt{deltaDurS} & s & Signed difference: $\Delta = \texttt{testDurS} - \texttt{standardDur}$.\\
+% \texttt{delta\_dur\_percents} & \% & Signed percent difference: $100 \times \Delta / \texttt{standardDur}$.\\
+% \texttt{audNoise} & categorical & Auditory noise/SNR condition (e.g., low-noise/high-SNR vs high-noise/low-SNR).\\
+% \texttt{intensities} & numeric & Scaling parameter(s) setting background/signal levels for that trial (SNR implementation detail).\\
+% \texttt{preDur} & s & Pre-cue noise duration.\\
+% \texttt{isiDur} & s & Inter-stimulus interval (ISI) duration.\\
+% \texttt{postDur} & s & Post-cue noise duration.\\
+% \texttt{totalDur} & s & Total trial duration (pre + interval1 + ISI + interval2 + post).\\
+% \texttt{current\_stair} & id/label & Identifier of the active staircase controlling \texttt{testDurS}.\\
+% \texttt{stair\_num\_reversal} & integer & Reversal count for the active staircase on that trial.\\
+% \texttt{stair\_is\_reversal} & 0/1 & Indicator of whether the trial produced a reversal.\\
+% \texttt{responses} & code & Raw 2IFC response (e.g., “first longer”/“second longer” or internal code).\\
+% \texttt{response\_keys} & key label & Physical key recorded (e.g., left/right).\\
+% \texttt{is\_correct} & 0/1 & Accuracy with respect to the \emph{auditory} intervals (1 = correct, 0 = incorrect).\\
+% \texttt{response\_rts} & s & Response time from response-window onset.\\
+% \texttt{conflictDur} & ms & Visual duration conflict (signed; $<0$ = visual shorter, $>0$ = visual longer; 0 = none).\\
+% \texttt{recordedOnsetVisualTest} & s & Measured onset time of the visual test interval (timing verification).\\
+% \texttt{recordedOffsetVisualTest} & s & Measured offset time of the visual test interval.\\
+% \texttt{recordedDurVisualTest} & s & Realized duration of the visual test interval.\\
+% \texttt{recordedOnsetVisualStandard} & s & Measured onset time of the visual standard interval.\\
+% \texttt{recordedOffsetVisualStandard} & s & Measured offset time of the visual standard interval.\\
+% \texttt{recordedDurVisualStandard} & s & Realized duration of the visual standard interval.\\
+% \bottomrule
+% \end{tabularx}
+
+% \vspace{0.5em}
+% \textit{Notes.} Accuracy (\texttt{is\_correct}) is computed relative to the auditory durations, consistent with instructions to judge based on sound. Unless otherwise stated, analyses used nominal durations; recorded visual on/offsets document timing fidelity at 120~Hz.
+% \end{table}
