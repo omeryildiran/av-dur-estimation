@@ -1,31 +1,23 @@
 \begin{table}[htbp]
 \centering
-\caption{Parameter configuration for causal inference models in audiovisual duration-conflict task}
+\caption{Model parameter descriptions}
 \label{tab:model_parameters}
-\begin{tabular}{lccccc}
+\begin{tabular}{l c c c c c}
 \toprule
-\textbf{Model} & \textbf{$\boldsymbol{\lambda}$} & \textbf{$\boldsymbol{\sigma_a}$} & \textbf{$\boldsymbol{\sigma_v}$} & \textbf{$\boldsymbol{p_{common}}$} & \textbf{Total Parameters} \\
+\textbf{Model} & \textbf{Lapse} & \textbf{Sensory} & \textbf{Prior} & \textbf{Other} & \textbf{Total} \\
+ & \textbf{Rates} & \textbf{Noise} & \textbf{$p_c$} & \textbf{Params} & \textbf{$n$} \\
 \midrule
-\multicolumn{6}{l}{\textbf{Gaussian Observer Model}} \\
-\quad Shared Prior & 3 & 2 & 1 & 1 & 7 \\
-\quad Contextual Prior & 3 & 2 & 1 & 2 & 8 \\
-\midrule
-\multicolumn{6}{l}{\textbf{Log-Space Gaussian Observer Model}} \\
-\quad Shared Prior & 3 & 2 & 1 & 1 & 7 \\
-\quad Contextual Prior & 3 & 2 & 1 & 2 & 8 \\
-\midrule
-\multicolumn{6}{l}{\textbf{Log-Linear Mismatch Model}} \\
-\quad Shared Prior & 3 & 2 & 1 & 1 & 7 \\
-\quad Contextual Prior & 3 & 2 & 1 & 2 & 8 \\
+Forced Fusion & 1 & 3 & -- & -- & 4\\
+Model Averaging & 1 & 3 & \ding{51} & -- & 5\\
+Model Selection & 1 & 3 & \ding{51} & -- & 5\\
+Probability Matching & 1 & 3 & \ding{51} & -- & 5\\
+Probabilistic Cue Switching & 1 & 3 & -- & $p_{v,l},p_{v,h}$ & 6\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}
+\begin{tablenotes}[flushleft]
 \small
-\item $\lambda$: Lapse rate parameters (one for each of three sessions)
-\item $\sigma_a$: Auditory duration noise parameters (one for each auditory SNR condition)
-\item $\sigma_v$: Visual duration noise parameter (single parameter across conditions)
-\item $p_{common}$: Prior probability that auditory and visual cues originate from a common source
-\item Shared Prior: $p_{common}$ fitted once across all auditory SNR conditions
-\item Contextual Prior: $p_{common}$ fitted separately for each auditory SNR condition
+\item \textit{Sensory noise:} $\sigma_{a,l}$, $\sigma_{a,h}$, and $\sigma_v$ represent auditory (low and high noise) and visual standard deviations in log space.
+\item \textit{Prior:} $p_c$ is the prior probability of common cause.
+\item \textit{Other:} $p_{v,l}$ and $p_{v,h}$ are the switching-probability parameters in low and high auditory noise (probabilistic cue-switching model only).
 \end{tablenotes}
 \end{table}
