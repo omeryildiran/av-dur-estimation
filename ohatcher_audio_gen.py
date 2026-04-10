@@ -243,32 +243,42 @@ class AudioCueGenerator:
         total_frames = int((len(stim_sound) / self.sample_rate) / frame_duration * speed_factor)
         samples_per_frame = len(stim_sound) // total_frames
 
-        def animate(frame):
-            end_sample = min((frame + 1) * samples_per_frame, len(stim_sound))
-            line1.set_data(time[:end_sample], stim_sound[:end_sample])
-            line2.set_data(time[:end_sample], background_noise[:end_sample])
+        # def animate(frame):
+        #     end_sample = min((frame + 1) * samples_per_frame, len(stim_sound))
+        #     line1.set_data(time[:end_sample], stim_sound[:end_sample])
+        #     line2.set_data(time[:end_sample], background_noise[:end_sample])
             
-            current_time = end_sample / self.sample_rate
-            ax.set_title(f"Animated Stimulus Sound Waveform - Time: {current_time:.2f}s", fontsize=fontSize)
-            return line1, line2
+        #     current_time = end_sample / self.sample_rate
+        #     ax.set_title(f"Animated Stimulus Sound Waveform - Time: {current_time:.2f}s", fontsize=fontSize)
+        #     return line1, line2
 
-        anim = animation.FuncAnimation(fig, animate, frames=total_frames, 
-                                    interval=int(frame_duration * 1000), 
-                                    blit=False, repeat=True)
+        # anim = animation.FuncAnimation(fig, animate, frames=total_frames, 
+        #                             interval=int(frame_duration * 1000), 
+        #                             blit=False, repeat=True)
 
-        plt.tight_layout()
-        plt.show()
-        # save animation
-        anim.save('stimulus_waveform_animation.gif', writer='imagemagick', fps=30)
+        # plt.tight_layout()
+        # plt.show()
+        # # save animation
+        # anim.save('stimulus_waveform_animation.gif', writer='imagemagick', fps=30)
         
         # #Background noise of same totaal duration
 
         # # mix the sounds
-        stim_sound = stim_sound + background_noise
-        stim_sound = stim_sound / np.max(np.abs(stim_sound))
-        stim_sound=np.concatenate([jitter_sound,stim_sound,jitter_sound])
+        wholeStim = stim_sound + background_noise
+        wholeStim=np.concatenate([jitter_sound,wholeStim,jitter_sound])
 
-        return stim_sound
+        print("Max amplitude of whole stimulus: ", np.max(np.abs(wholeStim)))
+
+        #wholeStim = wholeStim / np.max(np.abs(wholeStim))
+
+        background_noise = background_noise / np.max(np.abs(wholeStim))
+        background_noise=np.concatenate([jitter_sound,background_noise,jitter_sound])
+
+        stim_sound = stim_sound / np.max(np.abs(wholeStim))
+        stim_sound=np.concatenate([jitter_sound,stim_sound,jitter_sound])
+        print("Max amplitude of signal after normalization: ", np.max(np.abs(stim_sound)))
+
+        return wholeStim
     
 
 
@@ -302,7 +312,7 @@ def plot_sounds():
                                               intensity_background=rise)
         #save sound
         from scipy.io import wavfile
-        wavfile.write(f"stim_sound_rise_lowSNR.wav", audio_cue.sample_rate, (stim_sound * 32767).astype(np.int16))
+        #wavfile.write(f"stim_sound_rise_lowSNR.wav", audio_cue.sample_rate, (stim_sound * 32767).astype(np.int16))
         #stim_sound*=0.5
 
         t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
@@ -319,7 +329,7 @@ def plot_sounds():
     #plt.ylim(-2,3)
     plt.tight_layout()
     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
-    plt.show()
+    #plt.show()
     
 plot_sounds()
 
