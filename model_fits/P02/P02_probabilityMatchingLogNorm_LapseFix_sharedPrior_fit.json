@@ -1,0 +1,15 @@
+{
+    "participantID": "dt",
+    "modelType": "probabilityMatchingLogNorm_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.256462745817385,
+        0.2055996238665052,
+        0.4920170612657958,
+        4.648499120130101e-06,
+        0.4480329734386428
+    ],
+    "AIC": 2551.28836012239,
+    "BIC": 2571.856771021551,
+    "logLikelihood": -1270.644180061195,
+    "n_conditions": 452
+}

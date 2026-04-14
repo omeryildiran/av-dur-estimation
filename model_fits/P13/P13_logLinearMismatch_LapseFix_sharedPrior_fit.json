@@ -1,0 +1,15 @@
+{
+    "participantID": "sx",
+    "modelType": "logLinearMismatch_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.0662498836254666,
+        0.43936193971222204,
+        0.32567411789962397,
+        0.9999999774020438,
+        1.3609598251047725
+    ],
+    "AIC": 2172.152388471902,
+    "BIC": 2193.6837649066424,
+    "logLikelihood": -1081.076194235951,
+    "n_conditions": 548
+}

@@ -1,0 +1,15 @@
+{
+    "participantID": "mt",
+    "modelType": "logLinearMismatch_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.11574826631516238,
+        0.1689098931873887,
+        0.3597168160022274,
+        0.6710385586812209,
+        0.5888849233093174
+    ],
+    "AIC": 2216.0644228027913,
+    "BIC": 2235.467087734795,
+    "logLikelihood": -1103.0322114013957,
+    "n_conditions": 358
+}

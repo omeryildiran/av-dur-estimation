@@ -1,0 +1,14 @@
+{
+    "participantID": "hh",
+    "modelType": "fusionOnlyLogNorm_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.027990730900072952,
+        0.10797456449491427,
+        0.2753935356315923,
+        1.4500747296738554
+    ],
+    "AIC": 1196.0324182422876,
+    "BIC": 1212.1067911002724,
+    "logLikelihood": -594.0162091211438,
+    "n_conditions": 411
+}
