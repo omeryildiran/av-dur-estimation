@@ -1,0 +1,2078 @@
+# A class for monte carlo inherited from fitMainClasss.py
+#
+# Supported Models:
+# -----------------
+# 1. gaussian: Linear-space causal inference with Gaussian measurement noise
+# 2. lognorm: Log-space causal inference with Gaussian noise in log space
+# 3. logLinearMismatch: Log-normal measurements with incorrect linear-space inference
+# 4. fusionOnly: Linear-space optimal fusion without causal inference (p_c=1.0)
+# 5. fusionOnlyLogNorm: Log-space optimal fusion without causal inference (p_c=1.0)
+# 6. probabilityMatching: Linear-space probability matching (samples causal structure from posterior)
+# 7. probabilityMatchingLogNorm: Log-space probability matching (samples causal structure from posterior)
+# 8. switching: Log-space modality switching based on reliability (Gaussian noise in log space)
+# 9. switchingWithConflict: Log-space switching with conflict sensitivity (Gaussian noise in log space)
+# 10. switchingFree: Log-space switching with free probability parameters (Gaussian noise in log space)
+#
+# Parameter Structure (default: sharedLambda=True):
+# -------------------------------------------------
+# When sharedLambda=True (default):
+#   - Causal Inference Models: [λ, σa1, σv, pc, σa2] (5 params) or [λ, σa1, σv, pc1, σa2, pc2] if freeP_c
+#   - Fusion-Only Models: [λ, σa1, σv, σa2] (4 params, p_c fixed at 1.0)
+#   - switchingFree: [λ, σa1, σv, p_switch1, σa2, p_switch2] (6 params)
+#   - switchingWithConflict: [λ, σa1, σv, pc, σa2, k] (6 params) or [λ, σa1, σv, pc1, σa2, pc2, k] if freeP_c
+#
+# When sharedLambda=False:
+#   - Causal Inference Models: [λ, σa1, σv, pc, σa2, λ2, λ3] (7 params) or +[pc2] if freeP_c
+#   - Fusion-Only Models: [λ, σa1, σv, σa2, λ2, λ3] (6 params)
+#   - switchingFree: [λ, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2] (8 params)
+#   - switchingWithConflict: [λ, σa1, σv, pc, σa2, λ2, λ3, k] (8 params) or +[pc2] if freeP_c
+
+# import necessary libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+import scipy.optimize as opt
+import fitMainClass as fitMain
+
+from fitMainClass import fitPychometric
+
+from tqdm import tqdm
+
+from scipy.optimize import minimize
+from scipy.stats import norm
+try:
+    from pybads import BADS  # Only if installed
+    BADS_AVAILABLE = True
+except ImportError:
+    BADS_AVAILABLE = False
+    print("\nWarning: BADS not available. Using scipy optimization only.\n")
+
+class TqdmMinimizeCallback:
+    def __init__(self, total=100, show_progress=1):
+        self.show_progress = show_progress
+        if self.show_progress:
+            self.pbar = tqdm(total=total, desc="Fitting Causal Inference", leave=True)
+        self.last_nfev = 0
+
+    def __call__(self, xk):
+        # This callback is called after each iteration
+        if self.show_progress:
+            self.pbar.update(1)
+
+    def close(self):
+        if self.show_progress:
+            self.pbar.close()
+
+
+
+class OmerMonteCarlo(fitPychometric):
+    """
+    A class for fitting psychometric functions using Monte Carlo methods.
+    Inherits from fitPychometric.
+    """
+    
+    def __init__(self, data, intensityVar='deltaDurS', allIndependent=False, sharedSigma=1, sensoryVar='audNoise', 
+                 standardVar='standardDur', conflictVar='conflictDur',dataName=None):
+        super().__init__(data, intensityVar, allIndependent, sharedSigma, sensoryVar, standardVar, conflictVar,dataName) 
+        
+        self.fitType = 'Monte Carlo'
+        self.nStart = 3  # Number of random starts for optimization (increased for debugging)
+        self.nSimul = 10  # Number of simulations for Monte Carlo approximation
+        self.optimizationMethod = 'bads'  # Use scipy for better debugging (BADS can be harder to debug)
+        self.modelFit = None  # Placeholder for fitted model
+        self.simulatedData = None  # Placeholder for simulated data
+        self.dataFit = None  # Placeholder for fitted data
+        self.simDataFit = None  # Placeholder for simulated data fit
+        self.groupedData = None  # Placeholder for grouped data
+        self.modelName = "gaussian"  # Distribution of measurements, can be 'gaussian' or 'lognormal'
+        
+    
+        
+        self.visualStandardVar = "unbiasedVisualStandardDur"
+        self.visualTestVar = "unbiasedVisualTestDur"
+        self.audioTestVar = "testDurS"
+        self.dataName = dataName if dataName else "default_data"
+        self.data = data
+        self.sharedSigma_v=True
+        self.freeP_c = False  # Fix: Add missing attribute for parameter configuration
+        self.logLikelihood= None  # Placeholder for log-likelihood
+        self.sharedLambda=True  # Use shared lambda across conflict conditions (reduces parameters)
+
+        self.groupedData= self.groupByChooseTest(x=data,
+                groupArgs=[
+                self.intensityVar, sensoryVar, standardVar, conflictVar,
+                self.visualStandardVar, self.visualTestVar, self.audioTestVar
+                    ]
+                    )
+        
+        # t_min and t_max are fixed values from data, not fitted parameters
+        # Store data bounds for use in causal inference calculations
+        self.data_t_min = data["testDurS"].min()
+        self.data_t_max = data["testDurS"].max()
+        
+        # Ensure we have reasonable data bounds for parameter initialization
+        if self.data_t_max == self.data_t_min:
+            duration_center = self.data_t_min
+            self.data_t_min = max(0.1, duration_center - 0.5)  # At least 100ms range
+            self.data_t_max = duration_center + 0.5
+            print(f"Warning: All test durations identical ({duration_center}s). Using initial bounds [{self.data_t_min:.2f}, {self.data_t_max:.2f}]")
+        
+        # Validate configuration consistency
+        self._validate_configuration()
+
+    def _validate_configuration(self):
+        """Validate that model configuration is consistent"""
+        valid_models = ["gaussian", "lognorm", "logLinearMismatch", "fusionOnly", 
+                       "fusionOnlyLogNorm", "probabilityMatching", "probabilityMatchingLogNorm",
+                       "selection", "switching", "switchingWithConflict", "switchingFree"]
+        
+        if self.modelName not in valid_models:
+            raise ValueError(f"Invalid modelName '{self.modelName}'. Valid options: {valid_models}")
+            
+        if not isinstance(self.sharedLambda, bool):
+            raise ValueError("sharedLambda must be boolean")
+            
+        if not isinstance(self.freeP_c, bool):
+            raise ValueError("freeP_c must be boolean")
+            
+        if self.nSimul < 10:
+            print(f"Warning: nSimul={self.nSimul} is very low. Consider using at least 100 for stable results.")
+            
+        #print(f"✓ Configuration validated: {self.modelName}, sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
+
+
+
+    def diagnose_simulation_behavior(self, fittedParams, test_conditions=None):
+        """
+        Diagnose the simulation behavior by showing what's happening in detail.
+        This helps identify if models are behaving as expected.
+        """
+        print("\n=== DIAGNOSING SIMULATION BEHAVIOR ===")
+        print(f"Model: {self.modelName}")
+        
+        if test_conditions is None:
+            # Use a few test conditions from the grouped data
+            test_conditions = self.groupedData.head(3)
+        
+        for idx, (_, trial) in enumerate(test_conditions.iterrows()):
+            print(f"\n--- Test Condition {idx+1} ---")
+            deltaDurS = trial["deltaDurS"]
+            audioNoiseLevel = trial["audNoise"]
+            conflictLevel = trial["conflictDur"]
+            
+            print(f"deltaDurS: {deltaDurS:.3f}, audNoise: {audioNoiseLevel:.3f}, conflict: {conflictLevel:.3f}")
+            
+            # Get parameters
+            params_result = self.getParamsCausal(fittedParams, audioNoiseLevel, conflictLevel)
+            if self.modelName == "switchingWithConflict":
+                lambda_, sigma_av_a, sigma_av_v, p_c, k, t_min, t_max = params_result
+                print(f"Parameters: λ={lambda_:.3f}, σa={sigma_av_a:.3f}, σv={sigma_av_v:.3f}, p_c={p_c:.3f}, k={k:.3f}")
+            else:
+                lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = params_result
+                print(f"Parameters: λ={lambda_:.3f}, σa={sigma_av_a:.3f}, σv={sigma_av_v:.3f}, p_c={p_c:.3f}")
+            
+            # Set up stimuli
+            S_a_s = 0.5
+            S_v_s = S_a_s + conflictLevel
+            S_a_t = S_a_s + deltaDurS
+            S_v_t = S_a_t
+            trueStims = (S_a_s, S_a_t, S_v_s, S_v_t)
+            
+            print(f"Stimuli: A_std={S_a_s:.3f}, A_test={S_a_t:.3f}, V_std={S_v_s:.3f}, V_test={S_v_t:.3f}")
+            
+            # Calculate probability
+            p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max)
+            print(f"P(test>standard): {p_test_longer:.4f}")
+            
+            # For fusion models, manually check what fusion would predict
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                # Optimal weights for fusion
+                J_AV_A = 1 / sigma_av_a**2
+                J_AV_V = 1 / sigma_av_v**2
+                w_a = J_AV_A / (J_AV_A + J_AV_V)
+                w_v = 1 - w_a
+                
+                fused_std = w_a * S_a_s + w_v * S_v_s
+                fused_test = w_a * S_a_t + w_v * S_v_t
+                
+                print(f"Fusion weights: w_a={w_a:.3f}, w_v={w_v:.3f}")
+                print(f"Fused estimates: std={fused_std:.3f}, test={fused_test:.3f}")
+                print(f"Difference (test-std): {fused_test-fused_std:.3f}")
+                
+                # Expected probability without lapse rate
+                expected_p_base = 1.0 if fused_test > fused_std else 0.0
+                expected_p_final = (1 - lambda_) * expected_p_base + lambda_ / 2
+                print(f"Expected P (without noise): {expected_p_final:.4f}")
+            
+            if idx >= 2:  # Limit output
+                break
+        
+        print("\n=== DIAGNOSIS COMPLETE ===")
+
+    def test_fusion_only_behavior(self, fittedParams):
+        """
+        Test that fusion-only models are behaving correctly (no causal inference pattern).
+        This method checks if the model produces purely fusion-based estimates.
+        """
+        print("\n=== TESTING FUSION-ONLY BEHAVIOR ===")
+        print(f"Model: {self.modelName}")
+        
+        if self.modelName not in ["fusionOnly", "fusionOnlyLogNorm"]:
+            print("This test is only for fusion-only models.")
+            return
+        
+        # Test with a high conflict condition
+        test_snr = 0.1  # High SNR
+        test_conflict = 0.25  # High conflict
+        
+        # Get parameters
+        params_result = self.getParamsCausal(fittedParams, test_snr, test_conflict)
+        lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = params_result
+        
+        print(f"Extracted parameters: λ={lambda_:.3f}, σa={sigma_av_a:.3f}, σv={sigma_av_v:.3f}, p_c={p_c:.3f}")
+        
+        # Verify p_c is 1.0
+        if not np.isclose(p_c, 1.0):
+            print(f"ERROR: p_c should be 1.0 for fusion models, got {p_c}")
+            return False
+        
+        # Test simulation with conflict
+        S_a_s, S_a_t = 0.5, 0.7  # Standard and test auditory durations
+        S_v_s, S_v_t = 0.5 + test_conflict, 0.7  # Visual with conflict
+        trueStims = (S_a_s, S_a_t, S_v_s, S_v_t)
+        
+        # Run multiple simulations to see if pattern is consistent
+        p_values = []
+        for _ in range(10):
+            p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max)
+            p_values.append(p_test_longer)
+        
+        print(f"P(test>standard) values: {[f'{p:.3f}' for p in p_values[:5]]}...") 
+        print(f"Mean P(test>standard): {np.mean(p_values):.3f} ± {np.std(p_values):.3f}")
+        
+        # For fusion models, the probability should be stable and not show causal inference effects
+        # (though it will depend on the stimulus values and noise)
+        if np.std(p_values) > 0.1:
+            print("WARNING: High variability in P(test>standard) - might indicate Monte Carlo noise")
+        
+        print("=== FUSION-ONLY TEST COMPLETE ===")
+        return True
+
+    def getParamsCausal(self,params,SNR,conflict):
+        """Extract causal inference parameters for a specific condition (conflict, noise).
+        
+        Parameters:
+        -----------
+        params : array-like
+            Parameter array with layout depending on configuration and model type:
+            
+            For causal inference models (gaussian, lognorm, logLinearMismatch, selection, probabilityMatching, etc.):
+            - sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3] (7 params)
+            - sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2] (5 params)
+            - sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2] (8 params)
+            - sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2] (6 params)
+  
+            For fusion-only models (fusionOnly, fusionOnlyLogNorm):
+            - [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params) - no p_c
+            
+        SNR : float
+            Signal-to-noise ratio (0.1 or 1.2)
+        conflict : float
+            Conflict level
+            
+        Returns:
+        --------
+        tuple : For most models: (lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+                For switchingWithConflict: (lambda_, sigma_av_a, sigma_av_v, p_c, k, t_min, t_max)
+                Note: For fusion-only models, p_c is always 1.0 (always common cause)
+                Note: t_min and t_max are fixed from data (self.data_t_min, self.data_t_max)
+        """
+        
+        # Validate params is not None
+        if params is None:
+            raise ValueError("params cannot be None. Model fitting may have failed.")
+        
+        # Special handling for fusion-only models
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            # Fusion models: [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params)
+            expected_len = 4 if self.sharedLambda else 6
+            if len(params) != expected_len:
+                raise ValueError(f"Fusion-only models expect {expected_len} parameters, got {len(params)}")
+            
+            # Extract lambda based on conflict level
+            lambda_ = params[0]
+            if not self.sharedLambda:
+                if conflict in [0, -0.17, 0.25]:
+                    lambda_ = params[0]
+                elif conflict in [-0.08, 0.17]:
+                    lambda_ = params[4]  # lambda_2
+                elif conflict in [-0.25, 0.08]:
+                    lambda_ = params[5]  # lambda_3
+            
+            sigma_av_v = params[2]
+            
+            # Extract sigma_av_a based on SNR
+            if np.isclose(SNR, 0.1):
+                sigma_av_a = params[1]
+            elif np.isclose(SNR, 1.2):
+                sigma_av_a = params[3]
+            else:
+                raise ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2.")
+            
+            # For fusion-only models, p_c is fixed at 1.0 (always assume common cause)
+            # t_min and t_max are fixed from data
+            p_c = 1.0
+            t_min = self.data_t_min
+            t_max = self.data_t_max
+            
+            return lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max
+        
+        # Standard causal inference models
+        # Validate parameter array length
+        if self.modelName == "switchingWithConflict":
+            # switchingWithConflict model has additional k parameter
+            expected_lengths = {
+                (True, True): 7,    # sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2, k]
+                (True, False): 6,   # sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2, k]
+                (False, True): 9,   # sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2, k]
+                (False, False): 8   # sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3, k]
+            }
+        elif self.modelName == "switchingFree":
+            # switchingFree model has p_switch1 and p_switch2 parameters, no t_min/t_max needed
+            # Expected: [λ, σa1, σv, p_switch1, σa2, p_switch2] (6 params) - simplified, no bounds
+            expected_lengths = {
+                (True, True): 6,    # [λ, σa1, σv, p_switch1, σa2, p_switch2]
+                (True, False): 6,   # [λ, σa1, σv, p_switch1, σa2, p_switch2]  
+                (False, True): 8,   # [λ, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2]
+                (False, False): 8   # [λ, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2]
+            }
+        elif self.modelName in ["lognorm", "gaussian", "logLinearMismatch", "selection", "probabilityMatching", "probabilityMatchingLogNorm", "switching"]:
+            # Standard causal inference models
+            expected_lengths = {
+                (True, True): 6,    # sharedLambda=True, freeP_c=True: [λ, σa1, σv, pc1, σa2, pc2]
+                (True, False): 5,   # sharedLambda=True, freeP_c=False: [λ, σa1, σv, pc, σa2]
+                (False, True): 8,   # sharedLambda=False, freeP_c=True: [λ, σa1, σv, pc1, σa2, λ2, λ3, pc2]
+                (False, False): 7   # sharedLambda=False, freeP_c=False: [λ, σa1, σv, pc, σa2, λ2, λ3]
+            }
+
+        
+        config_key = (self.sharedLambda, self.freeP_c)
+        expected_length = expected_lengths[config_key]
+        
+        if len(params) != expected_length:
+            raise ValueError(f"Parameter array length {len(params)} doesn't match expected length {expected_length} for configuration sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}, modelName={self.modelName}")
+
+        # Use fixed t_min and t_max from data
+        t_min = self.data_t_min
+        t_max = self.data_t_max
+        
+        # Extract k parameter for switchingWithConflict model (last parameter)
+        if self.modelName == "switchingWithConflict":
+            k = params[-1]
+        else:
+            k = None
+
+        # Extract lambda parameter
+        lambda_=params[0]
+        if not self.sharedLambda:
+            if conflict in [ 0, -0.17,  0.25]:
+                lambda_=params[0]
+            elif conflict in [-0.08, 0.17]:
+                lambda_=params[5]
+            elif conflict in [ -0.25,  0.08]:
+                lambda_=params[6]
+        
+        # Extract p_c parameter
+        if self.freeP_c:
+            if np.isclose(SNR, 0.1):
+                p_c=params[3] # p_c is not shared across SNR conditions so we have two p_c parameters
+            elif np.isclose(SNR,1.2):
+                if self.sharedLambda:
+                    p_c=params[5]  # Different index when sharedLambda=True
+                else:
+                    p_c=params[7]  # Different index when sharedLambda=False
+            else:
+                raise(ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2."))
+        else:
+            p_c=params[3] # p_c is shared across SNR conditions no need to have two p_c parameters 
+
+        # Extract sigma_av_v parameter  
+        if self.sharedSigma_v:
+            sigma_av_v = params[2]  # Use the shared sigma for visual noise
+        else:
+            # If not shared, would need separate logic here
+            sigma_av_v = params[2]  # For now, still use index 2
+
+        # Extract sigma_av_a parameter
+        if np.isclose(SNR, 0.1):
+            sigma_av_a=params[1]
+        elif np.isclose(SNR,1.2):
+            sigma_av_a=params[4]
+        else:
+            raise(ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2."))
+
+        # Individual model functions handle any needed log-space conversions internally.
+        # For example, lognorm models will call with np.log(t_min), np.log(t_max).
+
+        if self.modelName == "switchingFree":
+            # For switchingFree, return p_switch instead of p_c based on SNR
+            # Parameter layout: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
+            if np.isclose(SNR, 0.1):
+                p_switch = params[3]  # p_switch1 for high SNR (SNR=0.1)
+            elif np.isclose(SNR, 1.2):
+                if self.sharedLambda:
+                    p_switch = params[5]  # p_switch2 for low SNR (SNR=1.2)
+                else:
+                    p_switch = params[7]  # p_switch2 when lambda not shared
+            else:
+                raise ValueError(f"Unexpected SNR value: {SNR}. Expected 0.1 or 1.2.")
+            
+            # SwitchingFree uses fixed t_min/t_max from data
+            return lambda_, sigma_av_a, sigma_av_v, p_switch, self.data_t_min, self.data_t_max
+        
+        elif self.modelName == "switchingWithConflict":
+            return lambda_,sigma_av_a,sigma_av_v,p_c,k,t_min,t_max
+        else:
+            return lambda_,sigma_av_a,sigma_av_v,p_c,t_min,t_max
+    
+    def test_fitting_components(self, groupedData):
+        """Test individual components of the fitting process for debugging"""
+        print("=== DEBUGGING FITTING COMPONENTS ===")
+        
+        # Test data bounds
+        print(f"Data bounds: t_min={self.data_t_min:.3f}, t_max={self.data_t_max:.3f}")
+        print(f"Grouped data shape: {groupedData.shape}")
+        print(f"Configuration: sharedLambda={self.sharedLambda}, freeP_c={self.freeP_c}")
+        print(f"Model: {self.modelName}")
+        
+        # Test parameter array creation
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            expected_length = 6 if not self.sharedLambda else 4  # Fusion-only models: [λ, σa1, σv, σa2, (λ2, λ3)]
+        elif self.modelName == "switchingWithConflict":
+            # switchingWithConflict model has additional k parameter, no t_min/t_max
+            if self.freeP_c:
+                expected_length = 9 if not self.sharedLambda else 7
+            else:
+                expected_length = 8 if not self.sharedLambda else 6
+        elif self.modelName == "switchingFree":
+            # switchingFree model has two p_switch parameters, no t_min/t_max
+            expected_length = 8 if not self.sharedLambda else 6
+        elif self.freeP_c:
+            expected_length = 8 if not self.sharedLambda else 6
+        else:
+            expected_length = 7 if not self.sharedLambda else 5
+        print(f"Expected parameter length: {expected_length}")
+        
+        # Create test parameters with realistic values
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            # Fusion-only: [λ, σa1, σv, σa2, (λ2, λ3)] - no t_min/t_max
+            test_params = [0.1, 0.5, 0.5, 0.8]  # λ, σa1, σv, σa2
+            if not self.sharedLambda:
+                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
+            test_params = np.array(test_params)
+        elif self.modelName == "switchingFree":
+            # SwitchingFree: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2] - no t_min/t_max
+            test_params = [0.1, 0.5, 0.5, 0.3, 0.8]  # λ, σa1, σv, p_switch1, σa2
+            if not self.sharedLambda:
+                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
+            test_params.append(0.7)  # Add p_switch2
+            test_params = np.array(test_params)
+        else:
+            # Causal inference models - 
+            test_params = [0.1, 0.5, 0.5, 0.5, 0.8]  # Basic 5 params: λ, σa1, σv, pc, σa2
+            if not self.sharedLambda:
+                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
+            if self.freeP_c:
+                test_params.append(0.5)  # Add second p_c
+            if self.modelName == "switchingWithConflict":
+                test_params.append(1.0)  # Add k parameter
+            test_params = np.array(test_params)
+        
+        print(f"Test params length: {len(test_params)}, values: {test_params}")
+        
+        # Test parameter extraction for all conditions
+        try:
+            test_conditions = 0
+            for _, row in groupedData.iterrows():
+                snr = row["audNoise"]
+                conflict = row["conflictDur"]
+                
+                # Handle different return signatures
+                params_result = self.getParamsCausal(test_params, snr, conflict)
+                if self.modelName == "switchingWithConflict":
+                    λ, σa, σv, pc, k, t_min, t_max = params_result
+                    # Validate extracted parameters including k
+                    if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or not (0 <= pc <= 1) or t_min >= t_max or k <= 0:
+                        print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
+                        print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc:.3f}, k={k:.3f}, t_min={t_min:.3f}, t_max={t_max:.3f}")
+                        return False
+                elif self.modelName == "switchingFree":
+                    λ, σa, σv, p_switch, t_min, t_max = params_result
+                    # Validate extracted parameters including p_switch (ignore t_min/t_max for switchingFree)
+                    if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or not (0 <= p_switch <= 1):
+                        print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
+                        print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, p_switch={p_switch:.3f}")
+                        return False
+                elif self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                    λ, σa, σv, pc, t_min, t_max = params_result
+                    # Validate extracted parameters (fusion models now use fixed data bounds)
+                    if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or pc != 1.0:
+                        print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
+                        print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc} (should be 1.0)")
+                        return False
+                    if t_min != self.data_t_min or t_max != self.data_t_max:
+                        print(f"ERROR: Fusion models should have t_min={self.data_t_min} and t_max={self.data_t_max}")
+                        return False
+                else:
+                    λ, σa, σv, pc, t_min, t_max = params_result
+                    # Validate extracted parameters (standard causal models use fixed data bounds)
+                    if σa <= 0 or σv <= 0 or not (0 <= λ <= 1) or not (0 <= pc <= 1) or t_min >= t_max:
+                        print(f"ERROR: Invalid extracted params for SNR={snr}, conflict={conflict}")
+                        print(f"  λ={λ:.3f}, σa={σa:.3f}, σv={σv:.3f}, pc={pc:.3f}, t_min={t_min:.3f}, t_max={t_max:.3f}")
+                        return False
+                    if t_min != self.data_t_min or t_max != self.data_t_max:
+                        print(f"ERROR: Standard causal models should have t_min={self.data_t_min} and t_max={self.data_t_max}")
+                        return False
+                    
+                test_conditions += 1
+                if test_conditions >= 3:  # Test first few conditions only
+                    break
+                    
+            print(f"✓ Parameter extraction tested for {test_conditions} conditions")
+        except Exception as e:
+            print(f"ERROR in parameter extraction: {e}")
+            return False
+            
+        # Test likelihood evaluation
+        try:
+            ll = self.nLLMonteCarloCausal(test_params, groupedData)
+            print(f"Test likelihood: {ll}")
+            if ll >= 1e10:
+                print("ERROR: Likelihood evaluation returned error value")
+                return False
+        except Exception as e:
+            print(f"ERROR in likelihood evaluation: {e}")
+            return False
+            
+        print("=== ALL COMPONENTS TESTED SUCCESSFULLY ===")
+        return True
+    
+    # likelihood function
+    def unimodalLikelihood(self, S, sigma):
+        m = np.linspace(0, S + 10*sigma, 500)
+        p_m = norm.pdf(m, loc=S, scale=sigma)
+        return m, p_m
+
+    # probability density function of a Gaussian distribution
+    def gaussianPDF(self, x, S, sigma):
+        return (1/(np.sqrt(2*np.pi)*sigma))*np.exp(-((x-S)**2)/(2*(sigma**2)))
+
+    # Fusion function
+    def fusionAV(self, m_a, m_v, sigma_av_a, sigma_av_v):
+        J_AV_A = 1 / sigma_av_a**2
+        J_AV_V = 1 / sigma_av_v**2
+        w_a = J_AV_A / (J_AV_A + J_AV_V)
+        w_v = 1 - w_a
+        fused_S_av = w_a * m_a + w_v * m_v
+        sigma_S_AV_hat = np.sqrt(1 / (J_AV_A + J_AV_V))
+        return fused_S_av
+
+    def fusionAV_vectorized(self, m_a, m_v, sigma_av_a, sigma_av_v):
+        """
+        Optimal multisensory fusion (MLE).
+        
+        Note: This performs LINEAR-SPACE fusion.
+        For log-space measurements (fusionOnlyLogNorm), the measurements should already be in log space,
+        and this function will return a fused estimate also in log space.
+        The weighted averaging formula is the same in both cases.
+        """
+        J_AV_A = 1 / sigma_av_a**2
+        J_AV_V = 1 / sigma_av_v**2
+        fused_S_av = (J_AV_A * m_a + J_AV_V * m_v) / (J_AV_A + J_AV_V)
+        return fused_S_av
+
+
+
+   # Vectorized causal inference functions 
+    def p_single(self,m,sigma,t_min,t_max):
+        """p(m | C=2)     and Gaussian measurement noise N(m; y, sigma^2). 
+        and Gaussian measurement noise N(m; y, sigma^2)."""
+        hi_cdf= norm.cdf((t_max - m) /sigma)
+        lo_cdf=norm.cdf((t_min-m)/sigma)
+        return (hi_cdf-lo_cdf)/(t_max-t_min)
+        
+    def L_C2(self, m_a,m_v,sigma_a,sigma_v,t_min,t_max):
+        """ Likelihood of separate sources: product of two marginal likelihoods 
+        two integral over two hidden duration y_a y_v"""
+
+        return self.p_single(m_a,sigma_a,t_min,t_max) * self.p_single(m_v,sigma_v,t_min,t_max)
+
+
+    def L_C1(self,m_a,m_v,sigma_a,sigma_v,t_min,t_max):
+
+        sigma_c_sq = (sigma_a**2 * sigma_v**2) / (sigma_a**2 + sigma_v**2)
+        sigma_c = np.sqrt(sigma_c_sq)
+        mu_c = (m_a / sigma_a**2 + m_v / sigma_v**2) / (1 / sigma_a**2 + 1 / sigma_v**2)
+
+        hi_cdf = norm.cdf((t_max-mu_c)/sigma_c)
+        lo_cdf = norm.cdf((t_min-mu_c)/sigma_c)
+        
+        expo = np.exp(-(m_a-m_v)**2/(2*(sigma_a**2+sigma_v**2)))
+        
+        prior = 1/(t_max-t_min)
+        
+        ##. initially wanted to use the prior over y  calculate priors differently as well but no not necessary
+        # if self.modelName == "logLinearMismatch":
+        #     # Log-Linear Mismatch: Observer assumes linear Gaussian noise
+        #     # but measurements were actually generated with log-normal noise
+        #     # 
+        #     # Here we compute L(m_a, m_v | C=1) using the OBSERVER'S INCORRECT MODEL:
+        #     #   - Observer thinks: m ~ N(y, σ²) in linear space
+        #     #   - Prior over y: p(y) = 1/(y * log(t_max/t_min)) (uniform in log space)
+        #     #
+        #     # We integrate: L(m_a, m_v | C=1) = ∫ N(m_a; y, σ_a²) * N(m_v; y, σ_v²) * p(y) dy
+            
+        #     y_vals = np.linspace(t_min, t_max, self.nSimul) 
+        #     dy=y_vals[1] - y_vals[0]
+        #     log_norm_const=np.log(t_max / t_min)
+
+        #     # Likelihoods: observer assumes Gaussian noise in linear space
+        #     L_m_a=  norm.pdf(m_a, loc=y_vals, scale=sigma_a)  # shape: (n_points,)
+        #     L_m_v = norm.pdf(m_v, loc=y_vals, scale=sigma_v)
+
+        #     # Prior: uniform in log space means 1/(y * log(t_max/t_min)) in linear space
+        #     prior = 1/ ((y_vals +1e-10)*log_norm_const)  
+            
+        #     # Numerical integration
+        #     integrand=L_m_a * L_m_v * prior
+        #     integral = np.sum(integrand*dy)
+        #     integral = max(integral, 1e-10)
+        #     return integral
+                
+        return prior * sigma_c/np.sqrt(sigma_a**2 * sigma_v**2) * (hi_cdf-lo_cdf) * expo
+
+
+    def posterior_C1(self,m_a,m_v,sigma_a,
+                                    sigma_v, p_c,
+                                    t_min,t_max):
+
+        #likelihoods
+        L1 = self.L_C1(m_a, m_v, sigma_a, sigma_v, t_min, t_max)  
+        L2 = self.L_C2(m_a, m_v, sigma_a, sigma_v, t_min, t_max)  # Fixed: consistent parameter order
+        
+        # posterior with numerical stability
+        denominator = L1*p_c + L2*(1-p_c)
+        
+        lratio = L1 / (L2+1e-20)
+        postC1=lratio * p_c / (lratio * p_c + (1 - p_c))
+        return postC1
+        # # Handle both scalar and array cases
+        # if np.isscalar(denominator):
+        #     if denominator == 0:
+        #         postC1 = p_c
+        #     else:
+        #         postC1 = L1*p_c / denominator
+        # else:
+        #     # Array case - use np.where to handle element-wise
+        #     postC1 = np.where(denominator == 0, p_c, L1*p_c / denominator)
+        
+        return postC1
+            
+            
+
+
+    def causalInference_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
+        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
+        # Calculate likelihoods
+        post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+
+        # convert back to linear scale if measurements are in log scale
+        # Note: logLinearMismatch measurements are already in linear scale (generated via exp(log-normal))
+
+
+        final_estimate = post_C1 * fused_S_av + (1 - post_C1) * m_a
+
+        return final_estimate
+    
+    def probabilityMatching_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
+        """
+        Probability matching model - samples from the posterior distribution over causal structures.
+        
+        Instead of averaging estimates weighted by posterior (as in causal inference),
+        this model samples a causal structure (C=1 or C=2) based on the posterior probability,
+        then reports the estimate corresponding to that sampled structure.
+        
+        Parameters:
+        -----------
+        m_a, m_v : array-like
+            Auditory and visual measurements
+        sigma_a, sigma_v : float
+            Measurement noise standard deviations
+        p_c : float
+            Prior probability of common cause
+        t_min, t_max : float
+            Bounds for duration estimation
+            
+        Returns:
+        --------
+        final_estimate : array
+            Duration estimates based on sampled causal structure
+        """
+        # Calculate posterior probability of common cause
+        post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+        
+        # Compute estimates for both causal structures
+        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
+        est_separate = m_a
+        
+        # Sample causal structure using Bernoulli distribution based on posterior
+        # For each trial, randomly decide: fused (C=1) or separate (C=2)
+        #sampled_C1 = np.random.binomial(1, post_C1)
+        sampled_C1 = np.random.uniform(0,1, size=post_C1.shape) > post_C1 #
+
+        
+        # Select estimate based on sampled causal structure
+        final_estimate = sampled_C1 * fused_S_av + (1 - sampled_C1) * est_separate
+        
+        # Convert back to linear scale if needed (only for probabilityMatchingLogNorm model)
+        if self.modelName == "probabilityMatchingLogNorm":
+            final_estimate = np.exp(final_estimate)
+        
+        return final_estimate
+    
+    def selection_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
+        """
+        Selection model - choose the estimate from the most probable causal structure.
+        
+        Instead of averaging estimates weighted by posterior (as in causal inference),
+        this model determines which causal structure is most probable (C=1 or C=2)
+        and returns the estimate corresponding to that structure.
+        
+        Parameters:
+        -----------
+        m_a, m_v : array-like
+            Auditory and visual measurements
+        sigma_a, sigma_v : float
+            Measurement noise standard deviations
+        p_c : float
+            Prior probability of common cause
+        t_min, t_max : float
+            Bounds for duration estimation
+            
+        Returns:
+        --------
+        final_estimate : array
+            Duration estimates based on most probable causal structure
+        """
+        # Calculate posterior probability of common cause
+        post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+        
+        # Compute estimates for both causal structures
+        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
+        est_separate = m_a
+        
+        # Determine which causal structure is more probable
+        # Handle both scalar and array cases
+        if np.isscalar(post_C1):
+            selection = post_C1 > 0.5
+        else:
+            selection = post_C1 > 0.5
+        
+        # Select estimate based on most probable causal structure
+        final_estimate = selection * fused_S_av + (1 - selection) * est_separate
+        
+        return final_estimate
+
+    def switching_vectorized(self, m_a, m_v, sigma_a, sigma_v):
+        """
+        Switching model - switch between auditory and visual estimates based on reliability.
+        
+        This model randomly chooses between auditory and visual modalities for each trial,
+        with the probability of choosing each modality based on their relative reliabilities.
+        More reliable modalities (lower noise) are chosen more often.
+        
+        Parameters:
+        -----------
+        m_a, m_v : array-like
+            Auditory and visual measurements
+        sigma_a, sigma_v : float
+            Measurement noise standard deviations
+            
+        Returns:
+        --------
+        final_estimate : array
+            Duration estimates based on chosen modality
+        """
+        # Determine which modality is more reliable (lower noise = higher reliability)
+        # Probability of using visual = auditory noise^2 / (auditory noise^2 + visual noise^2)
+        p_use_visual = sigma_a**2 / (sigma_a**2 + sigma_v**2)
+        
+        # Handle array shape for random sampling
+        if np.isscalar(m_a):
+            shape = 1
+        else:
+            shape = m_a.shape
+        
+        # Randomly decide which modality to use based on reliability
+        use_visual = np.random.uniform(0, 1, size=shape) < p_use_visual
+        
+        # Select estimate based on chosen modality
+        final_estimate = (1 - use_visual) * m_a + use_visual * m_v
+        
+        return final_estimate
+
+    def switching_with_conflict_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max, k):
+        """
+        Switching model with conflict sensitivity - bias towards auditory with higher conflict.
+        
+        This model extends the basic switching model by incorporating conflict sensitivity.
+        The probability of switching between modalities is modulated by the posterior
+        probability of common cause and a conflict sensitivity parameter k.
+        
+        Parameters:
+        -----------
+        m_a, m_v : array-like
+            Auditory and visual measurements
+        sigma_a, sigma_v : float
+            Measurement noise standard deviations
+        p_c : float
+            Prior probability of common cause
+        t_min, t_max : float
+            Bounds for duration estimation
+        k : float
+            Conflict sensitivity parameter
+            
+        Returns:
+        --------
+        final_estimate : array
+            Duration estimates based on conflict-modulated modality choice
+        """
+        # Determine base reliability-based switching probability
+        base_p_visual = sigma_a**2 / (sigma_a**2 + sigma_v**2)
+        
+        # Calculate posterior probability of common cause
+        post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
+        
+        # Modulate switching probability based on conflict and sensitivity
+        p_visual = np.clip(base_p_visual * post_C1 * k, 0, 1)
+        
+        # Handle array shape for random sampling
+        if np.isscalar(m_a):
+            shape = 1
+        else:
+            shape = m_a.shape
+        
+        # Randomly decide which modality to use based on conflict-modulated probability
+        use_visual = np.random.uniform(0, 1, size=shape) < p_visual
+        
+        # Select estimate based on chosen modality
+        final_estimate = (1 - use_visual) * m_a + use_visual * m_v
+        
+        return final_estimate
+    
+    def switching_free_vectorized(self, m_a, m_v, p_switch):
+        """
+        Switching model with free switching probability parameter.
+        
+        This model switches between auditory and visual estimates based on a free
+        switching probability parameter p_switch, independent of noise levels.
+        
+        Parameters:
+        -----------
+        m_a, m_v : array-like
+            Auditory and visual measurements
+        p_switch : float
+            Probability of using visual estimate (0 = always auditory, 1 = always visual)
+            
+        Returns:
+        --------
+        final_estimate : array
+            Duration estimates based on probabilistic modality choice
+        """
+        # Handle array shape for random sampling
+        if np.isscalar(m_a):
+            shape = 1
+        else:
+            shape = m_a.shape
+        
+        # Randomly decide which modality to use based on p_switch
+        use_visual = np.random.uniform(0, 1, size=shape) < p_switch
+        
+        # Select estimate based on chosen modality
+        final_estimate = (1 - use_visual) * m_a + use_visual * m_v
+        
+        return final_estimate
+    
+    
+    def probTestLonger_vectorized_mc(self, trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max, k=None):
+        
+        if self.modelName == "gaussian":
+            #print("Using Gaussian distribution for measurements")
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims # S is a single value m is random sampled array
+            m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
+            m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
+            m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
+            m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
+
+            est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+            # est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            ## or est_test computed using causalInference_vectorized
+            est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+        
+        # === Probability Matching Model for Gaussian === #
+        elif self.modelName == "probabilityMatching":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
+            m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
+            m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
+            m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
+
+            est_standard = self.probabilityMatching_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+            est_test = self.probabilityMatching_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+
+        # === Lognormal (Log-Space Gaussian Measurement) Model === #
+        elif self.modelName == "lognorm":
+            #print("Using lognormal distribution for measurements")
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
+            est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
+            est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
+        
+        # === Probability Matching Model for Log-Space === #
+        elif self.modelName == "probabilityMatchingLogNorm":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
+            est_standard = self.probabilityMatching_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
+            est_test = self.probabilityMatching_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
+
+        #  === Log-Linear Mismatch Model === #
+        elif self.modelName =="logLinearMismatch":
+            """
+            Main: Observer’s true measurements follow log-normal noise  but the observer assumes additive (normal) noise in linear time.
+            Q: If the brain is fundamentally encoding durations in a nonlinear (log) fashion, 
+            but using incorrect inference mechanisms — how will behavior deviate from optimality?
+            """
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # measurements are log-normal but the observer assumes normal noise
+            m_a_s = np.exp(np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)) # so that measurements are log-normal
+            m_v_s = np.exp(np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul))
+            m_a_t = np.exp(np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul))
+            m_v_t = np.exp(np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul))
+            est_standard = self.causalInference_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+            est_test = self.causalInference_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+
+        elif self.modelName == "fusionOnly":
+            """
+            FusionOnly: Linear-Gaussian observer (classic optimal integration model).
+            - Measurements have Gaussian noise in LINEAR space: m ~ N(S, σ²)            
+            """
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            m_a_s = np.random.normal(S_a_s, sigma_av_a, nSimul)
+            m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
+            m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
+            m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
+            est_standard = self.fusionAV_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
+            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+
+        elif self.modelName ==  "fusionOnlyLogNorm":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # Generate measurements in LOG space
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
+            # Fusion in log space (fusionAV_vectorized works the same way for log-space values)
+            est_standard = self.fusionAV_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
+            est_standard=np.exp(est_standard)  # Convert back to linear space
+            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            est_test=np.exp(est_test)  # Convert back to linear space
+
+        elif self.modelName == "selection":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # Generate measurements with noise
+            m_a_s = np.random.normal(S_a_s, scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(S_a_t, scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(S_v_s, scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(S_v_t, scale=sigma_av_v, size=nSimul)
+            
+            # Selection model estimates
+            est_standard = self.selection_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+            est_test = self.selection_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+
+        elif self.modelName == "switching":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # Generate measurements with noise in LOG SPACE (like lognorm model)
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
+            
+            # Switching model estimates (in log space)
+            est_standard = self.switching_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
+            est_test = self.switching_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            
+            # Note: Conversion to linear space happens later in the common section
+
+        elif self.modelName == "switchingWithConflict":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # Generate measurements with noise in LOG SPACE (like lognorm model)
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
+            
+            # Use k parameter passed from getParamsCausal
+            if k is None:
+                raise ValueError("switchingWithConflict model requires k parameter")
+            est_standard = self.switching_with_conflict_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max), k)
+            est_test = self.switching_with_conflict_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max), k)
+            
+            # Note: Conversion to linear space happens later in the common section
+
+        elif self.modelName == "switchingFree":
+            nSimul = self.nSimul
+            S_a_s, S_a_t, S_v_s, S_v_t = trueStims
+            # Generate measurements with noise in LOG SPACE (like lognorm model)
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
+            
+            # For switchingFree, p_c is actually p_switch passed in
+            p_switch = p_c
+            est_standard = self.switching_free_vectorized(m_a_s, m_v_s, p_switch)
+            est_test = self.switching_free_vectorized(m_a_t, m_v_t, p_switch)
+            
+            # Note: Conversion to linear space happens later in the common section
+
+        else:
+            #break and raise error
+            raise ValueError(f"Invalid modelName '{self.modelName}'. Choose 'gaussian', 'lognorm', 'logLinearMismatch', 'fusionOnly', 'fusionOnlyLogNorm', 'probabilityMatching', 'probabilityMatchingLogNorm', 'selection', 'switching', 'switchingWithConflict', or 'switchingFree'.")
+
+    
+        if self.modelName in ["lognorm", "logLinearMismatch", "probabilityMatchingLogNorm", "switching", "switchingWithConflict", "switchingFree"]:
+            # For log-space models, ensure estimates are in linear space
+            est_standard = np.exp(est_standard)
+            est_test = np.exp(est_test)
+            
+
+        p_base = np.mean(est_test > est_standard)
+        p_final = (1 - lambda_) * p_base + lambda_ / 2
+        return p_final
+    
+    
+    def nLLMonteCarloCausal(self, params, groupedData):
+        """Negative log-likelihood for causal inference model with improved numerical stability"""
+        ll = 0
+        lenData = len(groupedData)
+        
+        # Convert params to numpy array and ensure it's float type
+        params = np.asarray(params, dtype=float)
+        
+        # Check for invalid parameters
+        if np.any(np.isnan(params)) or np.any(np.isinf(params)):
+            return 1e10
+        
+        # No additional validation needed since t_min and t_max are now fixed from data
+        
+        for i in range(lenData):
+            currSNR = groupedData["audNoise"].iloc[i]
+            currConflict = groupedData["conflictDur"].iloc[i]
+            currResp = groupedData['num_of_chose_test'].iloc[i]
+            totalResponses = groupedData['total_responses'].iloc[i]
+
+            # Get the parameters for the current condition
+            try:
+                params_result = self.getParamsCausal(params, currSNR, currConflict)
+                
+                if self.modelName == "switchingWithConflict":
+                    lambda_, sigma_av_a, sigma_av_v, p_c, k, t_min, t_max = params_result
+                elif self.modelName == "switchingFree":
+                    lambda_, sigma_av_a, sigma_av_v, p_switch, t_min, t_max = params_result
+                    p_c = p_switch  # For compatibility with probTestLonger_vectorized_mc
+                    k = None
+                else:
+                    lambda_, sigma_av_a, sigma_av_v, p_c, t_min, t_max = params_result
+                    k = None  # Not needed for other models
+                
+                # Additional parameter validation
+                if self.modelName == "switchingFree":
+                    if sigma_av_a <= 0 or sigma_av_v <= 0 or not (0 <= lambda_ <= 1) or not (0 <= p_switch <= 1):
+                        return 1e10
+                else:
+                    if sigma_av_a <= 0 or sigma_av_v <= 0 or not (0 <= lambda_ <= 1) or not (0 <= p_c <= 1):
+                        return 1e10
+                    if self.modelName == "switchingWithConflict" and k <= 0:
+                        return 1e10
+                    
+            except Exception as e:
+                return 1e10
+
+            # Get the true standard and test durations
+            S_a_s = groupedData["standardDur"].iloc[i]
+            S_v_s = groupedData["unbiasedVisualStandardDur"].iloc[i]
+            S_a_t = groupedData["testDurS"].iloc[i]
+            S_v_t = groupedData["unbiasedVisualTestDur"].iloc[i]
+            trueStims = (S_a_s, S_a_t, S_v_s, S_v_t)
+            
+            # Calculate the probability of choosing the test duration being longer than the standard duration
+            try:
+                if self.modelName == "switchingWithConflict":
+                    p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max, k)
+                else:
+                    p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, t_min, t_max)
+                    
+                if np.isnan(p_test_longer) or np.isinf(p_test_longer):
+                    return 1e10
+                    
+                # Improved numerical stability for probability bounds
+                epsilon = 1e-12  # Smaller epsilon for better precision
+                P = np.clip(p_test_longer, epsilon, 1 - epsilon)
+                
+                # Improved log-likelihood calculation with overflow protection
+                if currResp > 0:
+                    ll_contrib_pos = currResp * np.log(P)
+                    if np.isinf(ll_contrib_pos) or np.isnan(ll_contrib_pos):
+                        return 1e10
+                    ll += ll_contrib_pos
+                    
+                if (totalResponses - currResp) > 0:
+                    ll_contrib_neg = (totalResponses - currResp) * np.log(1 - P)
+                    if np.isinf(ll_contrib_neg) or np.isnan(ll_contrib_neg):
+                        return 1e10
+                    ll += ll_contrib_neg
+                    
+            except Exception as e:
+                return 1e10
+                
+        # Check for invalid likelihood
+        if np.isnan(ll) or np.isinf(ll) or ll > 0:  # LL should be negative
+            return 1e10
+            
+        # Return the negative log-likelihood
+        return -ll
+
+
+    def fitCausalInferenceMonteCarlo(self, groupedData):
+        """
+        Fit causal inference model using Monte Carlo simulation with multiple random starts.
+        Supports 'scipy' (default) or 'bads' optimization (if installed).
+        
+        For fusion-only models (fusionOnly, fusionOnlyLogNorm), p_c is fixed at 1.0
+        and not included in the parameter array.
+        """
+        # Debug: Print data bounds information
+        print(f"Data bounds: t_min={self.data_t_min:.3f}, t_max={self.data_t_max:.3f}")
+        
+        # Test components before starting optimization
+        if not self.test_fitting_components(groupedData):
+            print("ERROR: Component test failed. Aborting optimization.")
+            return None
+        
+        # ---- PARAMETER BOUNDS ----
+        # Special bounds for fusion-only models (no p_c parameter, no t_min/t_max)
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            print(f"Fitting fusion-only model: {self.modelName} (p_c fixed at 1.0, no bounds needed)")
+            # Fusion models base: [λ, σa1, σv, σa2] + optional [λ2, λ3] if not sharedLambda
+            bounds = np.array([
+                (0.001, 0.4),    # 0 lambda_ - lapse rate
+                (0.01, 2.0),     # 1 sigma_av_a_1 - auditory noise (high SNR)
+                (0.01, 2.0),     # 2 sigma_av_v - visual noise 
+                (0.01, 2.0),     # 3 sigma_av_a_2 - auditory noise (low SNR)
+            ])
+            # Add lambda_2 and lambda_3 bounds if not shared
+            if not self.sharedLambda:
+                bounds = np.vstack([
+                    bounds,
+                    [(0.001, 0.4),   # 4 lambda_2
+                     (0.001, 0.4)]   # 5 lambda_3
+                ])
+        elif self.modelName == "switchingFree":
+            print(f"Fitting switchingFree model: {self.modelName} (uses p_switch parameters, no t_min/t_max)")
+            # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
+            bounds = np.array([
+                (0.001, 0.4),    # 0 lambda_ - lapse rate
+                (0.0001, 2.0),     # 1 sigma_av_a_1 - auditory noise (high SNR)
+                (0.0001, 2.0),     # 2 sigma_av_v - visual noise
+                (0.0, 1.0),      # 3 p_switch1 - switching probability (high SNR)
+                (0.0001, 2),     # 4 sigma_av_a_2 - auditory noise (low SNR)
+                (0.001, 0.4),    # 5 lambda_2 - lapse rate (conflict condition 2)
+                (0.001, 0.4),    # 6 lambda_3 - lapse rate (conflict condition 3)
+                (0.0, 1.0),      # 7 p_switch2 - switching probability (low SNR)
+            ])
+        
+        # Causal inference models with p_c parameters
+        elif self.modelName in ["gaussian", "lognorm", "logLinearMismatch", "probabilityMatching", "probabilityMatchingLogNorm", "selection", "switching"]:
+            if not self.freeP_c:
+                print("Fitting with shared p_c parameter across SNR conditions.")
+                # Standard causal inference models (no t_min/t_max parameters)
+                bounds = np.array([
+                    (0.001, 0.4),    # 0 lambda_ - increased upper bound
+                    (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
+                    (0.0001, 2.0),     # 2 sigma_av_v_1 - broader range
+                    (0, 1),          # 3 p_c_1 - avoid boundary issues
+                    (0.0001, 2),     # 4 sigma_av_a_2 - broader range for high noise
+                    (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
+                    (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
+                ])
+            
+            elif self.freeP_c:
+                print("Fitting with free p_c parameters for each SNR condition.")
+                # Standard causal inference models (no t_min/t_max parameters)
+                bounds = np.array([
+                    (0.001, 0.4),    # 0 lambda_ - increased upper bound
+                    (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
+                    (0.0001, 2.0),     # 2 sigma_av_v_1 - broader range
+                    (0, 1),          # 3 p_c_1 - avoid boundary issues
+                    (0.0001, 2),     # 4 sigma_av_a_2 - broader range for high noise
+                    (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
+                    (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
+                    (0, 1),          # 7 p_c_2 - avoid boundary issues
+                ])
+                
+        elif self.modelName == "switchingWithConflict":
+            if not self.freeP_c:
+                print("Fitting switchingWithConflict with shared p_c parameter across SNR conditions.")
+                # switchingWithConflict model with k parameter
+                bounds = np.array([
+                    (0.001, 0.4),    # 0 lambda_ - increased upper bound
+                    (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
+                    (0.0001, 2.0),     # 2 sigma_av_v_1 - broader range
+                    (0, 1),          # 3 p_c_1 - avoid boundary issues
+                    (0.0001, 2),     # 4 sigma_av_a_2 - broader range for high noise
+                    (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
+                    (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
+                    (0.1, 10.0),     # 7 k - conflict sensitivity parameter
+                ])
+            
+            elif self.freeP_c:
+                print("Fitting switchingWithConflict with free p_c parameters for each SNR condition.")
+                # switchingWithConflict model with k parameter and free p_c
+                bounds = np.array([
+                    (0.001, 0.4),    # 0 lambda_ - increased upper bound
+                    (0.0001, 2.0),     # 1 sigma_av_a_1 - broader range
+                    (0.0001, 2.0),     # 2 sigma_av_v_1 - broader range
+                    (0, 1),          # 3 p_c_1 - avoid boundary issues
+                    (0.0001, 2),     # 4 sigma_av_a_2 - broader range for high noise
+                    (0.001, 0.4),    # 5 lambda_2 - consistent with lambda_
+                    (0.001, 0.4),    # 6 lambda_3 - consistent with lambda_
+                    (0, 1),          # 7 p_c_2 - avoid boundary issues
+                    (0.1, 10.0),     # 8 k - conflict sensitivity parameter
+                ])
+
+
+        if self.sharedLambda:
+            if self.modelName == "switchingFree":
+                # Remove lambda_2 and lambda_3 for switchingFree
+                bounds = np.delete(bounds, [5,6], axis=0)
+            elif self.modelName == "switchingWithConflict":
+                # For switchingWithConflict, remove lambda_2 and lambda_3 but keep k
+                if self.freeP_c:
+                    # Remove lambda_2 and lambda_3, keep p_c_2 and k
+                    bounds = np.delete(bounds, [5,6], axis=0)
+                else:
+                    # Remove lambda_2 and lambda_3, keep k
+                    bounds = np.delete(bounds, [5,6], axis=0)
+            elif self.modelName not in ["fusionOnly", "fusionOnlyLogNorm"]:
+                # Standard causal models: remove lambda_2 and lambda_3
+                bounds = np.delete(bounds, [5,6], axis=0)
+            elif self.modelName in ["logLinearMismatch", "gaussian", "lognorm", "probabilityMatching", "probabilityMatchingLogNorm", "selection", "switching"]:
+                if self.freeP_c:
+                    # Remove lambda_2 and lambda_3 for free p_c models
+                    bounds = np.delete(bounds, [5,6], axis=0)
+                else:
+                    # Remove lambda_2 and lambda_3 for shared p_c models
+                    bounds = np.delete(bounds, [5,6], axis=0)
+            
+            
+
+        
+        # Debug: Print bounds information
+        print(f"Bounds shape: {bounds.shape}")
+        print(f"Using fixed t_min={self.data_t_min:.3f}, t_max={self.data_t_max:.3f} from data")
+        
+        # Validate bounds consistency
+        for i, (lb, ub) in enumerate(bounds):
+            if lb >= ub:
+                print(f"ERROR: Invalid bounds at index {i}: [{lb:.3f}, {ub:.3f}] - lower >= upper")
+                bounds[i] = (lb, lb + 0.1)  # Fix invalid bounds
+            
+        # Test the likelihood function with reasonable parameters before optimization
+        print("Testing likelihood function with reasonable parameters...")
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            # Fusion-only models: [λ, σa1, σv, σa2, (λ2, λ3)]
+            test_params = [0.1, 0.5, 0.5, 0.8]  # λ, σa1, σv, σa2
+            if not self.sharedLambda:
+                test_params.extend([0.1, 0.1])  # Add lambda2, lambda3
+            test_params = np.array(test_params)
+        elif self.modelName == "switchingFree":
+            # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
+            test_params = np.array([0.1, 0.5, 0.5, 0.3, 0.8])  # λ, σa1, σv, p_switch1, σa2
+            if not self.sharedLambda:
+                test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
+            test_params = np.append(test_params, [0.7])  # Add p_switch2 (no t_min/t_max)
+        else:
+            # Causal inference models (no t_min/t_max parameters)
+            test_params = np.array([0.1, 0.5, 0.5, 0.5, 0.8])  # Basic parameters: λ, σa1, σv, pc, σa2
+            if not self.sharedLambda:
+                test_params = np.append(test_params, [0.1, 0.1])  # Add lambda2, lambda3
+            if self.freeP_c:
+                test_params = np.append(test_params, [0.5])  # Add second p_c
+            if self.modelName == "switchingWithConflict":
+                test_params = np.append(test_params, [1.0])  # Add k parameter
+        
+        try:
+            test_ll = self.nLLMonteCarloCausal(test_params, groupedData)
+            print(f"Test likelihood evaluation: {test_ll}")
+            if test_ll >= 1e10:
+                print("ERROR: Test likelihood evaluation failed!")
+                return None
+        except Exception as e:
+            print(f"ERROR: Test likelihood evaluation threw exception: {e}")
+            return None
+        
+   
+
+        # Initial best results
+        best_result = None
+        best_ll = np.inf
+        nStart = self.nStart if hasattr(self, 'nStart') else 1
+        optimizer = self.optimizationMethod if hasattr(self, 'optimizationMethod') else 'scipy'
+        print(f"\nStarting {nStart} optimization attempts using '{optimizer}'...")
+        print("Model is " + self.modelName)
+        for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
+            # Random x0 initialization within bounds
+            if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                # Fusion-only models: [λ, σa1, σv, σa2] (4 params) or [λ, σa1, σv, σa2, λ2, λ3] (6 params)
+                x0 = np.array([
+                    np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                    np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                    np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v
+                    np.random.uniform(bounds[3][0], bounds[3][1]),  # sigma_av_a_2
+                ])
+                # Add lambda_2, lambda_3 if not sharedLambda
+                if not self.sharedLambda:
+                    x0 = np.append(x0, [
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # lambda_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_3
+                    ])
+            elif self.modelName == "switchingFree":
+                # SwitchingFree models: [λ, σa1, σv, p_switch1, σa2, (λ2, λ3), p_switch2]
+                x0 = np.array([
+                    np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                    np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                    np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v
+                    np.random.uniform(bounds[3][0], bounds[3][1]),  # p_switch1
+                    np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                ])
+                # Add lambda_2, lambda_3 if not sharedLambda
+                if not self.sharedLambda:
+                    x0 = np.append(x0, [
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                    ])
+                # Always add p_switch2 at the end
+                final_index = 7 if not self.sharedLambda else 5
+                x0 = np.append(x0, np.random.uniform(bounds[final_index][0], bounds[final_index][1]))  # p_switch2
+
+            elif self.modelName in ["gaussian", "lognorm", "logLinearMismatch", "probabilityMatching", "probabilityMatchingLogNorm", "selection", "switching"]:
+                # Standard causal inference models (no t_min/t_max parameters)
+                if self.freeP_c==False and not self.sharedLambda:
+                    # standard causal inference model with shared p_c (no t_min/t_max)
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c general
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                    ])
+                elif self.freeP_c==False and self.sharedLambda:
+                    # standard causal inference model with shared p_c and shared lambda
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c general
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                    ])
+                elif self.freeP_c==True and not self.sharedLambda:
+                    # standard causal inference model with free p_c
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                        np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
+                    ])
+                elif self.freeP_c==True and self.sharedLambda:
+                    # standard causal inference model with free p_c and shared lambda
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # p_c_2
+                    ])
+                else:
+                    raise NotImplementedError("Invalid parameter configuration.")
+                    
+            elif self.modelName == "switchingWithConflict":
+                # switchingWithConflict models with k parameter
+                if self.freeP_c==False and not self.sharedLambda:
+                    # switchingWithConflict with shared p_c
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c general
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                        np.random.uniform(bounds[7][0], bounds[7][1]),  # k
+                    ])
+                elif self.freeP_c==False and self.sharedLambda:
+                    # switchingWithConflict with shared p_c and shared lambda
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c general
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # k
+                    ])
+                elif self.freeP_c==True and not self.sharedLambda:
+                    # switchingWithConflict with free p_c
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # lambda_2
+                        np.random.uniform(bounds[6][0], bounds[6][1]),  # lambda_3
+                        np.random.uniform(bounds[7][0], bounds[7][1]),  # p_c_2
+                        np.random.uniform(bounds[8][0], bounds[8][1]),  # k
+                    ])
+                elif self.freeP_c==True and self.sharedLambda:
+                    # switchingWithConflict with free p_c and shared lambda
+                    x0 = np.array([
+                        np.random.uniform(bounds[0][0], bounds[0][1]),  # lambda_
+                        np.random.uniform(bounds[1][0], bounds[1][1]),  # sigma_av_a_1
+                        np.random.uniform(bounds[2][0], bounds[2][1]),  # sigma_av_v_1
+                        np.random.uniform(bounds[3][0], bounds[3][1]),  # p_c_1
+                        np.random.uniform(bounds[4][0], bounds[4][1]),  # sigma_av_a_2
+                        np.random.uniform(bounds[5][0], bounds[5][1]),  # p_c_2
+                        np.random.uniform(bounds[6][0], bounds[6][1]),  # k
+                    ])
+                else:
+                    raise NotImplementedError("Invalid parameter configuration.")
+            else:
+                raise ValueError(f"Unknown model name: {self.modelName}")
+        
+            # # if lambda is shared across conditions, remove lambda_2 and lambda_3 from x0
+            # # (only for standard causal inference models - fusion and switchingFree already handled above)
+            # if self.sharedLambda and self.modelName not in ["fusionOnly", "fusionOnlyLogNorm", "switchingFree"]:
+            #     if self.modelName == "switchingWithConflict":
+            #         x0 = np.delete(x0, [5,6])  # remove lambda_2 and lambda_3, but keep k
+            #     else:
+            #         x0 = np.delete(x0, [5,6])  # remove lambda_2 and lambda_3 if sharedLambda is True
+                
+            # Validate x0 vs bounds
+            for i, (x_val, (lb, ub)) in enumerate(zip(x0, bounds)):
+                if not (lb <= x_val <= ub):
+                    print(f"WARNING: x0[{i}]={x_val:.3f} outside bounds [{lb:.3f}, {ub:.3f}]")
+                    x0[i] = np.clip(x_val, lb, ub)  # Fix out-of-bounds values
+
+            try:
+                if self.optimizationMethod == "bads" and BADS_AVAILABLE:
+                    # Prepare bounds for BADS
+                    lb = bounds[:, 0]
+                    ub = bounds[:, 1]
+                    plb = bounds[:, 0] + 0.2 * (bounds[:, 1] - bounds[:, 0])  # Plausible lower bounds
+                    pub = bounds[:, 1] - 0.2 * (bounds[:, 1] - bounds[:, 0])  # Plausible upper bounds
+
+                    obj = lambda x: self.nLLMonteCarloCausal(x, groupedData)
+                    bads = BADS(obj, x0, lb, ub, plb, pub, options={"display": "off"})
+                    result = bads.optimize()
+                    
+                    # ENFORCE BOUNDS after BADS (BADS sometimes violates hard bounds)
+                    if hasattr(result, 'x'):
+                        result.x = np.clip(result.x, lb, ub)
+
+                else:
+                    # Enhanced scipy optimization with multiple methods
+                    methods = ['Powell', 'L-BFGS-B', 'TNC']
+                    best_method_result = None
+                    best_method_ll = np.inf
+                    
+                    for method in methods:
+                        try:
+                            if method in ['L-BFGS-B', 'TNC']:
+                                # Methods that support bounds
+                                method_result = minimize(
+                                    self.nLLMonteCarloCausal,
+                                    x0=x0,
+                                    args=(groupedData,),
+                                    method=method,
+                                    bounds=bounds,
+                                    options={'maxiter': 1000, 'ftol': 1e-9}
+                                )
+                            else:
+                                # Powell method (doesn't support bounds directly)
+                                method_result = minimize(
+                                    self.nLLMonteCarloCausal,
+                                    x0=x0,
+                                    args=(groupedData,),
+                                    method=method,
+                                    options={'maxiter': 1000, 'ftol': 1e-9}
+                                )
+                            
+                            # Check if this method gave better results
+                            if hasattr(method_result, 'fun') and method_result.fun < best_method_ll:
+                                best_method_ll = method_result.fun
+                                best_method_result = method_result
+                                
+                        except Exception as method_e:
+                            print(f"Method {method} failed: {method_e}")
+                            continue
+                    
+                    result = best_method_result
+                    
+                # Validate optimization result
+                if result is None:
+                    print(f"Attempt {attempt + 1}: All optimization methods failed")
+                    continue
+                    
+                # Check result quality
+                fval = getattr(result, 'fval', result.fun)
+                xres = getattr(result, 'x', result.x)
+                
+                # ENFORCE BOUNDS: Clip parameters to valid range (Powell ignores bounds!)
+                xres_clipped = np.clip(xres, bounds[:, 0], bounds[:, 1])
+                if not np.allclose(xres, xres_clipped):
+                    print(f"WARNING: Parameters clipped to bounds. Original: {xres}, Clipped: {xres_clipped}")
+                    xres = xres_clipped
+                    # Re-evaluate likelihood with clipped parameters
+                    fval = self.nLLMonteCarloCausal(xres, groupedData)
+                
+                # Validate final parameters
+                try:
+                    test_ll = self.nLLMonteCarloCausal(xres, groupedData)
+                    if test_ll >= 1e10:
+                        print(f"Attempt {attempt + 1}: Final parameters invalid (LL={test_ll})")
+                        continue
+                except:
+                    print(f"Attempt {attempt + 1}: Final parameter validation failed")
+                    continue
+                
+                # Update best result (with clipped parameters)
+                result.x = xres  # Update result with clipped values
+                if fval < best_ll:
+                    best_ll = fval
+                    best_result = result
+                    print(f"✓ Attempt {attempt + 1}: New best LL = {fval:.6f}")
+
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                continue
+
+        if best_result is None:
+            raise RuntimeError("All optimization attempts failed!")
+
+        fval = getattr(best_result, 'fval', best_result.fun)
+        xres = getattr(best_result, 'x', best_result.x)
+        
+        # Final bounds enforcement
+        xres = np.clip(xres, bounds[:, 0], bounds[:, 1])
+        
+        print(f"\n✅ Best result from {nStart} attempts:")
+        print(f"  → Final parameters: {xres}")
+        print(f"  → Final log-likelihood: {fval:.6f}")
+
+        return xres
+
+
+    def simulateMonteCarloData(self, fittedParams, data, nSamples=10000):
+
+        #print("\nSimulating data using fitted parameters:", fittedParams)
+        #print(f"\nmodelName: {self.modelName}")
+
+        """
+        Simulate data based on fitted parameters.
+        
+        Parameters:
+        -----------
+        fittedParams : array-like or None
+            Fitted parameters from optimization
+        data : DataFrame
+            Original data
+        nSamples : int
+            Number of samples per trial
+            
+        Returns:
+        --------
+        DataFrame : Simulated data
+        """
+
+
+        # Check if fittedParams is None (fitting failed)
+        if fittedParams is None:
+            raise ValueError("Cannot simulate data: fittedParams is None. Model fitting may have failed.")
+        
+        simData = []
+        # Extract unique combinations of trials from the dataset
+    
+        for _, trial in self.groupedData.iterrows():
+            deltaDurS = trial["deltaDurS"]
+            audioNoiseLevel = trial["audNoise"]
+            conflictLevel = trial["conflictDur"]
+            totalResponses = trial["total_responses"]
+            #print(f"Simulating for audNoise: {audioNoiseLevel}, conflict: {conflictLevel}, deltaDurS: {deltaDurS}, totalResponses: {totalResponses}")
+
+  
+            # Unpack fitted parameters for the current audio noise level
+            params_result = self.getParamsCausal(fittedParams, audioNoiseLevel, conflictLevel)
+            
+            if self.modelName == "switchingFree":
+                lambda_, sigma_av_a, sigma_av_v, p_switch, tmin, tmax = params_result
+                p_c = p_switch  # For compatibility with probTestLonger_vectorized_mc
+            elif self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+                lambda_, sigma_av_a, sigma_av_v, p_c, tmin, tmax = params_result
+                # p_c should already be 1.0 from getParamsCausal for fusion models
+                assert p_c == 1.0, f"Error: fusion-only model should have p_c=1.0, got {p_c}"
+            elif self.modelName in ["gaussian", "lognorm", "logLinearMismatch", "probabilityMatching", "probabilityMatchingLogNorm", "selection", "switching"]:
+                lambda_, sigma_av_a, sigma_av_v, p_c, tmin, tmax = params_result
+
+            nSamples = 3 * int(totalResponses) #10* int(totalResponses)  # Scale number of samples by total responses for better simulation
+            # Simulate responses for the current trial
+            for _ in range(nSamples):
+                S_a_s = 0.5
+                S_v_s = S_a_s + conflictLevel
+                S_a_t = S_a_s + deltaDurS
+                S_v_t = S_a_t
+                trueStims = (S_a_s, S_a_t, S_v_s, S_v_t)
+                p_test_longer = self.probTestLonger_vectorized_mc(trueStims, sigma_av_a, sigma_av_v, p_c, lambda_, tmin, tmax)
+
+                chose_test = np.random.binomial(1, p_test_longer)
+                simData.append({
+                    'standardDur': S_a_s,
+                    'testDurS': S_a_t,
+                    'deltaDurS': deltaDurS,
+                    'logDeltaDur': np.log(S_a_t) - np.log(S_a_s),
+                    'logDeltaDurMs': np.log(S_a_t * 1000) - np.log(S_a_s * 1000),
+                    'unbiasedVisualStandardDur': S_v_s,
+                    'unbiasedVisualTestDur': S_v_t,
+                    'audNoise': audioNoiseLevel,
+                    'conflictDur': conflictLevel,
+                    'chose_test': chose_test,
+                    'chose_standard': 1 - chose_test,  # Assuming binary choice
+                    'responses': 1  # Each sample is a response
+                })
+
+        simData = pd.DataFrame(simData)
+        self.simulatedData = simData
+        return self.simulatedData
+
+
+    def plot_posterior_vs_conflict(self, data, fittedParams, snr_list=[1.2, 0.1]):
+        """
+        Plot posterior probability vs conflict for given SNR values.
+        """
+        best_params = fittedParams
+        posterior_by_condition = []
+
+        # Get unique conflict and SNR combinations
+        unique_conflicts = np.sort(data["conflictDur"].unique())
+        for snr in snr_list:
+            for conflict in unique_conflicts:
+                params_result = self.getParamsCausal(best_params, snr, conflict)
+                if self.modelName == "switchingWithConflict":
+                    λ, σa, σv, pc, k, t_min, t_max = params_result
+                else:
+                    λ, σa, σv, pc, t_min, t_max = params_result
+
+                S_std = 0.5
+                S_v = S_std + conflict
+                m_a_samples, m_v_samples = None, None
+
+                if self.modelName in ["lognorm"]:
+                    m_a_samples = np.random.normal(loc=np.log(S_std), scale=σa, size=1000)
+                    m_v_samples = np.random.normal(loc=np.log(S_v), scale=σv, size=1000)
+                elif self.modelName in ["gaussian"]:
+                    m_a_samples = np.random.normal(loc=S_std, scale=σa, size=1000)
+                    m_v_samples = np.random.normal(loc=S_v, scale=σv, size=1000)
+                elif self.modelName in ["logLinearMismatch"]:
+                    m_a_samples = np.exp(np.random.normal(loc=np.log(S_std), scale=σa, size=1000))
+                    m_v_samples = np.exp(np.random.normal(loc=np.log(S_v), scale=σv, size=1000))
+                else:
+                    raise ValueError("Invalid modelName. Choose 'gaussian', 'lognorm', or 'logLinearMismatch'.")
+
+                posteriors = np.array([
+                    self.posterior_C1(m_a, m_v, σa, σv, pc, t_min, t_max)
+                    for m_a, m_v in zip(m_a_samples, m_v_samples)
+                ])
+
+                avg_posterior = np.mean(posteriors)
+                posterior_by_condition.append({
+                    "conflict_ms": conflict * 1000,
+                    "posterior": avg_posterior,
+                    "SNR": snr,
+                    "prior_pc": pc
+                })
+
+        # Convert to DataFrame for easy plotting
+        posterior_df = pd.DataFrame(posterior_by_condition)
+
+        # Plotting
+        plt.figure(figsize=(8, 5))
+        for idx, snr in enumerate(snr_list):
+            df_snr = posterior_df[posterior_df["SNR"] == snr]
+            plt.subplot(1, 2, idx + 1)
+            plt.scatter(df_snr["conflict_ms"], df_snr["posterior"], label=f"Posterior P(C=1) (SNR={snr})")
+            plt.axhline(y=df_snr["prior_pc"].iloc[0], color='gray', linestyle='--',
+                        label=f"P(C=1)={df_snr['prior_pc'].iloc[0]:.2f}")
+            plt.xlabel('Conflict (ms)')
+            plt.ylabel('Posterior Probability of Common Cause')
+            plt.title(f'Posterior P(C=1) vs Conflict (SNR={snr})')
+            plt.grid()
+            plt.legend()
+
+        plt.tight_layout()
+        plt.show()
+
+
+
+    def plot_mu_vs_conflict_MC_vs_Data(self):
+        plt.figure(figsize=(16, 6))
+        for i, standardLevel in enumerate(self.uniqueStandard):
+            for j, audioNoiseLevel in enumerate(sorted(self.uniqueSensory)):
+                for k, conflictLevel in enumerate(self.uniqueConflict):
+                    plt.subplot(1, 2, j + 1)
+                    color = sns.color_palette("viridis", as_cmap=True)(k / len(self.uniqueConflict))
+                    
+                    paramsSimDf = self.getParams(self.simDataFit.x, conflictLevel, audioNoiseLevel)  # lambda mu sigma
+                    muModel = paramsSimDf[1]
+                    muData = self.getParams(self.dataFit.x, conflictLevel, audioNoiseLevel)[1]
+                    plt.scatter(conflictLevel, muData, color="red", s=40, alpha=0.7, label="Data Fit" if k == 0 else "")
+                    plt.scatter(conflictLevel, muModel, color="blue", s=40,  alpha=0.7, label="Model Fit" if k == 0 else "")
+                    plt.xlabel(f"Conflict (ms)")
+                    plt.ylabel("Mu (sigma_av_a)")
+                    plt.axhline(y=0, color='gray', linestyle='--')
+                    plt.axvline(x=0, color='gray', linestyle='--')
+                    plt.ylim(-0.3, 0.3)
+                    plt.title(f"{self.dataName} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=16)
+                    plt.legend(fontsize=14, title_fontsize=14)
+                    plt.grid()
+        plt.show()
+
+
+    def plot_mu_summary_with_errorbars(self, fittedParams, error_type='sem'):
+        """
+        Plots the average μ (PSE) across participants for each conflict and noise level,
+        including error bars based on standard error or confidence intervals.
+        """
+        #ensure groupedData has participantID column
+        if 'participantID' not in self.groupedData.columns:
+            groupedData = self.groupByChooseTest(self.data, [self.intensityVar, self.sensoryVar, self.standardVar, self.conflictVar, self.visualStandardVar, self.visualTestVar, self.audioTestVar, 'participantID'])
+            self.groupedData = groupedData  
+            
+        
+        conflictLevels = np.sort(self.groupedData[self.conflictVar].unique())
+        noiseLevels = np.sort(self.groupedData[self.sensoryVar].unique())
+
+        plt.figure(figsize=(12, 5))
+
+        for j, noiseLevel in enumerate(noiseLevels):
+            mus_by_conflict = []
+
+            for conflict in conflictLevels:
+                mus = []
+
+                for participant in self.groupedData['participantID'].unique():
+                    subset = self.groupedData[
+                        (self.groupedData[self.conflictVar] == conflict) &
+                        (self.groupedData[self.sensoryVar] == noiseLevel) &
+                        (self.groupedData['participantID'] == participant)
+                    ]
+                    if len(subset) == 0:
+                        continue
+
+                    # Extract PSE (mu) from psychometric fit of simulated or real data
+                    # You may replace this with model prediction if simDataFit is None
+                    try:
+                        mu = self.getParams(self.simDataFit.x, conflict, noiseLevel)[1]
+                        mus.append(mu)
+                    except:
+                        continue
+
+                # Compute mean and error bars
+                mu_mean = np.mean(mus)
+                if error_type == 'sem':
+                    mu_err = np.std(mus) / np.sqrt(len(mus))
+                elif error_type == 'ci95':
+                    mu_err = 1.96 * np.std(mus) / np.sqrt(len(mus))
+                else:
+                    mu_err = 0
+
+                mus_by_conflict.append((conflict * 1000, mu_mean, mu_err))
+
+            # Unpack values
+            conflicts_ms, mu_means, mu_errs = zip(*mus_by_conflict)
+            plt.subplot(1, 2, j + 1)
+            plt.errorbar(conflicts_ms, mu_means, yerr=mu_errs, fmt='-o', capsize=4, label=f"SNR={noiseLevel}")
+            plt.axhline(0, color='gray', linestyle='--')
+            plt.xlabel("Conflict (ms)")
+            plt.ylabel("Estimated μ (PSE)")
+            plt.title(f"Mean μ vs Conflict (Noise={noiseLevel})")
+            plt.legend()
+            plt.grid()
+
+        plt.tight_layout()
+        plt.show()
+
+    def plotPsychometrics_MC_Data(self):
+        "use self to get the  required stuff"
+        print("Plotting psychometric curves for Monte Carlo model and data...")
+        pltTitle = self.dataName + " "+ self.modelName+" Model Fit"
+        plt.figure(figsize=(16, 8))
+        #plt.title(f"{pltTitle} AV,A duration comparison", fontsize=26)
+        plt.xlabel("Test Duration (ms)", fontsize=24)
+        plt.ylabel("P(chose test)",fontsize=24)
+
+        for i, standardLevel in enumerate(self.uniqueStandard):
+            for j, audioNoiseLevel in enumerate(sorted(self.uniqueSensory)):
+                for k, conflictLevel in enumerate(self.uniqueConflict):
+                    plt.subplot(1, 2, j + 1)
+                    x = np.linspace(-0.6, 0.6, 1000)
+                    color = sns.color_palette("RdBu", as_cmap=True)(k / len(self.uniqueConflict))
+                    
+
+                    paramsSimFit=self.getParams(self.simDataFit.x, conflictLevel,audioNoiseLevel)
+                    # Plot data fit: plot psychometric curve from fitted data
+                    ySimSigmoid=self.psychometric_function(x, paramsSimFit[0],paramsSimFit[1],paramsSimFit[2])
+
+                    
+                    xPlot=np.linspace(0,1000,1000)
+                    if k==0:
+                        plt.plot(xPlot, ySimSigmoid, color=color, linestyle='-', label=f"conf: {int(conflictLevel*1000)}", linewidth=3, alpha=0.8)
+                    else:
+                        plt.plot(xPlot, ySimSigmoid, color=color, linestyle='-', linewidth=3, alpha=0.8,label=f"{int(conflictLevel*1000)}")
+                    plt.axvline(500, linestyle='--')
+
+
+                    "plot the monte carlo"
+                    params_result = self.getParamsCausal(self.modelFit, audioNoiseLevel, conflictLevel)
+                    if self.modelName == "switchingWithConflict":
+                        lambda_, sigma_av_a, sigma_av_v, p_c, k, tmin, tmax = params_result
+                    else:
+                        lambda_, sigma_av_a, sigma_av_v, p_c, tmin, tmax = params_result
+
+            
+                    #plt.axvline(x=0, color='gray', linestyle='--')
+                    #plt.axhline(y=0.5, color='gray', linestyle='--')
+                    #plt.xlabelf"({self.intensityVar}) Test(stair-a)-Standard(a) Duration Difference Ratio(%)")
+                    #plt.xlabel("Test Duration (ms)", fontsize=24)
+                    #plt.title(f"{pltTitle} AV,A Duration Comp. Noise: {audioNoiseLevel}", fontsize=26)
+                    if j==0:
+                        plt.legend(fontsize=14, title_fontsize=20)
+                    plt.grid()
+
+
+                    groupedDataSub = self.groupByChooseTest(
+                        self.data[(self.data[self.standardVar] == standardLevel) & (self.data[self.sensoryVar] == audioNoiseLevel) & (self.data[self.conflictVar] == conflictLevel)],
+                        [self.intensityVar, self.sensoryVar, self.standardVar, self.conflictVar, self.visualStandardVar, self.visualTestVar, self.audioTestVar, "testDurMs"]
+                    )
+                    # bin_and_plot(groupedDataSub, bin_method='cut', bins=10, plot=True, color=color,binVar='testDurMs')
+                    # Note: bin_and_plot function needs to be imported or defined if needed
+                    #plt.text(0.05, 0.8, fr"$\sigma_a$: {sigma_av_a:.2f}, $\sigma_v$: {sigma_av_v:.2f},", fontsize=12, ha='left', va='top', transform=plt.gca().transAxes)
+                    plt.tight_layout()
+                    #plt.grid(True)
+                    print(f"Noise: {audioNoiseLevel}, Conflict: {conflictLevel}, Lambda: {lambda_:.3f}, Sigma_a: {sigma_av_a:.3f}, Sigma_v: {sigma_av_v:.3f}, p_c: {p_c:.3f}")
+                    #plt.text(0.15, 0.9, f"P(C=1): {p_c:.2f}", fontsize=12, ha='center', va='bottom', transform=plt.gca().transAxes)
+                    
+        plt.show()
+
+
+    def getActualParameterCount(self):        
+        # === FUSION MODELS ===
+        # Always: [λ, σa1, σv, σa2] + optional [λ2, λ3]
+        # No p_c (fixed at 1.0), no t_min/t_max (fixed from data)
+        if self.modelName in ["fusionOnly", "fusionOnlyLogNorm"]:
+            if self.sharedLambda:
+                # [λ, σa1, σv, σa2] = 4 params
+                return 4
+            else:
+                # [λ, σa1, σv, σa2, λ2, λ3] = 6 params
+                return 6
+        
+        # === SWITCHING FREE MODEL ===
+        # Always: [λ, σa1, σv, p_switch1, σa2, p_switch2] + optional [λ2, λ3]
+        # Uses p_switch instead of p_c, no t_min/t_max (fixed from data)
+        elif self.modelName == "switchingFree":
+            if self.sharedLambda:
+                # [λ, σa1, σv, p_switch1, σa2, p_switch2] = 6 params
+                return 6
+            else:
+                # [λ, σa1, σv, p_switch1, σa2, λ2, λ3, p_switch2] = 8 params
+                return 8
+        
+        # === SWITCHING WITH CONFLICT MODEL ===
+        # Base: [λ, σa1, σv, σa2, k] = 5 params (no t_min/t_max - fixed from data)
+        # + optional [λ2, λ3] if not sharedLambda
+        # + optional p_c parameters
+        elif self.modelName == "switchingWithConflict":
+            base_count = 5  # λ, σa1, σv, σa2, k (no t_min/t_max)
+            
+            # Add lambda parameters
+            if not self.sharedLambda:
+                base_count += 2  # Add λ2, λ3
+            
+            # Add p_c parameters
+            if self.freeP_c:
+                base_count += 2  # Add p_c1, p_c2 (separate for each SNR)
+            else:
+                base_count += 1  # Add p_c (shared across SNR)
+            
+            return base_count
+        
+        # === STANDARD CAUSAL INFERENCE MODELS (including switching) ===
+        # Base: [λ, σa1, σv, σa2] = 4 params (no t_min/t_max - fixed from data)
+        # + optional [λ2, λ3] if not sharedLambda
+        # + optional p_c parameters
+        else:
+            base_count = 4  # λ, σa1, σv, σa2 (no t_min/t_max)
+            
+            # Add lambda parameters
+            if not self.sharedLambda:
+                base_count += 2  # Add λ2, λ3
+            
+            # Add p_c parameters
+            if self.freeP_c:
+                base_count += 2  # Add p_c1, p_c2 (separate for each SNR)
+            else:
+                base_count += 1  # Add p_c (shared across SNR)
+            
+            return base_count
+                
+
+"TEST CODE"
+##############################
+
+# ----------------------------------------------
+# This code is part of the Causal Inference Monte Carlo fitting process.
+# --- <Main Function> ---
+# It loads data, groups it by conditions, and fits the model using Monte Carlo simulation.
+# The fitted parameters are then used to plot the results.
+# ----------------------------------------------
+
+##############################
+
+from loadData import loadData
+import time
+
+if __name__ == "__main__":
+    # Example usage
+    data, dataName = loadData("mt_all.csv")
+
+    intensityVariable = "deltaDurS"
+    sensoryVar = "audNoise"
+    standardVar = "standardDur"
+    conflictVar = "conflictDur"
+
+    visualStandardVar = "unbiasedVisualStandardDur"
+    visualTestVar = "unbiasedVisualTestDur"
+    audioStandardVar = "standardDur"
+    audioTestVar = "testDurS"
+
+
+    # Instantiate the Monte Carlo class
+    mc_fitter = OmerMonteCarlo(
+        data,
+        intensityVar=intensityVariable
+        # sensoryVar=sensoryVar,
+        # standardVar=standardVar,
+        # conflictVar=conflictVar
+    )
+    mc_fitter.dataName = dataName
+    mc_fitter.nSimul = 100
+    mc_fitter.optimizationMethod= "bads"  # Use BADS for optimization
+    mc_fitter.nStart = 1  # Number of random starts for optimization
+
+
+    groupedData = mc_fitter.groupByChooseTest(
+        x=data,
+        groupArgs=[
+            intensityVariable, sensoryVar, standardVar, conflictVar,
+            visualStandardVar, visualTestVar, audioTestVar
+        ]
+    )
+
+    
+
+    mc_fitter.modelName = "fusionOnlyLogNorm"  # Set measurement distribution to Gaussian
+    timeStart = time.time()
+    print(f"\nFitting Causal Inference Model for {dataName} with {len(groupedData)} unique conditions")
+    fittedParams = mc_fitter.fitCausalInferenceMonteCarlo(groupedData)
+    mc_fitter.modelFit = fittedParams  # Store the fitted parameters in the class instance
+    print(f"\nFitted parameters for {dataName}: {fittedParams}")
+    print(f"Time taken to fit: {time.time() - timeStart:.2f} seconds")
+
+    # uniqueStandard = groupedData[standardVar].unique()
+    # uniqueSensory = groupedData[sensoryVar].unique()
+    # uniqueConflict = sorted(groupedData[conflictVar].unique())
+
+    # simulate data for psychometric curve
+    mc_fitter.simulatedData = mc_fitter.simulateMonteCarloData(fittedParams, mc_fitter.data ,nSamples=100)
+    # Create a temporary fitter for simulated data
+    temp_fitter = fitPychometric(mc_fitter.simulatedData)
+    mc_fitter.simDataFit = temp_fitter.fitMultipleStartingPoints(nStart=1)
+
+    "psychometric fit"
+    mc_fitter.dataFit = mc_fitter.fitMultipleStartingPoints(nStart=1)
+
+
+    # Plotting the results
+    mc_fitter.plotPsychometrics_MC_Data()
+
+
+                
+
+
+
+
+    # Plot posterior vs conflict
+    mc_fitter.plot_posterior_vs_conflict(data, fittedParams, snr_list=[1.2, 0.1])
+    # Simulate and plot psychometric data
+    uniqueSensory = np.unique(data[sensoryVar])
+    uniqueConflict = np.unique(data[conflictVar])
+
+
+
+
+
+
+

@@ -1,0 +1,15 @@
+{
+    "participantID": "oy",
+    "modelType": "logLinearMismatch_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.09978975410948362,
+        0.29496127048310394,
+        0.8311186110301063,
+        0.6344990052592039,
+        0.41854639180904407
+    ],
+    "AIC": 2325.0850659944545,
+    "BIC": 2347.6512165490158,
+    "logLikelihood": -1157.5425329972272,
+    "n_conditions": 674
+}

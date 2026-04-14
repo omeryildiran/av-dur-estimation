@@ -1,0 +1,15 @@
+{
+    "participantID": "dt",
+    "modelType": "logLinearMismatch_LapseFix_sharedPrior",
+    "fittedParams": [
+        0.27538812460345263,
+        0.18624581977420618,
+        0.3713695977756275,
+        0.6897075221492742,
+        0.45534892123015647
+    ],
+    "AIC": 2546.6067289615003,
+    "BIC": 2567.1751398606616,
+    "logLikelihood": -1268.3033644807501,
+    "n_conditions": 452
+}
