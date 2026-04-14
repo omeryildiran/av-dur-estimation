@@ -1,0 +1,303 @@
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb.i
+
+# ── MATLAB ────────────────────────────────────────────────────────────────────
+*.mat
+.Rhistory
+
+# ── LaTeX ─────────────────────────────────────────────────────────────────────
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.tex
+unimodal_results_latex.tex
+
+# ── Generated figures / output ────────────────────────────────────────────────
+*.pdf
+*.png
+*.svg
+*.gif
+PDF/
+statistical_analysis_report.txt
+pse_summary_statistics.csv
+
+# ── Raw per-participant data (privacy — not for public release) ───────────────
+# Per-session trial files
+unimodalAudDurEst/dataAuditory/
+unimodalVisualDurEst/dataVisual/
+# Per-participant aggregated files with original initials
+data/as_*.csv
+data/dt_*.csv
+data/hh_*.csv
+data/ip_*.csv
+data/lc_*.csv
+data/ln_*.csv
+data/ln1_*.csv
+data/ln2_*.csv
+data/mh_*.csv
+data/ml_*.csv
+data/mt_*.csv
+data/oy_*.csv
+data/qs_*.csv
+data/sx_*.csv
+data/HH_*.csv
+data/LN01_*.csv
+data/*_all.csv
+data/all_all.csv
+data/all_data_all.csv
+data/all_crossModal.csv
+data/all_visualAndAuditory.csv
+"data/all_woBiasedParticipants 2.csv"
+data/*.mat
+data/*.py
+
+# ── Old/scratch directories ───────────────────────────────────────────────────
+1x/
+bimodal_audioVisual_durEst/
+bootstrap_results/
+bootstrapped_params_logratio/
+model/
+psychometric_fits_data/
+psychometric_fits_logratio_real/
+psychometric_fits_logratio_simulated/
+psychometric_fits_real/
+psychometric_fits_simulated/
+simulated_data/
+test_fits/
+unimodalSigma_modelFits/
+
+# ── Old draft notebooks ───────────────────────────────────────────────────────
+Untitled-*.ipynb
+analysis_audio_dur_v*.ipynb
+analysis_auditory_dur_estimate.ipynb
+analyze_snr.ipynb
+auditory_statistical_analysis.ipynb
+bimodal_av_analysis.ipynb
+bootstrapModels.ipynb.ipynb
+create_conditions_sound_dur.ipynb
+sigma_lapse_analysis.ipynb
+simulation_audio_dur_estimate_v2.ipynb
+staircase_analysis.ipynb
+stimulus_generation_notebook.ipynb
+unifiedModelFitAVMain_General.ipynb
+unimodal_crossmodal_fits.ipynb
+visualize_raw_data.ipynb
+
+# ── Scratch / old Python scripts ──────────────────────────────────────────────
+aud_cue_binned_spare.py
+audi_cue_gen_bin_filtered_v3_LRA_fixed.py
+audio_cue_gen_bin_filter_v2.py
+audio_cue_gen_binned.py
+audio_cue_gen_binned_sinusoidal.py
+audio_cue_gen_filtered.py
+audio_cue_gen_just_intensity.py
+audio_cue_gen_v2.py
+audio_intensity_treshold_baseline.py
+audio_rise_dur_discrimination_training.py
+betterStaircase.py
+binAndPlot.py
+binning_by_hist.py
+causalInferenceAnalyticalVectorized.py
+causal_inference_animation.py
+causal_inference_no_latex.py
+causal_inference_simple.py
+causal_inference_working.py
+check_participants.py
+compare_binning_strategies.py
+compare_error_bars.py
+conditions_av.py
+create_conds_sound_dur.py
+create_conds_staircase.py
+psychometricFitLoader.py
+psychometricFitLoader_simulated.py
+psychometricFitSaver.py
+psychometricFitSaver_simulated.py
+reduceFileSize.py
+runDataFitter.py
+runDataFitter_simulated.py
+run_all_models.sh
+run_model_recovery.py
+run_model_recovery_freeParams.py
+run_param_recovery_favorable.py
+run_parameter_recovery.py
+sec2frame.py
+simple_model_comparison.py
+staircase.py
+stim_ifft_audio.py
+test_*.py
+testing_noise.py
+testManimTex.py
+tmp.py
+tmp_article.py
+unifiedModelFit.py
+universalMultiParamFit.py
+visualize_binning_effect.py
+anonymize_participants.py
+participant_id_mapping.txt
+bootstrap_pooled_models.log
+
+# ── Internal notes / scratch markdown ─────────────────────────────────────────
+CAUSAL_INFERENCE_4_PARAMS.md
+CAUSAL_INFERENCE_FIX.md
+CORRECTED_PARAMETER_HANDLING.md
+DECISION_NOISE_ANALYSIS.md
+FIXES_SUMMARY.md
+LEFT_EDGE_ANOMALY_ANALYSIS.md
+LOG_LINEAR_FIXES_SUMMARY.md
+MIGRATION_GUIDE.md
+PARALLEL_USAGE.md
+PI_revision_checklist.md
+QUICKSTART.md
+README_PSYCHOMETRIC_FITTING.md
+README_SIMULATED_FITTING.md
+README_animation.md
+README_causal_inference.md
+SIMULATED_FITS_COMPLETE.md
+SUMMARY.md
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+.vscode/
+*.swp
+*.swo
+
+# ── All raw per-session data files in data/ (catch-all, keep only all_*.csv) ──
+data/*.csv
+!data/all_*.csv
+data/*.mat
+
+# ── Additional scratch/notes files ───────────────────────────────────────────
+ContrastSize_Notch_2IFC_S01_20251108_175809.csv
+GENERATIVE_MODEL_THEORY.md
+LOG_NORMAL_IMPLEMENTATION_SUMMARY.md
+LOG_NORMAL_OBSERVER_MATHEMATICS.md
+RAW_DURATION_IMPLEMENTATION_SUMMARY.md
+alternative_psychometric_models.py
+
+# ── Narrow the all_*.csv exception to only the committed files ────────────────
+data/all_all.csv
+data/all_crossModal.csv
+data/all_data_all.csv
+data/all_visualAndAuditory.csv
+"data/all_woBiasedParticipants 2.csv"
+data/out
+data/outPutYov
+
+# ── Raw session data in mainExpAvDurEstimate ──────────────────────────────────
+mainExpAvDurEstimate/dataAvMain/
+mainExpAvDurEstimate/fits/
+mainExpAvDurEstimate/*.csv
+mainExpAvDurEstimate/exp_3_trialRoutine_avMain.py
+
+# ── Additional old scripts (debug, demo, example, exp, fit variants) ──────────
+debug_*.py
+demo_*.py
+example_*.py
+diagnostic_*.py
+investigate_*.py
+exp_audio_dur_constant_binned.py
+exp_auditory_dur_estimate.py
+exp_auditory_dur_estimate_binnedAudio.py
+exp_binned_v2.py
+exp_v_intensity.py
+exp_visual_duration.py
+exp_spare_binned*.py
+filterAudio.py
+fitCausalInference.py
+fitCausalInferenceMonteCarlo.py
+fitCausalInference_logSpace.py
+fitCausalInference_my.py
+fitMain.py
+fitMainUnmodified.py
+fitNonShared.py
+fitNonSharedwErrorBars.py
+fitWithAlternativeModels.py
+fixed_causal_inference.py
+flexVectorizedModelFit.py
+generative_observer_model.py
+interactive_model_comparison.py
+intervalDurs.py
+listAudioDevices.py
+local_snr_onset_offset.py
+log_to_linear_jnd.py
+log_to_linear_var.py
+math_for_causal_inference.py
+monteCarloClass_copy.py
+monteCarloClass_numerical.py
+my_staircase.py
+my_staircase_v2.py
+ohatcher_audio_gen.py
+parameter_count_summary.py
+project_2_brainstorming.py
+rename_*.py
+simple_lognormal_replacement.py
+simple_rename.py
+fitCausalInference_LogScale.ipynb
+loadSimData.py
+runMuSummary.py
+tmp_legend_creator.py
+dva_to_pix.py
+dual_staircase.py
+parameter_summary_table.csv
+
+# ── Old notebooks ─────────────────────────────────────────────────────────────
+durationIntroManim.ipynb
+jointFitAuditory.ipynb
+jointNonSharedFit.ipynb
+modelAnalysisEachSubjectSeperately.ipynb
+"modelAnalysisOverall copy.ipynb"
+modelAnalysisOverall.ipynb
+"modelComparisonTable copy.ipynb"
+modelFitNB.ipynb
+nSimul_optimization_test.ipynb
+"plotAllModelFits copy.ipynb"
+plotConflictvsPSE.ipynb
+posteriorVsPSE_sanityCheck.ipynb
+weber_fractions_jnds_analysis.ipynb
+
+# ── Misc directories ──────────────────────────────────────────────────────────
+model_recovery_results_favorable/
+model_recovery_results_freeParams/
+model_recovery_results_group/
+parameter_recovery_results/
+media/
+ms_latex/
+
+# ── Misc files ────────────────────────────────────────────────────────────────
+manuscript_av_dur_vol1.md
+mt_all_fitResults.json
+model_recovery_20*.json
+requirements.txt
+unimodalAudDurEst/exp_0_executer_a.py
+unimodalAudDurEst/exp_2_importComponents_a.py
+
+# ── Files with spaces in names ────────────────────────────────────────────────
+# Bin and plot data.py
+#proceed to simulate and save to {filena.py
+Unimodal psychometric fits.md
+av dur analysis.py
+data/all_woBiasedParticipants 2.csv
+modelAnalysisOverall copy.ipynb
+modelComparisonTable copy.ipynb
+plotAllModelFits copy.ipynb
+stimulus_generation_notebook copy.ipynb
+exp_spare_binned .py
+
+# ── Files starting with # (must escape) ──────────────────────────────────────
+\# Bin and plot data.py
+\#proceed to simulate and save to {filena.py
