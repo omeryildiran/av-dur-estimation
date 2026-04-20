@@ -47,7 +47,7 @@ def run_single_cell(sigma_a, sigma_v, conflict_max,
                     p_c_fixed, lambda_fixed,
                     models, n_iter, n_conflict_steps,
                     n_trials_per_cell, nSimul, nStarts,
-                    n_jobs, save_dir, force=False, delta_max_pct=0.80):
+                    n_jobs, save_dir, force=False, delta_max_pct=0.90):
     """
     Run a small model-recovery experiment at one grid cell with fixed
     generating parameters (sigma_a, sigma_v, p_c, lambda), then aggregate.
@@ -197,7 +197,7 @@ def main():
                         help='Recovery iterations per generating model per cell')
     parser.add_argument('--n_conflict_steps', type=int, default=9)
     parser.add_argument('--n_trials_per_cell', type=int, default=20)
-    parser.add_argument('--nSimul', type=int, default=300)
+    parser.add_argument('--nSimul', type=int, default=1000)
     parser.add_argument('--nStarts', type=int, default=1)
     parser.add_argument('--n_jobs', type=int, default=None)
     parser.add_argument('--save_dir', type=str,
@@ -206,8 +206,8 @@ def main():
                         help='Run a tiny single-cell pilot and exit')
     parser.add_argument('--force', action='store_true',
                         help='Re-run cells even if cached')
-    parser.add_argument('--delta_max_pct', type=float, default=0.80,
-                        help='Delta range as fraction of standard_dur (default 0.80 = ±80%%)')
+    parser.add_argument('--delta_max_pct', type=float, default=0.90,
+                        help='Delta range as fraction of standard_dur (default 0.90 = ±90%%)')
     args = parser.parse_args()
 
     n_jobs = args.n_jobs if args.n_jobs else max(1, cpu_count() - 1)
