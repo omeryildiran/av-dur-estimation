@@ -1,0 +1,200 @@
+{
+  "args": {
+    "models": [
+      "lognorm",
+      "fusionOnlyLogNorm",
+      "switchingFree"
+    ],
+    "sigma_levels": [
+      0.1,
+      0.3,
+      0.55
+    ],
+    "conflict_levels": [
+      0.25,
+      0.5
+    ],
+    "p_c_fixed": 0.5,
+    "lambda_fixed": 0.05,
+    "n_iter": 8,
+    "n_conflict_steps": 9,
+    "n_trials_per_cell": 10,
+    "nSimul": 150,
+    "nStarts": 1,
+    "n_jobs": 8,
+    "save_dir": "identifiability_sweep_results",
+    "pilot": false,
+    "force": true
+  },
+  "grid": [
+    {
+      "sigma_a": 0.1,
+      "sigma_v": 0.1,
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.7083333333333334,
+      "per_model_diag_aic": {
+        "lognorm": 1.0,
+        "fusionOnlyLogNorm": 0.25,
+        "switchingFree": 0.875
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 8,
+          "fusionOnlyLogNorm": 0,
+          "switchingFree": 0
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 6,
+          "fusionOnlyLogNorm": 2,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 1,
+          "fusionOnlyLogNorm": 0,
+          "switchingFree": 7
+        }
+      }
+    },
+    {
+      "sigma_a": 0.1,
+      "sigma_v": 0.1,
+      "conflict_max": 0.5,
+      "mean_diag_recovery_aic": 0.75,
+      "per_model_diag_aic": {
+        "lognorm": 0.625,
+        "fusionOnlyLogNorm": 0.625,
+        "switchingFree": 1.0
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 5,
+          "fusionOnlyLogNorm": 0,
+          "switchingFree": 3
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 5,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 0,
+          "fusionOnlyLogNorm": 0,
+          "switchingFree": 8
+        }
+      }
+    },
+    {
+      "sigma_a": 0.3,
+      "sigma_v": 0.3,
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.5416666666666666,
+      "per_model_diag_aic": {
+        "lognorm": 0.375,
+        "fusionOnlyLogNorm": 0.75,
+        "switchingFree": 0.5
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 4,
+          "switchingFree": 1
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 2,
+          "fusionOnlyLogNorm": 6,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 1,
+          "switchingFree": 4
+        }
+      }
+    },
+    {
+      "sigma_a": 0.3,
+      "sigma_v": 0.3,
+      "conflict_max": 0.5,
+      "mean_diag_recovery_aic": 0.6666666666666666,
+      "per_model_diag_aic": {
+        "lognorm": 0.625,
+        "fusionOnlyLogNorm": 0.75,
+        "switchingFree": 0.625
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 5,
+          "fusionOnlyLogNorm": 2,
+          "switchingFree": 1
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 2,
+          "fusionOnlyLogNorm": 6,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 0,
+          "switchingFree": 5
+        }
+      }
+    },
+    {
+      "sigma_a": 0.55,
+      "sigma_v": 0.55,
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.25,
+      "per_model_diag_aic": {
+        "lognorm": 0.375,
+        "fusionOnlyLogNorm": 0.25,
+        "switchingFree": 0.125
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 3,
+          "switchingFree": 2
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 2,
+          "switchingFree": 3
+        },
+        "switchingFree": {
+          "lognorm": 6,
+          "fusionOnlyLogNorm": 1,
+          "switchingFree": 1
+        }
+      }
+    },
+    {
+      "sigma_a": 0.55,
+      "sigma_v": 0.55,
+      "conflict_max": 0.5,
+      "mean_diag_recovery_aic": 0.3333333333333333,
+      "per_model_diag_aic": {
+        "lognorm": 0.5,
+        "fusionOnlyLogNorm": 0.375,
+        "switchingFree": 0.125
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 4,
+          "fusionOnlyLogNorm": 4,
+          "switchingFree": 0
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 5,
+          "fusionOnlyLogNorm": 3,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 4,
+          "switchingFree": 1
+        }
+      }
+    }
+  ],
+  "elapsed_minutes": 65.69802267948786
+}
