@@ -119,14 +119,14 @@ def build_synthetic_template(conflict_max=0.50,
                               standard_dur=0.50,
                               noise_levels=(0.1, 1.2),
                               n_trials_per_cell=20,
-                              delta_max_pct=0.80):
+                              delta_max_pct=0.90):
     """
     Build a synthetic pandas DataFrame that mimics the structure of a real
     participant's data file but with:
       - A wider, symmetric conflict range  [-conflict_max, +conflict_max]
       - Two auditory noise levels (matching the empirical design)
       - Balanced ΔDur levels spanning ±delta_max_pct of the standard duration
-        (default 0.80 = ±80%, matching empirical staircase range of ~±90%)
+        (default 0.90 = ±90%, matching empirical staircase range of ~±90%)
 
     Returns
     -------
