@@ -118,20 +118,22 @@ def build_synthetic_template(conflict_max=0.50,
                               n_delta_steps=9,
                               standard_dur=0.50,
                               noise_levels=(0.1, 1.2),
-                              n_trials_per_cell=20):
+                              n_trials_per_cell=20,
+                              delta_max_pct=0.80):
     """
     Build a synthetic pandas DataFrame that mimics the structure of a real
     participant's data file but with:
       - A wider, symmetric conflict range  [-conflict_max, +conflict_max]
       - Two auditory noise levels (matching the empirical design)
-      - Balanced ΔDur levels spanning ±40 % of the standard duration
+      - Balanced ΔDur levels spanning ±delta_max_pct of the standard duration
+        (default 0.80 = ±80%, matching empirical staircase range of ~±90%)
 
     Returns
     -------
     pd.DataFrame  — ready to be passed directly to OmerMonteCarlo()
     """
-    delta_durs = np.linspace(-0.40 * standard_dur,
-                              0.40 * standard_dur,
+    delta_durs = np.linspace(-delta_max_pct * standard_dur,
+                              delta_max_pct * standard_dur,
                               n_delta_steps)
     conflicts  = np.linspace(-conflict_max, conflict_max, n_conflict_steps)
 

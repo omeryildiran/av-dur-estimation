@@ -52,9 +52,9 @@ def build_param_vector(model_name, sigma_a, sigma_v, p_c, lambda_):
 
 
 def build_template(conflict_max, n_conflict_steps=9, n_delta_steps=11,
-                   standard_dur=0.5, n_trials_per_cell=10):
+                   standard_dur=0.5, n_trials_per_cell=10, delta_max_pct=0.90):
     """Synthetic balanced design at the requested conflict range."""
-    deltas = np.linspace(-0.40 * standard_dur, 0.40 * standard_dur, n_delta_steps)
+    deltas = np.linspace(-delta_max_pct * standard_dur, delta_max_pct * standard_dur, n_delta_steps)
     conflicts = np.linspace(-conflict_max, conflict_max, n_conflict_steps)
     rows = []
     for noise in [0.1, 1.2]:                      # two SNR levels (matched in sim)

@@ -47,7 +47,7 @@ def run_single_cell(sigma_a, sigma_v, conflict_max,
                     p_c_fixed, lambda_fixed,
                     models, n_iter, n_conflict_steps,
                     n_trials_per_cell, nSimul, nStarts,
-                    n_jobs, save_dir, force=False):
+                    n_jobs, save_dir, force=False, delta_max_pct=0.80):
     """
     Run a small model-recovery experiment at one grid cell with fixed
     generating parameters (sigma_a, sigma_v, p_c, lambda), then aggregate.
@@ -84,6 +84,7 @@ def run_single_cell(sigma_a, sigma_v, conflict_max,
         conflict_max=conflict_max,
         n_conflict_steps=n_conflict_steps,
         n_trials_per_cell=n_trials_per_cell,
+        delta_max_pct=delta_max_pct,
     )
 
     cell = {
@@ -205,6 +206,8 @@ def main():
                         help='Run a tiny single-cell pilot and exit')
     parser.add_argument('--force', action='store_true',
                         help='Re-run cells even if cached')
+    parser.add_argument('--delta_max_pct', type=float, default=0.80,
+                        help='Delta range as fraction of standard_dur (default 0.80 = ±80%%)')
     args = parser.parse_args()
 
     n_jobs = args.n_jobs if args.n_jobs else max(1, cpu_count() - 1)
@@ -241,6 +244,7 @@ def main():
           f"{n_iters_per_cell} sims, each fitted by {n_models} models")
     print(f"  Monte Carlo: nSimul={args.nSimul}  nStarts={args.nStarts}  "
           f"jobs={n_jobs}")
+    print(f"  delta_max:   ±{args.delta_max_pct*100:.0f}% of standard_dur")
     print(f"  save_dir:    {args.save_dir}")
     print()
 
@@ -260,6 +264,7 @@ def main():
             n_trials_per_cell=args.n_trials_per_cell,
             nSimul=args.nSimul, nStarts=args.nStarts,
             n_jobs=n_jobs, save_dir=args.save_dir, force=args.force,
+            delta_max_pct=args.delta_max_pct,
         )
         diag = cell['mean_diag_recovery_aic']
         per_model_diag = {

@@ -1,0 +1,147 @@
+{
+  "sigma_a": 0.3,
+  "sigma_v": 0.3,
+  "conflict_max": 0.25,
+  "p_c_fixed": 0.5,
+  "lambda_fixed": 0.05,
+  "n_conflict_steps": 9,
+  "n_trials_per_cell": 20,
+  "n_iter_per_model": 15,
+  "models": [
+    "lognorm",
+    "fusionOnlyLogNorm",
+    "switchingFree"
+  ],
+  "per_model": {
+    "lognorm": {
+      "n_completed": 15,
+      "n_same_model_fit": 15,
+      "param_recovery_pinned": {
+        "lambda": {
+          "mean_gen": 0.05000000000000002,
+          "mean_rec": 0.05795523268206845,
+          "std_rec": 0.009330101453870664,
+          "rmse": 0.012261179395366886,
+          "bias": 0.007955232682068452
+        },
+        "sigma_a": {
+          "mean_gen": 0.29999999999999993,
+          "mean_rec": 0.28774930966722284,
+          "std_rec": 0.018283236087302,
+          "rmse": 0.02200809249920632,
+          "bias": -0.012250690332777144
+        },
+        "sigma_v": {
+          "mean_gen": 0.29999999999999993,
+          "mean_rec": 0.31954416781162115,
+          "std_rec": 0.061379756317180095,
+          "rmse": 0.06441621675482984,
+          "bias": 0.019544167811621195
+        },
+        "p_c": {
+          "mean_gen": 0.5,
+          "mean_rec": 0.5944786896329163,
+          "std_rec": 0.17518344287234944,
+          "rmse": 0.19903633198831472,
+          "bias": 0.09447868963291625
+        }
+      }
+    },
+    "fusionOnlyLogNorm": {
+      "n_completed": 15,
+      "n_same_model_fit": 15,
+      "param_recovery_pinned": {
+        "lambda": {
+          "mean_gen": 0.05000000000000002,
+          "mean_rec": 0.05826609826550241,
+          "std_rec": 0.011280968626645337,
+          "rmse": 0.01398530062924277,
+          "bias": 0.008266098265502404
+        },
+        "sigma_a": {
+          "mean_gen": 0.29999999999999993,
+          "mean_rec": 0.2965480913950106,
+          "std_rec": 0.018176487893785762,
+          "rmse": 0.018501361711240075,
+          "bias": -0.003451908604989388
+        },
+        "sigma_v": {
+          "mean_gen": 0.29999999999999993,
+          "mean_rec": 0.30030934915402896,
+          "std_rec": 0.013462580420198243,
+          "rmse": 0.013466134132311451,
+          "bias": 0.00030934915402894096
+        }
+      }
+    },
+    "switchingFree": {
+      "n_completed": 15,
+      "n_same_model_fit": 15,
+      "param_recovery_pinned": {
+        "lambda": {
+          "mean_gen": 0.05000000000000002,
+          "mean_rec": 0.05645782128306644,
+          "std_rec": 0.007713251971490086,
+          "rmse": 0.010059707336683377,
+          "bias": 0.0064578212830664235
+        },
+        "sigma_a": {
+          "mean_gen": 0.29999999999999993,
+          "mean_rec": 0.2568153108426957,
+          "std_rec": 0.11709340227810998,
+          "rmse": 0.1248029736611924,
+          "bias": -0.043184689157304265
+        },
+        "sigma_v": {
+          "mean_gen": 0.29999999999999993,
+          "mean_rec": 0.3011179212095593,
+          "std_rec": 0.07741913529943964,
+          "rmse": 0.07742720618970908,
+          "bias": 0.0011179212095593176
+        },
+        "p_sw": {
+          "mean_gen": 0.5,
+          "mean_rec": 0.5286956713303052,
+          "std_rec": 0.0553319462000192,
+          "rmse": 0.06233029619197006,
+          "bias": 0.02869567133030515
+        }
+      }
+    }
+  },
+  "confusion_aic": {
+    "lognorm": {
+      "lognorm": 11,
+      "fusionOnlyLogNorm": 3,
+      "switchingFree": 1
+    },
+    "fusionOnlyLogNorm": {
+      "lognorm": 4,
+      "fusionOnlyLogNorm": 11,
+      "switchingFree": 0
+    },
+    "switchingFree": {
+      "lognorm": 2,
+      "fusionOnlyLogNorm": 4,
+      "switchingFree": 9
+    }
+  },
+  "confusion_bic": {
+    "lognorm": {
+      "lognorm": 8,
+      "fusionOnlyLogNorm": 7,
+      "switchingFree": 0
+    },
+    "fusionOnlyLogNorm": {
+      "lognorm": 1,
+      "fusionOnlyLogNorm": 14,
+      "switchingFree": 0
+    },
+    "switchingFree": {
+      "lognorm": 0,
+      "fusionOnlyLogNorm": 11,
+      "switchingFree": 4
+    }
+  },
+  "mean_diag_recovery_aic": 0.6888888888888888
+}

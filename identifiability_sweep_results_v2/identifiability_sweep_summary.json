@@ -1,0 +1,116 @@
+{
+  "args": {
+    "models": [
+      "lognorm",
+      "fusionOnlyLogNorm",
+      "switchingFree"
+    ],
+    "sigma_levels": [
+      0.1,
+      0.3,
+      0.55
+    ],
+    "conflict_levels": [
+      0.25
+    ],
+    "p_c_fixed": 0.5,
+    "lambda_fixed": 0.05,
+    "n_iter": 15,
+    "n_conflict_steps": 9,
+    "n_trials_per_cell": 20,
+    "nSimul": 200,
+    "nStarts": 1,
+    "n_jobs": null,
+    "save_dir": "identifiability_sweep_results_v2",
+    "pilot": false,
+    "force": true,
+    "delta_max_pct": 0.8
+  },
+  "grid": [
+    {
+      "sigma_a": 0.1,
+      "sigma_v": 0.1,
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.888888888888889,
+      "per_model_diag_aic": {
+        "lognorm": 0.8666666666666667,
+        "fusionOnlyLogNorm": 0.8,
+        "switchingFree": 1.0
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 13,
+          "fusionOnlyLogNorm": 2,
+          "switchingFree": 0
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 12,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 0,
+          "fusionOnlyLogNorm": 0,
+          "switchingFree": 15
+        }
+      }
+    },
+    {
+      "sigma_a": 0.3,
+      "sigma_v": 0.3,
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.6888888888888888,
+      "per_model_diag_aic": {
+        "lognorm": 0.7333333333333333,
+        "fusionOnlyLogNorm": 0.7333333333333333,
+        "switchingFree": 0.6
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 11,
+          "fusionOnlyLogNorm": 3,
+          "switchingFree": 1
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 4,
+          "fusionOnlyLogNorm": 11,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 2,
+          "fusionOnlyLogNorm": 4,
+          "switchingFree": 9
+        }
+      }
+    },
+    {
+      "sigma_a": 0.55,
+      "sigma_v": 0.55,
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.4666666666666666,
+      "per_model_diag_aic": {
+        "lognorm": 0.4,
+        "fusionOnlyLogNorm": 0.6,
+        "switchingFree": 0.4
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 6,
+          "fusionOnlyLogNorm": 5,
+          "switchingFree": 4
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 9,
+          "switchingFree": 3
+        },
+        "switchingFree": {
+          "lognorm": 1,
+          "fusionOnlyLogNorm": 8,
+          "switchingFree": 6
+        }
+      }
+    }
+  ],
+  "elapsed_minutes": 70.02265275319418
+}

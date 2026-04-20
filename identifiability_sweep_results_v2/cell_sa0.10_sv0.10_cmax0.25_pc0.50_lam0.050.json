@@ -1,0 +1,147 @@
+{
+  "sigma_a": 0.1,
+  "sigma_v": 0.1,
+  "conflict_max": 0.25,
+  "p_c_fixed": 0.5,
+  "lambda_fixed": 0.05,
+  "n_conflict_steps": 9,
+  "n_trials_per_cell": 20,
+  "n_iter_per_model": 15,
+  "models": [
+    "lognorm",
+    "fusionOnlyLogNorm",
+    "switchingFree"
+  ],
+  "per_model": {
+    "lognorm": {
+      "n_completed": 15,
+      "n_same_model_fit": 15,
+      "param_recovery_pinned": {
+        "lambda": {
+          "mean_gen": 0.05000000000000002,
+          "mean_rec": 0.050057399989178915,
+          "std_rec": 0.0049734532223553105,
+          "rmse": 0.004973784445843442,
+          "bias": 5.739998917891065e-05
+        },
+        "sigma_a": {
+          "mean_gen": 0.10000000000000003,
+          "mean_rec": 0.09993736820642836,
+          "std_rec": 0.008390734339745548,
+          "rmse": 0.00839096809085526,
+          "bias": -6.263179357163437e-05
+        },
+        "sigma_v": {
+          "mean_gen": 0.10000000000000003,
+          "mean_rec": 0.39975192586246744,
+          "std_rec": 0.6333040300788192,
+          "rmse": 0.7006605537436313,
+          "bias": 0.29975192586246735
+        },
+        "p_c": {
+          "mean_gen": 0.5,
+          "mean_rec": 0.4822317781509082,
+          "std_rec": 0.25519741031490684,
+          "rmse": 0.2558152222583978,
+          "bias": -0.017768221849091784
+        }
+      }
+    },
+    "fusionOnlyLogNorm": {
+      "n_completed": 15,
+      "n_same_model_fit": 15,
+      "param_recovery_pinned": {
+        "lambda": {
+          "mean_gen": 0.05000000000000002,
+          "mean_rec": 0.06002320360207118,
+          "std_rec": 0.02507107504643277,
+          "rmse": 0.02700043359711908,
+          "bias": 0.010023203602071191
+        },
+        "sigma_a": {
+          "mean_gen": 0.10000000000000003,
+          "mean_rec": 0.2405272683656133,
+          "std_rec": 0.42860426349965486,
+          "rmse": 0.4510537970623712,
+          "bias": 0.14052726836561324
+        },
+        "sigma_v": {
+          "mean_gen": 0.10000000000000003,
+          "mean_rec": 0.08984246501597541,
+          "std_rec": 0.032051118777922424,
+          "rmse": 0.033622161320595895,
+          "bias": -0.01015753498402457
+        }
+      }
+    },
+    "switchingFree": {
+      "n_completed": 15,
+      "n_same_model_fit": 15,
+      "param_recovery_pinned": {
+        "lambda": {
+          "mean_gen": 0.05000000000000002,
+          "mean_rec": 0.052407731170081996,
+          "std_rec": 0.006683648920968529,
+          "rmse": 0.007104106719788782,
+          "bias": 0.0024077311700819847
+        },
+        "sigma_a": {
+          "mean_gen": 0.10000000000000003,
+          "mean_rec": 0.051208328714537475,
+          "std_rec": 0.02769516128421436,
+          "rmse": 0.05610391381523463,
+          "bias": -0.048791671285462516
+        },
+        "sigma_v": {
+          "mean_gen": 0.10000000000000003,
+          "mean_rec": 0.12089517616332669,
+          "std_rec": 0.01182647853530036,
+          "rmse": 0.02400987258280175,
+          "bias": 0.02089517616332668
+        },
+        "p_sw": {
+          "mean_gen": 0.5,
+          "mean_rec": 0.517241171172914,
+          "std_rec": 0.018368850617984416,
+          "rmse": 0.025192710382956996,
+          "bias": 0.017241171172914058
+        }
+      }
+    }
+  },
+  "confusion_aic": {
+    "lognorm": {
+      "lognorm": 13,
+      "fusionOnlyLogNorm": 2,
+      "switchingFree": 0
+    },
+    "fusionOnlyLogNorm": {
+      "lognorm": 3,
+      "fusionOnlyLogNorm": 12,
+      "switchingFree": 0
+    },
+    "switchingFree": {
+      "lognorm": 0,
+      "fusionOnlyLogNorm": 0,
+      "switchingFree": 15
+    }
+  },
+  "confusion_bic": {
+    "lognorm": {
+      "lognorm": 13,
+      "fusionOnlyLogNorm": 2,
+      "switchingFree": 0
+    },
+    "fusionOnlyLogNorm": {
+      "lognorm": 2,
+      "fusionOnlyLogNorm": 13,
+      "switchingFree": 0
+    },
+    "switchingFree": {
+      "lognorm": 0,
+      "fusionOnlyLogNorm": 0,
+      "switchingFree": 15
+    }
+  },
+  "mean_diag_recovery_aic": 0.888888888888889
+}

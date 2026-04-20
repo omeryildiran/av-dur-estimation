@@ -1,0 +1,147 @@
+{
+  "sigma_a": 0.15,
+  "sigma_v": 0.15,
+  "conflict_max": 0.45,
+  "p_c_fixed": 0.5,
+  "lambda_fixed": 0.05,
+  "n_conflict_steps": 7,
+  "n_trials_per_cell": 15,
+  "n_iter_per_model": 3,
+  "models": [
+    "lognorm",
+    "fusionOnlyLogNorm",
+    "switchingFree"
+  ],
+  "per_model": {
+    "lognorm": {
+      "n_completed": 3,
+      "n_same_model_fit": 3,
+      "param_recovery_pinned": {
+        "lambda": {
+          "mean_gen": 0.05000000000000001,
+          "mean_rec": 0.050038376466451845,
+          "std_rec": 0.009159096209397208,
+          "rmse": 0.009159176607434297,
+          "bias": 3.837646645184212e-05
+        },
+        "sigma_a": {
+          "mean_gen": 0.15,
+          "mean_rec": 0.14776097291237236,
+          "std_rec": 0.008028704727458369,
+          "rmse": 0.00833506700032115,
+          "bias": -0.002239027087627623
+        },
+        "sigma_v": {
+          "mean_gen": 0.15,
+          "mean_rec": 0.3988480859763495,
+          "std_rec": 0.3682094637113,
+          "rmse": 0.444413747605377,
+          "bias": 0.24884808597634947
+        },
+        "p_c": {
+          "mean_gen": 0.5,
+          "mean_rec": 0.6915857069007587,
+          "std_rec": 0.256133960924469,
+          "rmse": 0.3198588579788292,
+          "bias": 0.19158570690075868
+        }
+      }
+    },
+    "fusionOnlyLogNorm": {
+      "n_completed": 3,
+      "n_same_model_fit": 3,
+      "param_recovery_pinned": {
+        "lambda": {
+          "mean_gen": 0.05000000000000001,
+          "mean_rec": 0.05216948134499593,
+          "std_rec": 0.0021382108332391233,
+          "rmse": 0.0030460786059565955,
+          "bias": 0.0021694813449959264
+        },
+        "sigma_a": {
+          "mean_gen": 0.15,
+          "mean_rec": 0.16247667351346562,
+          "std_rec": 0.009936360828904662,
+          "rmse": 0.015949879262358243,
+          "bias": 0.012476673513465625
+        },
+        "sigma_v": {
+          "mean_gen": 0.15,
+          "mean_rec": 0.15701530843722333,
+          "std_rec": 0.0011038454469666926,
+          "rmse": 0.00710162145148318,
+          "bias": 0.007015308437223339
+        }
+      }
+    },
+    "switchingFree": {
+      "n_completed": 3,
+      "n_same_model_fit": 3,
+      "param_recovery_pinned": {
+        "lambda": {
+          "mean_gen": 0.05000000000000001,
+          "mean_rec": 0.058515745062618134,
+          "std_rec": 0.008241208016768257,
+          "rmse": 0.011850545284802318,
+          "bias": 0.00851574506261813
+        },
+        "sigma_a": {
+          "mean_gen": 0.15,
+          "mean_rec": 0.13276649831160545,
+          "std_rec": 0.007563547637800829,
+          "rmse": 0.018820224050557433,
+          "bias": -0.01723350168839456
+        },
+        "sigma_v": {
+          "mean_gen": 0.15,
+          "mean_rec": 0.168598219670776,
+          "std_rec": 0.027208263255508274,
+          "rmse": 0.03295729607087756,
+          "bias": 0.018598219670776007
+        },
+        "p_sw": {
+          "mean_gen": 0.5,
+          "mean_rec": 0.49699207186599786,
+          "std_rec": 0.034275377232716925,
+          "rmse": 0.03440710851124186,
+          "bias": -0.0030079281340021913
+        }
+      }
+    }
+  },
+  "confusion_aic": {
+    "lognorm": {
+      "lognorm": 2,
+      "fusionOnlyLogNorm": 1,
+      "switchingFree": 0
+    },
+    "fusionOnlyLogNorm": {
+      "lognorm": 0,
+      "fusionOnlyLogNorm": 3,
+      "switchingFree": 0
+    },
+    "switchingFree": {
+      "lognorm": 0,
+      "fusionOnlyLogNorm": 0,
+      "switchingFree": 3
+    }
+  },
+  "confusion_bic": {
+    "lognorm": {
+      "lognorm": 2,
+      "fusionOnlyLogNorm": 1,
+      "switchingFree": 0
+    },
+    "fusionOnlyLogNorm": {
+      "lognorm": 0,
+      "fusionOnlyLogNorm": 3,
+      "switchingFree": 0
+    },
+    "switchingFree": {
+      "lognorm": 0,
+      "fusionOnlyLogNorm": 0,
+      "switchingFree": 3
+    }
+  },
+  "mean_diag_recovery_aic": 0.8888888888888888
+}
