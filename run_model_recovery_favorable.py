@@ -44,14 +44,20 @@ MODELS_DEFAULT = ['lognorm', 'fusionOnlyLogNorm', 'switchingFree']
 
 
 def run_single_cell(sigma, conflict_max,
-                    p_c_fixed, lambda_fixed,
+                    lambda_fixed,
+                    pc_min, pc_max,
                     models, n_iter,
                     n_conflict_steps, n_trials_per_cell,
                     nSimul, nStarts, n_jobs,
                     save_dir, force=False, delta_max_pct=0.80):
-    """Run one (sigma, conflict_max) cell; skip if cached unless force=True."""
+    """Run one (sigma, conflict_max) cell; skip if cached unless force=True.
+
+    p_c is sampled uniformly from [pc_min, pc_max] each iteration so that
+    recovery is tested across the plausible range of causal priors, not just
+    at the single most-discriminative value (p_c=0.5).
+    """
     cell_tag = (f"fav_sa{sigma:.2f}_sv{sigma:.2f}_cmax{conflict_max:.2f}"
-                f"_pc{p_c_fixed:.2f}_lam{lambda_fixed:.3f}"
+                f"_pc{pc_min:.2f}-{pc_max:.2f}_lam{lambda_fixed:.3f}"
                 f"_ni{n_iter}_ns{nSimul}")
     cell_path = os.path.join(save_dir, f"{cell_tag}.json")
 
@@ -64,16 +70,16 @@ def run_single_cell(sigma, conflict_max,
     pin_lambda  = (lambda_fixed, lambda_fixed)
     pin_sigma_a = (sigma, sigma)
     pin_sigma_v = (sigma, sigma)
-    pin_pc      = (p_c_fixed, p_c_fixed)
+    pc_range    = (pc_min, pc_max)   # sampled each iteration — not pinned
 
     ranges = {}
     for m in models:
         if m == 'fusionOnlyLogNorm':
             ranges[m] = [pin_lambda, pin_sigma_a, pin_sigma_v]
         elif m == 'switchingFree':
-            ranges[m] = [pin_lambda, pin_sigma_a, pin_sigma_v, pin_pc]
+            ranges[m] = [pin_lambda, pin_sigma_a, pin_sigma_v, pc_range]
         else:
-            ranges[m] = [pin_lambda, pin_sigma_a, pin_sigma_v, pin_pc]
+            ranges[m] = [pin_lambda, pin_sigma_a, pin_sigma_v, pc_range]
 
     template = favo.build_synthetic_template(
         conflict_max=conflict_max,
@@ -85,7 +91,7 @@ def run_single_cell(sigma, conflict_max,
     cell = {
         'sigma':         sigma,
         'conflict_max':  conflict_max,
-        'p_c_fixed':     p_c_fixed,
+        'pc_range':      [pc_min, pc_max],
         'lambda_fixed':  lambda_fixed,
         'n_iter':        n_iter,
         'nSimul':        nSimul,
@@ -184,7 +190,10 @@ def main():
                         help='AV conflict half-range in seconds (default 0.45)')
     parser.add_argument('--also_empirical', action='store_true',
                         help='Also run cmax=0.25 cells for comparison')
-    parser.add_argument('--p_c_fixed',         type=float, default=0.5)
+    parser.add_argument('--pc_min',             type=float, default=0.20,
+                        help='Lower bound of p_c sampling range (default 0.20)')
+    parser.add_argument('--pc_max',             type=float, default=0.80,
+                        help='Upper bound of p_c sampling range (default 0.80)')
     parser.add_argument('--lambda_fixed',       type=float, default=0.05)
     parser.add_argument('--n_iter',             type=int,   default=50,
                         help='Recovery iterations per generating model per cell (default 50)')
@@ -209,10 +218,10 @@ def main():
         conflict_levels = sorted(set(conflict_levels + [0.25]))
 
     if args.pilot:
-        print(">> PILOT: σ=0.20  cmax=0.45  n_iter=5  nSimul=200  nStarts=1")
+        print(">> PILOT: σ=0.20  cmax=0.45  p_c~U(0.2,0.8)  n_iter=5  nSimul=200  nStarts=1")
         cell, cached = run_single_cell(
             sigma=0.20, conflict_max=0.45,
-            p_c_fixed=0.5, lambda_fixed=0.05,
+            lambda_fixed=0.05, pc_min=0.01, pc_max=0.999,
             models=['lognorm', 'fusionOnlyLogNorm', 'switchingFree'],
             n_iter=5, n_conflict_steps=7, n_trials_per_cell=15,
             nSimul=200, nStarts=1, n_jobs=n_jobs,
@@ -232,6 +241,7 @@ def main():
     print("=" * 72)
     print(f"  sigma levels : {args.sigma_levels}")
     print(f"  conflict     : {conflict_levels} s")
+    print(f"  p_c range    : [{args.pc_min:.2f}, {args.pc_max:.2f}]  (sampled each iter — NOT pinned)")
     print(f"  grid         : {n_cells} cells")
     print(f"  models       : {args.models}")
     print(f"  per cell     : {args.n_iter} iters × {n_models} gen models "
@@ -248,7 +258,8 @@ def main():
         print(f"[{k}/{n_cells}] σ={sigma:.2f}  cmax={cmax:.2f}")
         cell, cached = run_single_cell(
             sigma=sigma, conflict_max=cmax,
-            p_c_fixed=args.p_c_fixed, lambda_fixed=args.lambda_fixed,
+            lambda_fixed=args.lambda_fixed,
+            pc_min=args.pc_min, pc_max=args.pc_max,
             models=list(args.models), n_iter=args.n_iter,
             n_conflict_steps=args.n_conflict_steps,
             n_trials_per_cell=args.n_trials_per_cell,
