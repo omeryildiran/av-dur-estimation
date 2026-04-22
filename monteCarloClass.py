@@ -736,9 +736,9 @@ class OmerMonteCarlo(fitPychometric):
         # Select estimate based on sampled causal structure
         final_estimate = sampled_C1 * fused_S_av + (1 - sampled_C1) * est_separate
         
-        # Convert back to linear scale if needed (only for probabilityMatchingLogNorm model)
-        if self.modelName == "probabilityMatchingLogNorm":
-            final_estimate = np.exp(final_estimate)
+        # # Convert back to linear scale if needed (only for probabilityMatchingLogNorm model)
+        # if self.modelName == "probabilityMatchingLogNorm":
+        #     final_estimate = np.exp(final_estimate)
         
         return final_estimate
     
