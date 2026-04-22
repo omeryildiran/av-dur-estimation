@@ -293,3 +293,7 @@ All recovery results below use ±80% Δ-duration range (matching real staircase 
 The conflict range cannot be the fix: extending it is physically limited by the standard duration (visual standard → 0 at conflict_max = standard_dur), and increasing the standard duration does not reduce log-space noise.
 
 **For the manuscript:** The identifiability analysis justifies treating the empirical model comparison descriptively. The analyses quantify *why* the models are not separable and *what would be required* — transforming a limitation into a principled, quantified boundary condition on causal inference models of multisensory duration perception.
+
+
+
+python run_model_recovery_sampled.py  -sigma_min 0.05 -sigma_max 0.30 -save_dir results_low_noise
