@@ -189,7 +189,7 @@ Results saved to `identifiability_sweep_results_v2/`.
 
 3. **For each generating model** (CI, Fusion, SwF):
    - Run `n_iter = 15` recovery iterations via `pool.map(favo.run_single_recovery, ...)` (parallelised across available CPU cores)
-   - Each iteration: sample a parameter vector → simulate binary responses using `monteCarloClass` with `nSimul = 200` → fit all three models to those responses with BADS → record which model wins by AIC
+   - Each iteration: sample a parameter vector → simulate binary responses using `monteCarloClass` with `nSimul = 200` → **fit** all three models to those responses with BADS → record which model wins by AIC
 
 4. **Tally the confusion matrix**: row = generating model, column = best-fitting model. The diagonal element / row sum = recovery rate for that generating model.
 
