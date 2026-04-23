@@ -275,9 +275,9 @@ def main():
                         help='Recovery iterations per generating model per cell (default 50)')
     parser.add_argument('--n_conflict_steps',  type=int,   default=9)
     parser.add_argument('--n_trials_per_cell', type=int,   default=20)
-    parser.add_argument('--nSimul',            type=int,   default=300)
-    parser.add_argument('--nStarts',           type=int,   default=3)
-    parser.add_argument('--delta_max_pct',     type=float, default=0.80)
+    parser.add_argument('--nSimul',            type=int,   default=1000)
+    parser.add_argument('--nStarts',           type=int,   default=5)
+    parser.add_argument('--delta_max_pct',     type=float, default=0.90)
     parser.add_argument('--n_jobs',            type=int,   default=None)
     parser.add_argument('--save_dir',          type=str,
                         default='model_recovery_grid_results')
