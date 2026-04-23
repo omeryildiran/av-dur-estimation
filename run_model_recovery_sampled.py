@@ -254,9 +254,11 @@ def compute_results(all_iters, models, save_dir):
 
     if csv_rows:
         csv_path = os.path.join(save_dir, 'recovery_params.csv')
-        fieldnames = list(csv_rows[0].keys())
+        # Union of all keys across rows (models have different gen_* columns)
+        fieldnames = list(dict.fromkeys(k for row in csv_rows for k in row))
         with open(csv_path, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction='ignore',
+                                    restval=float('nan'))
             writer.writeheader()
             writer.writerows(csv_rows)
 
