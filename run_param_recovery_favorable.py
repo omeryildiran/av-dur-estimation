@@ -286,7 +286,7 @@ def run_single_recovery(args):
     mc_gen.sharedLambda = True
     mc_gen.nSimul       = nSimul
     mc_gen.nStart       = nStarts
-    mc_gen.optimizationMethod = 'scipy' # faster for data generation, less important to be robust here
+    mc_gen.optimizationMethod = 'bads' # faster for data generation, less important to be robust here
 
     try:
         sim_data = mc_gen.simulateMonteCarloData(sampled_full, template_data)
@@ -302,7 +302,7 @@ def run_single_recovery(args):
         mc_fit.sharedLambda = True
         mc_fit.nSimul       = nSimul
         mc_fit.nStart       = nStarts
-        mc_fit.optimizationMethod = 'scipy'#'bads'
+        mc_fit.optimizationMethod = 'bads'#'bads'
 
         try:
             fp = mc_fit.fitCausalInferenceMonteCarlo(mc_fit.groupedData)

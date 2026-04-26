@@ -35092,26 +35092,32 @@ Test likelihood evaluation: 5713.648907154886
 
 Starting 5 optimization attempts using 'bads'...
 Model is fusionOnlyLogNorm
-Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Optimization Attempts:  20%|██        | 1/5 [01:31<06:06, 91.74s/it]Optimization Attempts:  20%|██        | 1/5 [04:08<16:32, 248.08s/it]Optimization Attempts:  60%|██████    | 3/5 [20:59<14:43, 441.59s/it]Optimization Attempts:  40%|████      | 2/5 [02:26<03:30, 70.11s/it]Optimization Attempts:  40%|████      | 2/5 [18:22<27:06, 542.09s/it]Optimization Attempts:  60%|██████    | 3/5 [03:32<02:16, 68.24s/it]Optimization Attempts:  40%|████      | 2/5 [13:41<21:54, 438.27s/it]Optimization Attempts:  80%|████████  | 4/5 [04:19<00:59, 59.93s/it]ting likelihood function with reasonable parameters...
-Test likelihood evaluation: 5790.922479300036
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Optimization Attempts:  20%|██        | 1/5 [01:31<06:06, 91.74s/it]Optimization Attempts:  20%|██        | 1/5 [04:08<16:32, 248.08s/it]Optimization Attempts:  60%|██████    | 3/5 [20:59<14:43, 441.59s/it]Optimization Attempts:  40%|████      | 2/5 [02:26<03:30, 70.11s/it]Optimization Attempts:  40%|████      | 2/5 [18:22<27:06, 542.09s/it]Optimization Attempts:  60%|██████    | 3/5 [03:32<02:16, 68.24s/it]Optimization Attempts:  40%|████      | 2/5 [13:41<21:54, 438.27s/it]Optimization Attempts:  80%|████████  | 4/5 [04:19<00:59, 59.93s/it]Optimization Attempts: 100%|██████████| 5/5 [05:38<00:00, 66.81s/it]Optimization Attempts: 100%|██████████| 5/5 [05:38<00:00, 67.79s/it]
+✓ Attempt 1: New best LL = 4277.440331
 
-Starting 3 optimization attempts using 'bads'...
-Model is probabilityMatchingLogNorm
-Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:59<03:59, 119.69s/it]Optimization Attempts:  67%|██████▋   | 2/3 [03:04<01:32, 92.18s/it]Optimization Attempts:  67%|██████▋   | 2/3 [02:27<01:13, 73.64s/it]Optimization Attempts:  33%|███▎      | 1/3 [02:06<04:12, 126.28s/it]Optimization Attempts: 100%|██████████| 3/3 [03:53<00:00, 79.35s/it]Optimization Attempts: 100%|██████████| 3/3 [03:53<00:00, 77.87s/it]
-✓ Attempt 1: New best LL = 2675.525144
-
-✅ Best result from 3 attempts:
-  → Final parameters: [7.89416595e-02 1.00001490e-04 1.17477443e-04 8.23563926e-02
- 1.06429216e-01 5.41106496e-02]
-  → Final log-likelihood: 2675.525144
-Data bounds: t_min=0.100, t_max=0.900
+✅ Best result from 5 attempts:
+  → Final parameters: [0.28432406 0.05024193 0.47015476 0.01      ]
+  → Final log-likelihood: 4277.440331
+Data bounds: t_min=0.050, t_max=0.950
 === DEBUGGING FITTING COMPONENTS ===
-Data bounds: t_min=0.100, t_max=0.900
+Data bounds: t_min=0.050, t_max=0.950
 Grouped data shape: (162, 11)
 Configuration: sharedLambda=True, freeP_c=False
-Model: probabilityMatchingLogNorm
-Expected parameter length: 5
-Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 5287.665570606344
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.050, t_max=0.950 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 5280.27606318735
+
+Starting 5 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Optimization Attempts:  40%|████      | 2/5 [08:34<12:57, 259.00s/it]values: [0.1 0.5 0.5 0.5 0.8]
 ✓ Parameter extraction tested for 3 conditions
 Test likelihood: 4341.555094894228
 === ALL COMPONENTS TESTED SUCCESSFULLY ===
@@ -71527,10 +71533,7 @@ Test likelihood evaluation: 4974.521260397704
 
 Starting 3 optimization attempts using 'bads'...
 Model is lognorm
-Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:14<02:29, 74.59s/it].655596
-
-✅ Best result from 3 attempts:
-  → Final parameters: [0.2261318  0.12117242 0.14408963 0.79649134 0.12036775]
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:14<02:29, 74.59s/it]Optimization Attempts:  33%|███▎      | 1/3 [04:10<08:20, 250.47s/it]0.12117242 0.14408963 0.79649134 0.12036775]
   → Final log-likelihood: 4630.655596
 Data bounds: t_min=0.100, t_max=0.900
 === DEBUGGING FITTING COMPONENTS ===
@@ -72434,4 +72437,4 @@ Test likelihood evaluation: 4683.972494102392
 
 Starting 3 optimization attempts using 'bads'...
 Model is lognorm
-Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [05:13<10:27, 313.96s/it]Optimization Attempts:  33%|███▎      | 1/3 [04:28<08:56, 268.00s/it]
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [05:13<10:27, 313.96s/it]Optimization Attempts:  33%|███▎      | 1/3 [04:28<08:56, 268.00s/it]Optimization Attempts:  33%|███▎      | 1/3 [04:05<08:10, 245.28s/it]
