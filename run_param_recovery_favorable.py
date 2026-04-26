@@ -286,7 +286,7 @@ def run_single_recovery(args):
     mc_gen.sharedLambda = True
     mc_gen.nSimul       = nSimul
     mc_gen.nStart       = nStarts
-    mc_gen.optimizationMethod = 'bads'
+    mc_gen.optimizationMethod = 'scipy' # faster for data generation, less important to be robust here
 
     try:
         sim_data = mc_gen.simulateMonteCarloData(sampled_full, template_data)
@@ -302,7 +302,7 @@ def run_single_recovery(args):
         mc_fit.sharedLambda = True
         mc_fit.nSimul       = nSimul
         mc_fit.nStart       = nStarts
-        mc_fit.optimizationMethod = 'bads'
+        mc_fit.optimizationMethod = 'scipy'#'bads'
 
         try:
             fp = mc_fit.fitCausalInferenceMonteCarlo(mc_fit.groupedData)
@@ -348,7 +348,7 @@ def run_recovery_for_model(generating_model, models_to_test,
                             template_data, ranges,
                             n_recovery=100, nSimul=500, nStarts=5,
                             save_dir='model_recovery_results_favorable',
-                            n_jobs=1):
+                            n_jobs=8):
     result_path = os.path.join(save_dir, f"favorable_{generating_model}_recovery.json")
     if os.path.exists(result_path):
         print(f"  [cached] {generating_model}")
