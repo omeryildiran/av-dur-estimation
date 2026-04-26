@@ -117,91 +117,29 @@ def build_ranges_for_cell(models, sigma_a_range, sigma_v_range,
 # Single-cell driver
 # ---------------------------------------------------------------------------
 
-def run_single_cell(sigma_key, conflict_max,
-                    models, n_iter,
-                    n_conflict_steps, n_trials_per_cell,
-                    nSimul, nStarts, n_jobs,
-                    save_dir, force=False, delta_max_pct=0.80):
-    """
-    Run (or load cached) one (sigma_level, conflict_max) cell.
+def _param_names_u2f(gen_model):
+    if gen_model == 'fusionOnlyLogNorm':
+        return ['lambda', 'sigma_a', 'sigma_v'], [0, 1, 2]
+    if gen_model == 'switchingFree':
+        return ['lambda', 'sigma_a', 'sigma_v', 'p_sw'], [0, 1, 2, 3]
+    return ['lambda', 'sigma_a', 'sigma_v', 'p_c'], [0, 1, 2, 3]
 
-    Returns (cell_dict, was_cached).
-    """
-    slevel  = SIGMA_LEVELS[sigma_key]
-    sa_lo, sa_hi = slevel['sigma_a']
-    sv_lo, sv_hi = slevel['sigma_v']
 
-    cell_tag = (f"grid_sl{sigma_key}"
-                f"_sa{sa_lo:.2f}-{sa_hi:.2f}"
-                f"_sv{sv_lo:.2f}-{sv_hi:.2f}"
-                f"_cmax{conflict_max:.2f}"
-                f"_ni{n_iter}_ns{nSimul}")
-    cell_path = os.path.join(save_dir, f"{cell_tag}.json")
-
-    if (not force) and os.path.exists(cell_path):
-        with open(cell_path) as f:
-            data = json.load(f)
-        if data.get('mean_diag_recovery_aic', 0) > 0:
-            return data, True
-
-    ranges = build_ranges_for_cell(
-        models,
-        sigma_a_range=slevel['sigma_a'],
-        sigma_v_range=slevel['sigma_v'],
-    )
-
-    template = favo.build_synthetic_template(
-        conflict_max=conflict_max,
-        n_conflict_steps=n_conflict_steps,
-        n_trials_per_cell=n_trials_per_cell,
-        delta_max_pct=delta_max_pct,
-    )
-
-    cell = {
-        'sigma_key':    sigma_key,
-        'sigma_label':  slevel['label'],
-        'sigma_a_range': list(slevel['sigma_a']),
-        'sigma_v_range': list(slevel['sigma_v']),
-        'conflict_max': conflict_max,
-        'lambda_range': list(LAMBDA_RANGE),
-        'pc_range':     list(PC_RANGE),
-        'n_iter':       n_iter,
-        'nSimul':       nSimul,
-        'nStarts':      nStarts,
-        'models':       list(models),
-        'per_model':    {},
-        'confusion_aic': {m: {fm: 0 for fm in models} for m in models},
-        'confusion_bic': {m: {fm: 0 for fm in models} for m in models},
-    }
+def _recompute_summaries(cell, models):
+    """Rebuild per_model param_recovery + mean_diag from the raw iteration
+    list stored under cell['raw_iters']. Called after every iteration so the
+    on-disk JSON is always consistent if the run is interrupted."""
+    cell['confusion_aic'] = {m: {fm: 0 for fm in models} for m in models}
+    cell['confusion_bic'] = {m: {fm: 0 for fm in models} for m in models}
 
     for gen_model in models:
-        iargs = [
-            (i, gen_model, list(models), template, nSimul, nStarts, ranges)
-            for i in range(n_iter)
-        ]
-        if n_jobs > 1:
-            with Pool(processes=n_jobs) as pool:
-                raw = pool.map(favo.run_single_recovery, iargs)
-        else:
-            raw = [favo.run_single_recovery(a) for a in iargs]
-        iters = [r for r in raw if r is not None]
-
+        iters = cell['raw_iters'].get(gen_model, [])
         for it in iters:
             cell['confusion_aic'][gen_model][it['best_model_aic']] += 1
             cell['confusion_bic'][gen_model][it['best_model_bic']] += 1
 
-        # Parameter recovery (same-model fits only)
+        names, u2f = _param_names_u2f(gen_model)
         same = [it for it in iters if gen_model in it.get('model_fits', {})]
-        if gen_model == 'fusionOnlyLogNorm':
-            names = ['lambda', 'sigma_a', 'sigma_v']
-            u2f   = [0, 1, 2]
-        elif gen_model == 'switchingFree':
-            names = ['lambda', 'sigma_a', 'sigma_v', 'p_sw']
-            u2f   = [0, 1, 2, 3]
-        else:
-            names = ['lambda', 'sigma_a', 'sigma_v', 'p_c']
-            u2f   = [0, 1, 2, 3]
-
         param_recov = {}
         if same:
             gen_arr = np.array([it['sampled_unique'] for it in same])
@@ -226,7 +164,6 @@ def run_single_cell(sigma_key, conflict_max,
             'param_recovery':   param_recov,
         }
 
-    # Mean diagonal recovery rate
     diag_rates = []
     for gen in models:
         row   = cell['confusion_aic'][gen]
@@ -235,9 +172,128 @@ def run_single_cell(sigma_key, conflict_max,
             diag_rates.append(row[gen] / total)
     cell['mean_diag_recovery_aic'] = float(np.mean(diag_rates)) if diag_rates else 0.0
 
+
+def _atomic_write_json(path, payload):
+    tmp = path + '.tmp'
+    with open(tmp, 'w') as f:
+        json.dump(payload, f, indent=2)
+    os.replace(tmp, path)
+
+
+def run_single_cell(sigma_key, conflict_max,
+                    models, n_iter,
+                    n_conflict_steps, n_trials_per_cell,
+                    nSimul, nStarts, n_jobs,
+                    save_dir, force=False, delta_max_pct=0.80,
+                    save_every=1):
+    """
+    Run (or resume) one (sigma_level, conflict_max) cell.
+
+    Resumable: every completed iteration is appended to ``cell['raw_iters']``
+    and the JSON is rewritten atomically every ``save_every`` iterations.  An
+    interrupted run can be resumed simply by re-invoking with the same args.
+
+    Returns (cell_dict, was_cached_complete).
+    """
+    slevel  = SIGMA_LEVELS[sigma_key]
+    sa_lo, sa_hi = slevel['sigma_a']
+    sv_lo, sv_hi = slevel['sigma_v']
+
+    cell_tag = (f"grid_sl{sigma_key}"
+                f"_sa{sa_lo:.2f}-{sa_hi:.2f}"
+                f"_sv{sv_lo:.2f}-{sv_hi:.2f}"
+                f"_cmax{conflict_max:.2f}"
+                f"_ni{n_iter}_ns{nSimul}")
+    cell_path = os.path.join(save_dir, f"{cell_tag}.json")
+
     os.makedirs(save_dir, exist_ok=True)
-    with open(cell_path, 'w') as f:
-        json.dump(cell, f, indent=2)
+
+    # Try to resume from existing JSON unless --force
+    cell = None
+    if (not force) and os.path.exists(cell_path):
+        with open(cell_path) as f:
+            cell = json.load(f)
+        # Fully-complete cell?  Skip.
+        completed = all(len(cell.get('raw_iters', {}).get(m, [])) >= n_iter
+                        for m in models)
+        if completed and cell.get('mean_diag_recovery_aic', 0) > 0:
+            return cell, True
+
+    if cell is None or force:
+        cell = {
+            'sigma_key':    sigma_key,
+            'sigma_label':  slevel['label'],
+            'sigma_a_range': list(slevel['sigma_a']),
+            'sigma_v_range': list(slevel['sigma_v']),
+            'conflict_max': conflict_max,
+            'lambda_range': list(LAMBDA_RANGE),
+            'pc_range':     list(PC_RANGE),
+            'n_iter':       n_iter,
+            'nSimul':       nSimul,
+            'nStarts':      nStarts,
+            'models':       list(models),
+            'per_model':    {},
+            'confusion_aic': {m: {fm: 0 for fm in models} for m in models},
+            'confusion_bic': {m: {fm: 0 for fm in models} for m in models},
+            'raw_iters':    {m: [] for m in models},
+        }
+    else:
+        cell.setdefault('raw_iters', {})
+        for m in models:
+            cell['raw_iters'].setdefault(m, [])
+
+    ranges = build_ranges_for_cell(
+        models,
+        sigma_a_range=slevel['sigma_a'],
+        sigma_v_range=slevel['sigma_v'],
+    )
+
+    template = favo.build_synthetic_template(
+        conflict_max=conflict_max,
+        n_conflict_steps=n_conflict_steps,
+        n_trials_per_cell=n_trials_per_cell,
+        delta_max_pct=delta_max_pct,
+    )
+
+    for gen_model in models:
+        already = len(cell['raw_iters'][gen_model])
+        if already >= n_iter:
+            print(f"    {ABBR.get(gen_model, gen_model[:3])}: cached "
+                  f"({already}/{n_iter})")
+            continue
+        if already:
+            print(f"    {ABBR.get(gen_model, gen_model[:3])}: resuming at "
+                  f"{already}/{n_iter}")
+
+        remaining_idx = list(range(already, n_iter))
+        iargs = [
+            (i, gen_model, list(models), template, nSimul, nStarts, ranges)
+            for i in remaining_idx
+        ]
+
+        if n_jobs > 1:
+            # imap_unordered → results trickle in as workers finish.  We
+            # checkpoint every `save_every` iterations.
+            with Pool(processes=n_jobs) as pool:
+                done = 0
+                for r in pool.imap_unordered(favo.run_single_recovery, iargs):
+                    done += 1
+                    if r is not None:
+                        cell['raw_iters'][gen_model].append(r)
+                    if done % save_every == 0 or done == len(iargs):
+                        _recompute_summaries(cell, models)
+                        _atomic_write_json(cell_path, cell)
+        else:
+            for k, a in enumerate(iargs, start=1):
+                r = favo.run_single_recovery(a)
+                if r is not None:
+                    cell['raw_iters'][gen_model].append(r)
+                if k % save_every == 0 or k == len(iargs):
+                    _recompute_summaries(cell, models)
+                    _atomic_write_json(cell_path, cell)
+
+    _recompute_summaries(cell, models)
+    _atomic_write_json(cell_path, cell)
     return cell, False
 
 
@@ -271,18 +327,26 @@ def main():
     parser.add_argument('--conflict_levels', nargs='+', type=float, default=[0.25, 0.45],
                         help='conflict_max values in seconds (default: 0.25 0.45)')
     parser.add_argument('--models', nargs='+', default=MODELS_DEFAULT)
-    parser.add_argument('--n_iter',            type=int,   default=50,
-                        help='Recovery iterations per generating model per cell (default 50)')
+    parser.add_argument('--n_iter',            type=int,   default=100,
+                        help='Recovery iterations per generating model per cell (default 100)')
     parser.add_argument('--n_conflict_steps',  type=int,   default=9)
     parser.add_argument('--n_trials_per_cell', type=int,   default=20)
-    parser.add_argument('--nSimul',            type=int,   default=500)
-    parser.add_argument('--nStarts',           type=int,   default=5)
+    parser.add_argument('--nSimul',            type=int,   default=200,
+                        help='MC draws per nLL eval (default 200; was 500). '
+                             'Recovery quality plateaus around 200 for these models.')
+    parser.add_argument('--nStarts',           type=int,   default=3,
+                        help='Optimiser restarts (default 3; was 5).')
     parser.add_argument('--delta_max_pct',     type=float, default=0.90)
     parser.add_argument('--n_jobs',            type=int,   default=None)
     parser.add_argument('--save_dir',          type=str,
                         default='model_recovery_grid_results')
+    parser.add_argument('--save_every',        type=int,   default=1,
+                        help='Checkpoint to JSON every N completed iterations '
+                             '(default 1 = save after every iteration). '
+                             'Lower = safer if interrupted, slightly more I/O.')
     parser.add_argument('--force',  action='store_true',
-                        help='Re-run cells even if cached JSON exists')
+                        help='Re-run cells even if cached JSON exists '
+                             '(otherwise resume from where it left off)')
     parser.add_argument('--pilot',  action='store_true',
                         help='Run one tiny cell (level a, cmax=0.45, n_iter=3) and exit')
     args = parser.parse_args()
@@ -298,6 +362,7 @@ def main():
             n_iter=3, n_conflict_steps=7, n_trials_per_cell=10,
             nSimul=100, nStarts=1, n_jobs=n_jobs,
             save_dir=args.save_dir, force=args.force,
+            save_every=args.save_every,
         )
         print(f"  mean_diag = {cell['mean_diag_recovery_aic']*100:.1f}%")
         print_confusion(cell, pilot_models)
@@ -341,6 +406,7 @@ def main():
             nSimul=args.nSimul, nStarts=args.nStarts, n_jobs=n_jobs,
             save_dir=args.save_dir, force=args.force,
             delta_max_pct=args.delta_max_pct,
+            save_every=args.save_every,
         )
 
         diag = cell['mean_diag_recovery_aic']
