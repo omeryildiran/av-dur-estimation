@@ -29,6 +29,10 @@
 %%% ARTICLE SETUP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \title{Duration judgments with conflicting audiovisual cues}
+%"Visual capture of auditory duration persists across large audiovisual conflicts"
+
+% Too noisy to infer - 
+%"Heuristics over inference: How observers combine conflicting audiovisual durations"
 
 \author[1*]{Ömer F. Yildiran}
 \author[1,2]{Long Ni}
@@ -122,7 +126,7 @@ We did not include a bias parameter ($\mu$) in the main analyses. In a symmetric
 Under this model, the probability of judging the test interval as longer than the standard is given by
 \begin{equation}
 P(\text{``test longer''}) = \frac{\lambda}{2} + (1-\lambda)\,
-\Phi\!\left(\frac{\log(t)-{\log(s)}}{\sigma}\right),
+\Phi\!\left(\frac{\log(t_t)-{\log(t_s)}}{\sigma}\right),
 \end{equation}
 where $t_t$ and $t_s$ denote the test and standard durations, respectively, and $\Phi$ is the standard normal cumulative distribution function. Figure~\ref{fig:unimodal_data_fits} shows the unimodal duration-discrimination thresholds (Weber fraction; Panel A) and the psychometric-function fits (Panel B) for the auditory (high/low noise) and visual conditions.
 
@@ -168,8 +172,7 @@ Pairwise comparisons were conducted using Wilcoxon signed-rank tests with Bonfer
 
 \subsection{Modality-specific duration biases}
 
-To estimate participants' inherent modality-specific biases in duration perception, we included a cross-modal duration-comparison task (Figure~\ref{fig:crossmodalDiag}). In this experiment, participants were presented with an auditory signal (embedded in continuous auditory noise) and a visual signal (a filled disk that otherwise was empty) in random order. They reported which stimulus had a longer duration.
-
+To estimate participants' inherent modality-specific biases in duration perception, we included a cross-modal duration-comparison task (Figure~\ref{fig:crossmodalDiag}). In this experiment, participants were presented with an auditory signal (embedded in continuous auditory noise) and a visual signal (a filled disk against an otherwise empty background). The presentation order of these stimuli was precued at the beginning of each mini-block of 10 trials. Participants reported which stimulus had the longer duration.
 
 Psychometric fits revealed systematic biases in cross-modal judgments, with bias magnitude depending on auditory noise level (Figure~\ref{fig:crossModalData}). Under the low auditory-noise condition, the median point of subjective equality (PSE) shift was $-116$ ms, indicating that the auditory duration had to be physically shorter than the visual duration to be perceived as equal. A Wilcoxon signed-rank test confirmed that this shift differed significantly from zero ($W = 6, p = .014$). Under the high auditory-noise condition, the median PSE shift was $-73$ ms, indicating a reduced auditory bias. However, this shift did not differ significantly from zero. Together, these results indicate a reliable overestimation of auditory relative to visual duration in the low-noise condition, with a weaker bias under high auditory noise.
 
@@ -456,7 +459,7 @@ We adapted the stimuli from Hartcher and colleagues \citeyearpar{hartcher2014dur
 
 The auditory signals and the background noise were both filtered white-noise signals sampled at 48~kHz. Each interval's stimulus was a noise burst with increased amplitude modulated by a raised cosine (5~ms cosine ramp up, flat peak, cosine ramp down). The signal was embedded in a continuous background noise that spanned the entire trial. The signals waveform consisted of a pre-stimulus interval, first-interval stimulus,inter-stimulus interval, second-interval stimulus and post-stimulus interval, with the stimulus intervals defined by the raised-cosine amplitude envelope.
 
-We manipulated auditory uncertainty by varying the relative amplitude of the continuous background noise with respect to the signal waveform before final summing the two waveforms. In the low-noise condition, the background amplitude was approximately 0.1 times the stimulus amplitude, whereas in the high-noise condition it was approximately 1.2 times that amplitude. The final mixed waveform was then peak-normalized for playback.
+We manipulated auditory uncertainty by varying the relative amplitude of the continuous background noise with respect to the signal waveform before finally summing the two waveforms. In the low-noise condition, the background amplitude was approximately 0.1 times the stimulus amplitude, whereas in the high-noise condition it was approximately 1.2 times that amplitude. The final mixed waveform was then peak-normalized for playback.
 
 
 To keep the “signal” perceptually distinct even with the high noise level, we applied different band-pass filters to the signal and background tracks. The background waveform was band-pass filtered with cutoffs at 10 and 610~Hz. The signal waveform (including the test and standard) was band-pass filtered from 150–775~Hz to make the stimuli more distinguishable from the background. The two waveforms were then summed to create the final stimulus. All filtering was implemented using second-order sections (SOS) Butterworth filters with a filter order of 4.

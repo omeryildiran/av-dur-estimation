@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Duration judgments with conflicting audiovisual cues — VSS Poster</title>
+<style>
+  /* =============================================================
+     DESIGN TOKENS
+  ============================================================= */
+  :root {
+    --nyu:        #57068c;
+    --nyu-soft:   #f3ebfa;
+    --nyu-dark:   #3a045f;
+    --nyu-line:   #d8c8eb;
+    --nyu-tint:   #f8f4fc;
+
+    --aud-low:    #c0392b;
+    --aud-high:   #2c5fb1;
+    --vis:        #2d2d2d;
+
+    --ink:        #111;
+    --ink-2:      #2a2a2a;
+    --muted:      #555;
+    --rule:       #d6d6d6;
+    --rule-2:     #ececec;
+    --box:        #fcfcfc;
+
+    --m1: #4a78d6;
+    --m2: #8e3fbf;
+    --m3: #c43f9c;
+    --m4: #d68a3f;
+    --m5: #2fa971;
+
+    /* ── unified type scale ── */
+    --fs-body:    0.22in;   /* all body text: lede, bullets, callout, card desc */
+    --fs-cap:     0.19in;   /* captions, hints, small secondary */
+    --fs-label:   0.19in;   /* kpi labels, stat labels, footer */
+    --fs-sub:     0.21in;   /* sec__sub, mcard params */
+    --fs-subh:    0.27in;   /* in-section subheaders */
+    --fs-kpi:     0.36in;   /* KPI values */
+    --fs-stat:    0.30in;   /* stat values */
+    --lh-body:    1.32;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #ddd;
+    font-family: "Inter", "Helvetica Neue", "Helvetica", Arial, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* =============================================================
+     CANVAS  —  48 × 36 in  landscape
+  ============================================================= */
+  .poster {
+    width: 48in;
+    height: 36in;
+    background: #fff;
+    padding: 0.55in 0.7in 0.5in;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    row-gap: 0.25in;
+    overflow: hidden;
+  }
+
+  /* =============================================================
+     HEADER
+  ============================================================= */
+  .hdr {
+    display: grid;
+    grid-template-columns: 7.2in 1fr 3in;
+    align-items: center;
+    column-gap: 0.45in;
+    padding-bottom: 0.22in;
+    border-bottom: 5px solid var(--nyu);
+    position: relative;
+  }
+  .hdr::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -10px;
+    height: 2px;
+    background: var(--nyu);
+    opacity: 0.35;
+  }
+
+  .brand { display: flex; align-items: center; gap: 0.22in; }
+  .brand__mark {
+    width: 1.7in; height: 1.7in;
+    background: var(--nyu); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 0.72in;
+    letter-spacing: 0.02em;
+    border-radius: 6px;
+  }
+  .brand__txt { line-height: 1.05; }
+  .brand__l1 { font-size: 0.32in; font-weight: 800; color: var(--ink); letter-spacing: -0.005em; }
+  .brand__l2 { font-size: 0.22in; color: var(--muted); margin-top: 0.04in; }
+  .brand__l3 { font-size: 0.2in;  color: var(--muted); }
+  .brand__venue {
+    display: inline-block;
+    margin-top: 0.08in;
+    padding: 0.03in 0.12in;
+    background: var(--nyu-soft);
+    color: var(--nyu-dark);
+    font-size: 0.16in;
+    font-weight: 700;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .title { text-align: center; padding: 0 0.1in; }
+  .title__h1 {
+    margin: 0 0 0.12in;
+    font-size: 0.94in;
+    line-height: 0.98;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .title__authors { font-size: 0.3in; font-weight: 600; margin: 0; color: var(--ink-2); }
+  .title__authors sup { color: var(--nyu); font-weight: 700; }
+  .title__aff { font-size: 0.21in; color: var(--muted); margin: 0.06in 0 0; font-style: italic; }
+
+  .qrwrap { justify-self: end; display: flex; flex-direction: column; align-items: center; gap: 0.06in; }
+  .qr {
+    width: 1.7in; height: 1.7in;
+    border: 2px solid var(--ink);
+    background:
+      linear-gradient(45deg, #000 25%, transparent 25%) -2px 0/0.16in 0.16in,
+      linear-gradient(-45deg, #000 25%, transparent 25%) -2px 0/0.16in 0.16in,
+      linear-gradient(45deg, transparent 75%, #000 75%) -2px 0/0.16in 0.16in,
+      linear-gradient(-45deg, transparent 75%, #000 75%) -2px 0/0.16in 0.16in;
+    position: relative;
+  }
+  .qr::before, .qr::after {
+    content: "";
+    position: absolute;
+    width: 0.45in; height: 0.45in;
+    border: 0.07in solid #000;
+    background: radial-gradient(#000 35%, #fff 36%);
+  }
+  .qr::before { top: 0.08in; left: 0.08in; }
+  .qr::after  { top: 0.08in; right: 0.08in; }
+  .qr__cap { font-size: 0.16in; color: var(--muted); }
+
+  /* =============================================================
+     TL;DR STRIP
+  ============================================================= */
+  .tldr {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    column-gap: 0.25in;
+    background: var(--nyu-tint);
+    border: 1px solid var(--nyu-line);
+    border-left: 6px solid var(--nyu);
+    padding: 0.13in 0.25in;
+    border-radius: 3px;
+  }
+  .tldr__tag {
+    background: var(--nyu); color: #fff;
+    font-size: 0.18in; font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 0.04in 0.14in;
+    border-radius: 2px;
+  }
+  .tldr__txt {
+    font-size: 0.27in;
+    line-height: 1.25;
+    color: var(--ink-2);
+    font-weight: 500;
+  }
+  .tldr__txt b { color: var(--nyu-dark); font-weight: 800; }
+  .tldr__meta {
+    font-size: 0.18in;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.3;
+  }
+  .tldr__meta b { color: var(--ink); font-weight: 700; }
+
+  /* =============================================================
+     BODY GRID
+  ============================================================= */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 0.45in;
+    min-height: 0;
+  }
+  .col { display: flex; flex-direction: column; gap: 0.28in; min-width: 0; min-height: 0; }
+
+  /* =============================================================
+     SECTION
+  ============================================================= */
+  .sec { display: flex; flex-direction: column; min-height: 0; }
+  .sec__head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.2in;
+    margin: 0 0 0.13in;
+    padding-bottom: 0.06in;
+    border-bottom: 2px solid var(--nyu);
+  }
+  .sec__num {
+    font-size: 0.3in;
+    font-weight: 800;
+    color: #fff;
+    background: var(--nyu);
+    padding: 0.03in 0.14in 0.04in;
+    border-radius: 2px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  .sec__title {
+    font-size: 0.42in;
+    font-weight: 800;
+    color: var(--nyu);
+    letter-spacing: -0.005em;
+    margin: 0;
+  }
+  .sec__sub {
+    font-size: 0.2in;
+    color: var(--muted);
+    margin-left: auto;
+    font-style: italic;
+  }
+  .sec--grow { flex: 1 1 auto; }
+
+  /* sub-headers inside a section (e.g. Encoding / Decoding) */
+  .subh {
+    font-size: 0.27in;
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0.05in 0 0.1in;
+    letter-spacing: -0.005em;
+    padding-left: 0.16in;
+    border-left: 4px solid var(--nyu);
+  }
+  .subh + .subh { margin-top: 0.18in; }
+
+  /* =============================================================
+     TYPOGRAPHY
+  ============================================================= */
+  .lede {
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-2);
+    margin: 0 0 0.12in;
+  }
+  .lede b { color: var(--nyu-dark); }
+
+  .bullets {
+    margin: 0.04in 0 0.06in 0.22in;
+    padding: 0;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+  }
+  .bullets li { margin-bottom: 0.07in; }
+  .bullets li b { color: var(--nyu-dark); font-weight: 700; }
+
+  .bullets--lg { font-size: var(--fs-body); line-height: var(--lh-body); }
+  .bullets--lg li { margin-bottom: 0.1in; }
+
+  .small { font-size: var(--fs-cap); color: var(--muted); line-height: 1.28; font-weight: 400; }
+
+  /* =============================================================
+     CALLOUT
+  ============================================================= */
+  .callout {
+    background: var(--nyu-tint);
+    border: 1px solid var(--nyu-line);
+    border-left: 5px solid var(--nyu);
+    padding: 0.12in 0.16in;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    border-radius: 3px;
+    color: var(--ink-2);
+  }
+  .callout b { color: var(--nyu-dark); font-weight: 700; }
+
+  /* =============================================================
+     FIGURES & PDF EMBEDS
+  ============================================================= */
+  .figwrap { display: flex; flex-direction: column; min-height: 0; }
+  .fig {
+    background: #fff;
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+    flex: 0 0 auto;
+  }
+  .pdfframe {
+    width: 100%; height: 100%;
+    display: block; border: 0;
+    background: #fff;
+  }
+  .figcap {
+    font-size: var(--fs-cap);
+    line-height: var(--lh-body);
+    color: var(--ink-2);
+    margin: 0.07in 0.04in 0;
+  }
+  .figcap b { color: var(--nyu-dark); font-weight: 700; }
+  .figlbl {
+    position: absolute;
+    top: 0.08in; left: 0.08in;
+    background: var(--nyu);
+    color: #fff;
+    font-size: var(--fs-cap);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    padding: 0.03in 0.1in;
+    border-radius: 2px;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  .fig--h28 { height: 2.8in; }
+  .fig--h32 { height: 3.2in; }
+  .fig--h36 { height: 3.6in; }
+  .fig--h40 { height: 4.0in; }
+  .fig--h45 { height: 4.5in; }
+  .fig--h50 { height: 5.0in; }
+  .fig--h55 { height: 5.5in; }
+  .fig--h60 { height: 6.0in; }
+  .fig--h65 { height: 6.5in; }
+  .fig--h70 { height: 7.0in; }
+  .fig--h75 { height: 7.5in; }
+
+  /* =============================================================
+     KPI STRIPS
+  ============================================================= */
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 0.14in;
+    margin-top: 0.15in;
+  }
+  .kpis--4 { grid-template-columns: repeat(4, 1fr); }
+  .kpi {
+    background: #fff;
+    border: 1.5px solid var(--rule);
+    border-top: 4px solid var(--nyu);
+    padding: 0.1in 0.12in 0.12in;
+    border-radius: 3px;
+    text-align: center;
+    min-width: 0;
+  }
+  .kpi__v {
+    font-size: var(--fs-kpi);
+    font-weight: 800;
+    color: var(--nyu-dark);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi__l {
+    font-size: var(--fs-label);
+    color: var(--muted);
+    margin-top: 0.06in;
+    line-height: 1.22;
+  }
+  .kpi__l b { color: var(--ink-2); font-weight: 700; }
+  .kpi--low  { border-top-color: var(--aud-low); }
+  .kpi--low  .kpi__v { color: var(--aud-low); }
+  .kpi--high { border-top-color: var(--aud-high); }
+  .kpi--high .kpi__v { color: var(--aud-high); }
+  .kpi--vis  { border-top-color: var(--vis); }
+  .kpi--vis  .kpi__v { color: var(--vis); }
+
+  /* =============================================================
+     LEGEND CHIPS
+  ============================================================= */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.18in;
+    margin: 0.08in 0 0;
+    font-size: 0.2in;
+  }
+  .legend__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.07in;
+    color: var(--ink-2);
+  }
+  .legend__sw {
+    width: 0.22in; height: 0.22in;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .sw--low  { background: var(--aud-low); }
+  .sw--high { background: var(--aud-high); }
+  .sw--vis  { background: var(--vis); }
+
+  /* =============================================================
+     ENCODING CARD
+  ============================================================= */
+  .enc {
+    background: #fff;
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.13in 0.18in 0.15in;
+  }
+  .enc__eq {
+    background: var(--box);
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+    padding: 0.1in 0.16in;
+    font-family: "Latin Modern Math", "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+    font-size: var(--fs-subh);
+    text-align: center;
+    margin: 0.05in 0 0.1in;
+    color: var(--ink-2);
+    letter-spacing: 0.005em;
+  }
+  .enc__note { margin: 0; font-size: var(--fs-body); color: var(--ink-2); line-height: var(--lh-body); }
+  .enc__note b { color: var(--nyu-dark); font-weight: 700; }
+
+  /* =============================================================
+     MODEL CARDS
+  ============================================================= */
+  .models {
+    display: flex;
+    flex-direction: column;
+    gap: 0.16in;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .mcard {
+    background: #fff;
+    border: 1.5px solid var(--rule);
+    border-left: 6px solid var(--m1);
+    border-radius: 3px;
+    padding: 0.13in 0.18in 0.15in;
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 0.07in;
+  }
+  .mcard__head {
+    display: flex;
+    align-items: center;
+    gap: 0.12in;
+    margin-bottom: 0.02in;
+  }
+  .mcard__tag {
+    background: var(--m1);
+    color: #fff;
+    font-size: var(--fs-cap);
+    font-weight: 800;
+    padding: 0.03in 0.1in;
+    letter-spacing: 0.06em;
+    border-radius: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .mcard__name {
+    font-size: var(--fs-subh);
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .mcard__params {
+    margin-left: auto;
+    font-size: var(--fs-sub);
+    color: var(--muted);
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    background: var(--rule-2);
+    padding: 0.02in 0.08in;
+    border-radius: 2px;
+  }
+  .mcard__desc {
+    margin: 0;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    color: var(--ink-2);
+  }
+  .mcard__hint {
+    font-size: var(--fs-cap);
+    color: var(--ink-2);
+    background: var(--nyu-tint);
+    border-left: 3px solid var(--nyu);
+    padding: 0.05in 0.1in;
+    border-radius: 2px;
+    line-height: 1.3;
+  }
+  .mcard__hint b { color: var(--nyu-dark); }
+  .mcard__hint::before {
+    content: "Predicts ▸ ";
+    font-weight: 800;
+    color: var(--nyu-dark);
+    letter-spacing: 0.04em;
+    font-size: var(--fs-cap);
+  }
+  .mcard__eq {
+    background: var(--box);
+    border: 1px dashed var(--rule);
+    padding: 0.07in 0.12in;
+    font-family: "Latin Modern Math", "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+    font-size: var(--fs-body);
+    text-align: center;
+    color: var(--ink-2);
+    border-radius: 2px;
+  }
+  .mcard--m1 { border-left-color: var(--m1); }
+  .mcard--m1 .mcard__tag { background: var(--m1); }
+  .mcard--m2 { border-left-color: var(--m2); }
+  .mcard--m2 .mcard__tag { background: var(--m2); }
+  .mcard--m3 { border-left-color: var(--m3); }
+  .mcard--m3 .mcard__tag { background: var(--m3); }
+  .mcard--m4 { border-left-color: var(--m4); }
+  .mcard--m4 .mcard__tag { background: var(--m4); }
+  .mcard--m5 { border-left-color: var(--m5); }
+  .mcard--m5 .mcard__tag { background: var(--m5); }
+
+  /* =============================================================
+     STATS PANEL
+  ============================================================= */
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 0.16in;
+    margin-top: 0.14in;
+  }
+  .stat {
+    background: #fff;
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.1in 0.14in;
+    display: flex;
+    flex-direction: column;
+    gap: 0.04in;
+  }
+  .stat__l {
+    font-size: var(--fs-label);
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .stat__v {
+    font-size: var(--fs-stat);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.05;
+  }
+  .stat__v .small { display: block; margin-top: 0.02in; font-size: var(--fs-cap); }
+  .stat--low  { border-left: 6px solid var(--aud-low); }
+  .stat--low  .stat__v { color: var(--aud-low); }
+  .stat--high { border-left: 6px solid var(--aud-high); }
+  .stat--high .stat__v { color: var(--aud-high); }
+
+  /* =============================================================
+     MODEL-FIT META (BMS panel)
+  ============================================================= */
+  .bms {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.14in;
+    margin-top: 0.14in;
+  }
+  .bms__cell {
+    background: #fff;
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.1in 0.12in;
+    text-align: center;
+  }
+  .bms__v {
+    font-size: var(--fs-stat);
+    font-weight: 800;
+    color: var(--nyu-dark);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .bms__l {
+    font-size: var(--fs-label);
+    color: var(--muted);
+    margin-top: 0.06in;
+    line-height: 1.25;
+  }
+  .bms__l b { color: var(--ink-2); }
+
+  /* =============================================================
+     CONCLUSION FOOTER
+  ============================================================= */
+  .conc__bullets li b { color: var(--nyu-dark); }
+  .footer {
+    margin-top: auto;
+    padding-top: 0.14in;
+    border-top: 1px dashed var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    column-gap: 0.18in;
+    font-size: var(--fs-label);
+    color: var(--muted);
+    line-height: var(--lh-body);
+  }
+  .footer b { color: var(--ink-2); }
+  .footer__refs { text-align: right; }
+
+  .ndash { padding: 0 0.04in; }
+
+  @media print {
+    @page { size: 48in 36in; margin: 0; }
+    body { background: #fff; }
+    .poster { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="poster">
+
+  <!-- =========================================================
+       HEADER
+  ========================================================= -->
+  <header class="hdr">
+
+    <div class="brand">
+      <div class="brand__mark">NYU</div>
+      <div class="brand__txt">
+        <div class="brand__l1">New York University</div>
+        <div class="brand__l2">Department of Psychology</div>
+        <div class="brand__l3">Center for Neural Science</div>
+        <span class="brand__venue">VSS &middot; 2026</span>
+      </div>
+    </div>
+
+    <div class="title">
+      <h1 class="title__h1">Duration judgments with conflicting audiovisual cues</h1>
+      <p class="title__authors">
+        Ömer F. Yildiran<sup>1</sup>, Long Ni<sup>1,2</sup>, Michael S. Landy<sup>1,2</sup>
+      </p>
+      <p class="title__aff">
+        <sup>1</sup>Department of Psychology &nbsp;·&nbsp;
+        <sup>2</sup>Center for Neural Science &nbsp;·&nbsp;
+        New York University
+      </p>
+    </div>
+
+    <div class="qrwrap">
+      <div class="qr" aria-label="QR code"></div>
+      <div class="qr__cap">paper &amp; code</div>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       TL;DR STRIP
+  ========================================================= -->
+  <section class="tldr">
+    <span class="tldr__tag">TL;DR</span>
+    <div class="tldr__txt">
+      Auditory duration judgments are pulled <b>linearly</b> toward visual duration; the bias scales with auditory noise but shows <b>no non-linear breakdown</b> even at ±250&nbsp;ms conflicts. With sub-second AV durations, forced fusion, causal inference, and probabilistic cue switching make <b>nearly identical predictions</b>.
+    </div>
+    <div class="tldr__meta">
+      <b>11</b> participants &middot; <b>4</b> tasks &middot; <b>5</b> models<br>
+      <b>2,156</b> bimodal trials / subj
+    </div>
+  </section>
+
+  <!-- =========================================================
+       BODY  —  3 columns
+  ========================================================= -->
+  <main class="grid">
+
+    <!-- =================================================== -->
+    <!--   LEFT COLUMN                                       -->
+    <!-- =================================================== -->
+    <div class="col">
+
+      <!-- ── Question ── -->
+      <section class="sec">
+        <div class="sec__head">
+          <span class="sec__num">01</span>
+          <h2 class="sec__title">Question</h2>
+        </div>
+        <p class="lede">
+          Audiovisual duration cues integrate <b>optimally under small conflicts</b>
+          (Hartcher-O'Brien et&nbsp;al., 2014). Does <b>causal inference</b> break that
+          integration when AV conflicts grow large &mdash; the way it does in spatial localization
+          (Körding et&nbsp;al., 2007)?
+        </p>
+        <ul class="bullets">
+          <li>Does the brain <b>fuse</b>, <b>segregate</b>, or <b>switch</b> between AV duration cues at large conflict?</li>
+          <li>How does <b>auditory reliability</b> shape the visual bias on perceived auditory duration?</li>
+          <li>Can behavioral fits actually <b>discriminate</b> these computational strategies?</li>
+        </ul>
+        <div class="callout">
+          We test 7 AV-duration conflicts (<b>±250&nbsp;ms</b>) at <b>two auditory-noise
+          levels</b> and adjudicate forced fusion, three causal-inference variants, and a
+          heuristic cue-switching model.
+        </div>
+      </section>
+
+      <!-- ── Stimuli & Tasks ── -->
+      <section class="sec sec--grow">
+        <div class="sec__head">
+          <span class="sec__num">02</span>
+          <h2 class="sec__title">Stimuli &amp; Tasks</h2>
+          <span class="sec__sub">2-IFC &middot; 500 ms standard</span>
+        </div>
+
+        <div class="figwrap">
+          <div class="fig fig--h75">
+            <span class="figlbl">A · Unimodal calibration</span>
+            <embed class="pdfframe" src="ms_latex/assets/figures/unimodal_tasks_timeline.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=Fit&amp;zoom=page-fit" type="application/pdf">
+          </div>
+          <p class="figcap">
+            <b>Unimodal auditory &amp; visual.</b> Auditory: noise burst in continuous
+            background (low- vs high-SNR). Visual: filled-disk interval against a persistent
+            outline. Calibrates per-modality sensory noise.
+          </p>
+        </div>
+
+        <div class="figwrap">
+          <div class="fig fig--h70">
+            <span class="figlbl">B · Bimodal AV conflict</span>
+            <embed class="pdfframe" src="ms_latex/assets/figures/bimodal_exp_scheme.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=Fit&amp;zoom=page-fit" type="application/pdf">
+          </div>
+          <p class="figcap">
+            <b>Bimodal main task.</b> Conflict applied <b>only to the visual standard</b>
+            (7 levels: −250, −167, −83, 0, +83, +167, +250&nbsp;ms). Auditory durations
+            unchanged. Per-subject AV bias compensated. Judge: which interval was longer
+            <b>(auditory)</b>?
+          </p>
+        </div>
+
+        <div class="kpis kpis--4">
+          <div class="kpi"><div class="kpi__v">7</div><div class="kpi__l">conflict levels</div></div>
+          <div class="kpi"><div class="kpi__v">±250</div><div class="kpi__l">conflict range (ms)</div></div>
+          <div class="kpi"><div class="kpi__v">2</div><div class="kpi__l">aud. noise levels</div></div>
+          <div class="kpi"><div class="kpi__v">2,156</div><div class="kpi__l">trials / subject</div></div>
+        </div>
+      </section>
+
+      <!-- ── Cue reliability ── -->
+      <section class="sec">
+        <div class="sec__head">
+          <span class="sec__num">03</span>
+          <h2 class="sec__title">Cue reliability</h2>
+        </div>
+        <p class="lede">
+          Log-normal psychometric fits show auditory reliability is the
+          <b>highest at low noise</b> and the <b>lowest at high noise</b>; vision sits
+          in between. Friedman χ²(2)&thinsp;=&thinsp;18.73, <i>p</i>&thinsp;&lt;&thinsp;.001.
+        </p>
+        <div class="figwrap">
+          <div class="fig fig--h55">
+            <embed class="pdfframe" src="ms_latex/assets/figures/psychometric_curves_publication.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=Fit&amp;zoom=page-fit" type="application/pdf">
+          </div>
+          <p class="figcap">
+            <b>A.</b> Weber fractions per participant.&nbsp; <b>B.</b> Pooled psychometric fits.
+          </p>
+        </div>
+
+        <div class="legend">
+          <span class="legend__item"><span class="legend__sw sw--low"></span>low-noise auditory</span>
+          <span class="legend__item"><span class="legend__sw sw--vis"></span>visual</span>
+          <span class="legend__item"><span class="legend__sw sw--high"></span>high-noise auditory</span>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi kpi--low"><div class="kpi__v">0.18</div><div class="kpi__l">WF · low-noise aud.<br><b>JND ≈ 92 ms</b></div></div>
+          <div class="kpi kpi--vis"><div class="kpi__v">0.42</div><div class="kpi__l">WF · visual<br><b>JND ≈ 213 ms</b></div></div>
+          <div class="kpi kpi--high"><div class="kpi__v">2.54</div><div class="kpi__l">WF · high-noise aud.<br><b>JND ≈ 1272 ms</b></div></div>
+        </div>
+      </section>
+
+    </div><!-- /col left -->
+
+
+    <!-- =================================================== -->
+    <!--   MIDDLE COLUMN                                     -->
+    <!-- =================================================== -->
+    <div class="col">
+
+      <!-- ── Modality bias ── -->
+      <section class="sec">
+        <div class="sec__head">
+          <span class="sec__num">04</span>
+          <h2 class="sec__title">Modality bias</h2>
+          <span class="sec__sub">cross-modal calibration</span>
+        </div>
+        <p class="lede">
+          Before adding AV conflict we estimate each subject's perceptual auditory–visual
+          bias from a cross-modal task and <b>correct it on the visual stimulus</b>, so the
+          nominal 0-conflict trial is perceptually matched.
+        </p>
+        <div class="figwrap">
+          <div class="fig fig--h75">
+            <embed class="pdfframe" src="ms_latex/assets/figures/psychometric_curves_crossmodal.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=Fit&amp;zoom=page-fit" type="application/pdf">
+          </div>
+          <p class="figcap">
+            <b>A.</b> Per-subject PSE shifts.&nbsp; <b>B.</b> Pooled cross-modal fits.&nbsp;
+            Auditory durations are systematically <b>perceived as longer</b> than matched
+            visual.
+          </p>
+        </div>
+        <div class="stats">
+          <div class="stat stat--low">
+            <span class="stat__l">low-noise PSE shift</span>
+            <span class="stat__v">−116 ms<span class="small">W&nbsp;=&nbsp;6, p&nbsp;=&nbsp;.014</span></span>
+          </div>
+          <div class="stat stat--high">
+            <span class="stat__l">high-noise PSE shift</span>
+            <span class="stat__v">−73 ms<span class="small">n.s.</span></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Models (encoding + decoding) ── -->
+      <section class="sec sec--grow">
+        <div class="sec__head">
+          <span class="sec__num">05</span>
+          <h2 class="sec__title">Models</h2>
+          <span class="sec__sub">shared encoder · 5 decoders</span>
+        </div>
+
+        <div class="subh">Sensory encoding &mdash; log-Gaussian, scalar variability</div>
+        <div class="enc">
+          <div class="enc__eq">
+            p(m<sub>a</sub>&nbsp;|&nbsp;s<sub>a</sub>) ~ 𝒩(log&nbsp;s<sub>a</sub>,&nbsp;σ<sub>a</sub><sup>2</sup>)
+            &nbsp;&nbsp;&nbsp;
+            p(m<sub>v</sub>&nbsp;|&nbsp;s<sub>v</sub>) ~ 𝒩(log&nbsp;s<sub>v</sub>,&nbsp;σ<sub>v</sub><sup>2</sup>)
+          </div>
+          <p class="enc__note">
+            Gaussian noise in log-space ⇒ log-normal in linear time ⇒ <b>Weber-like
+            scalar variability</b>. All 5 candidate models share this encoder; they differ only
+            in how they decode m<sub>a</sub>, m<sub>v</sub> into a duration estimate.
+          </p>
+        </div>
+
+        <div class="subh">Decoding strategies &mdash; 5 candidate models</div>
+
+        <div class="models">
+
+          <div class="mcard mcard--m1">
+            <div class="mcard__head">
+              <span class="mcard__tag">M1</span>
+              <span class="mcard__name">Forced fusion</span>
+              <span class="mcard__params">4 params</span>
+            </div>
+            <p class="mcard__desc">Always integrate auditory + visual; reliability-weighted average. Special case of CI with <i>p<sub>c</sub></i>&thinsp;=&thinsp;1.</p>
+            <div class="mcard__hint">linear bias scaled by the variance ratio &mdash; <b>no breakdown</b>.</div>
+            <div class="mcard__eq">ŝ<sub>a</sub> = w<sub>a</sub> m<sub>a</sub> + w<sub>v</sub> m<sub>v</sub>,&nbsp; w<sub>i</sub> ∝ 1/σ<sub>i</sub><sup>2</sup></div>
+          </div>
+
+          <div class="mcard mcard--m2">
+            <div class="mcard__head">
+              <span class="mcard__tag">M2</span>
+              <span class="mcard__name">CI · Model averaging</span>
+              <span class="mcard__params">5 params</span>
+            </div>
+            <p class="mcard__desc">Posterior-weighted average of fused (C=1) and segregated (C=2) estimates &mdash; <b>graded</b> transition between fusion and segregation.</p>
+            <div class="mcard__hint">smooth non-linear roll-off as conflict grows &mdash; magnitude controlled by <i>p<sub>c</sub></i>.</div>
+            <div class="mcard__eq">ŝ<sub>a</sub> = P(C=1) ŝ<sub>a,C=1</sub> + (1−P(C=1)) ŝ<sub>a,C=2</sub></div>
+          </div>
+
+          <div class="mcard mcard--m3">
+            <div class="mcard__head">
+              <span class="mcard__tag">M3</span>
+              <span class="mcard__name">CI · Model selection</span>
+              <span class="mcard__params">5 params</span>
+            </div>
+            <p class="mcard__desc">Pick the more probable causal hypothesis on each trial &mdash; <b>sharp</b> categorical transition between integration and segregation.</p>
+            <div class="mcard__hint">step-like switch as P(C=1) crosses ½.</div>
+            <div class="mcard__eq">ŝ<sub>a</sub> = ŝ<sub>a,C=1</sub> &nbsp;if P(C=1) &gt; ½, &nbsp;else ŝ<sub>a,C=2</sub></div>
+          </div>
+
+          <div class="mcard mcard--m4">
+            <div class="mcard__head">
+              <span class="mcard__tag">M4</span>
+              <span class="mcard__name">CI · Probability matching</span>
+              <span class="mcard__params">5 params</span>
+            </div>
+            <p class="mcard__desc">Stochastically sample fusion or segregation per trial, with probability proportional to its causal posterior.</p>
+            <div class="mcard__hint">trial-to-trial mixture; suboptimal but psychologically plausible.</div>
+            <div class="mcard__eq">fuse&nbsp;~&nbsp;P(C=1),&nbsp; segregate&nbsp;~&nbsp;1−P(C=1)</div>
+          </div>
+
+          <div class="mcard mcard--m5">
+            <div class="mcard__head">
+              <span class="mcard__tag">M5</span>
+              <span class="mcard__name">Probabilistic cue switching</span>
+              <span class="mcard__params">6 params</span>
+            </div>
+            <p class="mcard__desc">Heuristic: each trial use auditory or visual cue alone, with fixed probability <i>p<sub>v</sub></i> per noise condition. <b>No causal inference.</b></p>
+            <div class="mcard__hint">linear, fusion-like behavior emerges from <b>averaging across trials</b>.</div>
+            <div class="mcard__eq">decide on m<sub>v</sub> w.p.&nbsp;<i>p<sub>v</sub></i>; on m<sub>a</sub> w.p.&nbsp;1−<i>p<sub>v</sub></i></div>
+          </div>
+
+        </div>
+
+        <div class="callout">
+          <b>Fitting.</b> Maximum-likelihood via <b>BADS</b> (Acerbi &amp; Ma, 2017) with 10 random restarts; per-condition response probabilities estimated from <b>2000 Monte Carlo</b> trials per cell. Compared by AIC and random-effects BMS (PXP, BOR).
+        </div>
+      </section>
+
+    </div><!-- /col middle -->
+
+
+    <!-- =================================================== -->
+    <!--   RIGHT COLUMN                                      -->
+    <!-- =================================================== -->
+    <div class="col">
+
+      <!-- ── Main result ── -->
+      <section class="sec">
+        <div class="sec__head">
+          <span class="sec__num">06</span>
+          <h2 class="sec__title">Main result · PSE shifts</h2>
+        </div>
+        <p class="lede">
+          Visual bias on perceived auditory duration grows <b>approximately linearly</b>
+          with conflict and is <b>much larger under high auditory noise</b>. The non-linear
+          breakdown predicted by causal inference is <b>not observed</b>.
+        </p>
+        <div class="figwrap">
+          <div class="fig fig--h70">
+            <embed class="pdfframe" src="ms_latex/assets/figures/aggregated_mu_vs_models_sem.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=Fit&amp;zoom=page-fit" type="application/pdf">
+          </div>
+          <p class="figcap">
+            Group mean PSE shifts (<i>n</i>&nbsp;=&nbsp;11, ±SEM) vs AV conflict for
+            <b>A · low-noise</b> and <b>B · high-noise</b> auditory. Lines: forced fusion (M1),
+            causal model averaging (M2), and cue switching (M5) &mdash; all three converge.
+          </p>
+        </div>
+        <div class="legend">
+          <span class="legend__item"><span class="legend__sw sw--low"></span>low-noise auditory</span>
+          <span class="legend__item"><span class="legend__sw sw--high"></span>high-noise auditory</span>
+        </div>
+        <div class="stats">
+          <div class="stat stat--low">
+            <span class="stat__l">low-noise · slope (r)</span>
+            <span class="stat__v">0.144<span class="small">r&nbsp;=&nbsp;0.91, p&nbsp;=&nbsp;.004</span></span>
+          </div>
+          <div class="stat stat--high">
+            <span class="stat__l">high-noise · slope (r)</span>
+            <span class="stat__v">0.606<span class="small">r&nbsp;=&nbsp;0.96, p&nbsp;&lt;&nbsp;.001</span></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Why models converge ── -->
+      <section class="sec">
+        <div class="sec__head">
+          <span class="sec__num">07</span>
+          <h2 class="sec__title">Why models converge</h2>
+          <span class="sec__sub">posterior of common cause</span>
+        </div>
+        <p class="lede">
+          With realistic sensory noise, <b>P(C=1 | m<sub>a</sub>, m<sub>v</sub>) stays
+          above 0.5</b> across the entire ±250 ms range. CI behaves like fusion → distinct
+          strategies make near-identical predictions.
+        </p>
+        <div class="figwrap">
+          <div class="fig fig--h55">
+            <embed class="pdfframe" src="ms_latex/assets/figures/manuscript_posterior_mt_v2.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=Fit&amp;zoom=page-fit" type="application/pdf">
+          </div>
+          <p class="figcap">
+            Example participant. <b>Left:</b> log-likelihoods for common (blue) vs separate
+            (red) causes. <b>Right:</b> posterior P(C=1) &mdash; remains high in both noise
+            conditions across all 7 conflict levels.
+          </p>
+        </div>
+      </section>
+
+      <!-- ── Model comparison ── -->
+      <section class="sec">
+        <div class="sec__head">
+          <span class="sec__num">08</span>
+          <h2 class="sec__title">Model comparison</h2>
+          <span class="sec__sub">ΔAIC · individual + group</span>
+        </div>
+        <div class="figwrap">
+          <div class="fig fig--h45">
+            <embed class="pdfframe" src="ms_latex/assets/figures/modelComparison_fixed_and_free.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=Fit&amp;zoom=page-fit" type="application/pdf">
+          </div>
+          <p class="figcap">
+            <b>A.</b> Fixed σ (from unimodal): cue switching wins for <b>8/11</b> subjects.&nbsp;
+            <b>B.</b> Free σ (fit to bimodal): cue switching wins for <b>4/11</b>.
+          </p>
+        </div>
+        <div class="bms">
+          <div class="bms__cell">
+            <div class="bms__v">0.24</div>
+            <div class="bms__l"><b>PXP</b><br>cue switching</div>
+          </div>
+          <div class="bms__cell">
+            <div class="bms__v">0.88</div>
+            <div class="bms__l"><b>BOR</b><br>(Bayesian omnibus risk)</div>
+          </div>
+          <div class="bms__cell">
+            <div class="bms__v">≈ flat</div>
+            <div class="bms__l">all PXP &asymp; 0.18–0.24<br><b>no model dominates</b></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Conclusion ── -->
+      <section class="sec conc">
+        <div class="sec__head">
+          <span class="sec__num">09</span>
+          <h2 class="sec__title">Conclusion</h2>
+        </div>
+        <ul class="bullets bullets--lg conc__bullets">
+          <li>Auditory duration is <b>biased toward vision</b>; bias scales with auditory noise.</li>
+          <li>Bias grows <b>linearly</b> with conflict &mdash; no causal-inference breakdown observed.</li>
+          <li>Heuristic <b>cue switching</b> fits marginally best, but model evidence is essentially flat.</li>
+          <li>High encoding noise keeps <i>P(C=1)</i> high &rarr; <b>fundamental identifiability limit</b> for sub-second AV duration tasks.</li>
+          <li>Causal inference may still be <b>plausible</b>; behavior alone cannot adjudicate within experimentally tolerable conflict ranges.</li>
+        </ul>
+
+        <div class="footer">
+          <div>
+            <b>Funding.</b> NIH&nbsp;EY08266 &middot; NYUAD CBH (Tamkeen CG012). <br>
+            <b>Contact.</b> omer.yildiran@nyu.edu &nbsp;<span class="ndash">·</span>&nbsp;
+            <b>Code &amp; data.</b> see QR.
+          </div>
+          <div class="footer__refs">
+            Hartcher-O'Brien et&nbsp;al. (2014)<br>
+            Körding et&nbsp;al. (2007)<br>
+            Acerbi &amp; Ma (2017, BADS)
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /col right -->
+
+  </main>
+</div>
+
+</body>
+</html>
