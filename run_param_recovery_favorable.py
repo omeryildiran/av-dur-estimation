@@ -222,7 +222,16 @@ def sample_params(model_name, ranges, rng):
       switchingFree     : [λ, σa, σv, p_sw, σa, p_sw]
     """
     r = ranges[model_name]
-    unique = np.array([rng.uniform(lo, hi) for lo, hi in r])
+
+    def _sample_one(item):
+        if len(item) == 3 and item[2] == 'normal':
+            mean, std, _ = item
+            std_safe = np.maximum(std, 0.01)
+            return rng.normal(mean, std_safe)
+        lo, hi = item[0], item[1]
+        return rng.uniform(lo, hi)
+
+    unique = np.array([_sample_one(item) for item in r])
 
     if model_name == 'fusionOnlyLogNorm':
         lam, sa, sv = unique

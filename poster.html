@@ -9,11 +9,13 @@
      DESIGN TOKENS
   ============================================================= */
   :root {
-    --nyu:        #57068c;
-    --nyu-soft:   #f3ebfa;
-    --nyu-dark:   #3a045f;
-    --nyu-line:   #d8c8eb;
-    --nyu-tint:   #f8f4fc;
+    /* Neutral, non-purple theme (keep naming to avoid refactors) */
+    --nyu:        #0f172a;   /* slate-900 */
+    --nyu-purple: #57068c;
+    --nyu-soft:   #f3f4f6;   /* gray-100 */
+    --nyu-dark:   #0b1220;
+    --nyu-line:   #e5e7eb;   /* gray-200 */
+    --nyu-tint:   #f9fafb;   /* gray-50 */
 
     --aud-low:    #c0392b;
     --aud-high:   #2c5fb1;
@@ -26,20 +28,20 @@
     --rule-2:     #ececec;
     --box:        #fcfcfc;
 
-    --m1: #4a78d6;
-    --m2: #8e3fbf;
-    --m3: #c43f9c;
-    --m4: #d68a3f;
-    --m5: #2fa971;
+    --m1: #2563eb;  /* blue */
+    --m2: #0f766e;  /* teal */
+    --m3: #b91c1c;  /* red */
+    --m4: #d97706;  /* amber */
+    --m5: #15803d;  /* green */
 
     /* ── unified type scale ── */
-    --fs-body:    0.22in;   /* all body text: lede, bullets, callout, card desc */
-    --fs-cap:     0.19in;   /* captions, hints, small secondary */
-    --fs-label:   0.19in;   /* kpi labels, stat labels, footer */
-    --fs-sub:     0.21in;   /* sec__sub, mcard params */
-    --fs-subh:    0.27in;   /* in-section subheaders */
-    --fs-kpi:     0.36in;   /* KPI values */
-    --fs-stat:    0.30in;   /* stat values */
+    --fs-body:    0.245in;  /* all body text: lede, bullets, callout, card desc */
+    --fs-cap:     0.205in;  /* captions, hints, small secondary */
+    --fs-label:   0.205in;  /* kpi labels, stat labels, footer */
+    --fs-sub:     0.225in;  /* sec__sub, mcard params */
+    --fs-subh:    0.295in;  /* in-section subheaders */
+    --fs-kpi:     0.38in;   /* KPI values */
+    --fs-stat:    0.32in;   /* stat values */
     --lh-body:    1.32;
   }
 
@@ -76,22 +78,14 @@
     align-items: center;
     column-gap: 0.45in;
     padding-bottom: 0.22in;
-    border-bottom: 5px solid var(--nyu);
+    border-bottom: 3px solid var(--nyu);
     position: relative;
-  }
-  .hdr::after {
-    content: "";
-    position: absolute;
-    left: 0; right: 0; bottom: -10px;
-    height: 2px;
-    background: var(--nyu);
-    opacity: 0.35;
   }
 
   .brand { display: flex; align-items: center; gap: 0.22in; }
   .brand__mark {
     width: 1.7in; height: 1.7in;
-    background: var(--nyu); color: #fff;
+    background: var(--nyu-purple); color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-weight: 800;
     font-size: 0.72in;
@@ -160,7 +154,7 @@
     column-gap: 0.25in;
     background: var(--nyu-tint);
     border: 1px solid var(--nyu-line);
-    border-left: 6px solid var(--nyu);
+    border-left: 4px solid var(--nyu);
     padding: 0.13in 0.25in;
     border-radius: 3px;
   }
@@ -195,7 +189,7 @@
     column-gap: 0.45in;
     min-height: 0;
   }
-  .col { display: flex; flex-direction: column; gap: 0.28in; min-width: 0; min-height: 0; }
+  .col { display: flex; flex-direction: column; gap: 0.24in; min-width: 0; min-height: 0; }
 
   /* =============================================================
      SECTION
@@ -219,6 +213,11 @@
     letter-spacing: 0.04em;
     line-height: 1;
   }
+  .sec__num--lg {
+    font-size: 0.36in;
+    padding: 0.04in 0.16in 0.05in;
+    letter-spacing: 0.05em;
+  }
   .sec__title {
     font-size: 0.42in;
     font-weight: 800;
@@ -236,7 +235,7 @@
 
   /* sub-headers inside a section (e.g. Encoding / Decoding) */
   .subh {
-    font-size: 0.27in;
+    font-size: var(--fs-subh);
     font-weight: 800;
     color: var(--ink);
     margin: 0.05in 0 0.1in;
@@ -277,7 +276,7 @@
   .callout {
     background: var(--nyu-tint);
     border: 1px solid var(--nyu-line);
-    border-left: 5px solid var(--nyu);
+    border-left: 4px solid var(--nyu);
     padding: 0.12in 0.16in;
     font-size: var(--fs-body);
     line-height: var(--lh-body);
@@ -361,7 +360,25 @@
   .fig--pdf-wide-lg { height: 7.25in; }
   .fig--pdf-main   { height: 7.15in; }
   .fig--pdf-square { height: 6.65in; }
-  .fig--pdf-model  { height: 5.85in; }
+  .fig--pdf-model  { height: 6.75in; }
+
+  /* =============================================================
+     MODELS SECTION (05) — tighter layout
+  ============================================================= */
+  .sec--models .subh {
+    margin: 0.02in 0 0.08in;
+    padding-left: 0.12in;
+    border-left-width: 3px;
+  }
+  .sec--models .subh + .subh { margin-top: 0.12in; }
+  .sec--models .enc { padding: 0.11in 0.14in 0.12in; }
+  .sec--models .enc__eq { margin: 0.04in 0 0.08in; font-size: 0.26in; }
+  .sec--models .models { gap: 0.11in; }
+  .sec--models .mcard { padding: 0.10in 0.14in 0.11in; row-gap: 0.05in; }
+  .sec--models .mcard__head { margin-bottom: 0; }
+  .sec--models .mcard__hint { padding: 0.04in 0.08in; }
+  .sec--models .mcard__eq { padding: 0.05in 0.1in; font-size: 0.215in; }
+  .sec--models .callout { padding: 0.1in 0.14in; }
 
   /* =============================================================
      KPI STRIPS
@@ -732,7 +749,7 @@
       <!-- ── Stimuli & Tasks ── -->
       <section class="sec sec--grow">
         <div class="sec__head">
-          <span class="sec__num">02</span>
+          <span class="sec__num sec__num--lg">02</span>
           <h2 class="sec__title">Stimuli &amp; Tasks</h2>
           <span class="sec__sub">2-IFC &middot; 500 ms standard</span>
         </div>
@@ -814,7 +831,7 @@
       <!-- ── Modality bias ── -->
       <section class="sec">
         <div class="sec__head">
-          <span class="sec__num">04</span>
+          <span class="sec__num sec__num--lg">04</span>
           <h2 class="sec__title">Modality bias</h2>
           <span class="sec__sub">cross-modal calibration</span>
         </div>
@@ -846,7 +863,7 @@
       </section>
 
       <!-- ── Models (encoding + decoding) ── -->
-      <section class="sec sec--grow">
+      <section class="sec sec--grow sec--models">
         <div class="sec__head">
           <span class="sec__num">05</span>
           <h2 class="sec__title">Models</h2>
@@ -978,30 +995,6 @@
         </div>
       </section>
 
-      <!-- ── Why models converge ── -->
-      <section class="sec">
-        <div class="sec__head">
-          <span class="sec__num">07</span>
-          <h2 class="sec__title">Why models converge</h2>
-          <span class="sec__sub">posterior of common cause</span>
-        </div>
-        <p class="lede">
-          With realistic sensory noise, <b>P(C=1 | m<sub>a</sub>, m<sub>v</sub>) stays
-          above 0.5</b> across the entire ±250 ms range. CI behaves like fusion → distinct
-          strategies make near-identical predictions.
-        </p>
-        <div class="figwrap">
-          <div class="fig fig--pdf-square">
-            <embed class="pdfframe" src="ms_latex/assets/figures/manuscript_posterior_mt_v2.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=FitH&amp;zoom=page-width" type="application/pdf">
-          </div>
-          <p class="figcap">
-            Example participant. <b>Left:</b> log-likelihoods for common (blue) vs separate
-            (red) causes. <b>Right:</b> posterior P(C=1) &mdash; remains high in both noise
-            conditions across all 7 conflict levels.
-          </p>
-        </div>
-      </section>
-
       <!-- ── Model comparison ── -->
       <section class="sec">
         <div class="sec__head">
@@ -1011,11 +1004,10 @@
         </div>
         <div class="figwrap">
           <div class="fig fig--pdf-model">
-            <embed class="pdfframe" src="ms_latex/assets/figures/modelComparison_fixed_and_free.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=FitH&amp;zoom=page-width" type="application/pdf">
+            <embed class="pdfframe" src="ms_latex/assets/figures/modelCompFree.pdf#toolbar=0&amp;navpanes=0&amp;scrollbar=0&amp;view=FitH&amp;zoom=page-width" type="application/pdf">
           </div>
           <p class="figcap">
-            <b>A.</b> Fixed σ (from unimodal): cue switching wins for <b>8/11</b> subjects.&nbsp;
-            <b>B.</b> Free σ (fit to bimodal): cue switching wins for <b>4/11</b>.
+            Free σ (fit to bimodal): cue switching wins for <b>4/11</b> subjects.
           </p>
         </div>
         <div class="bms">

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="90in" height="42in" viewBox="0 0 90 42" version="1.1">
+<title>Duration judgments with conflicting audiovisual cues - 90 x 42 poster</title>
+<style><![CDATA[text{font-family:Helvetica Neue, Helvetica, Arial, sans-serif;}]]></style>
+<rect x="0.000" y="0.000" width="90.000" height="42.000" fill="#ffffff"/>
+<rect x="1.200" y="0.700" width="3.450" height="3.450" fill="#050505" rx="0.080"/>
+<text x="2.925" y="3.030" font-size="1.200" fill="#ffffff" font-weight="800" text-anchor="middle" >NYU</text>
+<text x="5.350" y="1.350" font-size="0.780" fill="#050505" font-weight="800" text-anchor="start" >New York University</text>
+<text x="5.350" y="2.230" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="start" >Department of Psychology</text>
+<text x="5.350" y="2.900" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="start" >Center for Neural Science</text>
+<text x="45.000" y="1.500" font-size="1.320" fill="#050505" font-weight="800" text-anchor="middle" >Duration judgments with conflicting audiovisual cues</text>
+<text x="45.000" y="2.820" font-size="0.640" fill="#050505" font-weight="700" text-anchor="middle" >Ömer F. Yildiran, Long Ni, Michael S. Landy</text>
+<text x="45.000" y="3.580" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="middle" >Department of Psychology · Center for Neural Science · New York University</text>
+<rect x="85.600" y="0.700" width="3.200" height="3.200" fill="#ffffff" stroke="#050505" stroke-width="0.035"/>
+<text x="87.200" y="2.650" font-size="0.920" fill="#050505" font-weight="800" text-anchor="middle" >QR</text>
+<line x1="1.200" y1="4.750" x2="88.800" y2="4.750" stroke="#050505" stroke-width="0.080"/>
+<rect x="1.200" y="5.250" width="87.600" height="1.900" fill="#fafafa" stroke="#8a8a8a" stroke-width="0.020" rx="0.050"/>
+<rect x="1.650" y="5.770" width="2.200" height="0.880" fill="#050505" rx="0.040"/>
+<text x="2.750" y="6.430" font-size="0.580" fill="#ffffff" font-weight="800" text-anchor="middle" >TL;DR</text>
+<text x="4.450" y="6.360" font-size="0.640" fill="#050505" font-weight="800" text-anchor="start" >Auditory duration judgments are pulled linearly toward visual duration; bias scales with auditory noise but shows no non-linear breakdown.</text>
+<text x="88.350" y="6.330" font-size="0.560" fill="#4a4a4a" font-weight="700" text-anchor="end" >11 participants · 4 tasks · 5 models · 2,156 trials/subj</text>
+<rect x="1.200" y="7.380" width="1.450" height="0.920" fill="#050505" rx="0.060"/>
+<text x="1.925" y="8.020" font-size="0.580" fill="#ffffff" font-weight="800" text-anchor="middle" >01</text>
+<text x="3.000" y="8.050" font-size="0.860" fill="#050505" font-weight="800" text-anchor="start" >Question</text>
+<line x1="1.200" y1="8.420" x2="29.800" y2="8.420" stroke="#050505" stroke-width="0.055"/>
+<text x="1.200" y="9.200" font-size="0.600" fill="#242424" font-weight="400" text-anchor="start" >Does causal inference break audiovisual duration integration when AV conflicts</text>
+<text x="1.200" y="9.938" font-size="0.600" fill="#242424" font-weight="400" text-anchor="start" >grow large, the way it does in spatial localization?</text>
+<text x="1.400" y="10.856" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >•</text>
+<text x="2.020" y="10.856" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >Fuse, segregate, or switch between duration cues?</text>
+<text x="1.400" y="11.725" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >•</text>
+<text x="2.020" y="11.725" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >How does auditory reliability shape visual bias?</text>
+<text x="1.400" y="12.594" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >•</text>
+<text x="2.020" y="12.594" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >Can behavior discriminate the computational strategies?</text>
+<rect x="1.200" y="13.632" width="28.600" height="1.800" fill="#f1f1f1" stroke="#8a8a8a" stroke-width="0.020" rx="0.050"/>
+<text x="1.600" y="14.332" font-size="0.560" fill="#050505" font-weight="700" text-anchor="start" >We test 7 AV-duration conflicts (±250 ms) at two auditory-noise levels and</text>
+<text x="1.600" y="15.021" font-size="0.560" fill="#050505" font-weight="700" text-anchor="start" >compare forced fusion, causal-inference variants, and cue switching.</text>
+<rect x="1.200" y="15.430" width="1.450" height="0.920" fill="#050505" rx="0.060"/>
+<text x="1.925" y="16.070" font-size="0.580" fill="#ffffff" font-weight="800" text-anchor="middle" >02</text>
+<text x="3.000" y="16.100" font-size="0.860" fill="#050505" font-weight="800" text-anchor="start" >Stimuli &amp; Tasks</text>
+<line x1="1.200" y1="16.470" x2="29.800" y2="16.470" stroke="#050505" stroke-width="0.055"/>
+<text x="29.800" y="16.050" font-size="0.560" fill="#4a4a4a" font-weight="400" text-anchor="end" font-style="italic">2-IFC · 500 ms standard</text>
+<rect x="1.200" y="16.850" width="28.600" height="7.100" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.025" rx="0.050"/>
+<image href="ms_latex/assets/figures/unimodal_tasks_timeline.pdf" x="1.300" y="16.950" width="28.400" height="6.900" preserveAspectRatio="xMidYMid meet"/>
+<rect x="1.450" y="17.100" width="7.520" height="0.850" fill="#050505" rx="0.040"/>
+<text x="1.680" y="17.710" font-size="0.560" fill="#ffffff" font-weight="800" text-anchor="start" >A · UNIMODAL CALIBRATION</text>
+<text x="1.200" y="24.500" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >Auditory and visual duration-discrimination tasks calibrate per-modality sensory</text>
+<text x="1.200" y="25.189" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >noise.</text>
+<rect x="1.200" y="25.800" width="28.600" height="6.450" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.025" rx="0.050"/>
+<image href="ms_latex/assets/figures/bimodal_exp_scheme.png" x="1.300" y="25.900" width="28.400" height="6.250" preserveAspectRatio="xMidYMid meet"/>
+<rect x="1.450" y="26.050" width="7.240" height="0.850" fill="#050505" rx="0.040"/>
+<text x="1.680" y="26.660" font-size="0.560" fill="#ffffff" font-weight="800" text-anchor="start" >B · BIMODAL AV CONFLICT</text>
+<text x="1.200" y="32.800" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >Conflict is applied only to the visual standard; observers judge which interval was</text>
+<text x="1.200" y="33.489" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >longer in audition.</text>
+<rect x="1.200" y="36.850" width="6.900" height="1.750" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="1.200" y1="36.850" x2="8.100" y2="36.850" stroke="#050505" stroke-width="0.080"/>
+<text x="4.650" y="37.590" font-size="0.740" fill="#050505" font-weight="800" text-anchor="middle" >7</text>
+<text x="4.650" y="38.230" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="middle" >conflicts</text>
+<rect x="8.350" y="36.850" width="6.900" height="1.750" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="8.350" y1="36.850" x2="15.250" y2="36.850" stroke="#050505" stroke-width="0.080"/>
+<text x="11.800" y="37.590" font-size="0.740" fill="#050505" font-weight="800" text-anchor="middle" >±250</text>
+<text x="11.800" y="38.230" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="middle" >ms range</text>
+<rect x="15.500" y="36.850" width="6.900" height="1.750" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="15.500" y1="36.850" x2="22.400" y2="36.850" stroke="#050505" stroke-width="0.080"/>
+<text x="18.950" y="37.590" font-size="0.740" fill="#050505" font-weight="800" text-anchor="middle" >2</text>
+<text x="18.950" y="38.230" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="middle" >noise levels</text>
+<rect x="22.650" y="36.850" width="6.900" height="1.750" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="22.650" y1="36.850" x2="29.550" y2="36.850" stroke="#050505" stroke-width="0.080"/>
+<text x="26.100" y="37.590" font-size="0.740" fill="#050505" font-weight="800" text-anchor="middle" >2,156</text>
+<text x="26.100" y="38.230" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="middle" >trials/subj</text>
+<rect x="30.700" y="7.380" width="1.450" height="0.920" fill="#050505" rx="0.060"/>
+<text x="31.425" y="8.020" font-size="0.580" fill="#ffffff" font-weight="800" text-anchor="middle" >03</text>
+<text x="32.500" y="8.050" font-size="0.860" fill="#050505" font-weight="800" text-anchor="start" >Cue Reliability</text>
+<line x1="30.700" y1="8.420" x2="59.300" y2="8.420" stroke="#050505" stroke-width="0.055"/>
+<text x="30.700" y="9.150" font-size="0.600" fill="#242424" font-weight="400" text-anchor="start" >Auditory reliability is highest at low noise and lowest at high noise; vision sits</text>
+<text x="30.700" y="9.888" font-size="0.600" fill="#242424" font-weight="400" text-anchor="start" >in between.</text>
+<rect x="30.700" y="11.350" width="28.600" height="8.400" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.025" rx="0.050"/>
+<image href="ms_latex/assets/figures/psychometric_curves_publication.pdf" x="30.800" y="11.450" width="28.400" height="8.200" preserveAspectRatio="xMidYMid meet"/>
+<rect x="30.700" y="20.300" width="9.283" height="1.750" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="30.700" y1="20.300" x2="39.983" y2="20.300" stroke="#050505" stroke-width="0.080"/>
+<text x="35.342" y="21.040" font-size="0.740" fill="#050505" font-weight="800" text-anchor="middle" >0.18</text>
+<text x="35.342" y="21.680" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="middle" >WF low-noise</text>
+<rect x="40.233" y="20.300" width="9.283" height="1.750" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="40.233" y1="20.300" x2="49.517" y2="20.300" stroke="#050505" stroke-width="0.080"/>
+<text x="44.875" y="21.040" font-size="0.740" fill="#050505" font-weight="800" text-anchor="middle" >0.42</text>
+<text x="44.875" y="21.680" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="middle" >WF visual</text>
+<rect x="49.767" y="20.300" width="9.283" height="1.750" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="49.767" y1="20.300" x2="59.050" y2="20.300" stroke="#050505" stroke-width="0.080"/>
+<text x="54.408" y="21.040" font-size="0.740" fill="#050505" font-weight="800" text-anchor="middle" >2.54</text>
+<text x="54.408" y="21.680" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="middle" >WF high-noise</text>
+<rect x="30.700" y="22.330" width="1.450" height="0.920" fill="#050505" rx="0.060"/>
+<text x="31.425" y="22.970" font-size="0.580" fill="#ffffff" font-weight="800" text-anchor="middle" >04</text>
+<text x="32.500" y="23.000" font-size="0.860" fill="#050505" font-weight="800" text-anchor="start" >Modality Bias</text>
+<line x1="30.700" y1="23.370" x2="59.300" y2="23.370" stroke="#050505" stroke-width="0.055"/>
+<text x="59.300" y="22.950" font-size="0.560" fill="#4a4a4a" font-weight="400" text-anchor="end" font-style="italic">cross-modal calibration</text>
+<text x="30.700" y="24.100" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >We estimate each subject&#x27;s auditory-visual bias before adding conflict, then correct</text>
+<text x="30.700" y="24.789" font-size="0.560" fill="#242424" font-weight="400" text-anchor="start" >the visual stimulus so nominal zero conflict is perceptually matched.</text>
+<rect x="30.700" y="26.250" width="28.600" height="7.800" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.025" rx="0.050"/>
+<image href="ms_latex/assets/figures/psychometric_curves_crossmodal.pdf" x="30.800" y="26.350" width="28.400" height="7.600" preserveAspectRatio="xMidYMid meet"/>
+<rect x="30.700" y="34.600" width="14.050" height="2.050" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="30.700" y1="34.600" x2="30.700" y2="36.650" stroke="#050505" stroke-width="0.100"/>
+<text x="31.120" y="35.220" font-size="0.560" fill="#4a4a4a" font-weight="800" text-anchor="start" >LOW-NOISE PSE SHIFT</text>
+<text x="31.120" y="35.920" font-size="0.720" fill="#050505" font-weight="800" text-anchor="start" >-116 ms</text>
+<text x="31.120" y="36.380" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="start" >W = 6, p = .014</text>
+<rect x="45.250" y="34.600" width="14.050" height="2.050" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="45.250" y1="34.600" x2="45.250" y2="36.650" stroke="#050505" stroke-width="0.100"/>
+<text x="45.670" y="35.220" font-size="0.560" fill="#4a4a4a" font-weight="800" text-anchor="start" >HIGH-NOISE PSE SHIFT</text>
+<text x="45.670" y="35.920" font-size="0.720" fill="#050505" font-weight="800" text-anchor="start" >-73 ms</text>
+<text x="45.670" y="36.380" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="start" >n.s.</text>
+<rect x="60.200" y="7.380" width="1.450" height="0.920" fill="#050505" rx="0.060"/>
+<text x="60.925" y="8.020" font-size="0.580" fill="#ffffff" font-weight="800" text-anchor="middle" >05</text>
+<text x="62.000" y="8.050" font-size="0.860" fill="#050505" font-weight="800" text-anchor="start" >Main Result · PSE Shifts</text>
+<line x1="60.200" y1="8.420" x2="88.800" y2="8.420" stroke="#050505" stroke-width="0.055"/>
+<text x="60.200" y="9.150" font-size="0.600" fill="#242424" font-weight="400" text-anchor="start" >Visual bias grows approximately linearly with conflict and is much larger under high</text>
+<text x="60.200" y="9.888" font-size="0.600" fill="#242424" font-weight="400" text-anchor="start" >auditory noise.</text>
+<rect x="60.200" y="11.300" width="28.600" height="8.800" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.025" rx="0.050"/>
+<image href="ms_latex/assets/figures/aggregated_mu_vs_models_sem.pdf" x="60.300" y="11.400" width="28.400" height="8.600" preserveAspectRatio="xMidYMid meet"/>
+<rect x="60.200" y="20.700" width="14.050" height="2.050" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="60.200" y1="20.700" x2="60.200" y2="22.750" stroke="#050505" stroke-width="0.100"/>
+<text x="60.620" y="21.320" font-size="0.560" fill="#4a4a4a" font-weight="800" text-anchor="start" >LOW-NOISE SLOPE</text>
+<text x="60.620" y="22.020" font-size="0.720" fill="#050505" font-weight="800" text-anchor="start" >0.144</text>
+<text x="60.620" y="22.480" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="start" >r = 0.91, p = .004</text>
+<rect x="74.750" y="20.700" width="14.050" height="2.050" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="74.750" y1="20.700" x2="74.750" y2="22.750" stroke="#050505" stroke-width="0.100"/>
+<text x="75.170" y="21.320" font-size="0.560" fill="#4a4a4a" font-weight="800" text-anchor="start" >HIGH-NOISE SLOPE</text>
+<text x="75.170" y="22.020" font-size="0.720" fill="#050505" font-weight="800" text-anchor="start" >0.606</text>
+<text x="75.170" y="22.480" font-size="0.560" fill="#4a4a4a" font-weight="500" text-anchor="start" >r = 0.96, p &lt; .001</text>
+<rect x="60.200" y="24.680" width="1.450" height="0.920" fill="#050505" rx="0.060"/>
+<text x="60.925" y="25.320" font-size="0.580" fill="#ffffff" font-weight="800" text-anchor="middle" >06</text>
+<text x="62.000" y="25.350" font-size="0.860" fill="#050505" font-weight="800" text-anchor="start" >Models &amp; Comparison</text>
+<line x1="60.200" y1="25.720" x2="88.800" y2="25.720" stroke="#050505" stroke-width="0.055"/>
+<text x="88.800" y="25.300" font-size="0.560" fill="#4a4a4a" font-weight="400" text-anchor="end" font-style="italic">free sensory noise</text>
+<rect x="60.200" y="26.150" width="28.600" height="6.150" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.025" rx="0.050"/>
+<image href="ms_latex/assets/figures/modelCompFree.pdf" x="60.300" y="26.250" width="28.400" height="5.950" preserveAspectRatio="xMidYMid meet"/>
+<rect x="60.200" y="32.950" width="28.600" height="2.100" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="60.200" y1="32.950" x2="60.200" y2="35.050" stroke="#050505" stroke-width="0.100"/>
+<rect x="60.550" y="33.230" width="1.180" height="0.720" fill="#050505" rx="0.040"/>
+<text x="61.140" y="33.750" font-size="0.560" fill="#ffffff" font-weight="800" text-anchor="middle" >M1</text>
+<text x="62.050" y="33.770" font-size="0.620" fill="#050505" font-weight="800" text-anchor="start" >Forced fusion</text>
+<text x="60.550" y="34.400" font-size="0.560" fill="#242424" font-weight="500" text-anchor="start" >Always integrate auditory and visual cues using reliability-weighted averaging.</text>
+<rect x="60.200" y="35.350" width="28.600" height="2.100" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="60.200" y1="35.350" x2="60.200" y2="37.450" stroke="#050505" stroke-width="0.100"/>
+<rect x="60.550" y="35.630" width="1.180" height="0.720" fill="#050505" rx="0.040"/>
+<text x="61.140" y="36.150" font-size="0.560" fill="#ffffff" font-weight="800" text-anchor="middle" >M2-4</text>
+<text x="62.050" y="36.170" font-size="0.620" fill="#050505" font-weight="800" text-anchor="start" >Causal inference</text>
+<text x="60.550" y="36.800" font-size="0.560" fill="#242424" font-weight="500" text-anchor="start" >Fuse or segregate according to the posterior probability of a common cause.</text>
+<rect x="60.200" y="37.750" width="28.600" height="2.100" fill="#ffffff" stroke="#8a8a8a" stroke-width="0.020" rx="0.040"/>
+<line x1="60.200" y1="37.750" x2="60.200" y2="39.850" stroke="#050505" stroke-width="0.100"/>
+<rect x="60.550" y="38.030" width="1.180" height="0.720" fill="#050505" rx="0.040"/>
+<text x="61.140" y="38.550" font-size="0.560" fill="#ffffff" font-weight="800" text-anchor="middle" >M5</text>
+<text x="62.050" y="38.570" font-size="0.620" fill="#050505" font-weight="800" text-anchor="start" >Probabilistic cue switching</text>
+<text x="60.550" y="39.200" font-size="0.560" fill="#242424" font-weight="500" text-anchor="start" >Use auditory or visual cue alone on each trial with a fixed switching probability.</text>
+<rect x="60.200" y="40.200" width="28.600" height="1.450" fill="#050505" rx="0.050"/>
+<text x="60.750" y="41.120" font-size="0.580" fill="#ffffff" font-weight="800" text-anchor="start" >Take-home: linear bias, flat model evidence, and an identifiability limit.</text>
+</svg>

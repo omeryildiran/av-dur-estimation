@@ -9,8 +9,8 @@ Sigma levels (ranges, NOT fixed values):
   a  σ_a = σ_v ~ U[0.01, 0.20]   very low noise
   b  σ_a = σ_v ~ U[0.20, 0.40]   moderate noise
   c  σ_a = σ_v ~ U[0.30, 0.70]   high noise
-  d  σ_a ~ U[0.08, 0.47]         empirical noise (p5-p95 of fitted σ_a)
-     σ_v ~ U[0.12, 1.30]         empirical noise (p5-p95 of fitted σ_v)
+  d  σ_a ~ U[0.11, 0.48]         empirical noise (min–max of fitted σ_a, n=12)
+     σ_v ~ U[0.14, 1.60]         empirical noise (min–max of fitted σ_v, n=12)
 
 conflict_max: [0.25, 0.45] s
 
@@ -64,9 +64,9 @@ SIGMA_LEVELS = {
         'sigma_v': (0.30, 0.70),
     },
     'd': {
-        'label':   'd empirical [σa:0.08–0.47, σv:0.12–1.30]',
-        'sigma_a': (0.08, 0.47),
-        'sigma_v': (0.12, 1.30),
+        'label':   'd empirical [σa:0.11–0.48, σv:0.14–1.60]',
+        'sigma_a': (0.11, 0.48),
+        'sigma_v': (0.14, 1.60),
     },
 }
 
@@ -80,6 +80,13 @@ MODELS_DEFAULT = [
 
 LAMBDA_RANGE = (0.001, 0.40)
 PC_RANGE     = (0.001, 0.999)
+
+# Empirical group-level stats for sigma level 'd' (Normal sampling)
+# Source: lognorm fits to n=12 participants
+_SIGMA_D_NORMAL = {
+    'sigma_a': (0.277, 0.105),  # (mean, std)
+    'sigma_v': (0.559, 0.375),
+}
 
 ABBR = {
     'lognorm':                    'CI ',
@@ -242,10 +249,19 @@ def run_single_cell(sigma_key, conflict_max,
         for m in models:
             cell['raw_iters'].setdefault(m, [])
 
+    if sigma_key == 'd':
+        sa_mean, sa_std = _SIGMA_D_NORMAL['sigma_a']
+        sv_mean, sv_std = _SIGMA_D_NORMAL['sigma_v']
+        sa_range = (sa_mean, np.maximum(sa_std, 0.01), 'normal')
+        sv_range = (sv_mean, np.maximum(sv_std, 0.01), 'normal')
+    else:
+        sa_range = slevel['sigma_a']
+        sv_range = slevel['sigma_v']
+
     ranges = build_ranges_for_cell(
         models,
-        sigma_a_range=slevel['sigma_a'],
-        sigma_v_range=slevel['sigma_v'],
+        sigma_a_range=sa_range,
+        sigma_v_range=sv_range,
     )
 
     template = favo.build_synthetic_template(
