@@ -1,0 +1,195 @@
+{
+  "settings": {
+    "gen_models": [
+      "probabilityMatchingLogNorm",
+      "selection"
+    ],
+    "fit_models": [
+      "probabilityMatchingLogNorm",
+      "selection"
+    ],
+    "sigma_level": "c",
+    "conflict_max": 0.45,
+    "n_cases": 1,
+    "nSimul": 300,
+    "nStarts": [
+      1,
+      3
+    ],
+    "n_conflict_steps": 5,
+    "n_trials_per_cell": 6,
+    "seed": 20260510,
+    "out": "nstart_effect_check_results.json"
+  },
+  "template_rows": 540,
+  "results": [
+    {
+      "generating_model": "probabilityMatchingLogNorm",
+      "case": 0,
+      "sampled_unique": [
+        0.3282172192278657,
+        0.4251233560667412,
+        0.3440489629851276,
+        0.46952446565035194
+      ],
+      "fits": {
+        "probabilityMatchingLogNorm": {
+          "1": {
+            "logLikelihood": -929.7706449473943,
+            "AIC": 1869.5412898947886,
+            "fittedParams": [
+              0.2409453969493723,
+              0.5059596906896464,
+              0.1412627520461398,
+              0.2250388289401598,
+              0.43835801725649237
+            ],
+            "seconds": 26.079445838928223,
+            "boundary_clips": {
+              "n_lower": 0,
+              "n_upper": 0,
+              "details": []
+            }
+          },
+          "3": {
+            "logLikelihood": -925.3342967295256,
+            "AIC": 1860.6685934590512,
+            "fittedParams": [
+              0.322330443814808,
+              0.4269052937714266,
+              0.25076834304687523,
+              0.336142176824611,
+              0.34679742644314515
+            ],
+            "seconds": 81.91232204437256,
+            "boundary_clips": {
+              "n_lower": 0,
+              "n_upper": 0,
+              "details": []
+            }
+          }
+        },
+        "selection": {
+          "1": {
+            "logLikelihood": -924.2083297256005,
+            "AIC": 1858.416659451201,
+            "fittedParams": [
+              0.31255534077473224,
+              0.4338693133758992,
+              0.3007870021584079,
+              0.29776185247983444,
+              0.36957583533572924
+            ],
+            "seconds": 31.397107124328613,
+            "boundary_clips": {
+              "n_lower": 0,
+              "n_upper": 0,
+              "details": []
+            }
+          },
+          "3": {
+            "logLikelihood": -924.9279416457746,
+            "AIC": 1859.8558832915492,
+            "fittedParams": [
+              0.312604134105891,
+              0.4274059625539183,
+              0.31123671803791064,
+              0.3048479728400707,
+              0.3703603727613016
+            ],
+            "seconds": 67.28113293647766,
+            "boundary_clips": {
+              "n_lower": 0,
+              "n_upper": 0,
+              "details": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "generating_model": "selection",
+      "case": 0,
+      "sampled_unique": [
+        0.16886100041509353,
+        0.6597412325353267,
+        0.3958133493995195,
+        0.4397091843862033
+      ],
+      "fits": {
+        "probabilityMatchingLogNorm": {
+          "1": {
+            "logLikelihood": -896.28540062926,
+            "AIC": 1802.57080125852,
+            "fittedParams": [
+              0.15557205887287856,
+              0.8726669176112114,
+              0.11874428931355463,
+              0.4036174654960632,
+              0.5617906819429992
+            ],
+            "seconds": 28.09115505218506,
+            "boundary_clips": {
+              "n_lower": 0,
+              "n_upper": 0,
+              "details": []
+            }
+          },
+          "3": {
+            "logLikelihood": -893.3856287218698,
+            "AIC": 1796.7712574437396,
+            "fittedParams": [
+              0.15960272815367643,
+              0.8796960193553697,
+              0.15137252193026207,
+              0.4247137235317495,
+              0.5928213200719834
+            ],
+            "seconds": 64.03252100944519,
+            "boundary_clips": {
+              "n_lower": 0,
+              "n_upper": 0,
+              "details": []
+            }
+          }
+        },
+        "selection": {
+          "1": {
+            "logLikelihood": -894.1921731385169,
+            "AIC": 1798.3843462770337,
+            "fittedParams": [
+              0.19752433533817532,
+              0.8885554310023783,
+              0.25135774855524284,
+              0.3946504697203636,
+              0.5896720843291281
+            ],
+            "seconds": 26.788923025131226,
+            "boundary_clips": {
+              "n_lower": 0,
+              "n_upper": 0,
+              "details": []
+            }
+          },
+          "3": {
+            "logLikelihood": -895.4156336570393,
+            "AIC": 1800.8312673140786,
+            "fittedParams": [
+              0.13548860416412353,
+              0.9487927592182158,
+              0.2759309724712371,
+              0.3927270889282226,
+              0.6859276758956908
+            ],
+            "seconds": 68.89882802963257,
+            "boundary_clips": {
+              "n_lower": 0,
+              "n_upper": 0,
+              "details": []
+            }
+          }
+        }
+      }
+    }
+  ]
+}
