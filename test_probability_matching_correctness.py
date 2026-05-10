@@ -89,6 +89,64 @@ def test_selection_choice_path_uses_log_space_measurements_and_bounds():
     np.testing.assert_allclose([std_t_max, test_t_max], np.log(1.0))
 
 
+def test_forced_fusion_choice_path_uses_log_space_measurements():
+    fitter = make_fitter()
+    fitter.modelName = "fusionOnlyLogNorm"
+    fitter.nSimul = 4
+    captured = []
+
+    def fake_fusion(m_a, m_v, sigma_a, sigma_v):
+        captured.append((m_a.copy(), m_v.copy()))
+        return m_a
+
+    fitter.fusionAV_vectorized = fake_fusion
+    true_stims = (0.5, 0.6, 0.7, 0.6)
+    p_test = fitter.probTestLonger_vectorized_mc(
+        true_stims, sigma_av_a=0.0, sigma_av_v=0.0,
+        p_c=1.0, lambda_=0.0, t_min=0.1, t_max=1.0
+    )
+
+    assert p_test == 1.0
+    assert len(captured) == 2
+    std_m_a, std_m_v = captured[0]
+    test_m_a, test_m_v = captured[1]
+
+    np.testing.assert_allclose(std_m_a, np.log(0.5))
+    np.testing.assert_allclose(std_m_v, np.log(0.7))
+    np.testing.assert_allclose(test_m_a, np.log(0.6))
+    np.testing.assert_allclose(test_m_v, np.log(0.6))
+
+
+def test_switching_free_choice_path_uses_log_space_measurements():
+    fitter = make_fitter()
+    fitter.modelName = "switchingFree"
+    fitter.nSimul = 4
+    captured = []
+
+    def fake_switching(m_a, m_v, p_switch):
+        captured.append((m_a.copy(), m_v.copy(), p_switch))
+        return m_a
+
+    fitter.switching_free_vectorized = fake_switching
+    true_stims = (0.5, 0.6, 0.7, 0.6)
+    p_test = fitter.probTestLonger_vectorized_mc(
+        true_stims, sigma_av_a=0.0, sigma_av_v=0.0,
+        p_c=0.25, lambda_=0.0, t_min=0.1, t_max=1.0
+    )
+
+    assert p_test == 1.0
+    assert len(captured) == 2
+    std_m_a, std_m_v, std_p_switch = captured[0]
+    test_m_a, test_m_v, test_p_switch = captured[1]
+
+    np.testing.assert_allclose(std_m_a, np.log(0.5))
+    np.testing.assert_allclose(std_m_v, np.log(0.7))
+    np.testing.assert_allclose(test_m_a, np.log(0.6))
+    np.testing.assert_allclose(test_m_v, np.log(0.6))
+    assert std_p_switch == 0.25
+    assert test_p_switch == 0.25
+
+
 def test_switching_free_uses_visual_with_p_switch_probability():
     fitter = make_fitter()
 
@@ -133,6 +191,8 @@ if __name__ == "__main__":
     test_probability_matching_uses_posterior_c1_probability()
     test_selection_uses_most_probable_causal_structure()
     test_selection_choice_path_uses_log_space_measurements_and_bounds()
+    test_forced_fusion_choice_path_uses_log_space_measurements()
+    test_switching_free_choice_path_uses_log_space_measurements()
     test_switching_free_uses_visual_with_p_switch_probability()
     test_causal_model_parameter_extraction_shared_lambda()
     test_switching_free_parameter_extraction_shared_lambda()
