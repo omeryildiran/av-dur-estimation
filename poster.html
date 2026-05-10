@@ -363,22 +363,89 @@
   .fig--pdf-model  { height: 6.75in; }
 
   /* =============================================================
-     MODELS SECTION (05) — tighter layout
+     MODELS SECTION (05) — icon-only explanation
   ============================================================= */
-  .sec--models .subh {
-    margin: 0.02in 0 0.08in;
-    padding-left: 0.12in;
-    border-left-width: 3px;
+  .sec--models { flex: 1 1 auto; }
+  .model-flow {
+    flex: 1 1 auto;
+    min-height: 0;
+    background: #fff;
+    border: 1.5px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.1in;
   }
-  .sec--models .subh + .subh { margin-top: 0.12in; }
-  .sec--models .enc { padding: 0.11in 0.14in 0.12in; }
-  .sec--models .enc__eq { margin: 0.04in 0 0.08in; font-size: 0.26in; }
-  .sec--models .models { gap: 0.11in; }
-  .sec--models .mcard { padding: 0.10in 0.14in 0.11in; row-gap: 0.05in; }
-  .sec--models .mcard__head { margin-bottom: 0; }
-  .sec--models .mcard__hint { padding: 0.04in 0.08in; }
-  .sec--models .mcard__eq { padding: 0.05in 0.1in; font-size: 0.215in; }
-  .sec--models .callout { padding: 0.1in 0.14in; }
+  .model-map {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 15.4in;
+  }
+  .model-map .panel {
+    fill: #fff;
+    stroke: var(--rule);
+    stroke-width: 2.5;
+    rx: 12;
+  }
+  .model-map .panel--top { fill: var(--nyu-tint); }
+  .model-map .lane {
+    fill: #fff;
+    stroke: var(--rule);
+    stroke-width: 2.5;
+    rx: 10;
+  }
+  .model-map .lane--m1 { stroke: var(--m1); }
+  .model-map .lane--m2 { stroke: var(--m2); }
+  .model-map .lane--m3 { stroke: var(--m3); }
+  .model-map .lane--m4 { stroke: var(--m4); }
+  .model-map .lane--m5 { stroke: var(--m5); }
+  .model-map .soft { fill: var(--nyu-tint); stroke: var(--rule); stroke-width: 2; }
+  .model-map .axis { stroke: #9ca3af; stroke-width: 3; stroke-linecap: round; }
+  .model-map .curve {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .model-map .curve--aud { stroke: var(--aud-high); }
+  .model-map .curve--vis { stroke: var(--vis); }
+  .model-map .curve--fused { stroke: var(--m2); }
+  .model-map .curve--red { stroke: var(--aud-low); }
+  .model-map .curve--ghost { opacity: 0.24; }
+  .model-map .mix {
+    fill: none;
+    stroke: var(--m2);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 1 16;
+  }
+  .model-map .branch {
+    fill: none;
+    stroke: var(--nyu);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    marker-end: url(#arrow);
+  }
+  .model-map .branch--thin { stroke-width: 3.5; opacity: 0.68; }
+  .model-map .switch { fill: #fff; stroke-width: 4; }
+  .model-map .switch--m1 { stroke: var(--m1); }
+  .model-map .switch--m2 { stroke: var(--m2); }
+  .model-map .switch--m3 { stroke: var(--m3); }
+  .model-map .switch--m4 { stroke: var(--m4); }
+  .model-map .switch--m5 { stroke: var(--m5); }
+  .model-map .dot { fill: var(--nyu); }
+  .model-map .dot--aud { fill: var(--aud-high); }
+  .model-map .dot--vis { fill: var(--vis); }
+  .model-map .dot--red { fill: var(--aud-low); }
+  .model-map .bar {
+    fill: #fff;
+    stroke: #9ca3af;
+    stroke-width: 3;
+  }
+  .model-map .barfill--yes { fill: #5bb8ae; }
+  .model-map .barfill--no { fill: #d66f6f; }
+  .model-map .coin { fill: #fff; stroke: var(--m4); stroke-width: 4; }
+  .model-map .dice { fill: #fff; stroke: var(--m4); stroke-width: 4; rx: 8; }
 
   /* =============================================================
      KPI STRIPS
@@ -867,86 +934,189 @@
         <div class="sec__head">
           <span class="sec__num">05</span>
           <h2 class="sec__title">Models</h2>
-          <span class="sec__sub">shared encoder · 5 decoders</span>
         </div>
 
-        <div class="subh">Sensory encoding &mdash; log-Gaussian, scalar variability</div>
-        <div class="enc">
-          <div class="enc__eq">
-            p(m<sub>a</sub>&nbsp;|&nbsp;s<sub>a</sub>) ~ 𝒩(log&nbsp;s<sub>a</sub>,&nbsp;σ<sub>a</sub><sup>2</sup>)
-            &nbsp;&nbsp;&nbsp;
-            p(m<sub>v</sub>&nbsp;|&nbsp;s<sub>v</sub>) ~ 𝒩(log&nbsp;s<sub>v</sub>,&nbsp;σ<sub>v</sub><sup>2</sup>)
-          </div>
-          <p class="enc__note">
-            Gaussian noise in log-space ⇒ log-normal in linear time ⇒ <b>Weber-like
-            scalar variability</b>. All 5 candidate models share this encoder; they differ only
-            in how they decode m<sub>a</sub>, m<sub>v</sub> into a duration estimate.
-          </p>
-        </div>
+        <div class="model-flow">
+          <svg class="model-map" viewBox="0 0 1320 1580" role="img" aria-label="Icon-only model diagram: shared sensory encoding branches into five decoding strategies.">
+            <defs>
+              <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L11,5.5 L0,11 Z" fill="#0f172a"></path>
+              </marker>
+              <g id="bell-pair">
+                <line x1="0" y1="116" x2="255" y2="116" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"></line>
+                <path d="M12 116 C32 110 42 32 76 32 C112 32 125 109 151 116" fill="none" stroke="#2c5fb1" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M105 116 C127 111 143 36 181 36 C218 36 233 109 248 116" fill="none" stroke="#2d2d2d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+              </g>
+              <g id="bell-fused">
+                <line x1="0" y1="116" x2="255" y2="116" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"></line>
+                <path d="M30 116 C58 108 80 38 128 38 C176 38 198 108 226 116" fill="none" stroke="#0f766e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+              </g>
+              <g id="bell-seg">
+                <line x1="0" y1="116" x2="255" y2="116" stroke="#9ca3af" stroke-width="3" stroke-linecap="round"></line>
+                <path d="M12 116 C32 110 42 32 76 32 C112 32 125 109 151 116" fill="none" stroke="#2c5fb1" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M105 116 C127 111 143 36 181 36 C218 36 233 109 248 116" fill="none" stroke="#2d2d2d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+              </g>
+              <g id="speaker">
+                <path d="M18 70 H48 L85 40 V132 L48 102 H18 Z" fill="#fff" stroke="#2c5fb1" stroke-width="7" stroke-linejoin="round"></path>
+                <path d="M98 59 C116 77 116 95 98 113" fill="none" stroke="#2c5fb1" stroke-width="7" stroke-linecap="round"></path>
+                <path d="M118 42 C149 73 149 99 118 130" fill="none" stroke="#2c5fb1" stroke-width="7" stroke-linecap="round"></path>
+              </g>
+              <g id="eye">
+                <path d="M8 86 C48 35 114 35 154 86 C114 137 48 137 8 86 Z" fill="#fff" stroke="#2d2d2d" stroke-width="7" stroke-linejoin="round"></path>
+                <circle cx="81" cy="86" r="24" fill="none" stroke="#2d2d2d" stroke-width="7"></circle>
+                <circle cx="81" cy="86" r="9" fill="#2d2d2d"></circle>
+              </g>
+            </defs>
 
-        <div class="subh">Decoding strategies &mdash; 5 candidate models</div>
+            <rect class="panel panel--top" x="20" y="22" width="1280" height="240"></rect>
+            <rect class="lane lane--m1" x="20" y="306" width="1280" height="205"></rect>
+            <rect class="lane lane--m2" x="20" y="540" width="1280" height="205"></rect>
+            <rect class="lane lane--m3" x="20" y="774" width="1280" height="205"></rect>
+            <rect class="lane lane--m4" x="20" y="1008" width="1280" height="205"></rect>
+            <rect class="lane lane--m5" x="20" y="1242" width="1280" height="205"></rect>
 
-        <div class="models">
+            <path class="branch branch--thin" d="M660 262 V1480"></path>
+            <path class="branch branch--thin" d="M660 408 H770"></path>
+            <path class="branch branch--thin" d="M660 642 H770"></path>
+            <path class="branch branch--thin" d="M660 876 H770"></path>
+            <path class="branch branch--thin" d="M660 1110 H770"></path>
+            <path class="branch branch--thin" d="M660 1344 H770"></path>
 
-          <div class="mcard mcard--m1">
-            <div class="mcard__head">
-              <span class="mcard__tag">M1</span>
-              <span class="mcard__name">Forced fusion</span>
-              <span class="mcard__params">4 params</span>
-            </div>
-            <p class="mcard__desc">Always integrate auditory + visual; reliability-weighted average. Special case of CI with <i>p<sub>c</sub></i>&thinsp;=&thinsp;1.</p>
-            <div class="mcard__hint">linear bias scaled by the variance ratio &mdash; <b>no breakdown</b>.</div>
-            <div class="mcard__eq">ŝ<sub>a</sub> = w<sub>a</sub> m<sub>a</sub> + w<sub>v</sub> m<sub>v</sub>,&nbsp; w<sub>i</sub> ∝ 1/σ<sub>i</sub><sup>2</sup></div>
-          </div>
+            <g transform="translate(95 70)">
+              <use href="#speaker"></use>
+            </g>
+            <g transform="translate(250 56)">
+              <use href="#eye"></use>
+            </g>
+            <path class="branch" d="M438 142 H520"></path>
+            <g transform="translate(540 65)">
+              <line class="axis" x1="0" y1="116" x2="260" y2="116"></line>
+              <path class="curve curve--aud" d="M10 116 C31 108 42 26 82 26 C121 26 135 108 156 116"></path>
+              <path class="curve curve--vis" d="M104 116 C126 111 143 42 184 42 C224 42 242 109 255 116"></path>
+              <circle class="dot dot--aud" cx="80" cy="26" r="8"></circle>
+              <circle class="dot dot--vis" cx="184" cy="42" r="8"></circle>
+            </g>
+            <path class="branch" d="M822 142 H910"></path>
+            <g transform="translate(942 54)">
+              <path class="curve curve--aud curve--ghost" d="M30 122 C70 116 86 42 133 42 C182 42 199 116 236 122"></path>
+              <path class="curve curve--vis curve--ghost" d="M72 122 C107 116 128 66 170 66 C214 66 238 116 268 122"></path>
+              <path class="curve curve--fused" d="M52 122 C88 115 113 52 163 52 C214 52 236 115 272 122"></path>
+              <line class="axis" x1="20" y1="122" x2="292" y2="122"></line>
+              <circle class="dot dot--aud" cx="132" cy="42" r="8"></circle>
+              <circle class="dot dot--vis" cx="170" cy="66" r="8"></circle>
+            </g>
 
-          <div class="mcard mcard--m2">
-            <div class="mcard__head">
-              <span class="mcard__tag">M2</span>
-              <span class="mcard__name">CI · Model averaging</span>
-              <span class="mcard__params">5 params</span>
-            </div>
-            <p class="mcard__desc">Posterior-weighted average of fused (C=1) and segregated (C=2) estimates &mdash; <b>graded</b> transition between fusion and segregation.</p>
-            <div class="mcard__hint">smooth non-linear roll-off as conflict grows &mdash; magnitude controlled by <i>p<sub>c</sub></i>.</div>
-            <div class="mcard__eq">ŝ<sub>a</sub> = P(C=1) ŝ<sub>a,C=1</sub> + (1−P(C=1)) ŝ<sub>a,C=2</sub></div>
-          </div>
+            <g transform="translate(78 350)">
+              <use href="#bell-pair"></use>
+            </g>
+            <path class="branch" d="M350 408 H470"></path>
+            <circle class="switch switch--m1" cx="535" cy="408" r="44"></circle>
+            <path d="M513 408 H557 M535 386 V430" fill="none" stroke="#2563eb" stroke-width="8" stroke-linecap="round"></path>
+            <path class="branch" d="M585 408 H760"></path>
+            <g transform="translate(780 350)">
+              <use href="#bell-fused"></use>
+            </g>
+            <path class="branch" d="M1050 408 H1192"></path>
+            <g transform="translate(1168 364)">
+              <path class="curve curve--fused" d="M0 84 C24 78 36 24 68 24 C100 24 113 78 136 84"></path>
+              <line class="axis" x1="-10" y1="84" x2="146" y2="84"></line>
+            </g>
 
-          <div class="mcard mcard--m3">
-            <div class="mcard__head">
-              <span class="mcard__tag">M3</span>
-              <span class="mcard__name">CI · Model selection</span>
-              <span class="mcard__params">5 params</span>
-            </div>
-            <p class="mcard__desc">Pick the more probable causal hypothesis on each trial &mdash; <b>sharp</b> categorical transition between integration and segregation.</p>
-            <div class="mcard__hint">step-like switch as P(C=1) crosses ½.</div>
-            <div class="mcard__eq">ŝ<sub>a</sub> = ŝ<sub>a,C=1</sub> &nbsp;if P(C=1) &gt; ½, &nbsp;else ŝ<sub>a,C=2</sub></div>
-          </div>
+            <g transform="translate(78 584)">
+              <use href="#bell-pair"></use>
+            </g>
+            <path class="branch" d="M350 642 H458"></path>
+            <circle class="switch switch--m2" cx="520" cy="642" r="44"></circle>
+            <path d="M499 620 C514 650 527 650 542 620 M499 664 C514 634 527 634 542 664" fill="none" stroke="#0f766e" stroke-width="7" stroke-linecap="round"></path>
+            <path class="branch" d="M565 642 C620 580 672 576 738 588"></path>
+            <path class="branch branch--thin" d="M565 642 C620 704 672 708 738 696"></path>
+            <g transform="translate(758 556) scale(0.72)">
+              <use href="#bell-fused"></use>
+            </g>
+            <g transform="translate(758 650) scale(0.72)">
+              <use href="#bell-seg"></use>
+            </g>
+            <path class="mix" d="M970 597 C1035 600 1050 622 1088 642 C1050 662 1035 684 970 687"></path>
+            <g transform="translate(1098 582)">
+              <path class="curve curve--fused" d="M8 106 C33 98 52 36 96 36 C140 36 158 98 184 106"></path>
+              <path class="curve curve--aud curve--ghost" d="M0 106 C22 99 32 54 65 54 C99 54 109 99 132 106"></path>
+              <path class="curve curve--vis curve--ghost" d="M78 106 C101 99 111 54 144 54 C178 54 190 99 208 106"></path>
+              <line class="axis" x1="-4" y1="106" x2="218" y2="106"></line>
+            </g>
 
-          <div class="mcard mcard--m4">
-            <div class="mcard__head">
-              <span class="mcard__tag">M4</span>
-              <span class="mcard__name">CI · Probability matching</span>
-              <span class="mcard__params">5 params</span>
-            </div>
-            <p class="mcard__desc">Stochastically sample fusion or segregation per trial, with probability proportional to its causal posterior.</p>
-            <div class="mcard__hint">trial-to-trial mixture; suboptimal but psychologically plausible.</div>
-            <div class="mcard__eq">fuse&nbsp;~&nbsp;P(C=1),&nbsp; segregate&nbsp;~&nbsp;1−P(C=1)</div>
-          </div>
+            <g transform="translate(78 818)">
+              <use href="#bell-pair"></use>
+            </g>
+            <path class="branch" d="M350 876 H456"></path>
+            <g transform="translate(492 822)">
+              <rect class="bar" x="0" y="8" width="55" height="105" rx="6"></rect>
+              <rect class="barfill--yes" x="7" y="34" width="41" height="72" rx="4"></rect>
+              <rect class="bar" x="77" y="8" width="55" height="105" rx="6"></rect>
+              <rect class="barfill--no" x="84" y="70" width="41" height="36" rx="4"></rect>
+              <path d="M151 40 L171 62 L211 16" fill="none" stroke="#b91c1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+            </g>
+            <path class="branch" d="M708 876 H795"></path>
+            <g transform="translate(815 820)">
+              <use href="#bell-fused"></use>
+            </g>
+            <path class="branch branch--thin" d="M708 908 C780 968 900 966 985 922"></path>
+            <g transform="translate(1018 830)">
+              <path class="curve curve--fused" d="M0 94 C25 87 41 30 78 30 C116 30 131 87 156 94"></path>
+              <line class="axis" x1="-8" y1="94" x2="166" y2="94"></line>
+            </g>
 
-          <div class="mcard mcard--m5">
-            <div class="mcard__head">
-              <span class="mcard__tag">M5</span>
-              <span class="mcard__name">Probabilistic cue switching</span>
-              <span class="mcard__params">6 params</span>
-            </div>
-            <p class="mcard__desc">Heuristic: each trial use auditory or visual cue alone, with fixed probability <i>p<sub>v</sub></i> per noise condition. <b>No causal inference.</b></p>
-            <div class="mcard__hint">linear, fusion-like behavior emerges from <b>averaging across trials</b>.</div>
-            <div class="mcard__eq">decide on m<sub>v</sub> w.p.&nbsp;<i>p<sub>v</sub></i>; on m<sub>a</sub> w.p.&nbsp;1−<i>p<sub>v</sub></i></div>
-          </div>
+            <g transform="translate(78 1052)">
+              <use href="#bell-pair"></use>
+            </g>
+            <path class="branch" d="M350 1110 H466"></path>
+            <g transform="translate(502 1062)">
+              <rect class="dice" x="0" y="0" width="96" height="96"></rect>
+              <circle class="dot" cx="26" cy="26" r="7"></circle>
+              <circle class="dot" cx="70" cy="26" r="7"></circle>
+              <circle class="dot" cx="48" cy="48" r="7"></circle>
+              <circle class="dot" cx="26" cy="70" r="7"></circle>
+              <circle class="dot" cx="70" cy="70" r="7"></circle>
+            </g>
+            <path class="branch" d="M610 1110 C686 1048 760 1050 820 1074"></path>
+            <path class="branch branch--thin" d="M610 1110 C686 1172 760 1170 820 1146"></path>
+            <g transform="translate(842 1028) scale(0.72)">
+              <use href="#bell-fused"></use>
+            </g>
+            <g transform="translate(842 1124) scale(0.72)">
+              <use href="#bell-seg"></use>
+            </g>
+            <path class="branch" d="M1032 1110 H1198"></path>
+            <g transform="translate(1166 1060)">
+              <circle class="coin" cx="66" cy="66" r="50"></circle>
+              <path d="M42 66 C58 38 75 38 92 66 C75 94 58 94 42 66 Z" fill="none" stroke="#d97706" stroke-width="6"></path>
+              <circle class="dot" cx="67" cy="66" r="7"></circle>
+            </g>
 
-        </div>
-
-        <div class="callout">
-          <b>Fitting.</b> Maximum-likelihood via <b>BADS</b> (Acerbi &amp; Ma, 2017) with 10 random restarts; per-condition response probabilities estimated from <b>2000 Monte Carlo</b> trials per cell. Compared by AIC and random-effects BMS (PXP, BOR).
+            <g transform="translate(78 1286)">
+              <use href="#bell-pair"></use>
+            </g>
+            <path class="branch" d="M350 1344 H458"></path>
+            <circle class="switch switch--m5" cx="520" cy="1344" r="44"></circle>
+            <path d="M486 1344 H554" fill="none" stroke="#15803d" stroke-width="9" stroke-linecap="round"></path>
+            <circle class="dot dot--aud" cx="497" cy="1344" r="10"></circle>
+            <circle class="dot dot--vis" cx="543" cy="1344" r="10"></circle>
+            <path class="branch" d="M568 1344 C650 1272 730 1272 800 1294"></path>
+            <path class="branch" d="M568 1344 C650 1416 730 1416 800 1394"></path>
+            <g transform="translate(826 1248)">
+              <line class="axis" x1="0" y1="100" x2="220" y2="100"></line>
+              <path class="curve curve--aud" d="M12 100 C35 92 52 34 96 34 C140 34 160 92 184 100"></path>
+            </g>
+            <g transform="translate(826 1360)">
+              <line class="axis" x1="0" y1="84" x2="220" y2="84"></line>
+              <path class="curve curve--vis" d="M34 84 C57 76 74 18 118 18 C162 18 182 76 206 84"></path>
+            </g>
+            <path class="branch" d="M1070 1344 H1192"></path>
+            <g transform="translate(1166 1294)">
+              <path class="curve curve--aud" d="M0 94 C24 86 36 28 74 28 C112 28 128 86 152 94"></path>
+              <path class="curve curve--vis" d="M34 94 C58 86 72 46 106 46 C142 46 160 86 178 94"></path>
+              <line class="axis" x1="-8" y1="94" x2="188" y2="94"></line>
+            </g>
+          </svg>
         </div>
       </section>
 

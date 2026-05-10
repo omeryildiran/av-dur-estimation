@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="vss-av-duration-model-schematic" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 3200 1900">
+  <!-- Generator: Adobe Illustrator 30.3.0, SVG Export Plug-In . SVG Version: 2.1.3 Build 182)  -->
+  <defs>
+    <style>
+      .st0, .st1, .st2, .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st10, .st11, .st12, .st13, .st14, .st15 {
+        fill: none;
+      }
+
+      .st1, .st2, .st3, .st4, .st5, .st6, .st7, .st8, .st9, .st11, .st12, .st13, .st14, .st15 {
+        stroke-linecap: round;
+      }
+
+      .st1, .st2, .st3, .st4, .st5, .st6, .st7, .st8, .st11, .st12, .st13, .st14, .st15 {
+        stroke-linejoin: round;
+      }
+
+      .st1, .st3, .st7 {
+        stroke-width: 8px;
+      }
+
+      .st1, .st15 {
+        stroke: #000;
+      }
+
+      .st16, .st17, .st18, .st19, .st20, .st21, .st22, .st23, .st24 {
+        fill: #111;
+      }
+
+      .st17, .st18, .st19 {
+        font-family: HelveticaNeue-Italic, 'Helvetica Neue';
+        font-style: italic;
+      }
+
+      .st17, .st19, .st25, .st20, .st5, .st26, .st27, .st28, .st21, .st22, .st23, .st12, .st14, .st24, .st15, .st29 {
+        isolation: isolate;
+      }
+
+      .st17, .st28 {
+        font-size: 18px;
+      }
+
+      .st18, .st19 {
+        font-size: 30px;
+      }
+
+      .st30 {
+        fill: #151515;
+      }
+
+      .st2, .st3, .st14 {
+        stroke: #151515;
+      }
+
+      .st2, .st4, .st6, .st8, .st11, .st12, .st13 {
+        stroke-width: 5px;
+      }
+
+      .st31 {
+        fill: #9a9a9a;
+      }
+
+      .st25, .st32, .st33, .st34 {
+        fill: #fff;
+      }
+
+      .st25, .st27 {
+        font-size: 22px;
+      }
+
+      .st25, .st23 {
+        font-family: HelveticaNeue-Bold, 'Helvetica Neue';
+        font-weight: 700;
+      }
+
+      .st20 {
+        font-size: 48px;
+      }
+
+      .st20, .st26, .st27, .st28, .st21, .st22, .st24, .st29 {
+        font-family: HelveticaNeue, 'Helvetica Neue';
+      }
+
+      .st4, .st5, .st13 {
+        stroke: #c45a3a;
+      }
+
+      .st32 {
+        stroke: #e4e4e4;
+      }
+
+      .st32, .st5, .st9, .st10, .st14, .st15 {
+        stroke-width: 3px;
+      }
+
+      .st5, .st14, .st15 {
+        opacity: .62;
+      }
+
+      .st26, .st27, .st29 {
+        fill: #555;
+      }
+
+      .st26, .st23, .st24 {
+        font-size: 27px;
+      }
+
+      .st6, .st7, .st33 {
+        stroke: #111;
+      }
+
+      .st8, .st11, .st34, .st12 {
+        stroke: #9a9a9a;
+      }
+
+      .st28 {
+        fill: #656565;
+      }
+
+      .st21 {
+        font-size: 25px;
+      }
+
+      .st35 {
+        fill: #c45a3a;
+      }
+
+      .st36 {
+        opacity: .45;
+      }
+
+      .st37 {
+        opacity: .42;
+      }
+
+      .st9 {
+        stroke: #b9b9b9;
+      }
+
+      .st33, .st34 {
+        stroke-width: 4px;
+      }
+
+      .st10 {
+        stroke: #ececec;
+      }
+
+      .st22 {
+        font-size: 24px;
+      }
+
+      .st11, .st13 {
+        stroke-dasharray: 14 14;
+      }
+
+      .st12 {
+        opacity: .24;
+      }
+
+      .st38 {
+        fill: #eee;
+      }
+
+      .st29 {
+        font-size: 21px;
+      }
+    </style>
+  </defs>
+  <g id="header">
+    <text class="st20" transform="translate(150 112)"><tspan x="0" y="0">Audiovisual duration estimates under cue conflict</tspan></text>
+    <text class="st26" transform="translate(150 154)"><tspan x="0" y="0">Computational pipeline from noisy sensory measurements to auditory duration judgments</tspan></text>
+    <g id="legend">
+      <line class="st2" x1="2350" y1="78" x2="2412" y2="78"/>
+      <text class="st27" transform="translate(2430 86)"><tspan x="0" y="0">auditory cue</tspan></text>
+      <line class="st4" x1="2350" y1="120" x2="2412" y2="120"/>
+      <text class="st27" transform="translate(2430 128)"><tspan x="0" y="0">visual cue</tspan></text>
+      <line class="st11" x1="2350" y1="162" x2="2412" y2="162"/>
+      <text class="st27" transform="translate(2430 170)"><tspan x="0" y="0">stochastic path</tspan></text>
+    </g>
+  </g>
+  <line class="st10" x1="150" y1="205" x2="3050" y2="205"/>
+  <line class="st10" x1="150" y1="455" x2="3050" y2="455"/>
+  <line class="st10" x1="150" y1="830" x2="3050" y2="830"/>
+  <line class="st10" x1="150" y1="1320" x2="3050" y2="1320"/>
+  <g id="stage-labels">
+    <g>
+      <circle class="st16" cx="88" cy="270" r="23"/>
+      <text class="st25" transform="translate(81.88 278)"><tspan x="0" y="0">1</tspan></text>
+      <text class="st23" transform="translate(133 279)"><tspan x="0" y="0">Sensory encoding</tspan></text>
+    </g>
+    <g>
+      <circle class="st16" cx="88" cy="610" r="23"/>
+      <text class="st25" transform="translate(81.88 618)"><tspan x="0" y="0">2</tspan></text>
+      <text class="st23" transform="translate(133 619)"><tspan x="0" y="0">Causal belief</tspan></text>
+    </g>
+    <g>
+      <circle class="st16" cx="88" cy="1015" r="23"/>
+      <text class="st25" transform="translate(81.88 1023)"><tspan x="0" y="0">3</tspan></text>
+      <text class="st23" transform="translate(133 1024)"><tspan x="0" y="0">Decision strategy</tspan></text>
+    </g>
+    <g>
+      <circle class="st16" cx="88" cy="1500" r="23"/>
+      <text class="st25" transform="translate(81.88 1508)"><tspan x="0" y="0">4</tspan></text>
+      <text class="st23" transform="translate(133 1509)"><tspan x="0" y="0">Estimated duration</tspan></text>
+    </g>
+  </g>
+  <g id="sensory-encoding">
+    <text class="st24" transform="translate(812.21 235)"><tspan x="0" y="0">Internal measurements</tspan></text>
+    <g id="auditory-measurement">
+      <text class="st24" transform="translate(599.5 277)"><tspan x="0" y="0">Auditory</tspan></text>
+      <line class="st9" x1="440" y1="429" x2="860" y2="429"/>
+      <path class="st2" d="M465,428c47,0,63-4,91-21,32-20,46-85,94-85s62,65,94,85c28,17,44,21,91,21"/>
+      <circle class="st30" cx="650" cy="429" r="8"/>
+      <line class="st14" x1="650" y1="322" x2="650" y2="441"/>
+    </g>
+    <g id="visual-measurement">
+      <text class="st24" transform="translate(1224.5 277)"><tspan x="0" y="0">Visual</tspan></text>
+      <line class="st9" x1="1050" y1="429" x2="1470" y2="429"/>
+      <path class="st4" d="M1075,428c51,0,67-6,97-25,31-20,47-71,88-71s57,51,88,71c30,19,46,25,97,25"/>
+      <circle class="st35" cx="1260" cy="429" r="8"/>
+      <line class="st5" x1="1260" y1="332" x2="1260" y2="441"/>
+    </g>
+  </g>
+  <g id="pipeline-arrows" class="st36">
+    <path class="st0" d=""/>
+    <path class="st31" d="M1577.5,455.5l25,12.5-25,12.5v-25Z"/>
+    <path class="st31" d="M1600,632" marker-end="url(#arrow-gray)"/>
+    <path class="st0" d=""/>
+    <path class="st31" d="M1577.5,879.5l25,12.5-25,12.5v-25Z"/>
+    <path class="st31" d="M1600,208" marker-end="url(#arrow-gray)"/>
+  </g>
+  <g id="conflict-evaluation">
+    <rect class="st32" x="345" y="480" width="2510" height="330"/>
+    <g>
+      <text class="st19" transform="translate(1499.77 530)"><tspan x="0" y="0">P(C=1 | m</tspan></text>
+      <text class="st17" transform="translate(1632.22 536)"><tspan x="0" y="0">a</tspan></text>
+      <text class="st18" transform="translate(1641.56 530)"><tspan x="0" y="0">, m</tspan></text>
+      <text class="st17" transform="translate(1683.8 536)"><tspan x="0" y="0">v</tspan></text>
+      <text class="st18" transform="translate(1692.46 530)"><tspan x="0" y="0">)</tspan></text>
+    </g>
+    <text class="st27" transform="translate(1272.59 566)"><tspan x="0" y="0">greater audiovisual duration conflict reduces common-cause belief</tspan></text>
+    <g id="low-conflict-panel">
+      <text class="st22" transform="translate(644.9 610)"><tspan x="0" y="0">Low conflict</tspan></text>
+      <line class="st9" x1="500" y1="737" x2="920" y2="737"/>
+      <path class="st2" d="M530,736c55,0,76-9,106-35s42-58,74-58,44,32,74,58,51,35,106,35"/>
+      <path class="st4" d="M547,736c54,0,75-9,106-34s45-53,78-53,47,28,78,53,52,34,105,34"/>
+      <line class="st14" x1="710" y1="643" x2="710" y2="747"/>
+      <line class="st5" x1="731" y1="649" x2="731" y2="747"/>
+      <path class="st0" d=""/>
+      <path class="st31" d="M717.5,752.5l25,12.5-25,12.5v-25Z"/>
+      <path class="st31" d="M1240,960" marker-end="url(#arrow-gray)"/>
+      <text class="st28" transform="translate(620.63 791)"><tspan x="0" y="0">nearby measurements</tspan></text>
+      <g id="high-common-cause-bar">
+        <text class="st27" transform="translate(1020 653)"><tspan x="0" y="0">common cause</tspan></text>
+        <rect class="st38" x="1020" y="679" width="255" height="18"/>
+        <rect class="st16" x="1020" y="679" width="218" height="18"/>
+        <text class="st29" transform="translate(1305 696)"><tspan x="0" y="0">high</tspan></text>
+        <path class="st0" d=""/>
+        <path class="st16" d="M1180,709.67l66.67,33.33-66.67,33.33v-66.67Z"/>
+        <path class="st16" d="M2260,1018" marker-end="url(#arrow-ink)"/>
+      </g>
+    </g>
+    <g id="high-conflict-panel">
+      <text class="st22" transform="translate(1907.67 610)"><tspan x="0" y="0">High conflict</tspan></text>
+      <line class="st9" x1="1765" y1="737" x2="2185" y2="737"/>
+      <path class="st2" d="M1783,736c54,0,72-10,99-34,29-26,41-53,71-53s42,27,71,53c27,24,45,34,99,34"/>
+      <path class="st4" d="M1850,736c53,0,71-10,99-34,30-26,42-53,74-53s44,27,74,53c28,24,46,34,98,34"/>
+      <line class="st14" x1="1953" y1="649" x2="1953" y2="747"/>
+      <line class="st5" x1="2023" y1="649" x2="2023" y2="747"/>
+      <path class="st0" d=""/>
+      <path class="st31" d="M2000.5,754.5l25,12.5-25,12.5v-25Z"/>
+      <path class="st31" d="M3788,958" marker-end="url(#arrow-gray)"/>
+      <text class="st28" transform="translate(1886.8 791)"><tspan x="0" y="0">separated measurements</tspan></text>
+      <g id="low-common-cause-bar">
+        <text class="st27" transform="translate(2285 653)"><tspan x="0" y="0">common cause</tspan></text>
+        <rect class="st38" x="2285" y="679" width="255" height="18"/>
+        <rect class="st16" x="2285" y="679" width="96" height="18"/>
+        <text class="st29" transform="translate(2570 696)"><tspan x="0" y="0">lower</tspan></text>
+        <path class="st0" d=""/>
+        <path class="st31" d="M2379.5,722.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+        <path class="st31" d="M4702,1018" marker-end="url(#arrow-gray)"/>
+      </g>
+    </g>
+  </g>
+  <g id="decision-strategies">
+    <g id="model-column-guides" class="st36">
+      <line class="st10" x1="770" y1="900" x2="770" y2="1275"/>
+      <line class="st10" x1="1290" y1="900" x2="1290" y2="1275"/>
+      <line class="st10" x1="1810" y1="900" x2="1810" y2="1275"/>
+      <line class="st10" x1="2330" y1="900" x2="2330" y2="1275"/>
+    </g>
+    <g id="fusion-model">
+      <text class="st21" transform="translate(472.73 900)"><tspan x="0" y="0">Fusion</tspan></text>
+      <path class="st0" d=""/>
+      <path class="st16" d="M427.5,1024.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st16" d="M465,1045" marker-end="url(#arrow-ink)"/>
+      <path class="st0" d=""/>
+      <path class="st35" d="M517.5,1024.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st35" d="M555,1045" marker-end="url(#arrow-red)"/>
+      <circle class="st30" cx="365" cy="982" r="13"/>
+      <circle class="st35" cx="655" cy="982" r="13"/>
+      <circle class="st33" cx="510" cy="1076" r="45"/>
+      <path class="st6" d="M489,1076l21,21,22-43"/>
+      <path class="st0" d=""/>
+      <path class="st16" d="M472.5,1191.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st16" d="M760,788" marker-end="url(#arrow-ink)"/>
+      <line class="st9" x1="368" y1="1232" x2="652" y2="1232"/>
+      <circle cx="510" cy="1232" r="9"/>
+    </g>
+    <g id="averaging-model">
+      <text class="st21" transform="translate(974.21 900)"><tspan x="0" y="0">Averaging</tspan></text>
+      <circle class="st33" cx="935" cy="997" r="26"/>
+      <circle class="st34" cx="1125" cy="997" r="26"/>
+      <text class="st28" transform="translate(912.66 1040)"><tspan x="0" y="0">fused</tspan></text>
+      <text class="st28" transform="translate(1079.83 1040)"><tspan x="0" y="0">segregated</tspan></text>
+      <line class="st9" x1="915" y1="1090" x2="1145" y2="1090"/>
+      <circle class="st16" cx="935" cy="1090" r="8"/>
+      <circle class="st31" cx="1125" cy="1090" r="8"/>
+      <path class="st7" d="M935,1090c55-18,127,18,190,0"/>
+      <circle class="st16" cx="1017" cy="1090" r="12"/>
+      <path class="st0" d=""/>
+      <path class="st16" d="M979.5,1191.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st16" d="M1787,788" marker-end="url(#arrow-ink)"/>
+      <text class="st28" transform="translate(915.5 1152)"><tspan x="0" y="0">belief-weighted interpolation</tspan></text>
+    </g>
+    <g id="selection-model">
+      <text class="st21" transform="translate(1498.15 900)"><tspan x="0" y="0">Selection</tspan></text>
+      <path class="st6" d="M1450,985l100,69"/>
+      <path class="st8" d="M1650,985l-100,69"/>
+      <circle class="st33" cx="1450" cy="985" r="24"/>
+      <circle class="st34" cx="1650" cy="985" r="24"/>
+      <g id="selection-gate">
+        <line class="st6" x1="1478" y1="1076" x2="1622" y2="1076"/>
+        <line class="st6" x1="1542" y1="1030" x2="1578" y2="1076"/>
+        <circle class="st16" cx="1478" cy="1076" r="8"/>
+        <circle class="st31" cx="1622" cy="1076" r="8"/>
+      </g>
+      <path class="st0" d=""/>
+      <path class="st16" d="M1528.5,1191.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st16" d="M2856,788" marker-end="url(#arrow-ink)"/>
+      <text class="st28" transform="translate(1441 1152)"><tspan x="0" y="0">categorical causal decision</tspan></text>
+    </g>
+    <g id="probability-matching-model">
+      <text class="st21" transform="translate(1955.39 900)"><tspan x="0" y="0">Probability matching</tspan></text>
+      <circle class="st33" cx="2070" cy="992" r="30"/>
+      <text class="st22" transform="translate(2062.22 1001)"><tspan x="0" y="0">P</tspan></text>
+      <path class="st0" d=""/>
+      <path class="st31" d="M1917.5,1125.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st31" d="M3765,854" marker-end="url(#arrow-gray)"/>
+      <path class="st0" d=""/>
+      <path class="st31" d="M2148.5,1125.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st31" d="M3996,854" marker-end="url(#arrow-gray)"/>
+      <circle class="st33" cx="1955" cy="1162" r="24"/>
+      <circle class="st34" cx="2186" cy="1162" r="24"/>
+      <text class="st28" transform="translate(1938.1 1206)"><tspan x="0" y="0">C=1</tspan></text>
+      <text class="st28" transform="translate(2169.1 1206)"><tspan x="0" y="0">C=2</tspan></text>
+      <path class="st0" d=""/>
+      <path class="st31" d="M2016.5,1197.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st31" d="M3864,782" marker-end="url(#arrow-gray)"/>
+      <path class="st0" d=""/>
+      <path class="st31" d="M2050.5,1197.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st31" d="M3898,782" marker-end="url(#arrow-gray)"/>
+    </g>
+    <g id="heuristic-switching-model">
+      <text class="st21" transform="translate(2484.23 900)"><tspan x="0" y="0">Heuristic switching</tspan></text>
+      <path class="st0" d=""/>
+      <path class="st16" d="M2526.5,1083.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st16" d="M4894,896" marker-end="url(#arrow-ink)"/>
+      <path class="st0" d=""/>
+      <path class="st35" d="M2578.5,1083.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st35" d="M4946,896" marker-end="url(#arrow-red)"/>
+      <circle class="st30" cx="2442" cy="972" r="13"/>
+      <circle class="st35" cx="2737" cy="972" r="13"/>
+      <g id="heuristic-switch">
+        <line class="st6" x1="2514" y1="1118" x2="2666" y2="1118"/>
+        <line class="st8" x1="2586" y1="1073" x2="2545" y2="1118"/>
+        <circle class="st30" cx="2514" cy="1118" r="8"/>
+        <circle class="st35" cx="2666" cy="1118" r="8"/>
+      </g>
+      <path class="st0" d=""/>
+      <path class="st31" d="M2552.5,1197.17l41.67,20.83-41.67,20.83v-41.67Z"/>
+      <path class="st31" d="M4920,782" marker-end="url(#arrow-gray)"/>
+      <text class="st28" transform="translate(2498.99 1178)"><tspan x="0" y="0">bypasses causal belief</tspan></text>
+    </g>
+  </g>
+  <g id="heuristic-bypass-emphasis" class="st37">
+    <path class="st0" d=""/>
+    <path class="st31" d="M2839.5,887.5l25,12.5-25,12.5v-25Z"/>
+    <path class="st31" d="M2862,200" marker-end="url(#arrow-gray)"/>
+    <text class="st27" transform="translate(2812 560)"><tspan x="0" y="0">direct cue-level switch</tspan></text>
+  </g>
+  <g id="estimated-duration">
+    <text class="st24" transform="translate(1611.96 1360)"><tspan x="0" y="0">Final estimated auditory duration</tspan></text>
+    <g id="fusion-estimate">
+      <line class="st9" x1="340" y1="1595" x2="680" y2="1595"/>
+      <path class="st1" d="M370,1594c47,0,64-7,93-33,28-26,34-83,47-83s19,57,47,83c29,26,46,33,93,33"/>
+      <line class="st15" x1="510" y1="1478" x2="510" y2="1608"/>
+      <text class="st28" transform="translate(404.72 1647)"><tspan x="0" y="0">merged centered estimate</tspan></text>
+    </g>
+    <g id="averaging-estimate">
+      <line class="st9" x1="860" y1="1595" x2="1200" y2="1595"/>
+      <path class="st12" d="M890,1594c52,0,70-7,99-32,28-25,38-68,63-68s35,43,63,68c29,25,47,32,85,32"/>
+      <path class="st1" d="M865,1594c55,0,77-8,106-38,31-31,44-92,77-92s43,58,71,89c27,30,46,41,76,41"/>
+      <circle class="st16" cx="1008" cy="1595" r="7"/>
+      <circle class="st31" cx="1080" cy="1595" r="7"/>
+      <text class="st28" transform="translate(901.47 1647)"><tspan x="0" y="0">smoothly belief-shifted estimate</tspan></text>
+    </g>
+    <g id="selection-estimate">
+      <line class="st9" x1="1380" y1="1595" x2="1720" y2="1595"/>
+      <path class="st12" d="M1488,1594c28,0,41-5,60-23,22-21,31-56,52-56s30,35,52,56c19,18,32,23,61,23"/>
+      <path class="st3" d="M1382,1594c34,0,51-7,74-32,24-27,33-76,60-76s36,49,60,76c23,25,40,32,74,32"/>
+      <line class="st14" x1="1516" y1="1486" x2="1516" y2="1608"/>
+      <text class="st28" transform="translate(1436.48 1647)"><tspan x="0" y="0">one causal structure chosen</tspan></text>
+    </g>
+    <g id="probability-matching-estimate">
+      <line class="st9" x1="1900" y1="1595" x2="2240" y2="1595"/>
+      <path class="st1" d="M1902,1594c33,0,52-6,74-30,24-27,33-69,59-69s35,42,59,69c22,24,41,30,74,30"/>
+      <path class="st11" d="M2000,1594c28,0,42-5,61-23,22-21,31-55,53-55s31,34,53,55c19,18,33,23,61,23"/>
+      <circle class="st16" cx="2035" cy="1595" r="7"/>
+      <circle class="st31" cx="2114" cy="1595" r="7"/>
+      <text class="st28" transform="translate(1957.18 1647)"><tspan x="0" y="0">trial-wise mixed possibilities</tspan></text>
+    </g>
+    <g id="heuristic-switching-estimate">
+      <line class="st9" x1="2420" y1="1595" x2="2760" y2="1595"/>
+      <path class="st3" d="M2410,1594c34,0,52-6,76-30,25-26,34-72,60-72s35,46,60,72c24,24,42,30,76,30"/>
+      <path class="st13" d="M2500,1594c33,0,51-6,75-30,25-26,34-72,60-72s35,46,60,72c24,24,42,30,75,30"/>
+      <circle class="st30" cx="2546" cy="1595" r="7"/>
+      <circle class="st35" cx="2635" cy="1595" r="7"/>
+      <text class="st28" transform="translate(2500.98 1647)"><tspan x="0" y="0">cue-selected estimate</tspan></text>
+    </g>
+  </g>
+</svg>

@@ -9,9 +9,10 @@
 # 5. fusionOnlyLogNorm: Log-space optimal fusion without causal inference (p_c=1.0)
 # 6. probabilityMatching: Linear-space probability matching (samples causal structure from posterior)
 # 7. probabilityMatchingLogNorm: Log-space probability matching (samples causal structure from posterior)
-# 8. switching: Log-space modality switching based on reliability (Gaussian noise in log space)
-# 9. switchingWithConflict: Log-space switching with conflict sensitivity (Gaussian noise in log space)
-# 10. switchingFree: Log-space switching with free probability parameters (Gaussian noise in log space)
+# 8. selection: Log-space model selection (chooses max-posterior causal structure)
+# 9. switching: Log-space modality switching based on reliability (Gaussian noise in log space)
+# 10. switchingWithConflict: Log-space switching with conflict sensitivity (Gaussian noise in log space)
+# 11. switchingFree: Log-space switching with free probability parameters (Gaussian noise in log space)
 #
 # Parameter Structure (default: sharedLambda=True):
 # -------------------------------------------------
@@ -727,10 +728,9 @@ class OmerMonteCarlo(fitPychometric):
         fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
         est_separate = m_a
         
-        # Sample causal structure using Bernoulli distribution based on posterior
-        # For each trial, randomly decide: fused (C=1) or separate (C=2)
-        #sampled_C1 = np.random.binomial(1, post_C1)
-        sampled_C1 = np.random.uniform(0,1, size=post_C1.shape) > post_C1 #
+        # Sample causal structure using Bernoulli distribution based on posterior.
+        # For each trial, use the fused estimate with probability P(C=1 | m).
+        sampled_C1 = np.random.uniform(0, 1, size=np.shape(post_C1)) < post_C1
 
         
         # Select estimate based on sampled causal structure
@@ -1005,15 +1005,15 @@ class OmerMonteCarlo(fitPychometric):
         elif self.modelName == "selection":
             nSimul = self.nSimul
             S_a_s, S_a_t, S_v_s, S_v_t = trueStims
-            # Generate measurements with noise
-            m_a_s = np.random.normal(S_a_s, scale=sigma_av_a, size=nSimul)
-            m_a_t = np.random.normal(S_a_t, scale=sigma_av_a, size=nSimul)
-            m_v_s = np.random.normal(S_v_s, scale=sigma_av_v, size=nSimul)
-            m_v_t = np.random.normal(S_v_t, scale=sigma_av_v, size=nSimul)
+            # Generate measurements in LOG space, matching lognorm/PM-lognorm.
+            m_a_s = np.random.normal(loc=np.log(S_a_s), scale=sigma_av_a, size=nSimul)
+            m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
+            m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
+            m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             
-            # Selection model estimates
-            est_standard = self.selection_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
-            est_test = self.selection_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, t_min, t_max)
+            # Selection model estimates in log space.
+            est_standard = self.selection_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
+            est_test = self.selection_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, p_c, np.log(t_min), np.log(t_max))
 
         elif self.modelName == "switching":
             nSimul = self.nSimul
@@ -1068,7 +1068,7 @@ class OmerMonteCarlo(fitPychometric):
             raise ValueError(f"Invalid modelName '{self.modelName}'. Choose 'gaussian', 'lognorm', 'logLinearMismatch', 'fusionOnly', 'fusionOnlyLogNorm', 'probabilityMatching', 'probabilityMatchingLogNorm', 'selection', 'switching', 'switchingWithConflict', or 'switchingFree'.")
 
     
-        if self.modelName in ["lognorm", "logLinearMismatch", "probabilityMatchingLogNorm", "switching", "switchingWithConflict", "switchingFree"]:
+        if self.modelName in ["lognorm", "logLinearMismatch", "probabilityMatchingLogNorm", "selection", "switching", "switchingWithConflict", "switchingFree"]:
             # For log-space models, ensure estimates are in linear space
             est_standard = np.exp(est_standard)
             est_test = np.exp(est_test)
@@ -2069,9 +2069,6 @@ if __name__ == "__main__":
     # Simulate and plot psychometric data
     uniqueSensory = np.unique(data[sensoryVar])
     uniqueConflict = np.unique(data[conflictVar])
-
-
-
 
 
 
