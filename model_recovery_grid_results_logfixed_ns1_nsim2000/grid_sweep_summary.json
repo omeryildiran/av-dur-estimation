@@ -1,0 +1,134 @@
+{
+  "args": {
+    "sigma_levels": [
+      "a"
+    ],
+    "conflict_levels": [
+      0.45
+    ],
+    "models": [
+      "lognorm",
+      "fusionOnlyLogNorm",
+      "switchingFree",
+      "probabilityMatchingLogNorm",
+      "selection"
+    ],
+    "n_iter": 50,
+    "n_conflict_steps": 9,
+    "n_trials_per_cell": 20,
+    "nSimul": 2000,
+    "nStarts": 1,
+    "delta_max_pct": 0.9,
+    "n_jobs": null,
+    "save_dir": "model_recovery_grid_results_logfixed_ns1_nsim2000",
+    "save_every": 1,
+    "force": false,
+    "pilot": false
+  },
+  "sigma_levels": {
+    "a": {
+      "label": "a [0.01\u20130.20]",
+      "sigma_a": [
+        0.01,
+        0.2
+      ],
+      "sigma_v": [
+        0.01,
+        0.2
+      ]
+    },
+    "b": {
+      "label": "b [0.20\u20130.40]",
+      "sigma_a": [
+        0.2,
+        0.4
+      ],
+      "sigma_v": [
+        0.2,
+        0.4
+      ]
+    },
+    "c": {
+      "label": "c [0.30\u20130.70]",
+      "sigma_a": [
+        0.3,
+        0.7
+      ],
+      "sigma_v": [
+        0.3,
+        0.7
+      ]
+    },
+    "d": {
+      "label": "d empirical [\u03c3a:0.11\u20130.48, \u03c3v:0.14\u20131.60]",
+      "sigma_a": [
+        0.11,
+        0.48
+      ],
+      "sigma_v": [
+        0.14,
+        1.6
+      ]
+    }
+  },
+  "grid": [
+    {
+      "sigma_key": "a",
+      "sigma_label": "a [0.01\u20130.20]",
+      "sigma_a_range": [
+        0.01,
+        0.2
+      ],
+      "sigma_v_range": [
+        0.01,
+        0.2
+      ],
+      "conflict_max": 0.45,
+      "mean_diag_recovery_aic": 0.5439999999999999,
+      "per_model_diag_aic": {
+        "lognorm": 0.4,
+        "fusionOnlyLogNorm": 0.86,
+        "switchingFree": 0.96,
+        "probabilityMatchingLogNorm": 0.2,
+        "selection": 0.3
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 20,
+          "fusionOnlyLogNorm": 5,
+          "switchingFree": 0,
+          "probabilityMatchingLogNorm": 6,
+          "selection": 19
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 5,
+          "fusionOnlyLogNorm": 43,
+          "switchingFree": 0,
+          "probabilityMatchingLogNorm": 1,
+          "selection": 1
+        },
+        "switchingFree": {
+          "lognorm": 0,
+          "fusionOnlyLogNorm": 1,
+          "switchingFree": 48,
+          "probabilityMatchingLogNorm": 0,
+          "selection": 1
+        },
+        "probabilityMatchingLogNorm": {
+          "lognorm": 15,
+          "fusionOnlyLogNorm": 7,
+          "switchingFree": 0,
+          "probabilityMatchingLogNorm": 10,
+          "selection": 18
+        },
+        "selection": {
+          "lognorm": 7,
+          "fusionOnlyLogNorm": 7,
+          "switchingFree": 2,
+          "probabilityMatchingLogNorm": 19,
+          "selection": 15
+        }
+      }
+    }
+  ]
+}
