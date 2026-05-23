@@ -1,0 +1,16 @@
+{
+    "participantID": "sx",
+    "modelType": "lognorm_LapseFix_sharedPrior",
+    "noiseLabel": "low",
+    "fittedParams": [
+        0.16811983703339356,
+        0.2751758962350279,
+        0.2886175499319674,
+        0.9999999616935384,
+        1.9904346060602505
+    ],
+    "AIC": 1090.2434741486202,
+    "BIC": 1108.1984090511744,
+    "logLikelihood": -540.1217370743101,
+    "n_conditions": 268
+}

@@ -1,0 +1,15 @@
+{
+    "participantID": "dt",
+    "modelType": "fusionOnlyLogNorm_LapseFix_sharedPrior",
+    "noiseLabel": "low",
+    "fittedParams": [
+        0.227324772444641,
+        0.207854578680417,
+        1.4064264133258255,
+        0.9711227148917968
+    ],
+    "AIC": 1205.8623439683404,
+    "BIC": 1219.5444839654294,
+    "logLikelihood": -598.9311719841702,
+    "n_conditions": 226
+}

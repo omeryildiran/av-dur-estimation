@@ -1,0 +1,15 @@
+{
+    "participantID": "mt",
+    "modelType": "fusionOnlyLogNorm_LapseFix_sharedPrior",
+    "noiseLabel": "low",
+    "fittedParams": [
+        0.12274356145858765,
+        0.16422288393974294,
+        0.5330615808963775,
+        1.9799360954761505
+    ],
+    "AIC": 1001.7726687519857,
+    "BIC": 1014.4318126476799,
+    "logLikelihood": -496.8863343759929,
+    "n_conditions": 175
+}

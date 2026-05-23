@@ -1,0 +1,17 @@
+{
+    "participantID": "ip",
+    "modelType": "switchingFree_LapseFix_sharedPrior",
+    "noiseLabel": "low",
+    "fittedParams": [
+        0.05722731595039368,
+        0.27684302098274216,
+        0.00248206396579731,
+        4.768371575369912e-08,
+        1.989260161499977,
+        0.9991814851760865
+    ],
+    "AIC": 1088.9154364321762,
+    "BIC": 1110.0681540669668,
+    "logLikelihood": -538.4577182160881,
+    "n_conditions": 251
+}

@@ -1,0 +1,16 @@
+{
+    "participantID": "oy",
+    "modelType": "lognorm_LapseFix_sharedPrior",
+    "noiseLabel": "low",
+    "fittedParams": [
+        0.03642859392166137,
+        0.31985463372230516,
+        1.8444850481700896,
+        0.6486407279968263,
+        0.002020031862258742
+    ],
+    "AIC": 1112.9096805713011,
+    "BIC": 1131.9803332304264,
+    "logLikelihood": -551.4548402856506,
+    "n_conditions": 335
+}
