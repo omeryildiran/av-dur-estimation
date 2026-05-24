@@ -31138,4 +31138,1429 @@ Test likelihood evaluation: 3164.5571142619456
 
 Starting 3 optimization attempts using 'bads'...
 Model is lognorm
-Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [07:31<15:03, 451.95s/it]
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [07:31<15:03, 451.95s/it]Optimization Attempts:  33%|███▎      | 1/3 [08:40<17:20, 520.44s/it]Optimization Attempts: 100%|██████████| 3/3 [18:45<00:00, 365.50s/it]Optimization Attempts: 100%|██████████| 3/3 [18:45<00:00, 375.02s/it]
+✓ Attempt 1: New best LL = 3436.389505
+✓ Attempt 2: New best LL = 3431.934539
+✓ Attempt 3: New best LL = 3431.822878
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.24229036 0.12799259 0.25428064 0.68603121 1.16156342]
+  → Final log-likelihood: 3431.822878
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3635.062088068252
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3631.488568399959
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [13:13<06:35, 395.50s/it]Optimization Attempts: 100%|██████████| 3/3 [20:02<00:00, 382.57s/it]Optimization Attempts: 100%|██████████| 3/3 [20:02<00:00, 400.91s/it]
+✓ Attempt 1: New best LL = 2948.774090
+✓ Attempt 2: New best LL = 2947.771955
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.05805585 0.17624575 0.3179754  0.71621234 0.6559407 ]
+  → Final log-likelihood: 2947.771955
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3245.216447906229
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3244.1295944345657
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [03:56<07:52, 236.22s/it]Optimization Attempts: 100%|██████████| 3/3 [16:12<00:00, 296.63s/it]Optimization Attempts: 100%|██████████| 3/3 [16:12<00:00, 324.12s/it]
+✓ Attempt 2: New best LL = 3529.364478
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.18949904 0.17501521 0.63109706 0.93959123 0.48461378]
+  → Final log-likelihood: 3529.364478
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3675.219284834194
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3672.823176732945
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [06:10<12:21, 370.87s/it]Optimization Attempts:  67%|██████▋   | 2/3 [13:50<06:49, 409.00s/it]Optimization Attempts:  67%|██████▋   | 2/3 [15:06<07:21, 441.39s/it]Optimization Attempts:  67%|██████▋   | 2/3 [17:47<09:31, 571.05s/it]Optimization Attempts:  33%|███▎      | 1/3 [07:59<15:59, 479.52s/it]Optimization Attempts:  67%|██████▋   | 2/3 [07:29<03:42, 222.94s/it]Optimization Attempts:  33%|███▎      | 1/3 [07:19<14:38, 439.12s/it]Optimization Attempts:  67%|██████▋   | 2/3 [11:58<05:57, 357.23s/it]Optimization Attempts: 100%|██████████| 3/3 [19:28<00:00, 376.61s/it]Optimization Attempts: 100%|██████████| 3/3 [19:28<00:00, 389.65s/it]
+✓ Attempt 1: New best LL = 3189.065522
+✓ Attempt 3: New best LL = 3188.706734
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.20288686 0.14339499 0.2212916  0.71768379 0.53315798]
+  → Final log-likelihood: 3188.706734
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3387.2331856363985
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3388.3781175249464
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [06:32<13:04, 392.45s/it]Optimization Attempts: 100%|██████████| 3/3 [22:58<00:00, 452.58s/it]Optimization Attempts: 100%|██████████| 3/3 [22:58<00:00, 459.64s/it]
+✓ Attempt 1: New best LL = 1653.562073
+✓ Attempt 2: New best LL = 1652.289672
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.06706645 0.03310964 0.08758799 0.90694893 0.72907699]
+  → Final log-likelihood: 1652.289672
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 2908.5883646814164
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 2911.5678854804523
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [11:26<00:00, 229.37s/it]Optimization Attempts: 100%|██████████| 3/3 [11:26<00:00, 228.96s/it]
+Optimization Attempts:  67%|██████▋   | 2/3 [13:27<06:30, 390.59s/it]✓ Attempt 1: New best LL = 3432.071415
+✓ Attempt 3: New best LL = 3431.933793
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.26031831 0.121305   0.28133535 0.47363592 1.1304519 ]
+  → Final log-likelihood: 3431.933793
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3332.409045143362
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3335.0747388160953
+
+Starting 3 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [21:15<00:00, 408.42s/it]Optimization Attempts: 100%|██████████| 3/3 [21:15<00:00, 425.23s/it]
+  selection:  68%|██████▊   | 34/50 [5:34:06<3:12:21, 721.37s/it]✓ Attempt 1: New best LL = 2162.858068
+✓ Attempt 3: New best LL = 2162.712394
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.06335888 0.05131716 0.23544643 0.56726348 1.24997489]
+  → Final log-likelihood: 2162.712394
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 2966.5095701161404
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 2959.8837428091874
+
+Starting 3 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:30<03:00, 90.25s/it]Optimization Attempts:  67%|██████▋   | 2/3 [02:39<01:18, 78.07s/it]Optimization Attempts:  67%|██████▋   | 2/3 [11:48<05:39, 339.27s/it]Optimization Attempts: 100%|██████████| 3/3 [04:04<00:00, 81.25s/it]Optimization Attempts: 100%|██████████| 3/3 [04:04<00:00, 81.61s/it]
+✓ Attempt 1: New best LL = 3194.337530
+✓ Attempt 3: New best LL = 3193.640550
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.20192249 0.14303163 0.29488565 0.42646144]
+  → Final log-likelihood: 3193.640550
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3515.8695113593717
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3513.467310651477
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [17:02<00:00, 333.10s/it]Optimization Attempts: 100%|██████████| 3/3 [17:02<00:00, 340.98s/it]
+✓ Attempt 1: New best LL = 2523.679914
+✓ Attempt 2: New best LL = 2523.032785
+✓ Attempt 3: New best LL = 2522.551976
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.13099326 0.05048038 0.27966651 0.97483468 0.5408716 ]
+  → Final log-likelihood: 2522.551976
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3117.4500364094656
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3123.2048826759547
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [19:11<00:00, 369.26s/it]Optimization Attempts: 100%|██████████| 3/3 [19:11<00:00, 383.91s/it]
+  selection:  72%|███████▏  | 36/50 [5:39:37<1:58:38, 508.44s/it]✓ Attempt 1: New best LL = 2545.794442
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.18955885 0.1686392  0.24698215 0.8059307  0.01053703]
+  → Final log-likelihood: 2545.794442
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3037.6667626254844
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3036.3999175296744
+
+Starting 3 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [06:13<12:26, 373.17s/it]Optimization Attempts:  33%|███▎      | 1/3 [05:52<11:44, 352.10s/it]Optimization Attempts:  33%|███▎      | 1/3 [06:04<12:08, 364.16s/it]Optimization Attempts:  33%|███▎      | 1/3 [03:31<07:02, 211.21s/it]Optimization Attempts:  33%|███▎      | 1/3 [02:39<05:18, 159.48s/it]Optimization Attempts:  67%|██████▋   | 2/3 [14:47<07:32, 452.99s/it]Optimization Attempts: 100%|██████████| 3/3 [18:10<00:00, 358.70s/it]Optimization Attempts: 100%|██████████| 3/3 [18:10<00:00, 363.44s/it]
+  selection:  76%|███████▌  | 38/50 [5:42:47<1:12:25, 362.13s/it]Optimization Attempts:  67%|██████▋   | 2/3 [04:57<02:26, 146.96s/it]✓ Attempt 1: New best LL = 2950.620788
+✓ Attempt 2: New best LL = 2948.371042
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.06170007 0.17393088 0.32051321 0.51933823 0.66998685]
+  → Final log-likelihood: 2948.371042
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3293.2551265319535
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3291.986265849472
+
+Starting 3 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [06:03<02:56, 176.51s/it]Optimization Attempts: 100%|██████████| 3/3 [06:17<00:00, 116.28s/it]Optimization Attempts: 100%|██████████| 3/3 [06:17<00:00, 125.81s/it]
+✓ Attempt 1: New best LL = 2524.905396
+✓ Attempt 2: New best LL = 2523.695410
+✓ Attempt 3: New best LL = 2523.591433
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.13044452 0.04960918 0.29667063 0.55252587]
+  → Final log-likelihood: 2523.591433
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3294.3125422855073
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3287.9473547328903
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [10:23<05:02, 302.43s/it]Optimization Attempts: 100%|██████████| 3/3 [08:06<00:00, 152.19s/it]Optimization Attempts: 100%|██████████| 3/3 [08:06<00:00, 162.23s/it]
+✓ Attempt 1: New best LL = 3192.798922
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.18160592 0.1157437  0.23947313 0.14854988 0.18079582 0.68616465]
+  → Final log-likelihood: 3192.798922
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3448.1291480883165
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3448.7464510737427
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [11:50<05:52, 352.03s/it]Optimization Attempts:  33%|███▎      | 1/3 [06:45<13:31, 405.62s/it]Optimization Attempts:  33%|███▎      | 1/3 [02:52<05:45, 172.60s/it]Optimization Attempts: 100%|██████████| 3/3 [20:46<00:00, 410.09s/it]Optimization Attempts: 100%|██████████| 3/3 [20:46<00:00, 415.62s/it]
+✓ Attempt 1: New best LL = 3529.178226
+✓ Attempt 2: New best LL = 3529.057901
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.2017702  0.17581599 0.60053044 0.64068831 0.48318144]
+  → Final log-likelihood: 3529.057901
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3180.7101218413777
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3169.1940352437223
+
+Starting 3 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [13:51<07:07, 427.28s/it]Optimization Attempts:  33%|███▎      | 1/3 [05:14<10:28, 314.04s/it]Optimization Attempts:  67%|██████▋   | 2/3 [05:00<02:26, 146.42s/it]Optimization Attempts:  33%|███▎      | 1/3 [05:04<10:08, 304.17s/it]Optimization Attempts: 100%|██████████| 3/3 [16:52<00:00, 342.00s/it]Optimization Attempts: 100%|██████████| 3/3 [16:52<00:00, 337.49s/it]
+✓ Attempt 1: New best LL = 1773.471860
+✓ Attempt 3: New best LL = 1773.319898
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.06734732 0.10691187 0.05980374 0.98399471 1.32796379]
+  → Final log-likelihood: 1773.319898
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 2776.874311147375
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 2778.4256026585654
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [03:39<07:19, 219.90s/it]Optimization Attempts:  67%|██████▋   | 2/3 [11:50<05:46, 346.37s/it]Optimization Attempts: 100%|██████████| 3/3 [18:06<00:00, 348.34s/it]Optimization Attempts: 100%|██████████| 3/3 [18:06<00:00, 362.14s/it]
+✓ Attempt 1: New best LL = 2973.814341
+✓ Attempt 3: New best LL = 2973.569506
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.15755292 0.15426304 0.2028435  0.92135079 1.31332468]
+  → Final log-likelihood: 2973.569506
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3243.214930688517
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3240.331162496998
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [08:04<00:00, 163.37s/it]Optimization Attempts: 100%|██████████| 3/3 [08:04<00:00, 161.41s/it]
+✓ Attempt 1: New best LL = 2522.180465
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.12150177 0.05219354 0.28085929 0.01272306 0.08365676 0.81252417]
+  → Final log-likelihood: 2522.180465
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3210.409954207169
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3207.629565243764
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [18:49<00:00, 382.85s/it]Optimization Attempts: 100%|██████████| 3/3 [18:49<00:00, 376.64s/it]
+  selection:  78%|███████▊  | 39/50 [5:52:27<1:14:28, 406.20s/it]✓ Attempt 1: New best LL = 1650.211515
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.06498297 0.03522309 0.08993937 0.63118737 0.77911255]
+  → Final log-likelihood: 1650.211515
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3664.616863782526
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3660.4282735645274
+
+Starting 3 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:53<03:47, 113.64s/it]Optimization Attempts:  33%|███▎      | 1/3 [00:56<01:52, 56.12s/it]Optimization Attempts:  67%|██████▋   | 2/3 [11:25<05:47, 347.60s/it]Optimization Attempts:  67%|██████▋   | 2/3 [02:37<01:22, 82.61s/it]Optimization Attempts:  67%|██████▋   | 2/3 [03:37<01:47, 107.76s/it]Optimization Attempts: 100%|██████████| 3/3 [05:02<00:00, 97.39s/it] Optimization Attempts: 100%|██████████| 3/3 [05:02<00:00, 100.78s/it]
+✓ Attempt 1: New best LL = 1936.675196
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.08726405 0.08730738 0.0977943  0.93400712]
+  → Final log-likelihood: 1936.675196
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3075.4372829291024
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3075.8588968154445
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [04:29<00:00, 96.25s/it]Optimization Attempts: 100%|██████████| 3/3 [04:29<00:00, 89.92s/it]
+✓ Attempt 1: New best LL = 2985.392061
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.16770181 0.1472288  0.24120826 1.53113338]
+  → Final log-likelihood: 2985.392061
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3406.0981916475257
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3407.8653238319466
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [04:09<08:18, 249.04s/it]Optimization Attempts:  67%|██████▋   | 2/3 [11:47<06:02, 362.75s/it]Optimization Attempts: 100%|██████████| 3/3 [17:15<00:00, 336.52s/it]Optimization Attempts: 100%|██████████| 3/3 [17:15<00:00, 345.10s/it]
+✓ Attempt 1: New best LL = 2355.846988
+✓ Attempt 3: New best LL = 2354.979194
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.06334697 0.10593995 0.1570682  0.68398633 0.77279943]
+  → Final log-likelihood: 2354.979194
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 2964.0827253570496
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 2973.6363606011064
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:27<02:55, 87.67s/it]Optimization Attempts:  33%|███▎      | 1/3 [06:12<12:24, 372.28s/it]Optimization Attempts:  33%|███▎      | 1/3 [01:34<03:09, 94.80s/it]Optimization Attempts:  67%|██████▋   | 2/3 [11:08<05:54, 354.20s/it]Optimization Attempts:  33%|███▎      | 1/3 [03:39<07:19, 219.83s/it]Optimization Attempts:  67%|██████▋   | 2/3 [02:55<01:26, 86.71s/it]Optimization Attempts:  67%|██████▋   | 2/3 [03:35<01:51, 111.18s/it]Optimization Attempts: 100%|██████████| 3/3 [17:22<00:00, 351.87s/it]Optimization Attempts: 100%|██████████| 3/3 [17:22<00:00, 347.36s/it]
+✓ Attempt 1: New best LL = 3006.226245
+✓ Attempt 2: New best LL = 3005.280763
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.14241691 0.18421262 0.19941902 0.80565286 0.5634976 ]
+  → Final log-likelihood: 3005.280763
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3216.9230979487866
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3216.1201677704626
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [04:16<00:00, 83.91s/it]Optimization Attempts: 100%|██████████| 3/3 [04:16<00:00, 85.48s/it]
+✓ Attempt 1: New best LL = 2377.334062
+✓ Attempt 2: New best LL = 2376.978955
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.06792688 0.10730404 0.26986871 0.52984806]
+  → Final log-likelihood: 2376.978955
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3177.70542147663
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3177.496198919992
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:29<02:59, 89.51s/it]Optimization Attempts:  67%|██████▋   | 2/3 [09:13<04:41, 281.67s/it]Optimization Attempts: 100%|██████████| 3/3 [17:03<00:00, 341.09s/it]Optimization Attempts: 100%|██████████| 3/3 [17:03<00:00, 341.08s/it]
+✓ Attempt 1: New best LL = 3190.409427
+✓ Attempt 2: New best LL = 3188.677619
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.19037185 0.14644638 0.25584605 0.88268218 0.43308177]
+  → Final log-likelihood: 3188.677619
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3399.7422905637177
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3406.044441736707
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [06:21<03:05, 185.49s/it]Optimization Attempts:  67%|██████▋   | 2/3 [02:29<01:12, 72.17s/it]Optimization Attempts: 100%|██████████| 3/3 [06:18<00:00, 135.05s/it]Optimization Attempts: 100%|██████████| 3/3 [06:18<00:00, 126.25s/it]
+✓ Attempt 1: New best LL = 2978.372521
+✓ Attempt 3: New best LL = 2978.253492
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.14328417 0.11658192 0.2210855  0.22288367 0.66299677 0.98376879]
+  → Final log-likelihood: 2978.253492
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3355.063081643147
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3359.8624610513407
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:53<03:46, 113.13s/it]Optimization Attempts: 100%|██████████| 3/3 [15:42<00:00, 317.83s/it]Optimization Attempts: 100%|██████████| 3/3 [15:42<00:00, 314.22s/it]
+✓ Attempt 1: New best LL = 2376.562716
+✓ Attempt 2: New best LL = 2376.205836
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.12478757 0.17699605 0.52453151 0.7971581  0.0685595 ]
+  → Final log-likelihood: 2376.205836
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3220.751935809615
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3220.876386930394
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [03:46<00:00, 74.27s/it]Optimization Attempts: 100%|██████████| 3/3 [03:46<00:00, 75.44s/it]
+✓ Attempt 1: New best LL = 3018.714699
+✓ Attempt 2: New best LL = 3018.388836
+✓ Attempt 3: New best LL = 3018.096068
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.14791468 0.18222619 0.25425069 0.45439251]
+  → Final log-likelihood: 3018.096068
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3396.2643392399714
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3397.2799230455425
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [03:31<01:44, 104.49s/it]Optimization Attempts:  33%|███▎      | 1/3 [01:41<03:23, 101.70s/it]Optimization Attempts: 100%|██████████| 3/3 [09:05<00:00, 175.93s/it]Optimization Attempts: 100%|██████████| 3/3 [09:05<00:00, 181.94s/it]
+✓ Attempt 1: New best LL = 1865.688522
+✓ Attempt 2: New best LL = 1863.867695
+
+✅ Best result from 3 attempts:
+  → Final parameters: [5.80769529e-02 1.00526599e-01 6.09565770e-02 3.26737396e-01
+ 7.64971584e-04 9.76231234e-01]
+  → Final log-likelihood: 1863.867695
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3008.263368118708
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 2998.166623522371
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:48<03:36, 108.21s/it]Optimization Attempts:  67%|██████▋   | 2/3 [03:00<01:28, 88.45s/it] Optimization Attempts:  67%|██████▋   | 2/3 [14:16<07:18, 438.15s/it]Optimization Attempts: 100%|██████████| 3/3 [14:05<00:00, 286.40s/it]Optimization Attempts: 100%|██████████| 3/3 [14:05<00:00, 281.86s/it]
+✓ Attempt 1: New best LL = 3398.160957
+✓ Attempt 2: New best LL = 3398.039674
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.28632326 0.08662504 0.57744557 0.98772037 0.30369241]
+  → Final log-likelihood: 3398.039674
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3740.8287881373476
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3736.833460114814
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [05:25<00:00, 108.66s/it]Optimization Attempts: 100%|██████████| 3/3 [05:25<00:00, 108.40s/it]
+✓ Attempt 1: New best LL = 2357.761632
+✓ Attempt 2: New best LL = 2356.758473
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.05000925 0.09793446 0.17104253 0.05929375 0.33357026 0.76974869]
+  → Final log-likelihood: 2356.758473
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3089.117442071833
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3089.6579792911725
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [04:46<09:33, 286.86s/it]Optimization Attempts: 100%|██████████| 3/3 [04:39<00:00, 93.01s/it]Optimization Attempts: 100%|██████████| 3/3 [04:39<00:00, 93.10s/it]
+✓ Attempt 1: New best LL = 2376.406932
+✓ Attempt 2: New best LL = 2375.991155
+✓ Attempt 3: New best LL = 2375.862509
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.13040551 0.17205033 0.59876054 0.06693076]
+  → Final log-likelihood: 2375.862509
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3396.889454880453
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3392.56869387545
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [03:59<02:01, 121.50s/it]Optimization Attempts:  33%|███▎      | 1/3 [01:27<02:54, 87.04s/it]Optimization Attempts:  67%|██████▋   | 2/3 [02:37<01:17, 77.05s/it]Optimization Attempts:  33%|███▎      | 1/3 [07:45<15:31, 465.71s/it]Optimization Attempts: 100%|██████████| 3/3 [05:52<00:00, 117.72s/it]Optimization Attempts: 100%|██████████| 3/3 [05:52<00:00, 117.41s/it]
+✓ Attempt 1: New best LL = 3024.042537
+✓ Attempt 2: New best LL = 3023.013685
+✓ Attempt 3: New best LL = 3022.383912
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.12423148 0.13326978 0.18538883 0.28857    0.24800535 0.75446723]
+  → Final log-likelihood: 3022.383912
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3327.225989001437
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3324.853456940049
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [02:23<04:46, 143.35s/it]Optimization Attempts: 100%|██████████| 3/3 [04:19<00:00, 88.45s/it]Optimization Attempts: 100%|██████████| 3/3 [04:19<00:00, 86.37s/it]
+✓ Attempt 1: New best LL = 3397.830977
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.28477406 0.08742641 0.57415043 0.30112202]
+  → Final log-likelihood: 3397.830977
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3781.0164989433156
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3782.2630733763012
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [06:48<13:37, 408.70s/it]Optimization Attempts:  33%|███▎      | 1/3 [05:25<10:51, 325.89s/it]Optimization Attempts: 100%|██████████| 3/3 [20:24<00:00, 406.14s/it]Optimization Attempts: 100%|██████████| 3/3 [20:24<00:00, 408.20s/it]
+✓ Attempt 1: New best LL = 2522.248213
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.13026528 0.05093217 0.26273647 0.92241016 0.54195039]
+  → Final log-likelihood: 2522.248213
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3152.001915876048
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3144.8393272159383
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [01:55<03:50, 115.27s/it]Optimization Attempts:  67%|██████▋   | 2/3 [05:34<02:51, 171.55s/it]Optimization Attempts:  67%|██████▋   | 2/3 [11:27<05:53, 353.88s/it]Optimization Attempts:  67%|██████▋   | 2/3 [03:46<01:52, 112.67s/it]Optimization Attempts:  67%|██████▋   | 2/3 [12:51<06:11, 371.60s/it]Optimization Attempts:  33%|███▎      | 1/3 [06:09<12:19, 369.77s/it]Optimization Attempts: 100%|██████████| 3/3 [08:23<00:00, 170.30s/it]Optimization Attempts: 100%|██████████| 3/3 [08:23<00:00, 167.82s/it]
+✓ Attempt 1: New best LL = 2377.342560
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.12556334 0.16404563 0.1377451  0.05577637 0.06736207 0.00118244]
+  → Final log-likelihood: 2377.342560
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3234.0309564268628
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3244.407898024273
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [06:16<00:00, 129.82s/it]Optimization Attempts: 100%|██████████| 3/3 [06:16<00:00, 125.45s/it]
+✓ Attempt 1: New best LL = 3410.629190
+✓ Attempt 2: New best LL = 3398.887007
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.27693435 0.08786774 0.30421134 0.0027231  0.25009651 0.23649313]
+  → Final log-likelihood: 3398.887007
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3686.5262756854386
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3689.7387641692812
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [13:09<06:32, 392.38s/it]Optimization Attempts:  67%|██████▋   | 2/3 [12:12<06:13, 373.28s/it]Optimization Attempts:  33%|███▎      | 1/3 [07:09<14:18, 429.32s/it]Optimization Attempts:  33%|███▎      | 1/3 [04:45<09:30, 285.24s/it]Optimization Attempts: 100%|██████████| 3/3 [19:18<00:00, 407.16s/it]Optimization Attempts: 100%|██████████| 3/3 [19:18<00:00, 386.07s/it]
+✓ Attempt 1: New best LL = 2974.133377
+✓ Attempt 2: New best LL = 2973.908628
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.15782268 0.14858528 0.21258744 0.95188205 1.85146967]
+  → Final log-likelihood: 2973.908628
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3281.496001542851
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3278.5370027079816
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [12:50<06:28, 388.11s/it]Optimization Attempts: 100%|██████████| 3/3 [21:13<00:00, 431.35s/it]Optimization Attempts: 100%|██████████| 3/3 [21:13<00:00, 424.63s/it]
+  selection:  82%|████████▏ | 41/50 [6:23:23<1:29:32, 596.93s/it]✓ Attempt 1: New best LL = 3188.617670
+✓ Attempt 2: New best LL = 3188.113379
+✓ Attempt 3: New best LL = 3187.416284
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.19244531 0.14512806 0.26684499 0.76388477 0.45024252]
+  → Final log-likelihood: 3187.416284
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3409.6658845571965
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3407.418901364044
+
+Starting 3 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]bads:InitialPointsTooClosePB: The starting points X0 are on or numerically too close to the hard bounds lower_bounds and upper_bounds. Moving the initial points more inside...
+bads:InitialPointsOutsidePB. The starting points X0 are not inside the provided plausible bounds (plausible_lower_bounds and plausible_upper_bounds). Expanding the plausible bounds...
+Optimization Attempts:  33%|███▎      | 1/3 [07:22<14:44, 442.47s/it]Optimization Attempts: 100%|██████████| 3/3 [18:04<00:00, 363.50s/it]Optimization Attempts: 100%|██████████| 3/3 [18:04<00:00, 361.40s/it]
+✓ Attempt 1: New best LL = 2351.688109
+✓ Attempt 3: New best LL = 2350.886750
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.05331477 0.10814229 0.19281061 0.82064469 0.51814682]
+  → Final log-likelihood: 2350.886750
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3008.8289269099473
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3009.1605552189135
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [13:13<06:30, 390.99s/it]Optimization Attempts: 100%|██████████| 3/3 [21:03<00:00, 429.40s/it]Optimization Attempts: 100%|██████████| 3/3 [21:03<00:00, 421.04s/it]
+✓ Attempt 1: New best LL = 1772.890328
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.05922559 0.10211784 0.06442826 0.98420675 0.9241584 ]
+  → Final log-likelihood: 1772.890328
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 2870.0686501550426
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 2872.0083643384246
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [04:16<08:33, 256.59s/it]Optimization Attempts:  67%|██████▋   | 2/3 [11:24<05:52, 352.03s/it]Optimization Attempts: 100%|██████████| 3/3 [17:55<00:00, 350.07s/it]Optimization Attempts: 100%|██████████| 3/3 [17:55<00:00, 358.50s/it]
+✓ Attempt 1: New best LL = 3009.500174
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.1222404  0.1839039  0.21157221 0.8462973  0.51762797]
+  → Final log-likelihood: 3009.500174
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3252.1692307638555
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3254.5467958330946
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [04:10<08:20, 250.35s/it]Optimization Attempts:  67%|██████▋   | 2/3 [11:54<05:42, 342.07s/it]Optimization Attempts:  33%|███▎      | 1/3 [06:26<12:53, 386.94s/it]Optimization Attempts:  33%|███▎      | 1/3 [06:31<13:03, 391.99s/it]Optimization Attempts: 100%|██████████| 3/3 [20:45<00:00, 419.01s/it]Optimization Attempts: 100%|██████████| 3/3 [20:45<00:00, 415.28s/it]
+  selection:  84%|████████▍ | 42/50 [6:33:29<1:19:50, 598.87s/it]Optimization Attempts: 100%|██████████| 3/3 [17:09<00:00, 348.98s/it]Optimization Attempts: 100%|██████████| 3/3 [17:09<00:00, 343.12s/it]
+✓ Attempt 1: New best LL = 2376.593651
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.12189879 0.17651954 0.81499756 0.99999995 0.06960331]
+  → Final log-likelihood: 2376.593651
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3208.6727333269628
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3205.131521679073
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]✓ Attempt 1: New best LL = 2521.981894
+✓ Attempt 2: New best LL = 2521.856519
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.125996   0.05100985 0.26975987 0.80289927 0.52125421]
+  → Final log-likelihood: 2521.856519
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3464.445555541843
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3464.855629549344
+
+Starting 3 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [09:35<04:54, 294.50s/it]Optimization Attempts:  67%|██████▋   | 2/3 [10:56<05:17, 317.68s/it]Optimization Attempts:  67%|██████▋   | 2/3 [12:33<06:37, 397.82s/it]Optimization Attempts:  33%|███▎      | 1/3 [06:55<13:51, 415.77s/it]Optimization Attempts: 100%|██████████| 3/3 [18:59<00:00, 380.18s/it]Optimization Attempts: 100%|██████████| 3/3 [18:59<00:00, 379.93s/it]
+✓ Attempt 1: New best LL = 3398.282465
+✓ Attempt 3: New best LL = 3397.696189
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.2822127  0.08687862 0.54268978 0.81977743 0.30068064]
+  → Final log-likelihood: 3397.696189
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3699.305236236576
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3699.070646639687
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [11:27<05:35, 335.29s/it]Optimization Attempts:  33%|███▎      | 1/3 [04:52<09:45, 292.95s/it]Optimization Attempts:  33%|███▎      | 1/3 [05:26<10:52, 326.12s/it]Optimization Attempts: 100%|██████████| 3/3 [17:16<00:00, 346.38s/it]Optimization Attempts: 100%|██████████| 3/3 [17:16<00:00, 345.56s/it]
+✓ Attempt 1: New best LL = 3115.084375
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.13170256 0.13615811 0.41661521 0.91703687 1.46967951]
+  → Final log-likelihood: 3115.084375
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3392.3487280808677
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3390.5188930180043
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [18:35<00:00, 381.49s/it]Optimization Attempts: 100%|██████████| 3/3 [18:35<00:00, 371.78s/it]
+  selection:  86%|████████▌ | 43/50 [6:40:52<1:05:42, 563.25s/it]Optimization Attempts:  67%|██████▋   | 2/3 [13:25<06:40, 400.18s/it]Optimization Attempts: 100%|██████████| 3/3 [16:40<00:00, 353.95s/it]Optimization Attempts: 100%|██████████| 3/3 [16:40<00:00, 333.48s/it]
+Optimization Attempts:  33%|███▎      | 1/3 [00:55<01:50, 55.49s/it]Optimization Attempts:  67%|██████▋   | 2/3 [08:46<04:18, 258.03s/it]Optimization Attempts:  67%|██████▋   | 2/3 [08:55<04:17, 257.45s/it]Optimization Attempts:  33%|███▎      | 1/3 [06:45<13:31, 405.51s/it]Optimization Attempts:  67%|██████▋   | 2/3 [02:34<01:21, 81.26s/it]Optimization Attempts: 100%|██████████| 3/3 [03:26<00:00, 67.88s/it]Optimization Attempts: 100%|██████████| 3/3 [03:26<00:00, 68.92s/it]
+✓ Attempt 1: New best LL = 3115.229056
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.14177756 0.13253358 0.43591901 1.19965999]
+  → Final log-likelihood: 3115.229056
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3501.251628931113
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3500.665377022267
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [20:00<00:00, 416.56s/it]Optimization Attempts: 100%|██████████| 3/3 [20:00<00:00, 400.29s/it]
+  selection:  88%|████████▊ | 44/50 [6:46:23<50:36, 506.06s/it]  Optimization Attempts:  33%|███▎      | 1/3 [02:16<04:33, 136.64s/it]Optimization Attempts: 100%|██████████| 3/3 [19:24<00:00, 381.42s/it]Optimization Attempts: 100%|██████████| 3/3 [19:24<00:00, 388.05s/it]
+  selection:  92%|█████████▏| 46/50 [6:47:20<20:36, 309.05s/it]Optimization Attempts: 100%|██████████| 3/3 [13:47<00:00, 273.13s/it]Optimization Attempts: 100%|██████████| 3/3 [13:47<00:00, 275.76s/it]
+✓ Attempt 1: New best LL = 3136.156648
+✓ Attempt 2: New best LL = 3135.616115
+✓ Attempt 3: New best LL = 3135.539445
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.12630111 0.12572571 0.49379365 0.89032077 2.        ]
+  → Final log-likelihood: 3135.539445
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: fusionOnlyLogNorm
+Expected parameter length: 4
+Test params length: 4, values: [0.1 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3467.796385621883
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting fusion-only model: fusionOnlyLogNorm (p_c fixed at 1.0, no bounds needed)
+Bounds shape: (4, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3465.410390105022
+
+Starting 3 optimization attempts using 'bads'...
+Model is fusionOnlyLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [13:55<00:00, 281.24s/it]Optimization Attempts: 100%|██████████| 3/3 [13:55<00:00, 278.46s/it]
+  selection:  94%|█████████▍| 47/50 [6:47:30<12:02, 240.98s/it]Optimization Attempts:  67%|██████▋   | 2/3 [03:20<01:33, 93.67s/it] Optimization Attempts:  33%|███▎      | 1/3 [01:03<02:06, 63.28s/it]Optimization Attempts:  67%|██████▋   | 2/3 [12:10<05:57, 357.91s/it]Optimization Attempts: 100%|██████████| 3/3 [04:27<00:00, 81.72s/it]Optimization Attempts: 100%|██████████| 3/3 [04:27<00:00, 89.24s/it]
+✓ Attempt 1: New best LL = 3116.202879
+✓ Attempt 2: New best LL = 3115.348508
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.11622437 0.11373997 0.42724999 0.06976312 0.35862868 0.89744211]
+  → Final log-likelihood: 3115.348508
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3437.216908996408
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3431.3573936464754
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [01:52<00:55, 55.29s/it]Optimization Attempts: 100%|██████████| 3/3 [02:24<00:00, 44.33s/it]Optimization Attempts: 100%|██████████| 3/3 [02:24<00:00, 48.09s/it]
+✓ Attempt 1: New best LL = 3135.351229
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.12771036 0.12523385 0.54635267 1.26266282]
+  → Final log-likelihood: 3135.351229
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: switchingFree
+Expected parameter length: 6
+Test params length: 6, values: [0.1 0.5 0.5 0.3 0.8 0.7]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3552.553784764483
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting switchingFree model: switchingFree (uses p_switch parameters, no t_min/t_max)
+Bounds shape: (6, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3556.715342086558
+
+Starting 3 optimization attempts using 'bads'...
+Model is switchingFree
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts: 100%|██████████| 3/3 [15:44<00:00, 292.59s/it]Optimization Attempts: 100%|██████████| 3/3 [15:44<00:00, 314.99s/it]
+  selection:  96%|█████████▌| 48/50 [6:52:07<08:19, 249.63s/it]Optimization Attempts:  33%|███▎      | 1/3 [02:21<04:42, 141.06s/it]Optimization Attempts:  33%|███▎      | 1/3 [04:00<08:00, 240.03s/it]Optimization Attempts:  67%|██████▋   | 2/3 [03:31<01:39, 99.28s/it] Optimization Attempts: 100%|██████████| 3/3 [04:31<00:00, 81.34s/it]Optimization Attempts: 100%|██████████| 3/3 [04:31<00:00, 90.36s/it]
+✓ Attempt 1: New best LL = 3138.809008
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.13251112 0.12153125 0.51860114 0.00116377 0.36860366 0.88461485]
+  → Final log-likelihood: 3138.809008
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: probabilityMatchingLogNorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3485.6349151309555
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3485.7079497239615
+
+Starting 3 optimization attempts using 'bads'...
+Model is probabilityMatchingLogNorm
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [08:12<04:07, 247.36s/it]Optimization Attempts:  33%|███▎      | 1/3 [03:53<07:47, 233.94s/it]Optimization Attempts: 100%|██████████| 3/3 [12:05<00:00, 240.80s/it]Optimization Attempts: 100%|██████████| 3/3 [12:05<00:00, 241.84s/it]
+✓ Attempt 1: New best LL = 3114.956238
+✓ Attempt 2: New best LL = 3114.949523
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.14497438 0.12819232 0.42600018 0.9999999  1.03703726]
+  → Final log-likelihood: 3114.949523
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3403.411581715437
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3405.3417676053573
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  67%|██████▋   | 2/3 [07:10<03:31, 211.77s/it]Optimization Attempts:  33%|███▎      | 1/3 [02:42<05:24, 162.12s/it]Optimization Attempts:  67%|██████▋   | 2/3 [07:01<03:39, 219.31s/it]Optimization Attempts: 100%|██████████| 3/3 [13:50<00:00, 297.93s/it]Optimization Attempts: 100%|██████████| 3/3 [13:50<00:00, 276.89s/it]
+✓ Attempt 1: New best LL = 3136.140498
+✓ Attempt 2: New best LL = 3135.726068
+✓ Attempt 3: New best LL = 3135.542835
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.12605381 0.12495788 0.52077792 0.99296818 1.19835132]
+  → Final log-likelihood: 3135.542835
+Data bounds: t_min=0.021, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.021, t_max=0.954
+Grouped data shape: (419, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: selection
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 3461.896109159002
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.021, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 3467.234628702114
+
+Starting 3 optimization attempts using 'bads'...
+Model is selection
+Optimization Attempts:   0%|          | 0/3 [00:00<?, ?it/s]Optimization Attempts:  33%|███▎      | 1/3 [03:42<07:24, 222.34s/it]Optimization Attempts: 100%|██████████| 3/3 [11:44<00:00, 248.45s/it]Optimization Attempts: 100%|██████████| 3/3 [11:44<00:00, 234.86s/it]
+  selection:  98%|█████████▊| 49/50 [7:12:37<08:24, 504.16s/it]Optimization Attempts:  67%|██████▋   | 2/3 [07:50<03:57, 237.42s/it]Optimization Attempts: 100%|██████████| 3/3 [11:10<00:00, 220.20s/it]Optimization Attempts: 100%|██████████| 3/3 [11:10<00:00, 223.34s/it]
+  selection: 100%|██████████| 50/50 [7:19:25<00:00, 478.19s/it]                                                               ✓ Attempt 1: New best LL = 2967.560768
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.14771961 0.16313106 0.22282446 0.75008917 1.99999962]
+  → Final log-likelihood: 2967.560768
+✓ Attempt 1: New best LL = 2346.212642
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.05053653 0.11094907 0.20750474 0.60657711 0.56479501]
+  → Final log-likelihood: 2346.212642
+✓ Attempt 1: New best LL = 1772.245159
+✓ Attempt 2: New best LL = 1772.019849
+✓ Attempt 3: New best LL = 1771.674114
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.06261142 0.10572229 0.06582964 0.96613582 1.14088565]
+  → Final log-likelihood: 1771.674114
+✓ Attempt 1: New best LL = 3008.313297
+✓ Attempt 2: New best LL = 3008.060191
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.12737203 0.18733069 0.22980191 0.79720387 0.47569901]
+  → Final log-likelihood: 3008.060191
+✓ Attempt 1: New best LL = 3398.130145
+✓ Attempt 2: New best LL = 3398.044468
+✓ Attempt 3: New best LL = 3397.760358
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.27773562 0.09034195 0.59555889 0.99989613 0.30922253]
+  → Final log-likelihood: 3397.760358
+✓ Attempt 1: New best LL = 2375.954342
+✓ Attempt 2: New best LL = 2375.724590
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.13508518 0.17211937 0.58465768 0.99740801 0.06452969]
+  → Final log-likelihood: 2375.724590
+✓ Attempt 1: New best LL = 3116.600182
+✓ Attempt 3: New best LL = 3116.187887
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.13739566 0.13130997 0.44155723 0.99999714 1.79819094]
+  → Final log-likelihood: 3116.187887
+✓ Attempt 1: New best LL = 3136.060642
+✓ Attempt 3: New best LL = 3135.418635
+
+✅ Best result from 3 attempts:
+  → Final parameters: [0.13995722 0.1174445  0.53609776 0.9999782  1.79140602]
+  → Final log-likelihood: 3135.418635
+  Saved results to model_recovery_results_group_logfixed_ns1_nsim2000/group_selection_model_recovery.json
+
+======================================================================
+MODEL RECOVERY COMPLETE
+======================================================================
+Total time: 2147.5 minutes
+Results saved to: model_recovery_results_group_logfixed_ns1_nsim2000/
+Successful recoveries: 5 models
+
+----------------------------------------------------------------------
+Recovery Confusion Matrix (AIC)
+----------------------------------------------------------------------
+Generating                     CI     Fus     SwF      PM     Sel   Correct
+----------------------------------------------------------------------
+lognorm                       24%     32%      8%     14%     22%     24.0%
+fusionOnlyLogNorm             16%     48%      6%     18%     12%     48.0%
+switchingFree                  6%      2%     88%      4%      0%     88.0%
+probabilityMatchingLogNorm     26%     18%     10%     20%     26%     20.0%
+selection                     24%      6%      2%     16%     52%     52.0%
+----------------------------------------------------------------------
+Overall Accuracy:                                                     46.4%
+/Users/ofy204/anaconda3/envs/mathmod/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 3 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
