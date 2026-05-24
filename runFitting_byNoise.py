@@ -10,8 +10,10 @@ Usage:
         both → run both levels (each file expands to two parallel jobs)
 
 Examples:
-    python runFitting_byNoise.py "as_all.csv,oy_all.csv,dt_all.csv,hh_all.csv,ip_all.csv,ln2_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "lognorm" 1000 "bads" 10 False "analytical" 11 both
-    python runFitting_byNoise.py "mt_all.csv" "lognorm" 200 "bads" 2 False "analytical" 1 low
+    python runFitting_byNoise.py "as_all.csv,oy_all.csv,dt_all.csv,hh_all.csv,ip_all.csv,ln2_all.csv,mh_all.csv,ml_all.csv,mt_all.csv,qs_all.csv,sx_all.csv" "lognorm" 2000 "bads" 3 False "analytical" --noiseLevel both
+    python runFitting_byNoise.py "mt_all.csv" "lognorm" 200 "bads" 2 False "analytical" --nCores 1 --noiseLevel low
+
+
 """
 
 NOISE_LEVEL_MAP = {
