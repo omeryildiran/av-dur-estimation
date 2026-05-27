@@ -80,7 +80,7 @@ class OmerMonteCarlo(fitPychometric):
         
         self.fitType = 'Monte Carlo'
         self.nStart = 3  # Number of random starts for optimization (increased for debugging)
-        self.nSimul = 10  # Number of simulations for Monte Carlo approximation
+        self.nSimul = 2000  # Number of simulations for Monte Carlo approximation
         self.optimizationMethod = 'bads'  # Use scipy for better debugging (BADS can be harder to debug)
         self.modelFit = None  # Placeholder for fitted model
         self.simulatedData = None  # Placeholder for simulated data
@@ -2018,7 +2018,7 @@ if __name__ == "__main__":
         # conflictVar=conflictVar
     )
     mc_fitter.dataName = dataName
-    mc_fitter.nSimul = 100
+    mc_fitter.nSimul = 1000
     mc_fitter.optimizationMethod= "bads"  # Use BADS for optimization
     mc_fitter.nStart = 1  # Number of random starts for optimization
 
