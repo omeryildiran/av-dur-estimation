@@ -672,6 +672,8 @@ if __name__ == "__main__":
     # Load data (assuming loadData returns a DataFrame)
     # You may need to adjust this line to match your actual loadData implementation
     data, dataName = loadData("all_wo_ln1.csv")
+    data, dataName = loadData("oyExt_all.csv")
+
     #data = data[data['testDurS'] > 0.1]
 
 

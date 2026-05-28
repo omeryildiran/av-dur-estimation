@@ -216,69 +216,24 @@ class AudioCueGenerator:
         # plot the sound waveforms
         time= np.linspace(0, len(stim_sound) / self.sample_rate, len(stim_sound))
 
-        # Replace the existing plotting section (lines 219-233) with this animated version:
-        import matplotlib.animation as animation
-
-        # Create animated waveform plot
-        time = np.linspace(0, len(stim_sound) / self.sample_rate, len(stim_sound))
-
-        fig, ax = plt.subplots(figsize=(12, 6))
-        line1, = ax.plot([], [], color='forestgreen', alpha=0.8, linewidth=2, label='Stimulus')
-        line2, = ax.plot([], [], color='black', alpha=0.7, linewidth=1, label='Background Noise')
-
-        fontSize = 16
-        ax.set_xlim(0, len(stim_sound) / self.sample_rate)
-        ax.set_ylim(min(min(stim_sound), min(background_noise)) * 1.1, 
-                    max(max(stim_sound), max(background_noise)) * 1.1)
-        ax.set_xlabel("Time (s)", fontsize=fontSize)
-        ax.set_ylabel("Amplitude", fontsize=fontSize)
-        ax.set_title("Animated Stimulus Sound Waveform", fontsize=fontSize)
-        ax.tick_params(axis='both', which='major', labelsize=fontSize-2)
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-
-        # Animation parameters
-        frame_duration = 0.03  # seconds between frames
-        speed_factor = 2.0     # animation speed multiplier
-        total_frames = int((len(stim_sound) / self.sample_rate) / frame_duration * speed_factor)
-        samples_per_frame = len(stim_sound) // total_frames
-
-        # def animate(frame):
-        #     end_sample = min((frame + 1) * samples_per_frame, len(stim_sound))
-        #     line1.set_data(time[:end_sample], stim_sound[:end_sample])
-        #     line2.set_data(time[:end_sample], background_noise[:end_sample])
-            
-        #     current_time = end_sample / self.sample_rate
-        #     ax.set_title(f"Animated Stimulus Sound Waveform - Time: {current_time:.2f}s", fontsize=fontSize)
-        #     return line1, line2
-
-        # anim = animation.FuncAnimation(fig, animate, frames=total_frames, 
-        #                             interval=int(frame_duration * 1000), 
-        #                             blit=False, repeat=True)
-
-        # plt.tight_layout()
-        # plt.show()
-        # # save animation
-        # anim.save('stimulus_waveform_animation.gif', writer='imagemagick', fps=30)
+        plt.plot(time,stim_sound, label='Signal Sound', color='forestgreen', alpha=0.7)
+        plt.plot(time,background_noise, label='Background Noise', color='black', alpha=0.7)
+        plt.title("Stimulus Sound Waveform")
+        plt.xlabel("Time (s)")
+        plt.xlim(0, len(stim_sound) / self.sample_rate)
+        plt.xticks(np.arange(0, len(stim_sound) / self.sample_rate, 0.1))
+        plt.legend()
+        plt.ylabel("Amplitude")
+        plt.show()
         
         # #Background noise of same totaal duration
 
         # # mix the sounds
-        wholeStim = stim_sound + background_noise
-        wholeStim=np.concatenate([jitter_sound,wholeStim,jitter_sound])
-
-        print("Max amplitude of whole stimulus: ", np.max(np.abs(wholeStim)))
-
-        #wholeStim = wholeStim / np.max(np.abs(wholeStim))
-
-        background_noise = background_noise / np.max(np.abs(wholeStim))
-        background_noise=np.concatenate([jitter_sound,background_noise,jitter_sound])
-
-        stim_sound = stim_sound / np.max(np.abs(wholeStim))
+        stim_sound = stim_sound + background_noise
+        stim_sound = stim_sound / np.max(np.abs(stim_sound))
         stim_sound=np.concatenate([jitter_sound,stim_sound,jitter_sound])
-        print("Max amplitude of signal after normalization: ", np.max(np.abs(stim_sound)))
 
-        return wholeStim
+        return stim_sound
     
 
 
@@ -289,11 +244,11 @@ class AudioCueGenerator:
 audio_cue = AudioCueGenerator(sampleRate=44100)
 
 #generate whole stim
-test_dur = 0.5
-standard_dur = 0.5
+test_dur = 0.4
+standard_dur = 0.6
 noise_type = "white"
 intensity = 5
-rise_dur = 0.1
+rise_dur = 1.2
 order = 1
 pre_cue_sound=0.25
 pre_post_dur=pre_cue_sound
@@ -306,33 +261,29 @@ import matplotlib.pyplot as plt
 
 ## PLot different sounds with different amplitude variance
 def plot_sounds():
-    plt.figure(figsize=(10, 6))
-    for idx, rise in enumerate([1.2]):
+    plt.figure(figsize=(12, 4))
+    for idx, rise in enumerate([0.15]):
         stim_sound = audio_cue.whole_stimulus(test_dur, standard_dur, noise_type, intensity, rise, order, pre_dur=pre_cue_sound, post_dur=pre_cue_sound,isi_dur=pre_cue_sound,
                                               intensity_background=rise)
-        #save sound
-        from scipy.io import wavfile
-        #wavfile.write(f"stim_sound_rise_lowSNR.wav", audio_cue.sample_rate, (stim_sound * 32767).astype(np.int16))
         #stim_sound*=0.5
 
         t=np.linspace(0, len(stim_sound) / audio_cue.sample_rate, len(stim_sound))
         #if idx in [1]:
         #audio_cue.play_sound(stim_sound)
         
-        #plt.subplot(1, 2, idx + 1)
+        plt.subplot(1, 2, idx + 1)
         plt.plot(t, stim_sound)
         plt.title(f"Rise duration: {rise}")
         plt.xlabel("Time (s)")
         plt.ylabel("Amplitude")
-        #plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="red", alpha=0.5, label="Reliable signal")
-        #plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="forestgreen", alpha=0.2, label="unreliable signal")
+        plt.axvspan(pre_post_dur, pre_post_dur+test_dur, color="red", alpha=0.5, label="Reliable signal")
+        plt.axvspan(pre_post_dur+test_dur+pre_post_dur, pre_post_dur+test_dur+pre_post_dur+standard_dur, color="forestgreen", alpha=0.2, label="unreliable signal")
     #plt.ylim(-2,3)
     plt.tight_layout()
     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
-    #plt.show()
+    plt.show()
     
 plot_sounds()
-
 
 
 
