@@ -723,7 +723,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     fixedMu = 0 # Set to True to ignore the bias in the model (overrides global setting)
-    dataName = "all_all.csv" #args.data
+    dataName = "oy_bimodalDurEst_2025-04-17_19h32.55.390.csv" #args.data
     show_error_bars  =  not args.no_error_bars  # Invert the flag
     
     # Load and prepare data
