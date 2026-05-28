@@ -216,15 +216,15 @@ class AudioCueGenerator:
         # plot the sound waveforms
         time= np.linspace(0, len(stim_sound) / self.sample_rate, len(stim_sound))
 
-        plt.plot(time,stim_sound, label='Signal Sound', color='forestgreen', alpha=0.7)
-        plt.plot(time,background_noise, label='Background Noise', color='black', alpha=0.7)
-        plt.title("Stimulus Sound Waveform")
-        plt.xlabel("Time (s)")
-        plt.xlim(0, len(stim_sound) / self.sample_rate)
-        plt.xticks(np.arange(0, len(stim_sound) / self.sample_rate, 0.1))
-        plt.legend()
-        plt.ylabel("Amplitude")
-        plt.show()
+        # plt.plot(time,stim_sound, label='Signal Sound', color='forestgreen', alpha=0.7)
+        # plt.plot(time,background_noise, label='Background Noise', color='black', alpha=0.7)
+        # plt.title("Stimulus Sound Waveform")
+        # plt.xlabel("Time (s)")
+        # plt.xlim(0, len(stim_sound) / self.sample_rate)
+        # plt.xticks(np.arange(0, len(stim_sound) / self.sample_rate, 0.1))
+        # plt.legend()
+        # plt.ylabel("Amplitude")
+        # plt.show()
         
         # #Background noise of same totaal duration
 
@@ -283,7 +283,7 @@ def plot_sounds():
     plt.legend(bbox_to_anchor=(1.1, 1), loc='upper right')
     plt.show()
     
-plot_sounds()
+#plot_sounds()
 
 
 
