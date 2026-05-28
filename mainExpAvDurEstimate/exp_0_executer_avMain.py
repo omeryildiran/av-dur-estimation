@@ -25,7 +25,7 @@ conflictsBatch3=[ -0.25,  0.083]
 
 conflictBatchExtreme=[-0.45,+0.45]
 
-conflicts=[0]
+conflicts=conflictBatchExtreme
 
 
 nLAPSE = 2 if isRecall else 7

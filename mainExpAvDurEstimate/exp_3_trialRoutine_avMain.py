@@ -402,8 +402,8 @@ while not endExpNow and stopped_stair_count!=(len(all_staircases)):
         exp_data[trialN, 25] = round(tVisualStim1End-tVisualStim1Start,4)
 
 
-        
-
+    # print recorder visual durations for testing
+    print(f"Recorded Visual Durations: Test: {exp_data[trialN, 22]} seconds, Standard: {exp_data[trialN, 25]} seconds")        
     # endregion
 
     # clear the screen
