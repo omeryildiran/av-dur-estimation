@@ -1,0 +1,42 @@
+{
+    "participantID": "oyExt",
+    "dataName": "oyExt_all",
+    "modelName": "switchingFree",
+    "modelType": "switchingFree_LapseFix_sharedPrior",
+    "extendedConflict": true,
+    "conflictDurationsS": [
+        -0.45,
+        -0.25,
+        -0.17,
+        -0.08,
+        0.0,
+        0.08,
+        0.17,
+        0.25,
+        0.45
+    ],
+    "audNoiseLevels": [
+        0.1,
+        1.2
+    ],
+    "sharedLambda": true,
+    "freeP_c": false,
+    "nSimul": 500,
+    "nStart": 1,
+    "optimizationMethod": "scipy",
+    "fittedParams": [
+        0.0847119132525683,
+        0.25596924534833754,
+        1.0289872474363821,
+        0.043762095472604665,
+        0.12699171166812273,
+        0.36589951750077854
+    ],
+    "NLL": 1473.9114311280505,
+    "AIC": 2959.822862256101,
+    "BIC": 2995.399781395987,
+    "logLikelihood": -1473.9114311280505,
+    "n_params": 6,
+    "n_trials": 2778,
+    "n_conditions": 772
+}
