@@ -1,0 +1,41 @@
+{
+    "participantID": "oyExt",
+    "dataName": "oyExt_all",
+    "modelName": "lognorm",
+    "modelType": "lognorm_LapseFix_sharedPrior",
+    "extendedConflict": true,
+    "conflictDurationsS": [
+        -0.45,
+        -0.25,
+        -0.17,
+        -0.08,
+        0.0,
+        0.08,
+        0.17,
+        0.25,
+        0.45
+    ],
+    "audNoiseLevels": [
+        0.1,
+        1.2
+    ],
+    "sharedLambda": true,
+    "freeP_c": false,
+    "nSimul": 500,
+    "nStart": 1,
+    "optimizationMethod": "scipy",
+    "fittedParams": [
+        0.10315049372285263,
+        0.29072708494632465,
+        0.7157125018716624,
+        0.892976181731448,
+        0.43895573096120205
+    ],
+    "NLL": 1485.3816622986744,
+    "AIC": 2980.763324597349,
+    "BIC": 3010.41075721392,
+    "logLikelihood": -1485.3816622986744,
+    "n_params": 5,
+    "n_trials": 2778,
+    "n_conditions": 772
+}

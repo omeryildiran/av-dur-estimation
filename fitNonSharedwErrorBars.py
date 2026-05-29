@@ -542,6 +542,7 @@ if __name__ == "__main__":
     
     fixedMu = 0 # Set to True to ignore the bias in the model
     dataName = args.data
+    #dataName="LN_bimodalDurEst_2025-06-03_17h04.55.993.csv"
     show_error_bars  =  not args.no_error_bars  # Invert the flag
     
     # Load and prepare data

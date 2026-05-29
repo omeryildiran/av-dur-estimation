@@ -1,0 +1,40 @@
+{
+    "participantID": "oyExt",
+    "dataName": "oyExt_all",
+    "modelName": "fusionOnlyLogNorm",
+    "modelType": "fusionOnlyLogNorm_LapseFix_sharedPrior",
+    "extendedConflict": true,
+    "conflictDurationsS": [
+        -0.45,
+        -0.25,
+        -0.17,
+        -0.08,
+        0.0,
+        0.08,
+        0.17,
+        0.25,
+        0.45
+    ],
+    "audNoiseLevels": [
+        0.1,
+        1.2
+    ],
+    "sharedLambda": true,
+    "freeP_c": false,
+    "nSimul": 500,
+    "nStart": 1,
+    "optimizationMethod": "scipy",
+    "fittedParams": [
+        0.14590231575479362,
+        0.25294587501232385,
+        0.9535730061004156,
+        0.37151194002314564
+    ],
+    "NLL": 1485.004434908513,
+    "AIC": 2978.008869817026,
+    "BIC": 3001.726815910283,
+    "logLikelihood": -1485.004434908513,
+    "n_params": 4,
+    "n_trials": 2778,
+    "n_conditions": 772
+}
