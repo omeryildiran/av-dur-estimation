@@ -597,10 +597,11 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
         for j, audioNoiseLevel in enumerate(uniqueSensory):
             for k, conflictLevel in enumerate(uniqueConflict):
                 lambda_, mu, sigma = getParams(best_fit.x, conflictLevel, audioNoiseLevel, nLambda, nSigma)
-                weberFraction = sigma/np.sqrt(2)/standardLevel
+                # Log-space sensory σ ≈ Weber fraction directly (small-σ limit).
                 sigmaSensory = sigma/np.sqrt(2)
-                sigmaSensoryLinear= standardLevel * (np.exp(sigmaSensory)-1)
-                weberFractionLinear = sigmaSensoryLinear / standardLevel
+                weberFraction = sigmaSensory                              # σ/√2  (dimensionless)
+                weberFractionLinear = np.exp(sigmaSensory) - 1            # exp(σ/√2) − 1
+                sigmaSensoryLinear = standardLevel * weberFractionLinear  # ms width at this standard
                 
                 
                 # Calculate PSE statistics
@@ -611,8 +612,8 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 print(f"Weber fraction (linear): {weberFractionLinear:.3f}")
 
                 print(f"Raw Parameters - Lambda: {lambda_:.3f}, Mu: {mu:.3f}, Sigma: {sigma:.3f}")
-                print(f"Sensory noise sigma (σ/√2): {sigma/np.sqrt(2):.3f}")
-                print(f"Weber fraction (σ/√2 / standard): {weberFraction:.3f}")
+                print(f"Sensory noise sigma (σ/√2): {sigmaSensory:.3f}")
+                print(f"Weber fraction (σ/√2): {weberFraction:.3f}")
                 
                 print(f"PSE Analysis:")
                 print(f"  PSE (pure): {pse_stats['pse_pure']*1000:.1f} ms")
@@ -646,8 +647,20 @@ def plot_fitted_psychometric(data, best_fit, nLambda, nSigma, uniqueSensory, uni
                 y = psychometric_function(x_smooth, standard_dur_array, lambda_, mu, sigma)
 
                 color = colors[j]
-                # plt.plot(x, y, color=color, label=f"Noise: {audioNoiseLevel}\n $\\mu$: {mu:.2f}, $\\sigma$: {sigma:.2f}", linewidth=4)
-                plt.plot(0,0,color=color,label=f"Noise: {audioNoiseLevel}\n $\\lambda$: {lambda_:.2f}\n $\\mu$: {mu:.2f}\n $\\sigma$: {sigma:.2f}\n Weber frac.: {weberFraction:.2f}",linewidth=0)
+                # Legend shows interpretable PSE shift (ms) alongside the raw log-space μ.
+                pse_shift_ms = pse_stats['pse_shift_pure'] * 1000
+                pse_ms       = pse_stats['pse_pure'] * 1000
+                plt.plot(
+                    0, 0, color=color, linewidth=0,
+                    label=(
+                        f"Noise: {audioNoiseLevel}\n"
+                        f" $\\lambda$: {lambda_:.2f}\n"
+                        f" $\\mu$ (log): {mu:+.2f}\n"
+                        f" PSE: {pse_ms:.0f} ms  (shift {pse_shift_ms:+.0f} ms)\n"
+                        f" $\\sigma$ (log): {sigma:.2f}\n"
+                        f" Weber frac.: {weberFraction:.2f}"
+                    ),
+                )
                 labelsDict={0.1:"Auditory (low noise)",1.2:"Auditory (high noise)",99:"Visual",0.03:"High noise"}
                 plt.plot(x_smooth*1000, y, color=color, linewidth=4, label=f"{labelsDict.get(audioNoiseLevel,audioNoiseLevel)}" )
                 #plt.axvline(x=0, color='gray', linestyle='--')
@@ -723,7 +736,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     fixedMu = 0 # Set to True to ignore the bias in the model (overrides global setting)
-    dataName = "oy_bimodalDurEst_2025-04-17_19h32.55.390.csv" #args.data
+    dataName = "LN_bimodalDurEst_2025-06-03_17h04.55.993.csv" #args.data
     show_error_bars  =  not args.no_error_bars  # Invert the flag
     
     # Load and prepare data
