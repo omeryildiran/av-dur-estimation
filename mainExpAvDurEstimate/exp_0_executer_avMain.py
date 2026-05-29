@@ -11,8 +11,8 @@ modalityCue='A'
 #avPSEseconds=-0.025 # audiovisual PSE in seconds (negative means visual perceived shorter
 standardDur=0.5 # standard duration in seconds
 
-avPSEsecondsLow= -0.44 *standardDur # Neg Visual Bias for high noise  audiovisual PSE in seconds (negative means visual perceived shorter
-avPSEsecondsHigh= -0.40 *standardDur # Neg Visual Bias for high noise audiovisual PSE in seconds (negative means visual perceived shorter
+avPSEsecondsLow= -0.567 *standardDur # Neg Visual Bias for high noise  audiovisual PSE in seconds (negative means visual perceived shorter
+avPSEsecondsHigh= -0.559 *standardDur # Neg Visual Bias for high noise audiovisual PSE in seconds (negative means visual perceived shorter
 
 # (when audio is shorter than visual, people perceive audio and visual in equal length) so to handle this, we need to add this value to the visual duration
 
@@ -26,7 +26,7 @@ conflictsBatch3=[ -0.25,  0.083]
 conflictBatchExtreme=[-0.45,+0.45]
 
 conflicts=conflictBatchExtreme
-
+#conflicts=[0]
 
 nLAPSE = 2 if isRecall else 7
 print('n LAPSE:', nLAPSE)
