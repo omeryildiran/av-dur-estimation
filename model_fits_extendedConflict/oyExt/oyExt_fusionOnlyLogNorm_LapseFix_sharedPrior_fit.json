@@ -21,7 +21,7 @@
     ],
     "sharedLambda": true,
     "freeP_c": false,
-    "nSimul": 500,
+    "nSimul": 2000,
     "nStart": 1,
     "optimizationMethod": "scipy",
     "fittedParams": [
