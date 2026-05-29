@@ -1,0 +1,40 @@
+{
+    "participantID": "lnExt",
+    "dataName": "lnExt_all",
+    "modelName": "fusionOnlyLogNorm",
+    "modelType": "fusionOnlyLogNorm_LapseFix_sharedPrior",
+    "extendedConflict": true,
+    "conflictDurationsS": [
+        -0.45,
+        -0.25,
+        -0.17,
+        -0.08,
+        0.0,
+        0.08,
+        0.17,
+        0.25,
+        0.45
+    ],
+    "audNoiseLevels": [
+        0.1,
+        1.2
+    ],
+    "sharedLambda": true,
+    "freeP_c": false,
+    "nSimul": 2000,
+    "nStart": 1,
+    "optimizationMethod": "scipy",
+    "fittedParams": [
+        0.04440766009516164,
+        0.19258351764019843,
+        0.9066068622611445,
+        0.5312312013607605
+    ],
+    "NLL": 1346.3340975384729,
+    "AIC": 2700.6681950769457,
+    "BIC": 2724.098118224716,
+    "logLikelihood": -1346.3340975384729,
+    "n_params": 4,
+    "n_trials": 2585,
+    "n_conditions": 604
+}

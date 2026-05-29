@@ -1,0 +1,42 @@
+{
+    "participantID": "lnExt",
+    "dataName": "lnExt_all",
+    "modelName": "switchingFree",
+    "modelType": "switchingFree_LapseFix_sharedPrior",
+    "extendedConflict": true,
+    "conflictDurationsS": [
+        -0.45,
+        -0.25,
+        -0.17,
+        -0.08,
+        0.0,
+        0.08,
+        0.17,
+        0.25,
+        0.45
+    ],
+    "audNoiseLevels": [
+        0.1,
+        1.2
+    ],
+    "sharedLambda": true,
+    "freeP_c": false,
+    "nSimul": 2000,
+    "nStart": 1,
+    "optimizationMethod": "scipy",
+    "fittedParams": [
+        0.04063266752079789,
+        0.07067251652885159,
+        0.7197135839183926,
+        0.28065295604376544,
+        0.16954275885315293,
+        0.5130243331763408
+    ],
+    "NLL": 1371.2953831516409,
+    "AIC": 2754.5907663032817,
+    "BIC": 2789.735651024937,
+    "logLikelihood": -1371.2953831516409,
+    "n_params": 6,
+    "n_trials": 2585,
+    "n_conditions": 604
+}

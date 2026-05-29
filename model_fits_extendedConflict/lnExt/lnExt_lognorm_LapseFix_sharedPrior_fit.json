@@ -1,0 +1,41 @@
+{
+    "participantID": "lnExt",
+    "dataName": "lnExt_all",
+    "modelName": "lognorm",
+    "modelType": "lognorm_LapseFix_sharedPrior",
+    "extendedConflict": true,
+    "conflictDurationsS": [
+        -0.45,
+        -0.25,
+        -0.17,
+        -0.08,
+        0.0,
+        0.08,
+        0.17,
+        0.25,
+        0.45
+    ],
+    "audNoiseLevels": [
+        0.1,
+        1.2
+    ],
+    "sharedLambda": true,
+    "freeP_c": false,
+    "nSimul": 2000,
+    "nStart": 1,
+    "optimizationMethod": "scipy",
+    "fittedParams": [
+        0.0685659112629234,
+        0.18726252997851378,
+        0.8603545427518957,
+        0.9526434528716005,
+        0.5838089328550305
+    ],
+    "NLL": 1351.5894575860787,
+    "AIC": 2713.1789151721573,
+    "BIC": 2742.46631910687,
+    "logLikelihood": -1351.5894575860787,
+    "n_params": 5,
+    "n_trials": 2585,
+    "n_conditions": 604
+}
