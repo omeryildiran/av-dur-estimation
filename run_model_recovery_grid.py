@@ -330,6 +330,22 @@ def print_confusion(cell, models):
         print(f"  {ABBR.get(gen, gen[:3]):>4}  {vals}   {diag*100:.0f}%")
 
 
+def plot_cell_nstart_traces(cell, save_dir):
+    plot_dir = os.path.join(save_dir, 'nstart_parameter_traces')
+    paths = []
+    for gen_model, iters in cell.get('raw_iters', {}).items():
+        result_like = {
+            'generating_model': gen_model,
+            'iterations': iters,
+        }
+        cell_tag = (f"sl{cell['sigma_key']}"
+                    f"_cmax{cell['conflict_max']:.2f}"
+                    f"_gen-{gen_model}")
+        gen_dir = os.path.join(plot_dir, cell_tag)
+        paths.extend(favo.plot_nstart_parameter_traces(result_like, gen_dir))
+    return paths
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -363,6 +379,8 @@ def main():
     parser.add_argument('--force',  action='store_true',
                         help='Re-run cells even if cached JSON exists '
                              '(otherwise resume from where it left off)')
+    parser.add_argument('--no_nstart_plots', action='store_true',
+                        help='Do not save parameter-by-nstart diagnostic plots')
     parser.add_argument('--pilot',  action='store_true',
                         help='Run one tiny cell (level a, cmax=0.45, n_iter=3) and exit')
     args = parser.parse_args()
@@ -382,6 +400,10 @@ def main():
         )
         print(f"  mean_diag = {cell['mean_diag_recovery_aic']*100:.1f}%")
         print_confusion(cell, pilot_models)
+        if not args.no_nstart_plots:
+            paths = plot_cell_nstart_traces(cell, args.save_dir)
+            if paths:
+                print(f"  nstart plots saved: {len(paths)}")
         return
 
     grid = list(itertools.product(args.sigma_levels, args.conflict_levels))
@@ -434,6 +456,10 @@ def main():
         tag = " [cached]" if cached else ""
         print(f"  mean_diag = {diag*100:.1f}%{tag}")
         print_confusion(cell, args.models)
+        if not args.no_nstart_plots:
+            paths = plot_cell_nstart_traces(cell, args.save_dir)
+            if paths:
+                print(f"  nstart plots saved: {len(paths)}")
         print()
         sys.stdout.flush()
 

@@ -1356,6 +1356,7 @@ class OmerMonteCarlo(fitPychometric):
         best_ll = np.inf
         nStart = self.nStart if hasattr(self, 'nStart') else 1
         optimizer = self.optimizationMethod if hasattr(self, 'optimizationMethod') else 'scipy'
+        self.nstart_history = []
         print(f"\nStarting {nStart} optimization attempts using '{optimizer}'...")
         print("Model is " + self.modelName)
         for attempt in tqdm(range(nStart), desc="Optimization Attempts"):
@@ -1508,6 +1509,11 @@ class OmerMonteCarlo(fitPychometric):
                     x0[i] = np.clip(x_val, lb, ub)  # Fix out-of-bounds values
 
             try:
+                attempt_record = {
+                    'nstart': int(attempt + 1),
+                    'initialParams': np.asarray(x0, dtype=float).tolist(),
+                    'success': False,
+                }
                 if self.optimizationMethod == "bads" and BADS_AVAILABLE:
                     # Prepare bounds for BADS
                     lb = bounds[:, 0]
@@ -1565,6 +1571,8 @@ class OmerMonteCarlo(fitPychometric):
                 # Validate optimization result
                 if result is None:
                     print(f"Attempt {attempt + 1}: All optimization methods failed")
+                    attempt_record['message'] = 'All optimization methods failed'
+                    self.nstart_history.append(attempt_record)
                     continue
                     
                 # Check result quality
@@ -1584,13 +1592,32 @@ class OmerMonteCarlo(fitPychometric):
                     test_ll = self.nLLMonteCarloCausal(xres, groupedData)
                     if test_ll >= 1e10:
                         print(f"Attempt {attempt + 1}: Final parameters invalid (LL={test_ll})")
+                        attempt_record.update({
+                            'fittedParams': np.asarray(xres, dtype=float).tolist(),
+                            'nLL': float(test_ll),
+                            'message': 'Final parameters invalid',
+                        })
+                        self.nstart_history.append(attempt_record)
                         continue
                 except:
                     print(f"Attempt {attempt + 1}: Final parameter validation failed")
+                    attempt_record.update({
+                        'fittedParams': np.asarray(xres, dtype=float).tolist(),
+                        'nLL': float(fval) if np.isfinite(fval) else None,
+                        'message': 'Final parameter validation failed',
+                    })
+                    self.nstart_history.append(attempt_record)
                     continue
                 
                 # Update best result (with clipped parameters)
                 result.x = xres  # Update result with clipped values
+                attempt_record.update({
+                    'success': True,
+                    'fittedParams': np.asarray(xres, dtype=float).tolist(),
+                    'nLL': float(fval),
+                    'message': str(getattr(result, 'message', '')),
+                })
+                self.nstart_history.append(attempt_record)
                 if fval < best_ll:
                     best_ll = fval
                     best_result = result
@@ -1598,6 +1625,12 @@ class OmerMonteCarlo(fitPychometric):
 
             except Exception as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
+                self.nstart_history.append({
+                    'nstart': int(attempt + 1),
+                    'initialParams': np.asarray(x0, dtype=float).tolist(),
+                    'success': False,
+                    'message': str(e),
+                })
                 continue
 
         if best_result is None:
@@ -1612,6 +1645,14 @@ class OmerMonteCarlo(fitPychometric):
         print(f"\n✅ Best result from {nStart} attempts:")
         print(f"  → Final parameters: {xres}")
         print(f"  → Final log-likelihood: {fval:.6f}")
+
+        for attempt_record in self.nstart_history:
+            attempt_nll = attempt_record.get('nLL')
+            attempt_record['is_best'] = bool(
+                attempt_record.get('success') and
+                attempt_nll is not None and
+                np.isclose(attempt_nll, fval)
+            )
 
         return xres
 
@@ -2069,7 +2110,5 @@ if __name__ == "__main__":
     # Simulate and plot psychometric data
     uniqueSensory = np.unique(data[sensoryVar])
     uniqueConflict = np.unique(data[conflictVar])
-
-
 
 

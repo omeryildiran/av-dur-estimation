@@ -22,19 +22,133 @@
     "sharedLambda": true,
     "freeP_c": false,
     "nSimul": 2000,
-    "nStart": 3,
-    "optimizationMethod": "scipy",
-    "fittedParams": [
-        0.10183844483509027,
-        0.18615459267719522,
-        0.6851082963125364,
-        0.9940912491103916,
-        0.4913471242982761
+    "nStart": 5,
+    "optimizationMethod": "bads",
+    "param_names": [
+        "lambda",
+        "sigma_a1",
+        "sigma_v",
+        "p_c",
+        "sigma_a2"
     ],
-    "NLL": 1351.0639243904466,
-    "AIC": 2712.127848780893,
-    "BIC": 2741.4152527156057,
-    "logLikelihood": -1351.0639243904466,
+    "fittedParams": [
+        0.0551902260285973,
+        0.1844808511561865,
+        0.8927296440926186,
+        0.9999938275854221,
+        0.5122930373232443
+    ],
+    "nstart_attempts": [
+        {
+            "nstart": 1,
+            "initialParams": [
+                0.23259034787170027,
+                0.1233470547855384,
+                0.7520711984231829,
+                0.7551600775023876,
+                1.001834335434702
+            ],
+            "success": true,
+            "fittedParams": [
+                0.020096041120357983,
+                0.20484199779472478,
+                0.6447196035244857,
+                0.6171644032786847,
+                1.039571072302579
+            ],
+            "nLL": 1357.1303819503462,
+            "message": "Optimization terminated: change in the function value less than options['tol_mesh']",
+            "is_best": false
+        },
+        {
+            "nstart": 2,
+            "initialParams": [
+                0.2117553462523472,
+                0.9608620331915215,
+                0.9424033877221194,
+                0.5207926257680385,
+                0.0578996243357829
+            ],
+            "success": true,
+            "fittedParams": [
+                0.04645227143764494,
+                0.18622207541942581,
+                0.8966163177251815,
+                0.9999999523162842,
+                0.5059397084283828
+            ],
+            "nLL": 1348.5990617791817,
+            "message": "Optimization terminated: change in the function value less than options['tol_fun'].",
+            "is_best": false
+        },
+        {
+            "nstart": 3,
+            "initialParams": [
+                0.20533011941449586,
+                1.9956375882270736,
+                0.7286899918940468,
+                0.32121375522379747,
+                0.547169814750832
+            ],
+            "success": true,
+            "fittedParams": [
+                0.0020715332031249756,
+                0.20592466918945296,
+                0.8878485791015623,
+                0.8429199218750001,
+                0.6264969012451171
+            ],
+            "nLL": 1355.849042443891,
+            "message": "Optimization terminated: change in the function value less than options['tol_fun'].",
+            "is_best": false
+        },
+        {
+            "nstart": 4,
+            "initialParams": [
+                0.02297437968183717,
+                0.6681880119262408,
+                0.11651125598575558,
+                0.9835927572391637,
+                1.7196635021074147
+            ],
+            "success": true,
+            "fittedParams": [
+                0.03752578411867724,
+                0.19092975565057646,
+                0.7453418286053121,
+                0.9056302840603168,
+                0.6079180328028129
+            ],
+            "nLL": 1350.2461584394518,
+            "message": "Optimization terminated: change in the function value less than options['tol_mesh']",
+            "is_best": false
+        },
+        {
+            "nstart": 5,
+            "initialParams": [
+                0.12698879395379656,
+                0.1050130416351681,
+                0.7561466211848153,
+                0.25395538612051827,
+                0.5182726227853347
+            ],
+            "success": true,
+            "fittedParams": [
+                0.0551902260285973,
+                0.1844808511561865,
+                0.8927296440926186,
+                0.9999938275854221,
+                0.5122930373232443
+            ],
+            "nLL": 1348.554647172099,
+            "message": "Optimization terminated: change in the function value less than options['tol_mesh']",
+            "is_best": true
+        }
+    ],
+    "NLL": 1347.922961472001,
+    "AIC": 2705.845922944002,
+    "BIC": 2735.1333268787143,
+    "logLikelihood": -1347.922961472001,
     "n_params": 5,
     "n_trials": 2585,
     "n_conditions": 604

@@ -108,6 +108,14 @@ FITTING_BOUNDS = {
     'switchingFree':     [(0.001, 0.4), (0.0001, 2.0), (0.0001, 2.0), (0.0, 1.0), (0.0001, 2.0), (0.0, 1.0)],
 }
 
+PARAM_NAMES_FULL = {
+    'fusionOnlyLogNorm':          ['lambda', 'sigma_a1', 'sigma_v', 'sigma_a2'],
+    'lognorm':                    ['lambda', 'sigma_a1', 'sigma_v', 'p_c', 'sigma_a2'],
+    'probabilityMatchingLogNorm': ['lambda', 'sigma_a1', 'sigma_v', 'p_c', 'sigma_a2'],
+    'selection':                  ['lambda', 'sigma_a1', 'sigma_v', 'p_c', 'sigma_a2'],
+    'switchingFree':              ['lambda', 'sigma_a1', 'sigma_v', 'p_sw1', 'sigma_a2', 'p_sw2'],
+}
+
 
 # ---------------------------------------------------------------------------
 # Synthetic template builder
@@ -271,6 +279,76 @@ def count_boundary_clips(fitted_params, model_name, tol=0.01):
     return {'n_lower': n_lower, 'n_upper': n_upper, 'details': details}
 
 
+def parameter_names_for_model(model_name, n_params=None):
+    names = list(PARAM_NAMES_FULL.get(model_name, []))
+    if n_params is not None and len(names) != n_params:
+        names = [f'p{i}' for i in range(n_params)]
+    return names
+
+
+def plot_nstart_parameter_traces(result, save_dir):
+    """Plot fitted parameter values across optimizer starts for one result JSON."""
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("  [plot skipped] matplotlib is not available")
+        return []
+
+    gen_model = result.get('generating_model', 'unknown')
+    iterations = result.get('iterations', [])
+    model_names = sorted({
+        model_name
+        for it in iterations
+        for model_name, fit in it.get('model_fits', {}).items()
+        if fit.get('nstart_attempts')
+    })
+    if not model_names:
+        return []
+
+    paths = []
+    os.makedirs(save_dir, exist_ok=True)
+    for fit_model in model_names:
+        attempts_by_iter = []
+        n_params = None
+        for it in iterations:
+            fit = it.get('model_fits', {}).get(fit_model, {})
+            attempts = [a for a in fit.get('nstart_attempts', [])
+                        if a.get('success') and a.get('fittedParams') is not None]
+            if attempts:
+                attempts_by_iter.append((it.get('iteration'), attempts))
+                n_params = len(attempts[0]['fittedParams'])
+
+        if not attempts_by_iter or n_params is None:
+            continue
+
+        names = parameter_names_for_model(fit_model, n_params)
+        fig, axes = plt.subplots(
+            n_params, 1, figsize=(8, max(2.2, 1.9 * n_params)),
+            sharex=True, constrained_layout=True
+        )
+        axes = np.atleast_1d(axes)
+        for param_idx, ax in enumerate(axes):
+            for iteration, attempts in attempts_by_iter:
+                x = [a['nstart'] for a in attempts]
+                y = [a['fittedParams'][param_idx] for a in attempts]
+                ax.plot(x, y, marker='o', markersize=2.5, linewidth=0.8,
+                        alpha=0.35)
+                best = [a for a in attempts if a.get('is_best')]
+                if best:
+                    ax.scatter([best[0]['nstart']],
+                               [best[0]['fittedParams'][param_idx]],
+                               s=24, c='black', zorder=3)
+            ax.set_ylabel(names[param_idx])
+            ax.grid(True, alpha=0.25)
+        axes[-1].set_xlabel('nstart')
+        fig.suptitle(f'{gen_model} generated, {fit_model} fit: parameters by start')
+        out = os.path.join(save_dir, f'nstart_traces_{gen_model}_fit-{fit_model}.png')
+        fig.savefig(out, dpi=200)
+        plt.close(fig)
+        paths.append(out)
+    return paths
+
+
 # ---------------------------------------------------------------------------
 # Single recovery worker
 # ---------------------------------------------------------------------------
@@ -322,8 +400,11 @@ def run_single_recovery(args):
                 AIC = 2 * k - 2 * LL
                 BIC = k * np.log(len(sim_data)) - 2 * LL
                 clips = count_boundary_clips(fp, fit_model)
+                nstart_attempts = getattr(mc_fit, 'nstart_history', [])
                 model_fits[fit_model] = {
                     'fittedParams':   fp.tolist(),
+                    'param_names':     parameter_names_for_model(fit_model, len(fp)),
+                    'nstart_attempts': nstart_attempts,
                     'logLikelihood':  float(LL),
                     'AIC':            float(AIC),
                     'BIC':            float(BIC),
@@ -486,6 +567,8 @@ def main():
                         help='Upper bound of p_c sampling range (default 0.90)')
     parser.add_argument('--n_trials_per_cell', type=int, default=20,
                         help='Simulated trials per (conflict × noise × Δdur) cell (default 20)')
+    parser.add_argument('--no_nstart_plots', action='store_true',
+                        help='Do not save parameter-by-nstart diagnostic plots')
     args = parser.parse_args()
 
     n_jobs = args.n_jobs if args.n_jobs else max(1, cpu_count() - 1)
@@ -536,6 +619,11 @@ def main():
         )
         if res is not None:
             all_results.append(res)
+            if not args.no_nstart_plots:
+                plot_dir = os.path.join(args.save_dir, 'nstart_parameter_traces')
+                paths = plot_nstart_parameter_traces(res, plot_dir)
+                if paths:
+                    print(f"  nstart plots saved: {len(paths)} → {plot_dir}")
 
     elapsed = time.time() - start
 

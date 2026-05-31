@@ -22,18 +22,121 @@
     "sharedLambda": true,
     "freeP_c": false,
     "nSimul": 2000,
-    "nStart": 3,
-    "optimizationMethod": "scipy",
-    "fittedParams": [
-        0.03166399922238478,
-        0.1793654966107999,
-        0.9296646465573073,
-        0.5879031334204408
+    "nStart": 5,
+    "optimizationMethod": "bads",
+    "param_names": [
+        "lambda",
+        "sigma_a1",
+        "sigma_v",
+        "sigma_a2"
     ],
-    "NLL": 1350.466078184978,
-    "AIC": 2708.932156369956,
-    "BIC": 2732.362079517726,
-    "logLikelihood": -1350.466078184978,
+    "fittedParams": [
+        0.052878600732982145,
+        0.18095352503657336,
+        0.9047091966122388,
+        0.5172176123410462
+    ],
+    "nstart_attempts": [
+        {
+            "nstart": 1,
+            "initialParams": [
+                0.37643519871525766,
+                1.3231895401994056,
+                0.4738682245083148,
+                1.3594645787613602
+            ],
+            "success": true,
+            "fittedParams": [
+                0.04875039516937105,
+                0.18461857979802876,
+                0.8940082280713249,
+                0.5241367606145795
+            ],
+            "nLL": 1348.9337840883854,
+            "message": "Optimization terminated: change in the function value less than options['tol_mesh']",
+            "is_best": false
+        },
+        {
+            "nstart": 2,
+            "initialParams": [
+                0.1219570795964315,
+                0.1274590105530675,
+                0.7944615415202482,
+                1.2741566878684323
+            ],
+            "success": true,
+            "fittedParams": [
+                0.052878600732982145,
+                0.18095352503657336,
+                0.9047091966122388,
+                0.5172176123410462
+            ],
+            "nLL": 1348.9017348029727,
+            "message": "Optimization terminated: change in the function value less than options['tol_fun'].",
+            "is_best": true
+        },
+        {
+            "nstart": 3,
+            "initialParams": [
+                0.07611253642221429,
+                1.037392676344544,
+                1.3296571108870516,
+                0.8723997407414296
+            ],
+            "success": true,
+            "fittedParams": [
+                0.031024730219482433,
+                0.1983278793697245,
+                0.9527537516802549,
+                0.5029412331632338
+            ],
+            "nLL": 1349.2806256473757,
+            "message": "Optimization terminated: change in the function value less than options['tol_mesh']",
+            "is_best": false
+        },
+        {
+            "nstart": 4,
+            "initialParams": [
+                0.3496110834393187,
+                0.7372516406158536,
+                0.17629148417277204,
+                1.6110808712815166
+            ],
+            "success": true,
+            "fittedParams": [
+                0.049889768791595956,
+                0.18397454331188845,
+                0.9351675098048615,
+                0.5066059594854434
+            ],
+            "nLL": 1349.077632208889,
+            "message": "Optimization terminated: change in the function value less than options['tol_mesh']",
+            "is_best": false
+        },
+        {
+            "nstart": 5,
+            "initialParams": [
+                0.19100639972209513,
+                0.7623786397418904,
+                1.9802232531399329,
+                0.617033153907765
+            ],
+            "success": true,
+            "fittedParams": [
+                0.03987243067026139,
+                0.18766482245922078,
+                0.9603491240143774,
+                0.5482317758202552
+            ],
+            "nLL": 1349.4557830390536,
+            "message": "Optimization terminated: change in the function value less than options['tol_fun'].",
+            "is_best": false
+        }
+    ],
+    "NLL": 1349.4209984454424,
+    "AIC": 2706.8419968908847,
+    "BIC": 2730.271920038655,
+    "logLikelihood": -1349.4209984454424,
     "n_params": 4,
     "n_trials": 2585,
     "n_conditions": 604

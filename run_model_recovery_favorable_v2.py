@@ -100,6 +100,7 @@ def run_single_cell(sigma, conflict_max,
         'per_model':     {},
         'confusion_aic': {m: {fm: 0 for fm in models} for m in models},
         'confusion_bic': {m: {fm: 0 for fm in models} for m in models},
+        'raw_iters':     {},
     }
 
     for gen_model in models:
@@ -113,6 +114,7 @@ def run_single_cell(sigma, conflict_max,
         else:
             raw = [favo.run_single_recovery(a) for a in iargs]
         iters = [r for r in raw if r is not None]
+        cell['raw_iters'][gen_model] = iters
 
         for it in iters:
             cell['confusion_aic'][gen_model][it['best_model_aic']] += 1
@@ -179,6 +181,22 @@ def print_confusion(cell, models):
         print(f"  {abbr.get(gen, gen[:3]):>4}  {vals}   {diag*100:.0f}%")
 
 
+def plot_cell_nstart_traces(cell, save_dir):
+    plot_dir = os.path.join(save_dir, 'nstart_parameter_traces')
+    paths = []
+    for gen_model, iters in cell.get('raw_iters', {}).items():
+        result_like = {
+            'generating_model': gen_model,
+            'iterations': iters,
+        }
+        cell_tag = (f"sigma{cell['sigma']:.2f}"
+                    f"_cmax{cell['conflict_max']:.2f}"
+                    f"_gen-{gen_model}")
+        gen_dir = os.path.join(plot_dir, cell_tag)
+        paths.extend(favo.plot_nstart_parameter_traces(result_like, gen_dir))
+    return paths
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Model recovery sweep — favorable (low-σ, wide-conflict) regime')
@@ -207,6 +225,8 @@ def main():
                         default='model_recovery_favorable_results')
     parser.add_argument('--force',   action='store_true',
                         help='Re-run cells even if cached JSON exists')
+    parser.add_argument('--no_nstart_plots', action='store_true',
+                        help='Do not save parameter-by-nstart diagnostic plots')
     parser.add_argument('--pilot',   action='store_true',
                         help='Run one tiny cell (σ=0.20, cmax=0.45, n_iter=5) and exit')
     args = parser.parse_args()
@@ -229,6 +249,10 @@ def main():
         )
         print(f"  mean_diag = {cell['mean_diag_recovery_aic']*100:.1f}%")
         print_confusion(cell, ['lognorm', 'fusionOnlyLogNorm', 'switchingFree'])
+        if not args.no_nstart_plots:
+            paths = plot_cell_nstart_traces(cell, args.save_dir)
+            if paths:
+                print(f"  nstart plots saved: {len(paths)}")
         return
 
     grid = list(itertools.product(args.sigma_levels, conflict_levels))
@@ -277,6 +301,10 @@ def main():
         tag = " [cached]" if cached else ""
         print(f"  mean_diag = {diag*100:.1f}%{tag}")
         print_confusion(cell, args.models)
+        if not args.no_nstart_plots:
+            paths = plot_cell_nstart_traces(cell, args.save_dir)
+            if paths:
+                print(f"  nstart plots saved: {len(paths)}")
         print()
         sys.stdout.flush()
 
