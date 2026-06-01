@@ -22,8 +22,16 @@
     "sharedLambda": true,
     "freeP_c": false,
     "nSimul": 2000,
-    "nStart": 1,
-    "optimizationMethod": "scipy",
+    "nStart": 5,
+    "optimizationMethod": "bads",
+    "param_names": [
+        "lambda",
+        "sigma_a1",
+        "sigma_v",
+        "p_sw1",
+        "sigma_a2",
+        "p_sw2"
+    ],
     "fittedParams": [
         0.0847119132525683,
         0.25596924534833754,
@@ -32,6 +40,7 @@
         0.12699171166812273,
         0.36589951750077854
     ],
+    "nstart_attempts": [],
     "NLL": 1473.9114311280505,
     "AIC": 2959.822862256101,
     "BIC": 2995.399781395987,

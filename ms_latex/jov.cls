@@ -108,6 +108,8 @@
 %%% Title:
 \definecolor{lightblue}{rgb}{0.02, 0.55, 0.86}
 \newcommand{\blueframe}[1]{\color{white}\colorbox{lightblue}{\makebox[0.98\linewidth][l]{#1}}}
+\newcommand{\jovsubsectionstyle}[1]{{\normalfont\large\bfseries #1}}
+\newcommand{\jovsubsubsectionstyle}[1]{{\normalfont\bfseries\itshape #1}}
 \renewcommand{\section}{%
 	\@startsection
 		{section}{1}{0pt}{2ex}%
@@ -116,12 +118,17 @@
 \renewcommand{\subsection}{%
 	\@startsection
 		{subsection}{2}{0pt}{2ex}%
-		{1ex}{\large\bfseries\noindent}%
+		{1ex}{\noindent\jovsubsectionstyle}%
 }
 \renewcommand{\subsubsection}{%
 	\@startsection
 		{subsubsection}{3}{0pt}{2ex}%
-		{1ex}{\bfseries\itshape\noindent}%
+		{1ex}{\noindent\jovsubsubsectionstyle}%
+}
+\renewcommand{\paragraph}{%
+	\@startsection
+		{paragraph}{4}{0pt}{1.5ex}%
+		{0.5ex}{\noindent\jovsubsubsectionstyle}%
 }
 \setcounter{secnumdepth}{0}	% no section numbering
 
