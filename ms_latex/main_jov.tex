@@ -404,7 +404,7 @@ Here the model assumes that participants inferred the stimulus duration based on
    \hat S_{a,C=2},
 \label{eq:estimate_model_avg}
 \end{align}
-where $\hat S_{a,C=1}$ and $\hat S_{a,C=2}$ denote the estimates of the auditory stimulus under the common-cause and independent-causes assumptions, respectively. This strategy produced an estimate that smoothly interpolated between fusion and segregation as a function of sensory conflict and uncertainty, resulting in graded biases toward the more reliable cue. Model averaging is performed in log-duration space, consistent with the assumed log-Gaussian sensory encoding and inference framework.
+where $\hat S_{a,C=1}$ and $\hat S_{a,C=2}$ denote the estimates of the auditory stimulus under the common-cause and independent-causes assumptions, respectively. This strategy produced an estimate that smoothly interpolated between fusion and segregation as a function of sensory conflict and uncertainty, resulting in graded biases toward the more reliable cue. Causal inference is performed in log-duration space, consistent with the assumed log-Gaussian sensory encoding and inference framework.
 
 
 \subsection{Probabilistic cue switching}
@@ -415,9 +415,9 @@ We also considered a probabilistic cue-switching model, in which observers based
 
 \subsection{Modeling results}
 
-We first evaluate how well the models accounted for the shifts in PSE as a function of audiovisual cue conflict across the two auditory noise levels. We compared observed PSE shifts with predictions from three models: forced fusion, model averaging, model selection, probability matching and probabilistic cue switching. Sensory-noise parameters were fitted using the data from the bimodal experiment. 
+We first evaluate how well the models accounted for the shifts in PSE as a function of audiovisual cue conflict across the two auditory noise levels. We compared observed PSE shifts with predictions from three models: forced fusion, causal inference, and probabilistic cue switching. Sensory-noise parameters were fitted using the data from the bimodal experiment. 
 
-Figure~\ref{fig:pseConflictModel} shows model fits to the PSE-shift data. For ease of visualization, predictions of only three of the models are displayed: forced fusion, model averaging and probabilistic cue switching. All three models capture the overall pattern that perceived auditory duration was systematically biased toward visual duration and that the bias increased approximately linearly with audiovisual conflict magnitude. All three models also predict an overall larger bias under higher auditory noise. This convergence suggests that our data may be limited in the ability to adjudicate between these models. A comparison that includes all three models and fits to individual participants' data is presented in the Appendix (Figure~\ref{fig:AppendixConflictPSE_free}). 
+Figure~\ref{fig:pseConflictModel} shows model fits to the PSE-shift data. For ease of visualization, predictions of only three of the models are displayed: forced fusion, causal inference and probabilistic cue switching. All three models capture the overall pattern that perceived auditory duration was systematically biased toward visual duration and that the bias increased approximately linearly with audiovisual conflict magnitude. All three models also predict an overall larger bias under higher auditory noise. This convergence suggests that our data may be limited in the ability to adjudicate between these models. A comparison that includes all three models and fits to individual participants' data is presented in the Appendix (Figure~\ref{fig:AppendixConflictPSE_free}). 
 
 Causal-inference model typically predicts a non-linear breakdown of integration for large cue conflicts. Our data show only weak deviations from linearity. These deviations are more pronounced for large positive conflicts than for large negative conflicts, indicating an asymmetry in bias magnitude across the conflict range. This pattern suggests that, at the group level, observers do not exhibit the strong nonlinearity predicted by causal-inference model in which cue integration turns to cue segregation with increases in cue conflict. Instead, integration remains approximately linear within the tested conflict range. As a result, the behavioral signatures of causal inference are weak, limiting our ability to discriminate between causal-inference model and simpler integration or heuristic strategies with these data.
 
@@ -427,7 +427,7 @@ Causal-inference model typically predicts a non-linear breakdown of integration 
     \centering
     \includegraphics[width=1\linewidth]{assets/figures/aggregated_mu_vs_models_sem.pdf}
 \caption{
-Conflict-dependent biases in auditory duration perception. Point of subjective equality (PSE) shifts as a function of audiovisual conflict for the low auditory-noise condition (\textbf{A}) and high auditory-noise condition (\textbf{B}), averaged over 11 participants. Positive values indicate biases toward longer perceived auditory duration. Red and blue show empirical data (group mean $\pm$~SEM across 11 participants). Other lines indicate model predictions for forced fusion, causal model averaging, and probabilistic cue switching. The model predictions are jittered horizontally for readability. All model predictions were generated using sensory-noise parameters fitted using the bimodal data. For models, error bars reflect $\pm$~SEM across participant fits.}
+Conflict-dependent biases in auditory duration perception. Point of subjective equality (PSE) shifts as a function of audiovisual conflict for the low auditory-noise condition (\textbf{A}) and high auditory-noise condition (\textbf{B}), averaged over 11 participants. Positive values indicate biases toward longer perceived auditory duration. Red and blue show empirical data (group mean $\pm$~SEM across 11 participants). Other lines indicate model predictions for forced fusion, causal inference, and probabilistic cue switching. The model predictions are jittered horizontally for readability. All model predictions were generated using sensory-noise parameters fitted using the bimodal data. For models, error bars reflect $\pm$~SEM across participant fits.}
 \label{fig:pseConflictModel}
 \end{figure}
 
@@ -443,7 +443,7 @@ We evaluated model performance using the Akaike Information Criterion (AIC) at t
 Consistent with the observation that all models captured the data reasonably well (Figure~\ref{fig:pseConflictModel}), model comparison revealed only small differences in fit quality across integration strategies. Below, we report model-comparison results under two conditions: sensory-noise parameters were (1)~fixed to values estimated from the unimodal experiment, or (2)~treated as free parameters and fit directly to the bimodal data.
 
 \subsubsection{Fixed sensory noise}
-In this analysis, we assume that sensory noise is identical for unimodal and bimodal stimuli. Thus, we estimated the noise parameters using the data from the unimodal duration-discrimination tasks, and then used those estimates when fitting the data from the bimodal task. Figure~\ref{fig:modelComparison}A shows the participant-level $\Delta$AIC values, computed as the difference between the AIC of the best-fitting model for each participant and the AIC values of the other models. For most participants (8 out of 11), the probabilistic cue-switching model achieved the lowest $\Delta$AIC among the candidate models, indicating that it provided the best trade-off between goodness of fit and model complexity. The Bayesian causal-inference variants and the forced-fusion model had larger $\Delta$AIC values. The forced-fusion model was the best-fitting model for only three participants. No other model achieved the lowest $\Delta$AIC for any participant.
+In this analysis, we assume that sensory noise is identical for unimodal and bimodal stimuli. Thus, we estimated the noise parameters using the data from the unimodal duration-discrimination tasks, and then used those estimates when fitting the data from the bimodal task. Figure~\ref{fig:modelComparison}A shows the participant-level $\Delta$AIC values, computed as the difference between the AIC of the best-fitting model for each participant and the AIC values of the other models. For most participants (8 out of 11), the probabilistic cue-switching model achieved the lowest $\Delta$AIC among the candidate models, indicating that it provided the best trade-off between goodness of fit and model complexity. The Bayesian causal inference model and the forced-fusion model had larger $\Delta$AIC values. The forced-fusion model was the best-fitting model for only three participants. No other model achieved the lowest $\Delta$AIC for any participant.
 
 At the group level, the summed $\Delta$AIC values across participants yielded the same pattern, with the probabilistic cue-switching model overall performing the best (Figure~\ref{fig:modelComparison}A). 
 %%maybe show the figure on appendix but maybe not.
@@ -492,7 +492,7 @@ Consistent with this interpretation, the bimodal auditory duration judgments wer
 
 \subsection{Causal inference versus heuristic strategies}
 
-In the present study, both Bayesian causal-inference model and heuristic strategies were able to capture the main behavioral regularities observed in the auditory duration judgments, including noise-dependent biases toward visual duration. Notably, the probabilistic cue-switching model provided equal or superior fits to the behavioral data compared to causal-inference variants across multiple model-comparison criteria. At the same time, causal-inference model did not produce uniquely diagnostic predictions within the experimentally tested conflict range. This convergence suggests that explicit inference about the causal structure does not contribute to the observed behavior. 
+In the present study, both Bayesian causal-inference model and heuristic strategies were able to capture the main behavioral regularities observed in the auditory duration judgments, including noise-dependent biases toward visual duration. Notably, the probabilistic cue-switching model provided equal or superior fits to the behavioral data compared to causal-inference model across multiple model-comparison criteria. At the same time, causal-inference model did not produce uniquely diagnostic predictions within the experimentally tested conflict range. This convergence suggests that explicit inference about the causal structure does not contribute to the observed behavior. 
 
 The lack of evidence for causal inference should not be interpreted as evidence against its plausibility. Rather, our results highlight a fundamental limitation in discriminating between integration strategies when sensory noise is sufficiently high. Under these conditions, the posterior probability of separate causes remains low even at large cue conflicts. As a result, bias toward the visual stimulus continues to increase approximately linearly with increasing cue conflict. In this regime, heuristic strategies that stochastically select between cues can closely approximate the predictions of more complex inferential models. Recent work has shown that probabilistic switching strategies can reproduce behavioral patterns often interpreted as Bayesian integration, even in the absence of explicit inference over causal structure \citep{ni2024computational}. This perspective aligns with our finding that multiple integration strategies produce near-indistinguishable behavioral signatures in audiovisual-duration perception.
 
@@ -539,9 +539,9 @@ This work was supported by NIH grant EY08266 and the NYUAD Center for Brain and 
 \textbf{Model} & \textbf{Lapse} & \textbf{Sensory} & \textbf{Prior} & \textbf{Other} & \textbf{Total} \\
  & \textbf{Rates} & \textbf{Noise} & \textbf{$p_c$} & \textbf{Params} & \textbf{$n$} \\
 \midrule
-Forced Fusion & 1 & 3 & -- & -- & 4\\
-Model Averaging & 1 & 3 & \ding{51} & -- & 5\\
-Probabilistic Cue Switching & 1 & 3 & --& $p_{v,l},p_{v,h}$& 6\\
+Forced fusion & 1 & 3 & -- & -- & 4\\
+Causal inference & 1 & 3 & \ding{51} & -- & 5\\
+Probabilistic cue switching & 1 & 3 & --& $p_{v,l},p_{v,h}$& 6\\
 \bottomrule
 \end{tabular}
 
@@ -1082,34 +1082,7 @@ p(m_a, m_v \mid C\!=\!2)
 = \frac{\Delta\Phi_a\,\Delta\Phi_v}{\Delta_t^2}.
 \end{equation}
 
-% \subsubsection{Evaluate each integral}
 
-% Using the symmetry of Gaussians:
-% \begin{equation}
-% \mathcal{N}(m_a; y, \sigma_a^2) = \mathcal{N}(y; m_a, \sigma_a^2)
-% \end{equation}
-
-% Then:
-% \begin{equation}
-% \int_{t_{\min}}^{t_{\max}} p(m_a | y_a) p(y_a) \, dy_a = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y_a; m_a, \sigma_a^2) \, dy_a
-% \end{equation}
-
-% So $p(m_a, m_v | C=2)$ becomes:
-% \begin{multline}
-% p(m_a, m_v | C=2) = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y_a; m_a, \sigma_a^2) \, dy_a 
-% \times \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y_v; m_v, \sigma_v^2) \, dy_v
-% \end{multline}
-
-% \begin{multline}
-% = \left(\frac{1}{t_{\max} - t_{\min}}\right)^2 \left[\Phi\left(\frac{t_{\max} - m_a}{\sigma_a}\right) - \Phi\left(\frac{t_{\min} - m_a}{\sigma_a}\right)\right] 
-% \times \left[\Phi\left(\frac{t_{\max} - m_v}{\sigma_v}\right) - \Phi\left(\frac{t_{\min} - m_v}{\sigma_v}\right)\right]
-% \end{multline}
-
-% \begin{equation}
-% \label{eq:likelihood_c2_final}
-% p(m_a, m_v \mid C\!=\!2)
-% = \prod_{x \in \{m_a, m_v\}} \frac{1}{t_{\max} - t_{\min}} \left[\Phi\!\left(\frac{t_{\max} - x}{\sigma_x}\right) - \Phi\!\left(\frac{t_{\min} - x}{\sigma_x}\right)\right]
-% \end{equation}
 
 \subsubsection{Posterior probability of common cause}
 
@@ -1126,7 +1099,7 @@ p(C=1 | m_a, m_v)
 
 where $p_c$ is the prior probability of common cause.
 
-\subsubsection{Estimate with model averaging}
+\subsubsection{Estimate with causal inference}
 
 \begin{align}
 \hat{s}
@@ -1148,13 +1121,9 @@ where $J_a = 1/\sigma_a^2$ and $J_v = 1/\sigma_v^2$ denote sensory precisions (w
 
 \subsection{Model fits to individual subjects' data}
 
-Figure~\ref{fig:AppendixConflictPSE_free} shows point of subjective equality (PSE) shifts as a function of audiovisual duration conflict for individual participants, plotted separately for the low and high auditory-noise conditions. Black points with error bars denote empirical PSE estimates derived from psychometric fits. Colored lines indicate model predictions from probabilistic cue-switching, model averaging, model selection, probability matching and forced fusion, using parameters fitted to each participant's bimodal data. This figure illustrates individual differences in bias magnitude and noise dependence, as well as the substantial overlap in predicted PSE--conflict functions across models within the tested conflict range.
+Figure~\ref{fig:AppendixConflictPSE_free} shows point of subjective equality (PSE) shifts as a function of audiovisual duration conflict for individual participants, plotted separately for the low and high auditory-noise conditions. Black points with error bars denote empirical PSE estimates derived from psychometric fits. Colored lines indicate model predictions from probabilistic cue-switching, causal inference and forced fusion, using parameters fitted to each participant's bimodal data. This figure illustrates individual differences in bias magnitude and noise dependence, as well as the substantial overlap in predicted PSE--conflict functions across models within the tested conflict range.
 
 
-% \begin{figure}[H]
-%     \centering
-%     \includegraphics[width=0.95\linewidth]{assets/figures/pse_vs_conflict_single_1.png}
-% \end{figure}
 
 \begin{figure}
     \centering
@@ -1226,7 +1195,7 @@ These findings suggest that unimodal-derived sensory noise parameters may not fu
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{assets/figures/empirical_confusion_3model.pdf}
-    \caption {Model recovery. Validation of model identifiability through synthetic data analysis. For each of the three candidate models (rows), we generated 50 synthetic datasets using parameters sampled from the group-level distribution (mean $\pm$ SD from 11 participants). All models were then fit to each synthetic dataset, and the best-fitting model was determined by AIC. Row-normalized recovery rates show the proportion of times when data generated by one model was identified as coming from each of the three models. Values on the diagonal (outlined in black) indicate successful recovery of the true generating model. The moderate values along the diagonal reveal important differences in model identifiability: probabilistic cue switching show good recovery, while averaging-based models (forced fusion, model averaging)show poor recovery, indicating that these models make similar predictions and are not discriminable using our behavioral data. This pattern validates model comparison for broad strategy classification (selection vs. averaging) while suggesting caution when making fine-grained distinctions within the averaging family. $n = 200$ iterations per generating model.}
+    \caption {Model recovery. Validation of model identifiability through synthetic data analysis. For each of the three candidate models (rows), we generated 50 synthetic datasets using parameters sampled from the group-level distribution (mean $\pm$ SD from 11 participants). All models were then fit to each synthetic dataset, and the best-fitting model was determined by AIC. Row-normalized recovery rates show the proportion of times when data generated by one model was identified as coming from each of the three models. Values on the diagonal (outlined in black) indicate successful recovery of the true generating model. The moderate values along the diagonal reveal important differences in model identifiability: probabilistic cue switching show good recovery, while averaging-based models (forced fusion, causal inference)show poor recovery, indicating that these models make similar predictions and are not discriminable using our behavioral data. This pattern validates model comparison for broad strategy classification (selection vs. averaging) while suggesting caution when making fine-grained distinctions within the averaging family. $n = 50$ iterations per generating model.}
     \label{fig:modelRecoveryResults}
 \end{figure}
 
@@ -1235,12 +1204,9 @@ These findings suggest that unimodal-derived sensory noise parameters may not fu
 Model recovery is a crucial validation step that tests whether our model-comparison procedure can correctly identify the true data-generating model. This ensures that when we select a "best model" for real data, we're doing so reliably. 
 To perform this analysis, after fitting each candidate model to the empirical data we used the fitted parameter values to generate 200 synthetic datasets per model. Parameters were sampled from group-level distributions estimated from the 11 participants included in the main analyses. For each model and sampled parameter set, when then sampled responses from the model's predicted psychometric functions. Each synthetic dataset matched the original experimental design (same stimulus conditions, trial counts, and structure). We fitted each model to each of the datasets generated by each model and recorded their AIC values and the winning model for each simulated dataset.
 
-The model-recovery results reveal substantial differences in identifiability across models (Figure~\ref{fig:modelRecoveryResults}). Recovery was strongest for the model-selection strategy, which was correctly identified in 88\% of simulated datasets, indicating that this model generates relatively distinctive behavioral predictions. Recovery for the probabilistic cue-switching model was more moderate (66\%), with appreciable confusion with forced fusion and other averaging-based models. In contrast, forced fusion, model averaging, and probability matching showed poor mutual discriminability, with recovery rates in the range of approximately 32\%--41\%. This pattern suggests that these models produce similar behavioral signatures and may be difficult to distinguish based on behavioral data alone. Overall, these results indicate that the model-comparison procedure can reliably identify categorical model selection, but provides only limited separation for probabilistic cue switching and for distinctions within the family of averaging-based models.
+The model-recovery results reveal substantial differences in identifiability across models (Figure~\ref{fig:modelRecoveryResults}). Recovery was strongest for the probabilistic cue switching strategy, which was correctly identified in 92\% of simulated datasets, indicating that this model generates relatively distinctive behavioral predictions. Recovery for the Forced fusion model was more moderate (64\%), with appreciable confusion with causal inference model. In contrast, causal inference showed poor mutual discriminability which is recovered and equally confused with forced fusion model at 44\%. This pattern suggests that only the probabilistic cue switching model generates most distinguishable behavioral signatures but the causal inference model under high sensory noise. Overall, these results indicate that the model-comparison procedure can reliably identify categorical model selection, but provides only limited separation for probabilistic cue switching and for distinctions within the family of averaging-based models.
 
-% The model recovery results are revealing. There is good model discriminability for selection models: Both model selection and probabilistic cue-switching show good recovery, indicating these models make distinct predictions.
-% These results also showed poor discriminability for models that involve averaging, including forced fusion, model averaging and probability matching, suggesting that these models produce similar behavioral patterns. The confusion among averaging-based models suggests they represent a family of similar integration strategies that may be difficult to distinguish based on behavioral data alone. Despite moderate model recovery, the procedure does reliably distinguish selection from averaging strategies.
 
-%changed caption and figure edits
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth,height=0.58\textheight,keepaspectratio]{assets/figures/all_parameter_recovery_threeModel.pdf}
