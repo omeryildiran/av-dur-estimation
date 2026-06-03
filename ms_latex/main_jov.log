@@ -1,16 +1,17 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.20)  31 MAY 2026 17:02
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  2 JUN 2026 18:36
 entering extended mode
  restricted \write18 enabled.
+ file:line:error style messages enabled.
  %&-line parsing enabled.
-**main_jov.tex
-(./main_jov.tex
+**"/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex"
+(/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
 (./jov.cls
 Document Class: jov 2008/12/16 Journal of Vision class
-(/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
+(/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2024/06/29 v1.4n Standard LaTeX document class
-(/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/size10.clo
+(/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/size10.clo
 File: size10.clo 2024/06/29 v1.4n Standard LaTeX file (size option)
 )
 \c@part=\count196
@@ -24,69 +25,69 @@ File: size10.clo 2024/06/29 v1.4n Standard LaTeX file (size option)
 \abovecaptionskip=\skip49
 \belowcaptionskip=\skip50
 \bibindent=\dimen141
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/color.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/color.sty
 Package: color 2024/06/23 v1.3e Standard LaTeX Color (DPC)
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics-cfg/color.cfg
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics-cfg/color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package color Info: Driver file: pdftex.def on input line 149.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics-def/pdftex.def
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics-def/pdftex.def
 File: pdftex.def 2024/04/13 v1.2c Graphics/color driver for pdftex
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/mathcolor.ltx)) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/times.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/mathcolor.ltx)) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/times.sty
 Package: times 2020/03/25 PSNFSS-v9.3 (SPQR) 
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/hyperref.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/hyperref.sty
 Package: hyperref 2024-11-05 v7.01l Hypertext links for LaTeX
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/iftex/iftex.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/generic/iftex/iftex.sty
 Package: iftex 2024/12/12 v1.0g TeX engine tests
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/keyval.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/keyval.sty
 Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
 \KV@toks@=\toks17
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty
 Package: kvsetkeys 2022-10-05 v1.19 Key value parser (HO)
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty
 Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/pdfescape/pdfescape.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/pdfescape/pdfescape.sty
 Package: pdfescape 2019/12/09 v1.15 Implements pdfTeX's escape features (HO)
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
 Package: ltxcmds 2023-12-04 v1.26 LaTeX kernel commands for general use (HO)
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
 Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO)
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/infwarerr/infwarerr.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/generic/infwarerr/infwarerr.sty
 Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
 )
 Package pdftexcmds Info: \pdf@primitive is available.
 Package pdftexcmds Info: \pdf@ifprimitive is available.
 Package pdftexcmds Info: \pdfdraftmode found.
-)) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hycolor/hycolor.sty
+)) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hycolor/hycolor.sty
 Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/nameref.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2023-11-26 v2.56 Cross-referencing by name of section
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/refcount/refcount.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/refcount/refcount.sty
 Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/kvoptions/kvoptions.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/kvoptions/kvoptions.sty
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
 ))
 \c@section@level=\count270
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/etoolbox/etoolbox.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2025/02/11 v2.5l e-TeX tools for LaTeX (JAW)
 \etb@tempcnta=\count271
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/stringenc/stringenc.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/stringenc/stringenc.sty
 Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO)
 )
 \@linkdim=\dimen142
 \Hy@linkcounter=\count272
 \Hy@pagecounter=\count273
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/pd1enc.def
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/pd1enc.def
 File: pd1enc.def 2024-11-05 v7.01l Hyperref: PDFDocEncoding definition (HO)
 Now handling font encoding PD1 ...
 ... no UTF-8 mapping file for font encoding PD1
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/intcalc/intcalc.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/intcalc/intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
 \Hy@SavedSpaceFactor=\count274
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/puenc.def
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/puenc.def
 File: puenc.def 2024-11-05 v7.01l Hyperref: PDF Unicode definition (HO)
 Now handling font encoding PU ...
 ... no UTF-8 mapping file for font encoding PU
@@ -101,15 +102,15 @@ Package hyperref Info: Backreferencing OFF on input line 4177.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4424.
 \c@Hy@tempcnt=\count275
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/url/url.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/url/url.sty
 \Urlmuskip=\muskip17
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
 LaTeX Info: Redefining \url on input line 4763.
 \XeTeXLinkMargin=\dimen143
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/bitset/bitset.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/generic/bitset/bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO)
 ))
 \Fld@menulength=\count276
@@ -122,7 +123,7 @@ Package hyperref Info: backreferencing OFF on input line 6057.
 Package hyperref Info: Link coloring ON on input line 6060.
 Package hyperref Info: Link coloring with OCG OFF on input line 6067.
 Package hyperref Info: PDF/A mode OFF on input line 6072.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/atbegshi-ltx.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/atbegshi-ltx.sty
 Package: atbegshi-ltx 2021/01/10 v1.0c Emulation of the original atbegshi
 package with kernel methods
 )
@@ -131,193 +132,213 @@ package with kernel methods
 \c@Hfootnote=\count279
 )
 Package hyperref Info: Driver (autodetected): hpdftex.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/hpdftex.def
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/hpdftex.def
 File: hpdftex.def 2024-11-05 v7.01l Hyperref driver for pdfTeX
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/atveryend-ltx.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/atveryend-ltx.sty
 Package: atveryend-ltx 2020/08/19 v1.0a Emulation of the original atveryend package
 with kernel methods
 )
 \Fld@listcount=\count280
 \c@bookmark@seq@number=\count281
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty
 Package: rerunfilecheck 2022-07-10 v1.10 Rerun checks for auxiliary files (HO)
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty
 Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 )
 Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 285.
 )
 \Hy@SectionHShift=\skip51
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/natbib/natbib.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/natbib/natbib.sty
 Package: natbib 2010/09/13 8.31b (PWD, AO)
 \bibhang=\skip52
 \bibsep=\skip53
 LaTeX Info: Redefining \cite on input line 694.
 \c@NAT@ctr=\count282
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/pifont.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/pifont.sty
 Package: pifont 2020/03/25 PSNFSS-v9.3 Pi font support (SPQR) 
 LaTeX Font Info:    Trying to load font information for U+pzd on input line 63.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/upzd.fd
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/upzd.fd
 File: upzd.fd 2001/06/04 font definitions for U/pzd.
 )
 LaTeX Font Info:    Trying to load font information for U+psy on input line 64.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/upsy.fd
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/upsy.fd
 File: upsy.fd 2001/06/04 font definitions for U/psy.
 ))
 \c@nauthors=\count283
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/inputenc.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/inputenc.sty
 Package: inputenc 2024/02/08 v1.3d Input encoding file
 \inpenc@prehook=\toks18
 \inpenc@posthook=\toks19
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsmath.sty
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/lineno/lineno.sty
+Package: lineno 2025/01/29 line numbers on paragraphs v5.4
+\linenopenalty=\count284
+\output=\toks20
+\linenoprevgraf=\count285
+\linenumbersep=\dimen146
+\linenumberwidth=\dimen147
+\c@linenumber=\count286
+\c@pagewiselinenumber=\count287
+\c@LN@truepage=\count288
+\c@internallinenumber=\count289
+\c@internallinenumbers=\count290
+\quotelinenumbersep=\dimen148
+\bframerule=\dimen149
+\bframesep=\dimen150
+\bframebox=\box52
+LaTeX Info: Redefining \\ on input line 3187.
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amsmath.sty
 Package: amsmath 2024/11/05 v2.17t AMS math features
 \@mathmargin=\skip54
 
 For additional information on amsmath, use the `?' option.
-(/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amstext.sty
+(/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amstext.sty
 Package: amstext 2021/08/26 v2.01 AMS text
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsgen.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
-\@emptytoks=\toks20
-\ex@=\dimen146
-)) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsbsy.sty
+\@emptytoks=\toks21
+\ex@=\dimen151
+)) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
-\pmbraise@=\dimen147
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsopn.sty
+\pmbraise@=\dimen152
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
-\inf@bad=\count284
+\inf@bad=\count291
 LaTeX Info: Redefining \frac on input line 233.
-\uproot@=\count285
-\leftroot@=\count286
+\uproot@=\count292
+\leftroot@=\count293
 LaTeX Info: Redefining \overline on input line 398.
 LaTeX Info: Redefining \colon on input line 409.
-\classnum@=\count287
-\DOTSCASE@=\count288
+\classnum@=\count294
+\DOTSCASE@=\count295
 LaTeX Info: Redefining \ldots on input line 495.
 LaTeX Info: Redefining \dots on input line 498.
 LaTeX Info: Redefining \cdots on input line 619.
-\Mathstrutbox@=\box52
-\strutbox@=\box53
+\Mathstrutbox@=\box53
+\strutbox@=\box54
 LaTeX Info: Redefining \big on input line 721.
 LaTeX Info: Redefining \Big on input line 722.
 LaTeX Info: Redefining \bigg on input line 723.
 LaTeX Info: Redefining \Bigg on input line 724.
-\big@size=\dimen148
+\big@size=\dimen153
 LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
-\macc@depth=\count289
+\macc@depth=\count296
 LaTeX Info: Redefining \bmod on input line 904.
 LaTeX Info: Redefining \pmod on input line 909.
 LaTeX Info: Redefining \smash on input line 939.
 LaTeX Info: Redefining \relbar on input line 969.
 LaTeX Info: Redefining \Relbar on input line 970.
-\c@MaxMatrixCols=\count290
+\c@MaxMatrixCols=\count297
 \dotsspace@=\muskip18
-\c@parentequation=\count291
-\dspbrk@lvl=\count292
-\tag@help=\toks21
-\row@=\count293
-\column@=\count294
-\maxfields@=\count295
-\andhelp@=\toks22
-\eqnshift@=\dimen149
-\alignsep@=\dimen150
-\tagshift@=\dimen151
-\tagwidth@=\dimen152
-\totwidth@=\dimen153
-\lineht@=\dimen154
-\@envbody=\toks23
+\c@parentequation=\count298
+\dspbrk@lvl=\count299
+\tag@help=\toks22
+\row@=\count300
+\column@=\count301
+\maxfields@=\count302
+\andhelp@=\toks23
+\eqnshift@=\dimen154
+\alignsep@=\dimen155
+\tagshift@=\dimen156
+\tagwidth@=\dimen157
+\totwidth@=\dimen158
+\lineht@=\dimen159
+\@envbody=\toks24
 \multlinegap=\skip55
 \multlinetaggap=\skip56
-\mathdisplay@stack=\toks24
+\mathdisplay@stack=\toks25
 LaTeX Info: Redefining \[ on input line 2953.
 LaTeX Info: Redefining \] on input line 2954.
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/amssymb.sty
+)
+\@LN@amsmath@ams@eqpen=\count303
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty
 Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
 \symAMSa=\mathgroup4
 \symAMSb=\mathgroup5
 LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
-)) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/graphicx.sty
+)) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/graphicx.sty
 Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/graphics.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/graphics.sty
 Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/trig.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/trig.sty
 Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
 Package graphics Info: Driver file: pdftex.def on input line 106.
 )
-\Gin@req@height=\dimen155
-\Gin@req@width=\dimen156
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/booktabs/booktabs.sty
+\Gin@req@height=\dimen160
+\Gin@req@width=\dimen161
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/booktabs/booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
-\heavyrulewidth=\dimen157
-\lightrulewidth=\dimen158
-\cmidrulewidth=\dimen159
-\belowrulesep=\dimen160
-\belowbottomsep=\dimen161
-\aboverulesep=\dimen162
-\abovetopsep=\dimen163
-\cmidrulesep=\dimen164
-\cmidrulekern=\dimen165
-\defaultaddspace=\dimen166
-\@cmidla=\count296
-\@cmidlb=\count297
-\@aboverulesep=\dimen167
-\@belowrulesep=\dimen168
-\@thisruleclass=\count298
-\@lastruleclass=\count299
-\@thisrulewidth=\dimen169
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/tools/tabularx.sty
+\heavyrulewidth=\dimen162
+\lightrulewidth=\dimen163
+\cmidrulewidth=\dimen164
+\belowrulesep=\dimen165
+\belowbottomsep=\dimen166
+\aboverulesep=\dimen167
+\abovetopsep=\dimen168
+\cmidrulesep=\dimen169
+\cmidrulekern=\dimen170
+\defaultaddspace=\dimen171
+\@cmidla=\count304
+\@cmidlb=\count305
+\@aboverulesep=\dimen172
+\@belowrulesep=\dimen173
+\@thisruleclass=\count306
+\@lastruleclass=\count307
+\@thisrulewidth=\dimen174
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/tools/tabularx.sty
 Package: tabularx 2023/12/11 v2.12a `tabularx' package (DPC)
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/tools/array.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/tools/array.sty
 Package: array 2024/10/17 v2.6g Tabular extension package (FMi)
-\col@sep=\dimen170
-\ar@mcellbox=\box54
-\extrarowheight=\dimen171
-\NC@list=\toks25
+\col@sep=\dimen175
+\ar@mcellbox=\box55
+\extrarowheight=\dimen176
+\NC@list=\toks26
 \extratabsurround=\skip57
 \backup@length=\skip58
-\ar@cellbox=\box55
+\ar@cellbox=\box56
 )
-\TX@col@width=\dimen172
-\TX@old@table=\dimen173
-\TX@old@col=\dimen174
-\TX@target=\dimen175
-\TX@delta=\dimen176
-\TX@cols=\count300
-\TX@ftn=\toks26
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/float/float.sty
+\TX@col@width=\dimen177
+\TX@old@table=\dimen178
+\TX@old@col=\dimen179
+\TX@target=\dimen180
+\TX@delta=\dimen181
+\TX@cols=\count308
+\TX@ftn=\toks27
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/float/float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count301
-\float@exts=\toks27
-\float@box=\box56
-\@float@everytoks=\toks28
-\@floatcapt=\box57
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/rotating.sty
+\c@float@type=\count309
+\float@exts=\toks28
+\float@box=\box57
+\@float@everytoks=\toks29
+\@floatcapt=\box58
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/rotating.sty
 Package: rotating 2016/08/11 v2.16d rotated objects in LaTeX
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/ifthen.sty
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/ifthen.sty
 Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
 )
-\c@r@tfl@t=\count302
+\c@r@tfl@t=\count310
 \rotFPtop=\skip59
 \rotFPbot=\skip60
-\rot@float@box=\box58
-\rot@mess@toks=\toks29
+\rot@float@box=\box59
+\rot@mess@toks=\toks30
 )
 LaTeX Font Info:    Trying to load font information for OT1+ptm on input line 37.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/ot1ptm.fd
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/ot1ptm.fd
 File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
-) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count303
-\l__pdf_internal_box=\box59
-) (./main_jov.aux)
+\l__color_backend_stack_int=\count311
+\l__pdf_internal_box=\box60
+)
+No file main_jov.aux.
 \openout1 = `main_jov.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 37.
@@ -338,79 +359,255 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 37.
 LaTeX Font Info:    ... okay on input line 37.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 37.
 LaTeX Font Info:    ... okay on input line 37.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+(/usr/local/texlive/2025basic/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count312
+\scratchdimen=\dimen182
+\scratchbox=\box61
+\nofMPsegments=\count313
+\nofMParguments=\count314
+\everyMPshowfont=\toks31
+\MPscratchCnt=\count315
+\MPscratchDim=\dimen183
+\MPnumerator=\count316
+\makeMPintoPDFobject=\count317
+\everyMPtoPDFconversion=\toks32
+) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
 Package hyperref Info: Link coloring ON on input line 37.
- (./main_jov.out) (./main_jov.out)
 \@outlinefile=\write3
 \openout3 = `main_jov.out'.
 
 LaTeX Font Info:    Trying to load font information for U+msa on input line 39.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
 LaTeX Font Info:    Trying to load font information for U+msb on input line 39.
- (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
+ (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 
 
+Package natbib Warning: Citation `treisman1963temporal' on page 1 undefined on input line 50.
 
-[1{/Users/omer/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+Package natbib Warning: Citation `gibbon1977scalar' on page 1 undefined on input line 50.
 
 
-{/Users/omer/Library/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc}]
+Package natbib Warning: Citation `wittmann2009inner' on page 1 undefined on input line 50.
+
+
+Package natbib Warning: Citation `grondin2014non' on page 1 undefined on input line 50.
+
+
+Package natbib Warning: Citation `hartcher2016single' on page 1 undefined on input line 50.
+
+
+Package natbib Warning: Citation `grondin2025perception' on page 1 undefined on input line 50.
+
+
+Package natbib Warning: Citation `lejeune2009vierordt' on page 1 undefined on input line 50.
+
+
+Package natbib Warning: Citation `jazayeri2010temporal' on page 1 undefined on input line 50.
+
+
+Package natbib Warning: Citation `mamassian2010s' on page 1 undefined on input line 50.
+
+
+Package natbib Warning: Citation `buonomano2010population' on page 1 undefined on input line 50.
+
+
+Package natbib Warning: Citation `muller2014perceiving' on page 1 undefined on input line 50.
+
+
+Package natbib Warning: Citation `kononowicz2016search' on page 1 undefined on input line 50.
+
+
+
+[1{/usr/local/texlive/2025basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+
+
+{/usr/local/texlive/2025basic/texmf-dist/fonts/enc/dvips/base/8r.enc}]
+
+Package natbib Warning: Citation `zoefel2017oscillatory' on page 2 undefined on input line 57.
+
+
+Package natbib Warning: Citation `king1985integration' on page 2 undefined on input line 57.
+
+
+Package natbib Warning: Citation `vroomen2010perception' on page 2 undefined on input line 57.
+
+
+Package natbib Warning: Citation `maloney1989statistical' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `young1993perturbation' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `landy1995measurement' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `ernst2002humans' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `ernst2002humans' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `hillis2002combining' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `maier2020adaptive' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `alais2004ventriloquist' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `negen2018bayes' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `landy2001ideal' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `landy2011ideal' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `wolpert2011principles' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `alais2019cue' on page 2 undefined on input line 62.
+
+
+Package natbib Warning: Citation `rossi2021mechanisms' on page 2 undefined on input line 62.
+
+
+
+
+Package natbib Warning: Citation `shams2005sound' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `hartcher2014duration' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `shams2005sound' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `kording2007causal' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `hong2021causal' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `kording2007causal' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `badde2018vision' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `badde2021causal' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `hong2021causal' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `badde2023multisensory' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `li2025precision' on page 2 undefined on input line 66.
+
+
+Package natbib Warning: Citation `hartcher2014duration' on page 2 undefined on input line 72.
 
 
 
 [2]
-
-<assets/figures/unimodal_tasks_timeline.pdf, id=379, 933.4875pt x 483.8075pt>
+<assets/figures/unimodal_tasks_timeline.pdf, id=25, 933.4875pt x 483.8075pt>
 File: assets/figures/unimodal_tasks_timeline.pdf Graphic file (type pdf)
 <use assets/figures/unimodal_tasks_timeline.pdf>
 Package pdftex.def Info: assets/figures/unimodal_tasks_timeline.pdf  used on input line 81.
 (pdftex.def)             Requested size: 260.34271pt x 134.92627pt.
 
 
+
+Package natbib Warning: Citation `peirce2007psychopy' on page 3 undefined on input line 102.
+
+
+
 [3 <./assets/figures/unimodal_tasks_timeline.pdf>]
+
+Package natbib Warning: Citation `hartcher2014duration' on page 4 undefined on input line 120.
+
+
+Package natbib Warning: Citation `shi2013reducing' on page 4 undefined on input line 120.
+
+
+LaTeX Warning: Reference `fig:unimodal_Timelines' on page 4 undefined on input line 120.
+
+
 
 
 
 [4]
 
 
+LaTeX Warning: Reference `fig:unimodal_Timelines' on page 5 undefined on input line 171.
+
+
+Package natbib Warning: Citation `prins2012psychometric' on page 5 undefined on input line 173.
+
+
+LaTeX Warning: Reference `fig:bimodalExpScheme' on page 5 undefined on input line 194.
+
+
 
 [5]
 
 
+LaTeX Warning: Reference `fig:unimodal_Timelines' on page 6 undefined on input line 231.
+
+
+Package natbib Warning: Citation `haigh2021role' on page 6 undefined on input line 233.
+
+
+LaTeX Warning: Reference `fig:unimodal_data_fits' on page 6 undefined on input line 242.
+
+
 
 [6]
-<assets/figures/psychometric_curves_publication.pdf, id=446, 862.3053pt x 427.66254pt>
+<assets/figures/psychometric_curves_publication.pdf, id=81, 862.3053pt x 427.66254pt>
 File: assets/figures/psychometric_curves_publication.pdf Graphic file (type pdf)
 <use assets/figures/psychometric_curves_publication.pdf>
 Package pdftex.def Info: assets/figures/psychometric_curves_publication.pdf  used on input line 248.
 (pdftex.def)             Requested size: 260.34271pt x 129.11545pt.
 
 
-<assets/figures/crossmodalTimeline.png, id=448, 582.978pt x 226.665pt>
+
+LaTeX Warning: Reference `fig:unimodal_data_fits' on page 7 undefined on input line 269.
+
+<assets/figures/crossmodalTimeline.png, id=82, 582.978pt x 226.665pt>
 File: assets/figures/crossmodalTimeline.png Graphic file (type png)
 <use assets/figures/crossmodalTimeline.png>
 Package pdftex.def Info: assets/figures/crossmodalTimeline.png  used on input line 279.
 (pdftex.def)             Requested size: 260.34271pt x 101.22356pt.
 
+LaTeX Warning: Reference `fig:crossmodalDiag' on page 7 undefined on input line 286.
 
-[7 <./assets/figures/psychometric_curves_publication.pdf>]
 
-<assets/figures/psychometric_curves_crossmodal.pdf, id=535, 860.4076pt x 427.66254pt>
+
+[7 <./assets/figures/psychometric_curves_publication.pdf> <./assets/figures/crossmodalTimeline.png>]
+
+LaTeX Warning: Reference `fig:crossModalData' on page 8 undefined on input line 288.
+
+<assets/figures/psychometric_curves_crossmodal.pdf, id=168, 860.4076pt x 427.66254pt>
 File: assets/figures/psychometric_curves_crossmodal.pdf Graphic file (type pdf)
 <use assets/figures/psychometric_curves_crossmodal.pdf>
 Package pdftex.def Info: assets/figures/psychometric_curves_crossmodal.pdf  used on input line 296.
 (pdftex.def)             Requested size: 260.34271pt x 129.40257pt.
-<assets/figures/bimodal_exp_scheme_1.pdf, id=536, 639.38875pt x 380.42125pt>
+<assets/figures/bimodal_exp_scheme_1.pdf, id=169, 639.38875pt x 380.42125pt>
 File: assets/figures/bimodal_exp_scheme_1.pdf Graphic file (type pdf)
 <use assets/figures/bimodal_exp_scheme_1.pdf>
 Package pdftex.def Info: assets/figures/bimodal_exp_scheme_1.pdf  used on input line 307.
@@ -419,62 +616,254 @@ LaTeX Font Info:    Font shape `OT1/cmss/m/it' in size <8> not available
 (Font)              Font shape `OT1/cmss/m/sl' tried instead on input line 309.
 
 
-[8 <./assets/figures/crossmodalTimeline.png> <./assets/figures/psychometric_curves_crossmodal.pdf>]
-<assets/figures/pooled_psychometric_functions.pdf, id=608, 844.68031pt x 444.98117pt>
+
+LaTeX Warning: Reference `fig:bimodalExpScheme' on page 8 undefined on input line 315.
+
+
+
+[8 <./assets/figures/psychometric_curves_crossmodal.pdf> <./assets/figures/bimodal_exp_scheme_1.pdf>]
+
+LaTeX Warning: Reference `fig:psychometric_conflict_fits' on page 9 undefined on input line 317.
+
+<assets/figures/pooled_psychometric_functions.pdf, id=256, 844.68031pt x 444.98117pt>
 File: assets/figures/pooled_psychometric_functions.pdf Graphic file (type pdf)
 <use assets/figures/pooled_psychometric_functions.pdf>
 Package pdftex.def Info: assets/figures/pooled_psychometric_functions.pdf  used on input line 321.
 (pdftex.def)             Requested size: 260.34271pt x 137.14832pt.
 
+LaTeX Warning: Reference `fig:conflict_pse' on page 9 undefined on input line 326.
 
-<assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf, id=610, 843.0627pt x 437.11806pt>
+
+
+<assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf, id=257, 843.0627pt x 437.11806pt>
 File: assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf Graphic file (type pdf)
 <use assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf>
 Package pdftex.def Info: assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf  used on input line 330.
 (pdftex.def)             Requested size: 260.34271pt x 134.98494pt.
 
 
-[9 <./assets/figures/bimodal_exp_scheme_1.pdf> <./assets/figures/pooled_psychometric_functions.pdf>]
+[9 <./assets/figures/pooled_psychometric_functions.pdf> <./assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf>]
+
+Package natbib Warning: Citation `killeen1987optimal' on page 10 undefined on input line 347.
+
+
+Package natbib Warning: Citation `wittmann2009inner' on page 10 undefined on input line 347.
+
+
+Package natbib Warning: Citation `ren2020ensemble' on page 10 undefined on input line 347.
+
+
+LaTeX Warning: Reference `eq:forced_fusion' on page 10 undefined on input line 357.
 
 
 
-[10 <./assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf>]
+
+Package natbib Warning: Citation `kording2007causal' on page 10 undefined on input line 395.
+
+
+LaTeX Warning: Hyper reference `app:appendix' on page 10 undefined on input line 395.
+
+
+LaTeX Warning: Hyper reference `causal_inf_equations' on page 10 undefined on input line 395.
+
+
+
+[10]
+
+LaTeX Warning: Reference `fig:pseConflictModel' on page 11 undefined on input line 420.
+
+
+LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 11 undefined on input line 420.
+
+
+
+<assets/figures/aggregated_mu_vs_models_sem.pdf, id=343, 843.0627pt x 463.93927pt>
+File: assets/figures/aggregated_mu_vs_models_sem.pdf Graphic file (type pdf)
+<use assets/figures/aggregated_mu_vs_models_sem.pdf>
+Package pdftex.def Info: assets/figures/aggregated_mu_vs_models_sem.pdf  used on input line 428.
+(pdftex.def)             Requested size: 260.34271pt x 143.2675pt.
+
+Package natbib Warning: Citation `acerbi2017practical' on page 11 undefined on input line 437.
 
 
 
 [11]
 
-<assets/figures/aggregated_mu_vs_models_sem.pdf, id=735, 843.0627pt x 463.93927pt>
-File: assets/figures/aggregated_mu_vs_models_sem.pdf Graphic file (type pdf)
-<use assets/figures/aggregated_mu_vs_models_sem.pdf>
-Package pdftex.def Info: assets/figures/aggregated_mu_vs_models_sem.pdf  used on input line 443.
-(pdftex.def)             Requested size: 260.34271pt x 143.2675pt.
+Package natbib Warning: Citation `badde2020modality' on page 12 undefined on input line 439.
+
+
+LaTeX Warning: Reference `fig:AppendixConflictPSE_unimodal_fits' on page 12 undefined on input line 439.
+
+
+
+
+LaTeX Warning: Reference `fig:modelComparison' on page 12 undefined on input line 441.
+
+
+LaTeX Warning: Reference `fig:pseConflictModel' on page 12 undefined on input line 443.
+
+
+LaTeX Warning: Reference `fig:modelComparison' on page 12 undefined on input line 446.
+
+
+LaTeX Warning: Reference `fig:modelComparison' on page 12 undefined on input line 448.
+
+
+LaTeX Warning: File `assets/figures/modelComparison_threeModels_heatmap.pdf' not found on input line 453.
+
+
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:453: Package pdftex.def Error: File `assets/figures/modelComparison_threeModels_heatmap.pdf' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.453 .../modelComparison_threeModels_heatmap.pdf}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 453.
+(/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/ot1pcr.fd
+File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
+)
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:453: Font OT1/pcr/m/n/10=pcrr7t at 10.0pt not loadable: Metric (TFM) file not found.
+<to be read again> 
+                   relax 
+l.453 .../modelComparison_threeModels_heatmap.pdf}
+                                                  
+I wasn't able to read the size data for this font,
+so I will ignore the font specification.
+[Wizards can fix TFM files using TFtoPL/PLtoTF.]
+You might try inserting a different font spec;
+e.g., type `I\font<same font id>=<substitute font name>'.
+
+Missing character: There is no a in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no g in font nullfont!
+Missing character: There is no u in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no m in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no d in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no l in font nullfont!
+Missing character: There is no C in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no m in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no n in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no h in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no M in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no d in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no l in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no h in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no m in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no . in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no d in font nullfont!
+Missing character: There is no f in font nullfont!
+
+LaTeX Warning: Reference `fig:modelComparison' on page 12 undefined on input line 462.
+
 
 
 [12 <./assets/figures/aggregated_mu_vs_models_sem.pdf>]
 
-<assets/figures/modelComparison_fixed_and_free.pdf, id=1033, 1091.37743pt x 1046.25682pt>
-File: assets/figures/modelComparison_fixed_and_free.pdf Graphic file (type pdf)
-<use assets/figures/modelComparison_fixed_and_free.pdf>
-Package pdftex.def Info: assets/figures/modelComparison_fixed_and_free.pdf  used on input line 468.
-(pdftex.def)             Requested size: 260.34271pt x 249.57417pt.
+
+LaTeX Warning: Reference `fig:modelComparison' on page 13 undefined on input line 464.
+
+
+LaTeX Warning: Reference `fig:posterior_conflict' on page 13 undefined on input line 472.
+
+
+LaTeX Warning: Reference `fig:posterior_individual' on page 13 undefined on input line 472.
+
 
 
 [13]
-
-
-
-[14 <./assets/figures/modelComparison_fixed_and_free.pdf>]
-<assets/figures/manuscript_posterior_mt_v2.pdf, id=1119, 821.58647pt x 825.33246pt>
+<assets/figures/manuscript_posterior_mt_v2.pdf, id=647, 821.58647pt x 825.33246pt>
 File: assets/figures/manuscript_posterior_mt_v2.pdf Graphic file (type pdf)
 <use assets/figures/manuscript_posterior_mt_v2.pdf>
-Package pdftex.def Info: assets/figures/manuscript_posterior_mt_v2.pdf  used on input line 497.
+Package pdftex.def Info: assets/figures/manuscript_posterior_mt_v2.pdf  used on input line 478.
 (pdftex.def)             Requested size: 208.27496pt x 209.21652pt.
 
 
+Package natbib Warning: Citation `shams2005sound' on page 14 undefined on input line 487.
 
 
-[15 <./assets/figures/manuscript_posterior_mt_v2.pdf>]
+Package natbib Warning: Citation `hartcher2014duration' on page 14 undefined on input line 487.
+
+
+Package natbib Warning: Citation `kording2007causal' on page 14 undefined on input line 487.
+
+
+Package natbib Warning: Citation `badde2021causal' on page 14 undefined on input line 487.
+
+
+Package natbib Warning: Citation `hong2021causal' on page 14 undefined on input line 487.
+
+
+
+
+
+[14 <./assets/figures/manuscript_posterior_mt_v2.pdf>]
+
+Package natbib Warning: Citation `ni2024computational' on page 15 undefined on input line 499.
+
+
+
+
+
+[15]
+
+Package natbib Warning: Citation `ernst2002humans' on page 16 undefined on input line 530.
+
+
+Package natbib Warning: Citation `van2008distortions' on page 16 undefined on input line 530.
+
+
+Package natbib Warning: Citation `hartcher2014duration' on page 16 undefined on input line 530.
+
+
+Package natbib Warning: Citation `caruso2018single' on page 16 undefined on input line 530.
+
+
+Package natbib Warning: Citation `laquitaine2018switching' on page 16 undefined on input line 530.
+
+
+Package natbib Warning: Citation `ni2024computational' on page 16 undefined on input line 530.
+
+
 
 
 
@@ -496,94 +885,250 @@ Package pdftex.def Info: assets/figures/manuscript_posterior_mt_v2.pdf  used on 
 
 [20]
 
+LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 21 undefined on input line 1159.
 
-
-[21]
-
-
-
-[22]
-<assets/figures/pse_vs_conflict_compact_freeSigma_.pdf, id=1320, 1082.08882pt x 736.70833pt>
+<assets/figures/pse_vs_conflict_compact_freeSigma_.pdf, id=830, 1082.08882pt x 736.70833pt>
 File: assets/figures/pse_vs_conflict_compact_freeSigma_.pdf Graphic file (type pdf)
 <use assets/figures/pse_vs_conflict_compact_freeSigma_.pdf>
-Package pdftex.def Info: assets/figures/pse_vs_conflict_compact_freeSigma_.pdf  used on input line 1265.
+Package pdftex.def Info: assets/figures/pse_vs_conflict_compact_freeSigma_.pdf  used on input line 1169.
 (pdftex.def)             Requested size: 260.33405pt x 177.24077pt.
-<assets/figures/pse_vs_conflict_compact_unimodalSigma_.pdf, id=1321, 1082.08882pt x 736.70833pt>
+<assets/figures/pse_vs_conflict_compact_unimodalSigma_.pdf, id=831, 1082.08882pt x 736.70833pt>
 File: assets/figures/pse_vs_conflict_compact_unimodalSigma_.pdf Graphic file (type pdf)
 <use assets/figures/pse_vs_conflict_compact_unimodalSigma_.pdf>
-Package pdftex.def Info: assets/figures/pse_vs_conflict_compact_unimodalSigma_.pdf  used on input line 1273.
+Package pdftex.def Info: assets/figures/pse_vs_conflict_compact_unimodalSigma_.pdf  used on input line 1177.
 (pdftex.def)             Requested size: 260.33405pt x 177.24077pt.
 
+LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 21 undefined on input line 1178.
 
-<assets/figures/posterior_overlay_per_subject_v2.pdf, id=1324, 1705.35226pt x 2325.16727pt>
+
+LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 21 undefined on input line 1178.
+
+
+
+<assets/figures/posterior_overlay_per_subject_v2.pdf, id=832, 1705.35226pt x 2325.16727pt>
 File: assets/figures/posterior_overlay_per_subject_v2.pdf Graphic file (type pdf)
 <use assets/figures/posterior_overlay_per_subject_v2.pdf>
-Package pdftex.def Info: assets/figures/posterior_overlay_per_subject_v2.pdf  used on input line 1281.
+Package pdftex.def Info: assets/figures/posterior_overlay_per_subject_v2.pdf  used on input line 1185.
 (pdftex.def)             Requested size: 247.32477pt x 337.19385pt.
 
 
-[23 <./assets/figures/pse_vs_conflict_compact_freeSigma_.pdf> <./assets/figures/pse_vs_conflict_compact_unimodalSigma_.pdf>]
+[21 <./assets/figures/pse_vs_conflict_compact_freeSigma_.pdf> <./assets/figures/pse_vs_conflict_compact_unimodalSigma_.pdf>]
 
-<assets/figures/optimal_integration_comparison.pdf, id=1816, 711.71898pt x 429.35468pt>
+LaTeX Warning: Reference `fig:posterior_individual' on page 22 undefined on input line 1193.
+
+
+
+
+LaTeX Warning: Reference `fig:optimalIntegrationComp' on page 22 undefined on input line 1198.
+
+<assets/figures/optimal_integration_comparison.pdf, id=1325, 711.71898pt x 429.35468pt>
 File: assets/figures/optimal_integration_comparison.pdf Graphic file (type pdf)
 <use assets/figures/optimal_integration_comparison.pdf>
-Package pdftex.def Info: assets/figures/optimal_integration_comparison.pdf  used on input line 1309.
+Package pdftex.def Info: assets/figures/optimal_integration_comparison.pdf  used on input line 1213.
 (pdftex.def)             Requested size: 260.34271pt x 157.0571pt.
 
 
-[24 <./assets/figures/posterior_overlay_per_subject_v2.pdf>]
-
-<assets/figures/model_recovery_confusion_matrix_aic.pdf, id=1897, 563.11809pt x 490.85985pt>
-File: assets/figures/model_recovery_confusion_matrix_aic.pdf Graphic file (type pdf)
-<use assets/figures/model_recovery_confusion_matrix_aic.pdf>
-Package pdftex.def Info: assets/figures/model_recovery_confusion_matrix_aic.pdf  used on input line 1332.
-(pdftex.def)             Requested size: 260.34271pt x 226.94421pt.
-<assets/figures/all_parameter_recovery_l.pdf, id=1899, 1708.04372pt x 1358.46118pt>
-File: assets/figures/all_parameter_recovery_l.pdf Graphic file (type pdf)
-<use assets/figures/all_parameter_recovery_l.pdf>
-Package pdftex.def Info: assets/figures/all_parameter_recovery_l.pdf  used on input line 1350.
-(pdftex.def)             Requested size: 260.33946pt x 207.0562pt.
+[22 <./assets/figures/posterior_overlay_per_subject_v2.pdf>]
 
 
-[25 <./assets/figures/optimal_integration_comparison.pdf>]
+LaTeX Warning: File `assets/figures/empirical_confusion_3model.pdf' not found on input line 1236.
+
+
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1236: Package pdftex.def Error: File `assets/figures/empirical_confusion_3model.pdf' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1236 .../figures/empirical_confusion_3model.pdf}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+Missing character: There is no a in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no g in font nullfont!
+Missing character: There is no u in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no m in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no c in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no l in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no c in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no n in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no u in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no n in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no 3 in font nullfont!
+Missing character: There is no m in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no d in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no l in font nullfont!
+Missing character: There is no . in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no d in font nullfont!
+Missing character: There is no f in font nullfont!
+
+LaTeX Warning: Reference `fig:modelRecoveryResults' on page 23 undefined on input line 1246.
+
+
+LaTeX Warning: File `assets/figures/all_parameter_recovery_threeModel.pdf' not found on input line 1254.
+
+
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1254: Package pdftex.def Error: File `assets/figures/all_parameter_recovery_threeModel.pdf' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1254 ...s/all_parameter_recovery_threeModel.pdf}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+Missing character: There is no a in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no g in font nullfont!
+Missing character: There is no u in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no l in font nullfont!
+Missing character: There is no l in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no m in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no c in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no v in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no y in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no h in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no M in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no d in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no l in font nullfont!
+Missing character: There is no . in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no d in font nullfont!
+Missing character: There is no f in font nullfont!
+
+LaTeX Warning: Reference `fig:parameterRecovery' on page 23 undefined on input line 1261.
+
+
+LaTeX Warning: Reference `fig:parameterRecovery' on page 23 undefined on input line 1261.
 
 
 
-[26 <./assets/figures/model_recovery_confusion_matrix_aic.pdf> <./assets/figures/all_parameter_recovery_l.pdf>] (./main_jov.bbl
+[23 <./assets/figures/optimal_integration_comparison.pdf>]
 
 
 
-[27]
+[24] (./main_jov.bbl
 
 
 
-[28])
+[25]
 
 
 
-[29
+[26])
 
-] (./main_jov.aux)
+Package natbib Warning: There were undefined citations.
+
+
+
+
+
+[27
+
+] (./main_jov.aux
+
+Package natbib Warning: Citation(s) may have changed.
+(natbib)                Rerun to get citations correct.
+
+)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
  ***********
-Package rerunfilecheck Info: File `main_jov.out' has not changed.
-(rerunfilecheck)             Checksum: B24CEB39870A2065A084B4D867D5A068;11337.
+
+
+LaTeX Warning: There were undefined references.
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
+Package rerunfilecheck Warning: File `main_jov.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `main_jov.out':
+(rerunfilecheck)             Before: <no file>
+(rerunfilecheck)             After:  05C9975C7E7F6C71F7BBEC1A16696946;10184.
  ) 
 Here is how much of TeX's memory you used:
- 11015 strings out of 475171
- 174790 string characters out of 5765333
- 585657 words of memory out of 5000000
- 33613 multiletter control sequences out of 15000+600000
- 582888 words of font info for 88 fonts, out of 8000000 for 9000
- 14 hyphenation exceptions out of 8191
- 90i,22n,93p,2108b,632s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/urw/times/utmri8a.pfb></Users/omer/Library/TinyTeX/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on main_jov.pdf (29 pages, 1962590 bytes).
+ 11604 strings out of 474662
+ 187546 string characters out of 5751110
+ 585470 words of memory out of 5000000
+ 34249 multiletter control sequences out of 15000+600000
+ 584814 words of font info for 91 fonts, out of 8000000 for 9000
+ 319 hyphenation exceptions out of 8191
+ 90i,22n,93p,2263b,654s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmri8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
+Output written on main_jov.pdf (27 pages, 1759709 bytes).
 PDF statistics:
- 2262 PDF objects out of 2487 (max. 8388607)
- 1079 compressed objects within 11 object streams
- 229 named destinations out of 1000 (max. 500000)
- 553 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1685 PDF objects out of 1728 (max. 8388607)
+ 677 compressed objects within 7 object streams
+ 217 named destinations out of 1000 (max. 500000)
+ 66 words of extra memory for PDF output out of 10000 (max. 10000000)
 

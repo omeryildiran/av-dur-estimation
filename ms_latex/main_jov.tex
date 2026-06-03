@@ -27,7 +27,7 @@
 \author{Ni}{Long}{Department of Psychology and Center for Neural Science, New York University}{New York, NY, USA}{}{}
 \author{Landy}{Michael S.}{Department of Psychology and Center for Neural Science, New York University}{New York, NY, USA}{}{}
 
-\abstract{How does the brain integrate conflicting temporal information across sensory modalities? Previous work has shown that observers integrate audiovisual duration cues optimally when the conflict between the two cues is small. Does causal inference lead to a breakdown of audiovisual integration when duration conflicts are large? Here, we address this question by testing a wide range of cue conflicts in an auditory duration-discrimination task. In the bimodal task, participants compared the auditory durations of a test and a standard stimulus. Audiovisual durations were consistent in the test stimulus, but differed by seven conflict durations ($\pm 250$~ms) in the standard stimulus. Auditory durations were tested at two levels of noise. We found that auditory duration percepts shifted systematically toward the visual duration, especially with high auditory noise. The shift was proportional to the cue-conflict magnitude, inconsistent with the predictions of causal inference. We compared several models. A heuristic model in which the observer probabilistically switches between the visual and auditory cues was preferred for most participants, although performance differences across models were small. Model simulations further revealed that given the measured sensory noise, competing models can be discriminated only with unreasonably large conflicts. Within the conflict range tested here, all models produced largely overlapping, near-linear shifts as a function of the cue conflict magnitude. Our results suggest that observers do not rely on causal inference when judging auditory durations under our conditions. Although the heuristic cue-switching model was favored by model comparison, high sensory variability in auditory duration encoding---particularly under high auditory-noise conditions---limits the discriminability of competing computational models. Under such levels of encoding noise, forced fusion, causal inference, and probabilistic switching models generate highly similar predictions across the experimentally tested conflict range.}
+\abstract{How does the brain integrate conflicting temporal information across sensory modalities? Previous work has shown that observers integrate audiovisual duration cues optimally when the conflict between the two cues is small. Does causal inference lead to a breakdown of audiovisual integration when duration conflicts are large? Here, we address this question by testing a wide range of cue conflicts in an auditory duration-discrimination task. In the bimodal task, participants compared the auditory durations of a test and a standard stimulus. Audiovisual durations were consistent in the test stimulus, but differed by seven conflict durations ($\pm 250$~ms) in the standard stimulus. Auditory durations were tested at two levels of noise. We found that auditory duration percepts shifted systematically toward the visual duration, especially with high auditory noise. The shift was proportional to the cue-conflict magnitude, inconsistent with the predictions of causal inference. We compared several models. A heuristic model in which the observer probabilistically switches between the visual and auditory cues was preferred for most participants, although performance differences across models were small. Model simulations further revealed that given the measured sensory noise, competing models can be discriminated only with unreasonably large conflicts. Within the conflict range tested here, all models produced largely overlapping, near-linear shifts as a function of the cue conflict magnitude. Our results suggest that observers do not rely on causal inference when judging auditory durations under our conditions. Although the heuristic cue-switching model was favored by model comparison, high sensory variability in auditory duration encoding---particularly under high auditory-noise conditions---limits the discriminability of competing computational models. Under such levels of encoding noise, forced fusion, causal inference, and probabilistic cue switching models generate highly similar predictions across the experimentally tested conflict range.}
 
 \keywords{audiovisual integration; duration perception; causal inference; cue conflict; multisensory perception; psychophysics}
 
@@ -333,8 +333,8 @@ To quantify the results, we extracted the PSE from each psychometric curve and p
 \end{figure}
 
 
-\section{Computational modeling}
-To explain participants' behavior in the audiovisual duration-conflict task, we fit five models to the behavioral data. These models shared the same encoding process but differed in decoding strategy. Below, we describe the models' encoding process, followed by the decoding stage.
+\section{Computational models}
+To explain participants' behavior in the audiovisual duration-conflict task, we fit three models to the behavioral data. These models shared the same encoding process but differed in decoding strategy. Below, we describe the models' encoding process, followed by the decoding stage.
 
 \subsection{Sensory encoding}
 All models assumed that internal representations of auditory and visual durations are noisy. To capture Weber-like scaling of temporal uncertainty (scalar variability), we assumed that durations are encoded in logarithmic space with additive Gaussian noise: 
@@ -348,7 +348,7 @@ p(m_v \mid s_v) \sim \mathcal{N}(\log s_v,\sigma_v^2).
 
 
 \subsection{Decoding strategy}
-While all tested models shared the same encoding process, they differed in how encoded information is integrated and read out across sensory modalities. We considered five classes of integration and decision strategies: forced fusion, three forms of causal inference, and heuristic cue selection. We describe each of the five models next.  
+While all tested models shared the same encoding process, they differed in how encoded information is integrated and read out across sensory modalities. We considered three classes of integration and decision strategies: forced fusion, causal inference, and heuristic cue selection. We describe each of the three models next.  
 
 % 
 % start with fusion/integration model, followed by causal inference model, then by all heuristic models
@@ -358,7 +358,7 @@ The forced-fusion model assumed that observers integrate auditory and visual sig
 
 This model can be viewed as a special case of the Bayesian causal-inference model in which the prior probability of common cause is fixed at $p_c=1$, i.e., the two cues are always integrated regardless of cue-conflict magnitude. Deviations from this model provide evidence that integration strength varies as a function of cue conflict and uncertainty.
 
-\subsection{Causal-inference models}
+\subsection{Causal-inference model}
 The Bayesian causal-inference model assumed that the observer first infers whether the auditory and visual cues arise from a common source by computing the posterior probability of a common source given the two cues' sensory measurements:
 \begin{align}
 p(C = 1 \mid m_a, m_v),
@@ -392,15 +392,11 @@ p(m_a, m_v \mid C=1)\, p_c
 \label{eq:posterior_common_cause}
 \end{equation}
 
-
-We tested three causal-inference models, in which the posterior probability of common cause$p(C=1|m_a,m_v)$ was computed in the same way. However, the models differed in how this posterior probability was applied to form the final duration estimate used for the decision. Specifically, the models used the posterior probability to (i) average the estimates under the common- and separate-cause hypotheses weighted by their posterior probabilities, (ii) select the estimate associated with the more probable causal structure, or (iii) stochastically sample between these estimates according to the posterior probability. Each model included a prior probability of common cause, $p_c$, which was fitted to the data.
-
-Likelihoods under the common-cause and separate-causes hypotheses were computed by marginalizing over the latent true stimulus durations using a bounded prior, following the standard formulation of Bayesian causal inference \citep{kording2007causal}. Full expressions, choice of prior distribution, and analytical derivations are provided in \hyperref[app:appendix]{Appendix}, specifically in \hyperref[causal_inf_equations]{the Bayesian causal-inference model subsection}.
+This model included the prior probability of common cause, $p_c$, which was fitted to the data. Likelihoods under the common-cause and separate-causes hypotheses were computed by marginalizing over the latent true stimulus durations using a bounded prior, following the standard formulation of Bayesian causal inference \citep{kording2007causal}. Full expressions, choice of prior distribution, and analytical derivations are provided in \hyperref[app:appendix]{Appendix}, specifically in \hyperref[causal_inf_equations]{the Bayesian causal-inference model subsection}.
 
 We modeled the prior distribution of durations as a truncated uniform distribution over the range of stimulus durations presented in the experiment, $[t_{\min}, t_{\max}]$, providing finite support for the latent duration variable. 
 
-\subsubsection{Model averaging}
-This model assumed that participants inferred the stimulus duration based on the inferred causal relationship between the cues presented in the trial. It assumed that the observer started by inferring the posterior probability of both cues originating from a common cause by computing $p(C = 1 \mid m_a, m_v)$. Under this model, observers computed two estimates of the auditory stimulus duration, one based on both auditory and visual measurements, and another based on the auditory measurement alone. The final auditory duration estimate was a weighted average of these two separate estimates, given by:
+Here the model assumes that participants inferred the stimulus duration based on the inferred causal relationship between the cues presented in the trial. It assumed that the observer started by inferring the posterior probability of both cues originating from a common cause by computing $p(C = 1 \mid m_a, m_v)$. Under this model, observers computed two estimates of the auditory stimulus duration, one based on both auditory and visual measurements, and another based on the auditory measurement alone. The final auditory duration estimate was a weighted average of these two separate estimates, given by:
 \begin{align}
 \hat S_{a}
 = {}& p(C=1 \mid m_a,m_v)\,\hat S_{a,C=1} \notag\\
@@ -408,19 +404,8 @@ This model assumed that participants inferred the stimulus duration based on the
    \hat S_{a,C=2},
 \label{eq:estimate_model_avg}
 \end{align}
-where $\hat S_{a,C=1}$ and $\hat S_{a,C=2}$ denote the estimates of the auditory stimulus under the common-cause and independent-causes assumptions, respectively. This strategy produced an estimate that smoothly interpolated between fusion and segregation as a function of sensory conflict and uncertainty, resulting in graded biases toward the more reliable cue.
-Model averaging is performed in log-duration space, consistent with the assumed log-Gaussian sensory encoding and inference framework.
+where $\hat S_{a,C=1}$ and $\hat S_{a,C=2}$ denote the estimates of the auditory stimulus under the common-cause and independent-causes assumptions, respectively. This strategy produced an estimate that smoothly interpolated between fusion and segregation as a function of sensory conflict and uncertainty, resulting in graded biases toward the more reliable cue. Model averaging is performed in log-duration space, consistent with the assumed log-Gaussian sensory encoding and inference framework.
 
-\subsubsection{Model selection}
-The model-selection strategy treats the causal structure as a categorical latent variable and assumes that observers committed to a single causal interpretation on each trial. Specifically, instead of averaging estimates across the two causal hypotheses, observers selected the estimate derived from the more probable causal structure (i.e., the one with higher posterior probability).
-
-In our implementation, when the posterior probability of common cause exceeded 0.5, observers fully integrated auditory and visual measurements to form a fused estimate. Otherwise, observers assumed separate causes and based their judgment solely on the auditory measurement, consistent with task instructions. This strategy prioritizes categorical causal decisions and predicts a sharper transition between integration and segregation as a function of sensory conflict compared to model averaging.
-
-
-\subsubsection{Probability matching}
-The probability-matching strategy preserves the uncertainty about the causal structure at the level of individual trials. Rather than committing to a single causal interpretation or continuously averaging across hypotheses, observers stochastically sampled causal structures in proportion to their posterior probability. Although probability matching is computationally simple and widely observed in human decision-making \citep{wozny2010probability,ren2020ensemble}, it is suboptimal for both estimation accuracy and causal classification.
-
-Under this strategy, fusion is selected with probability $p(C=1 \mid m_a,m_v)$, while segregation is selected with probability $1 - p(C=1 \mid m_a,m_v)$. When segregation is selected, judgments are based solely on the auditory cue measurement, consistent with task demands. Probability matching produces trial-to-trial variability in integration behavior and yields mixture-like response patterns without continuous averaging of the common-cause and separate-causes estimates.
 
 \subsection{Probabilistic cue switching}
 We also considered a probabilistic cue-switching model, in which observers based their decision on either the auditory or the visual cue on each trial (see Methods). Instead of computing posterior probabilities of causal structure, this heuristic strategy selected a single cue stochastically: with fixed selection probability $p_v$, the decision was based solely on the visual estimate, and with probability $1 - p_v$, it was based solely on the auditory estimate. Thus, $p_v$ represents the probability of relying on the visual cue on a given trial. This formulation captures the possibility that observers rely on stable response tendencies rather than dynamically weighting sensory information. Despite its simplicity, the switching strategy can reproduce cue-integration--like patterns when responses are averaged across trials.
@@ -430,9 +415,9 @@ We also considered a probabilistic cue-switching model, in which observers based
 
 \subsection{Modeling results}
 
-We first evaluate how well the models accounted for the shifts in PSE as a function of audiovisual cue conflict across the two auditory noise levels. We compared observed PSE shifts with predictions from five models: forced fusion, model averaging, model selection, probability matching and probabilistic cue switching. Sensory-noise parameters were fitted using the data from the bimodal experiment. 
+We first evaluate how well the models accounted for the shifts in PSE as a function of audiovisual cue conflict across the two auditory noise levels. We compared observed PSE shifts with predictions from three models: forced fusion, model averaging, model selection, probability matching and probabilistic cue switching. Sensory-noise parameters were fitted using the data from the bimodal experiment. 
 
-Figure~\ref{fig:pseConflictModel} shows model fits to the PSE-shift data. For ease of visualization, predictions of only three of the models are displayed: forced fusion, model averaging and probabilistic cue switching. All three models capture the overall pattern that perceived auditory duration was systematically biased toward visual duration and that the bias increased approximately linearly with audiovisual conflict magnitude. All three models also predict an overall larger bias under higher auditory noise. This convergence suggests that our data may be limited in the ability to adjudicate between these models. A comparison that includes all five models and fits to individual participants' data is presented in the Appendix (Figure~\ref{fig:AppendixConflictPSE_free}). 
+Figure~\ref{fig:pseConflictModel} shows model fits to the PSE-shift data. For ease of visualization, predictions of only three of the models are displayed: forced fusion, model averaging and probabilistic cue switching. All three models capture the overall pattern that perceived auditory duration was systematically biased toward visual duration and that the bias increased approximately linearly with audiovisual conflict magnitude. All three models also predict an overall larger bias under higher auditory noise. This convergence suggests that our data may be limited in the ability to adjudicate between these models. A comparison that includes all three models and fits to individual participants' data is presented in the Appendix (Figure~\ref{fig:AppendixConflictPSE_free}). 
 
 Causal-inference models typically predict a non-linear breakdown of integration for large cue conflicts. Our data show only weak deviations from linearity. These deviations are more pronounced for large positive conflicts than for large negative conflicts, indicating an asymmetry in bias magnitude across the conflict range. This pattern suggests that, at the group level, observers do not exhibit the strong nonlinearity predicted by causal-inference models in which cue integration turns to cue segregation with increases in cue conflict. Instead, integration remains approximately linear within the tested conflict range. As a result, the behavioral signatures of causal inference are weak, limiting our ability to discriminate between causal-inference models and simpler integration or heuristic strategies with these data.
 
@@ -465,9 +450,9 @@ At the group level, the summed $\Delta$AIC values across participants yielded th
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{assets/figures/modelComparison_fixed_and_free.pdf}
+    \includegraphics[width=1\linewidth]{assets/figures/modelComparison_threeModels_heatmap.pdf}
  \caption{
-    \textbf{A} Model comparison assuming sensory-noise parameters fixed to values estimated from the unimodal tasks. \textbf{B} Model comparison when sensory-noise parameters were additionally fit to the bimodal data. Left panels show participant-level $\Delta$AIC values for each model (lower values indicate better fit), computed relative to the best-fitting model for that participant. Rows correspond to participants and columns correspond to models. Right panels show the sum of $\Delta$AIC values across participants for each model, providing a group-level comparison. When sensory-noise parameters were fixed (A), the probabilistic cue-switching model provided the best fit for 8 of 11 participants. When the sensory-noise parameters were fit directly to the bimodal data (B), the cue-switching model provided the best fit for 4 of 11 participants.
+    \textbf{A} Model comparison assuming sensory-noise parameters fixed to values estimated from the unimodal tasks. \textbf{B} Model comparison when sensory-noise parameters were additionally fit to the bimodal data. Left panels show participant-level $\Delta$AIC values for each model (lower values indicate better fit), computed relative to the best-fitting model for that participant. Rows correspond to participants and columns correspond to models. Right panels show the sum of $\Delta$AIC values across participants for each model, providing a group-level comparison. When sensory-noise parameters were fixed (A), the probabilistic cue-switching model provided the best fit for 8 of 11 participants. When the sensory-noise parameters were fit directly to the bimodal data (B), the cue-switching model provided the best fit for 5 of 11 participants.
     }
     \label{fig:modelComparison}
 \end{figure}
@@ -476,13 +461,9 @@ At the group level, the summed $\Delta$AIC values across participants yielded th
 
 When sensory-noise parameters were fitted using the bimodal data, model comparison revealed substantially weaker separation between candidate models (Figure~\ref{fig:modelComparison}B). Participant-level $\Delta$AIC values showed considerable overlap between models, indicating that multiple integration strategies provided similarly good fits once sensory noise was allowed to vary.
 
-The probabilistic cue-switching model provided the best fits for the largest number of participants (4 out of 11; Figure~\ref{fig:modelComparison}B). At the group level, it also yielded the lowest summed $\Delta$AIC across participants. However, the individual $\Delta$AIC values were very low, suggesting limited discriminability between integration strategies under this assumption.
+The probabilistic cue-switching model provided the best fits for the largest number of participants (5 out of 11; Figure~\ref{fig:modelComparison}B). At the group level, it also yielded the lowest summed $\Delta$AIC across participants. However, the individual $\Delta$AIC values were very low, suggesting limited discriminability between integration strategies under this assumption.
 
 
-\subsubsection{Random-effects Bayesian model selection}
-
-To assess model distinguishability at the population level, we performed random-effects Bayesian model selection \citep{stephan2009bayesian,rigoux2014bayesian}. This approach does not assume that all participants use the same model. Instead, it estimates the distribution of models across the population and quantifies the uncertainty about which model is most prevalent. Under this framework, we first computed the exceedance probability (XP), defined as the posterior probability that a given model is more frequent in the population than all competing models. Although the probabilistic cue-switching model yielded the highest raw exceedance probability (XP = 0.52), this value alone does not necessarily account for the possibility that the observed differences in model evidence across participants might have been due to chance rather than differences in population-level model prevalence.
-To address this, we calculated the protected exceedance probability (PXP) \citep{rigoux2014bayesian}, which adjusts the exceedance probability by incorporating the Bayesian Omnibus Risk (BOR), defined as the posterior probability that the observed differences in model evidence across participants could arise under a null hypothesis in which all models are equally frequent in the population. The Bayesian Omnibus Risk was high (BOR = 0.88), indicating a substantial probability that the observed differences in model evidence reflect chance fluctuations rather than true population-level differences in model prevalence. After this correction, protected exceedance probabilities were approximately uniform across models (all PXP $\approx$ 0.18--0.24), with the cue-switching model yielding PXP = 0.24, only slightly above chance level (1/5 = 0.20). None of the models approached the conventional threshold for strong evidence (PXP $\ge$ 0.95). Together, these results indicate that no model clearly predominates at the population level.
 
 
 \subsubsection{High sensory-encoding noise limits model discriminability}
@@ -568,8 +549,6 @@ This work was supported by NIH grant EY08266 and the NYUAD Center for Brain and 
 \midrule
 Forced Fusion & 1 & 3 & -- & -- & 4\\
 Model Averaging & 1 & 3 & \ding{51} & -- & 5\\
-Model Selection & 1 & 3 & \ding{51} & -- & 5\\
-Probability Matching & 1 & 3 & \ding{51} & -- & 5\\
 Probabilistic Cue Switching & 1 & 3 & --& $p_{v,l},p_{v,h}$& 6\\
 \bottomrule
 \end{tabular}
@@ -1173,82 +1152,7 @@ where $\hat{s}_{C=1}$ is the reliability-weighted fused estimate (in log-duratio
 where $J_a = 1/\sigma_a^2$ and $J_v = 1/\sigma_v^2$ denote sensory precisions (with $\sigma_a \in \{\sigma_{a,l}, \sigma_{a,h}\}$ depending on condition). In the segregated case ($C=2$), the observer reports the auditory estimate $m_a$, consistent with the task instruction to judge auditory duration.
 
 
-\subsubsection{Estimate with probability matching}
 
-Probability matching is a stochastic strategy where the observer samples the causal structure from the posterior distribution on each trial:
-
-\begin{equation}
-\label{eq:probability_matching_sample}
-C \sim \text{Bernoulli}(p(C=1 | m_a, m_v)).
-\end{equation}
-
-Then the estimate is determined by the sampled causal structure:
-
-\begin{equation}
-\label{eq:estimate_matching}
-\hat{s} = \begin{cases}
-\hat{s}_{C=1}, & \text{if } C = 1 \text{ (sampled)} \\
-\hat{s}_{C=2}, & \text{if } C = 2 \text{ (sampled)},
-\end{cases}
-\end{equation}
-
-where $\hat{s}_{C=2}$ is the separate estimate (auditory only in our case):
-\begin{equation}
-\hat{s}_{C=2} = m_a.
-\end{equation}
-
-Note that while the expected value of probability matching over many trials equals the model averaging estimate (Eq.~\ref{eq:estimate_model_avg}), the two strategies differ in their trial-by-trial behavior. Probability matching produces discrete choices on each trial, whereas model averaging produces a continuous weighted estimate.
-
-\subsubsection{Estimate with model selection}
-
-Model selection is a deterministic strategy that selects the most probable causal structure and then uses the estimate corresponding to that structure:
-
-\begin{equation}
-\label{eq:estimate_selection}
-\hat{s} = \begin{cases}
-\hat{s}_{C=1}, & \text{if } p(C=1 | m_a, m_v) > 0.5 \\
-\hat{s}_{C=2}, & \text{otherwise.}
-\end{cases}
-\end{equation}
-
-This strategy differs from both model averaging and probability matching. Unlike model averaging, which always produces a weighted combination, model selection commits to a single causal structure on each trial. Unlike probability matching, which stochastically samples the causal structure, model selection deterministically chooses the more probable structure. This makes model selection more sensitive to the variance of the posterior: when $p(C=1 | m_a, m_v)$ is near 0.5, small changes in sensory evidence can cause discrete switches in behavior.
-
-
-
-% \subsection{Other sensory-encoding models}
-
-% We have also tested other sensory-encoding models on top of the log-space Gaussian observer model. However the other models have not shown any significant success. The first dimension of our model space concerns how auditory and visual durations are internally represented and corrupted by sensory noise. We considered two other observer models that differed in the assumed form of sensory variability and in whether the observer's inference mechanism correctly reflects the structure of that variability.
-
-% \subsubsection{Gaussian sensory noise (linear time).}
-% In the Gaussian-noise observer, perceptual measurements of duration are assumed to be corrupted by additive Gaussian noise in physical time:
-% \begin{equation}
-% m_a \sim \mathcal{N}(S_a,\sigma_a^2), \qquad
-% m_v \sim \mathcal{N}(S_v,\sigma_v^2),
-% \end{equation}
-% where $S_a$ and $S_v$ denote the physical auditory and visual durations, and $\sigma_a$ and $\sigma_v$ are modality-specific noise parameters. This model implies duration-independent uncertainty and therefore does not implement scalar variability. Though this assumption is inconsistent with most of the timing literature, which shows that temporal uncertainty scales with duration \citep{walker1981auditory,killeen1987optimal,brannon2008electrophysiological,haigh2021role}, we included this model comparison as a baseline.
-
-
-
-% \subsubsection{Log-linear mismatch observer.}
-
-% The log--linear mismatch model assumes the same sensory encoding as the log-space Gaussian observer, namely log-Gaussian measurements as in Eqs.~\ref{eq:ma_given_y} and \ref{eq:mv_given_y}, consistent with evidence that perceptual magnitudes are encoded logarithmically and exhibit scalar variability.
-
-% However, the observer's inference process is mis-specified. Instead of performing inference in log space, the observer exponentiates the measurements,
-% \begin{equation}
-% \tilde m_a = \exp(m_a), \qquad \tilde m_v = \exp(m_v),
-% \end{equation}
-% and performs cue integration and causal inference in linear time. Critically, the observer treats these transformed quantities as if they were corrupted by additive Gaussian noise with constant variance,
-% \begin{equation}
-% \tilde m_a \sim \mathcal{N}(S_a,\sigma_a^2), \qquad
-% \tilde m_v \sim \mathcal{N}(S_v,\sigma_v^2),
-% \end{equation}
-% using the same noise parameters ($\sigma_{a,l}$, $\sigma_{a,h}$, $\sigma_v$) as in the log-space model, but now interpreted as linear-space standard deviations.
-
-% This formulation captures a computational mismatch between encoding and inference: although sensory measurements are generated with multiplicative (log-normal) noise, the observer incorrectly assumes additive Gaussian noise in linear time. As a result, reliability weighting and causal inference are performed under an incorrect noise model.
-
-% Such mismatches are consistent with evidence that human observers rely on approximate or mis-specified internal models during perceptual inference, leading to systematic biases \citep{winter2022variance,lange2021confirmation}.
-
-% Importantly, this model introduces no additional free parameters and preserves the structure of the causal-inference framework, isolating the consequences of this specific mismatch. 
 
 \subsection{Model fits to individual subjects' data}
 
@@ -1329,8 +1233,8 @@ These findings suggest that unimodal-derived sensory noise parameters may not fu
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{assets/figures/model_recovery_confusion_matrix_aic.pdf}
-    \caption {Model recovery. Validation of model identifiability through synthetic data analysis. For each of 5 candidate models (rows), we generated 200 synthetic datasets using parameters sampled from the group-level distribution (mean $\pm$ SD from 11 participants). All 5 models were then fit to each synthetic dataset, and the best-fitting model was determined by AIC. Row-normalized recovery rates show the proportion of times when data generated by one model was identified as coming from each of the five models. Values on the diagonal (outlined in black) indicate successful recovery of the true generating model. The moderate values along the diagonal reveal important differences in model identifiability: selection-based models (model selection, probabilistic cue switching) show good recovery, while averaging-based models (forced fusion, model averaging, probability matching) show poor recovery, indicating that these models make similar predictions and are not discriminable using our behavioral data. This pattern validates model comparison for broad strategy classification (selection vs. averaging) while suggesting caution when making fine-grained distinctions within the averaging family. $n = 200$ iterations per generating model.}
+    \includegraphics[width=1\linewidth]{assets/figures/empirical_confusion_3model.pdf}
+    \caption {Model recovery. Validation of model identifiability through synthetic data analysis. For each of the three candidate models (rows), we generated 50 synthetic datasets using parameters sampled from the group-level distribution (mean $\pm$ SD from 11 participants). All models were then fit to each synthetic dataset, and the best-fitting model was determined by AIC. Row-normalized recovery rates show the proportion of times when data generated by one model was identified as coming from each of the three models. Values on the diagonal (outlined in black) indicate successful recovery of the true generating model. The moderate values along the diagonal reveal important differences in model identifiability: probabilistic cue switching show good recovery, while averaging-based models (forced fusion, model averaging)show poor recovery, indicating that these models make similar predictions and are not discriminable using our behavioral data. This pattern validates model comparison for broad strategy classification (selection vs. averaging) while suggesting caution when making fine-grained distinctions within the averaging family. $n = 200$ iterations per generating model.}
     \label{fig:modelRecoveryResults}
 \end{figure}
 
@@ -1347,7 +1251,7 @@ The model-recovery results reveal substantial differences in identifiability acr
 %changed caption and figure edits
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth,height=0.58\textheight,keepaspectratio]{assets/figures/all_parameter_recovery_l.pdf}
+    \includegraphics[width=1\linewidth,height=0.58\textheight,keepaspectratio]{assets/figures/all_parameter_recovery_threeModel.pdf}
     \caption{\textbf{Parameter-recovery analysis for model validation.} Each row corresponds to a generative model and each column to a model parameter. Synthetic datasets ($N = 200$) were generated from fitted group-level parameter distributions and refit with the same model. Scatter plots show true versus recovered parameter values; dashed diagonals indicate perfect recovery and gray bands show a $\pm 5\%$ tolerance region. Insets report Pearson correlation ($r$) and RMSE. Sensory-noise and lapse parameters were generally well recovered, whereas causal-prior and switching parameters were less constrained.}
     \label{fig:parameterRecovery}
 \end{figure}
