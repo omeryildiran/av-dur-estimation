@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex main_jov"] 1780261330.00565 "main_jov.aux" "main_jov.bbl" "main_jov" 1780439774.30988 0
+["bibtex main_jov"] 1780261330.00565 "main_jov.aux" "main_jov.bbl" "main_jov" 1780518598.25221 0
   "./elife-sample.bib" 1780271638 20990 680107017aebbfddf1dd0ab122cab2dc ""
   "/usr/local/texlive/2025basic/texmf-dist/bibtex/bst/base/apalike.bst" 1292289607 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "main_jov.aux" 1780439774.20152 41793 3f5eaf0845f35c1b7f4f74c3ba6a886b "pdflatex"
+  "main_jov.aux" 1780518598.10878 41781 1a201b607297c52e5d1a9d673f026718 "pdflatex"
   (generated)
   "main_jov.bbl"
   "main_jov.blg"
   (rewritten before read)
-["pdflatex"] 1780439773.38192 "/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex" "main_jov.pdf" "main_jov" 1780439774.31008 2
-  "/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex" 1780439773.58386 128280 fbb15d127acd6aa76fbc58be9aa8e5ce ""
+["pdflatex"] 1780518597.34612 "/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex" "main_jov.pdf" "main_jov" 1780518598.25242 2
+  "/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex" 1780518595.50888 125619 76ee127c0ec1097b3e2e920e56ffdad1 ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/adobe/symbol/psyr.tfm" 1136768653 1408 5937f58aa508ea2cea4901c07d10f5fe ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1136768653 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -144,19 +144,19 @@
   "assets/figures/manuscript_posterior_mt_v2.pdf" 1780271638 146353 9b1a7a17bd1710547cdf694607bc0ad1 ""
   "assets/figures/modelComparison_threeModels_heatmap.pdf" 0 -1 0 ""
   "assets/figures/optimal_integration_comparison.pdf" 1780271638 25591 33a6cde0ce8f5adac1b4135954a6b32a ""
+  "assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf" 0 -1 0 ""
+  "assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf" 0 -1 0 ""
   "assets/figures/pooled_psychometric_functions.pdf" 1780271638 41023 497d0af8e246a0f30d3ead931cdcafbd ""
   "assets/figures/posterior_overlay_per_subject_v2.pdf" 1780271638 360146 316cad6a79a9f027ab3eb053534b2207 ""
   "assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf" 1780271638 62799 a9afee68c4523a87b8522f665c514730 ""
-  "assets/figures/pse_vs_conflict_compact_freeSigma_.pdf" 1780271638 96682 3850ad8c6a5d6d8d9dd624eb12b047b6 ""
-  "assets/figures/pse_vs_conflict_compact_unimodalSigma_.pdf" 1780271638 96682 cd1bc826fb0a9fda7845d0658aa2f2c6 ""
   "assets/figures/psychometric_curves_crossmodal.pdf" 1780271638 25215 2a21a96eb88f6cb93dc69d00252a1ed6 ""
   "assets/figures/psychometric_curves_publication.pdf" 1780271638 28279 f1ba63d4c1c1fb314c47eb0c2d011580 ""
   "assets/figures/unimodal_tasks_timeline.pdf" 1780271638 507385 8b29397f0b48a9b111fbf5c51c7afd20 ""
   "jov.cls" 1780261324.34821 6944 b3226ef9fff22f355b0cc19d3c1f9d23 ""
-  "main_jov.aux" 1780439774.20152 41793 3f5eaf0845f35c1b7f4f74c3ba6a886b "pdflatex"
+  "main_jov.aux" 1780518598.10878 41781 1a201b607297c52e5d1a9d673f026718 "pdflatex"
   "main_jov.bbl" 1780261330.03134 12066 135db466a898694213f087d372b49383 "bibtex main_jov"
-  "main_jov.out" 1780439774.20345 10184 05c9975c7e7f6c71f7bbec1a16696946 "pdflatex"
-  "main_jov.tex" 1780439773.58386 128280 fbb15d127acd6aa76fbc58be9aa8e5ce ""
+  "main_jov.out" 1780518598.11067 10184 05c9975c7e7f6c71f7bbec1a16696946 "pdflatex"
+  "main_jov.tex" 1780518595.50888 125619 76ee127c0ec1097b3e2e920e56ffdad1 ""
   (generated)
   "main_jov.aux"
   "main_jov.log"
