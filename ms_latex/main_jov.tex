@@ -166,7 +166,7 @@ The duration of the visual stimulus was perceptually matched to the auditory dur
 % \end{figure}
 
 \subsubsection{Unimodal baselines (Auditory only, Visual Only)}
-In the unimodal tasks, 12 participants performed a 2IFC duration-discrimination task, in which  either two auditory durations (i.e., signals embedded on a background noise) or two visual durations (i.e., visual filled disks as signals) were sequentially presented. The auditory task lasted approximately 20~minutes, and the visual task lasted around 12~minutes. 
+In the unimodal tasks, 11 participants performed a 2IFC duration-discrimination task, in which  either two auditory durations (i.e., signals embedded on a background noise) or two visual durations (i.e., visual filled disks as signals) were sequentially presented. The auditory task lasted approximately 20~minutes, and the visual task lasted around 12~minutes. 
 
 In both tasks, the standard stimulus duration was fixed at 500~ms. The duration of the test auditory stimulus varied (between 25 and 975~ms) from trial to trial. The waveform of an example stimulus in the low and high auditory-noise conditions is shown in Figure~\ref{fig:unimodal_Timelines}.
 
@@ -400,7 +400,7 @@ We also considered a probabilistic cue-switching model, in which observers based
 
 We first evaluate how well the models accounted for the shifts in PSE as a function of audiovisual cue conflict across the two auditory noise levels. We compared observed PSE shifts with predictions from three models: forced fusion, causal inference, and probabilistic cue switching. Sensory-noise parameters were fitted using the data from the bimodal experiment. 
 
-Figure~\ref{fig:pseConflictModel} shows model fits to the PSE-shift data. For ease of visualization, predictions of only three of the models are displayed: forced fusion, causal inference and probabilistic cue switching. All three models capture the overall pattern that perceived auditory duration was systematically biased toward visual duration and that the bias increased approximately linearly with audiovisual conflict magnitude. All three models also predict an overall larger bias under higher auditory noise. This convergence suggests that our data may be limited in the ability to adjudicate between these models. A comparison that includes all three models and fits to individual participants' data is presented in the Appendix (Figure~\ref{fig:AppendixConflictPSE_free}). 
+Figure~\ref{fig:pseConflictModel} shows model fits to the PSE-shift data. All three models capture the overall pattern that perceived auditory duration was systematically biased toward visual duration and that the bias increased approximately linearly with audiovisual conflict magnitude. All three models also predict an overall larger bias under higher auditory noise. This convergence suggests that our data may be limited in the ability to adjudicate between these models. 
 
 Causal-inference model typically predicts a non-linear breakdown of integration for large cue conflicts. Our data show only weak deviations from linearity. These deviations are more pronounced for large positive conflicts than for large negative conflicts, indicating an asymmetry in bias magnitude across the conflict range. This pattern suggests that, at the group level, observers do not exhibit the strong nonlinearity predicted by causal-inference model in which cue integration turns to cue segregation with increases in cue conflict. Instead, integration remains approximately linear within the tested conflict range. As a result, the behavioral signatures of causal inference are weak, limiting our ability to discriminate between causal-inference model and simpler integration or heuristic strategies with these data.
 
@@ -421,7 +421,14 @@ We fit each model to each participant's data (from the two auditory-noise condit
 
 Sensory-noise parameters were fitted using the data from the bimodal task, because effective noise may differ between unimodal and bimodal contexts due to attentional allocation and cross-modal interactions \citep{badde2020modality}. To ensure robustness, we also evaluated all models using sensory-noise parameters estimated using the psychometric function fits to the unimodal-task data. The results using these parameter estimates were qualitatively consistent (Figure~\ref{fig:AppendixConflictPSE_unimodal_fits}).
 
-We evaluated model performance using the Akaike Information Criterion (AIC) at the individual participant level. Model comparison was performed under two assumptions about sensory noise: (a)~sensory noise fixed to values estimated from unimodal task data and (b)~sensory noise fitted directly using the bimodal data (Figure~\ref{fig:modelComparison}). To summarize model preference at the group level while accounting for between-participant variability, we computed the mean per-participant $\Delta$AIC relative to the forced-fusion model, with 95\% confidence intervals obtained from a participant bootstrap ($10{,}000$ resamples; Figure~\ref{fig:meanDeltaAIC}). To confirm that Monte-Carlo evaluation noise in the simulated likelihood did not drive the comparison, we additionally re-evaluated each fitted model's log-likelihood at its maximum-likelihood parameters under 20 independent random seeds (using the same 2000 Monte-Carlo trials per condition) and took the standard deviation of the resulting per-participant AIC as a Monte-Carlo noise floor. This noise floor was small (median $1.6$ and $1.9$ AIC points for the fixed- and free-noise analyses, respectively), and all fits reproduced their stored log-likelihoods within it.
+
+%%% Changed this paragraph
+We evaluated model performance using the Akaike Information Criterion (AIC) at the individual participant level. Model comparison was performed under two assumptions about sensory noise: (a)~sensory noise fixed to values estimated from unimodal task data and (b)~sensory noise fitted directly using the bimodal data (Figure~\ref{fig:modelComparison}). To summarize model preference at the group level while accounting for between-participant variability, we computed the mean per-participant $\Delta$AIC relative to the forced-fusion model, with 95\% confidence intervals obtained from a participant AIC bootstrap ($10{,}000$ resamples; Figure~\ref{fig:meanDeltaAIC}). To confirm that Monte-Carlo evaluation noise in the simulated likelihood did not drive the comparison, we additionally re-evaluated each fitted model's log-likelihood at its maximum-likelihood parameters under 20 independent random seeds (using the same 2000 Monte-Carlo trials per condition) and took the standard deviation of the resulting per-participant AIC as a Monte-Carlo noise floor. This noise floor was small (median $1.6$ and $1.9$ AIC points for the fixed- and free-noise analyses, respectively), and all fits reproduced their stored log-likelihoods within it.
+
+% Reproducibility: bootstrap = modelComparisonTable_threeModels.ipynb, section 4 (bootstrap_aic, plot_mean_delta_aic) -> meanDeltaAIC_threeModels.pdf; Monte-Carlo noise floor = co           +mpute_aic_noise_floor.py (cache aic_noise_floor_seeds.json), notebook section 4b.
+
+
+% We evaluated model performance using the Akaike Information Criterion (AIC) at the individual participant level. Model comparison was performed under two assumptions about sensory noise: (a)~sensory noise fixed to values estimated from unimodal task data and (b)~sensory noise fitted directly using the bimodal data (Figure~\ref{fig:modelComparison}).
 
 Consistent with the observation that all models captured the data reasonably well (Figure~\ref{fig:pseConflictModel}), model comparison revealed only small differences in fit quality across integration strategies. Below, we report model-comparison results under two conditions: sensory-noise parameters were (1)~fixed to values estimated from the unimodal experiment, or (2)~treated as free parameters and fit directly to the bimodal data.
 
@@ -446,17 +453,47 @@ When sensory-noise parameters were fitted using the bimodal data, model comparis
 
 The probabilistic cue-switching model provided the best fits for the largest number of participants (5 out of 11; Figure~\ref{fig:modelComparison}B). At the group level, it also yielded the lowest summed $\Delta$AIC across participants. However, the individual $\Delta$AIC values were very low, suggesting limited discriminability between integration strategies under this assumption.
 
+
+%%%% ----- Bootstrapped AIC
+
 \subsubsection{Group-level model preference and its reliability}
 To summarize model preference across participants while accounting for between-participant variability, we computed the mean per-participant $\Delta$AIC relative to the forced-fusion model, with 95\% confidence intervals from a participant bootstrap (Figure~\ref{fig:meanDeltaAIC}). Under fixed sensory noise, both the probabilistic cue-switching model (mean $\Delta$AIC $= -40.8$, 95\% CI $[-70.1,\,-15.3]$) and the causal-inference model ($-18.5$, $[-43.0,\,-2.3]$) fit reliably better than forced fusion, with cue switching preferred overall; both confidence intervals excluded zero. Under free sensory noise, the same ordering held, but the differences were small and not statistically reliable (cue switching $-2.2$, $[-6.9,\,+1.8]$; causal inference $-0.9$, $[-2.7,\,+0.9]$), with both confidence intervals spanning zero.
 
 This lack of separation under free sensory noise is not an artifact of Monte-Carlo evaluation noise. The per-participant AIC noise floor (median SD $1.9$ AIC points) was comparable in magnitude to the per-participant $\Delta$AIC itself, so individual-participant model assignments are unreliable in this regime; averaging across the 11 participants, however, reduced the Monte-Carlo contribution to below $1$ AIC point. The null result therefore reflects genuine between-participant variability in model preference rather than simulation noise.
 
-\begin{figure}
+
+%%% --- adding this: random-effects Bayesian model selection (model frequencies / exceedance probability) ---
+
+% Reproducibility: modelComparisonTable_threeModels.ipynb, section 6 (Random-effects Bayesian model selection); prints E[r], XP, PXP, BOR; figures pxp_threeModels_freeSigma.pdf / pxp_threeModels_unimodalSigma.pdf.
+
+We complemented these criteria with random-effects Bayesian model selection, which estimates the frequency of each model in the population and is robust to outlying participants \citep{stephan2009bayesian,rigoux2014bayesian}. Probabilistic cue switching was the most frequent model under both assumptions about sensory noise, with an estimated model frequency of $0.65$ and an exceedance probability of $0.93$ under fixed sensory noise, and $0.46$ (exceedance probability $0.68$) under free sensory noise. Consistent with the small $\Delta$AIC differences, however, the Bayesian omnibus risk was high ($0.87$ and $0.77$, respectively), indicating that the candidate models cannot be confidently separated at the group level; the protected exceedance probabilities were correspondingly modest (approximately $0.41$ for cue switching in both analyses).
+%%% --- end added section ---
+
+
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{assets/figures/meanDeltaAIC_threeModels.pdf}
+    \includegraphics[width=0.8\linewidth]{assets/figures/meanDeltaAIC_threeModels.pdf}
     \caption{\textbf{Group-level model preference with participant bootstrap.} Mean per-participant $\Delta$AIC relative to the forced-fusion model (baseline $=0$, not shown) under fixed (left) and free (right) sensory noise. Black markers show the mean across participants with 95\% confidence intervals from $10{,}000$ participant bootstrap resamples; coloured points show individual participants. Values below zero indicate a better fit than forced fusion. Under fixed sensory noise, the probabilistic cue-switching and causal-inference models fit reliably better than forced fusion; under free sensory noise the differences are small and the confidence intervals span zero.}
     \label{fig:meanDeltaAIC}
 \end{figure}
+
+%%%% ------
+
+
+
+%%% --- adding this: switching-probability mechanism (figure + paragraph) ---
+% Reproducibility: make_switching_prob_figure.py -> switching_probability_by_noise.{pdf,png}; reads model_fits/<pid>/<pid>_switchingFree_LapseFix_sharedPrior_fit.json (p_v,low = fittedParams[3], p_v,high = fittedParams[5]).
+
+\subsubsection{Switching probabilities increase with auditory noise}
+Beyond model comparison, the parameters of the favoured model were themselves consistent with the cue-switching account. The fitted probability of relying on the visual duration ($p_v$) increased markedly with auditory noise, rising from a group mean of $0.17$ under low auditory noise to $0.51$ under high auditory noise (Wilcoxon signed-rank test, $p = 0.003$; an increase in $10$ of $11$ participants; Figure~\ref{fig:switchingProb}). Thus, observers were estimated to rely on the visual duration roughly half of the time when auditory reliability was low, but only about one in six trials when it was high, providing a concrete and consistent mechanism for the noise-dependent visual bias.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\linewidth]{assets/figures/switching_probability_by_noise.pdf}
+    \caption{\textbf{Fitted switching probabilities increase with auditory noise.} Each thin line shows one participant's fitted probability of relying on the visual duration ($p_v$) in the low- and high-auditory-noise conditions, estimated from the probabilistic cue-switching model (free sensory-noise fits). The probability of relying on vision increased with auditory noise in $10$ of $11$ participants (group means $0.17 \rightarrow 0.51$; Wilcoxon signed-rank $p = 0.003$). Black line show group means $\pm$ SEM.}
+    \label{fig:switchingProb}
+\end{figure}
+%%% --- end added section ---
 
 \subsubsection{High sensory-encoding noise limits model discriminability}
 To explain the lack of evidence for causal inference even at large audiovisual cue conflicts, we recovered the posterior probability of common cause $P(C=1 \mid m_a, m_v)$ across conflict levels using each participant's fit parameters.
@@ -481,13 +518,26 @@ To interpret these findings, we compared a set of models spanning Bayesian causa
 
 Consistent with this interpretation, the bimodal auditory duration judgments were less variable than predicted from the unimodal auditory and unimodal visual performance, and in some cases even less variable than the optimal-integration predictions based on unimodal noise estimates. We speculate that visual signals in the bimodal task contributed not only to duration information but also to interval segmentation. However, in unimodal auditory conditions, particularly under high noise, very short intervals may be difficult to detect, making it harder to segment the two intervals reliably, leading to increased response variability. Visual input may therefore stabilize auditory duration judgments beyond what would be expected from cue integration alone.
 
+%%% --- adding -
+We emphasize that this lower-than-optimal variability is a separate phenomenon from the model comparison and does not bear on the choice among integration strategies. None of the candidate models anticipates below-optimal bimodal variability; if anything, the cue-switching model predicts increased response variability because it relies on a single cue per trial. The reduced variability therefore points to an additional benefit of the visual signal---most plausibly more reliable interval segmentation---rather than to any particular integration rule.
+%%% --- end added section ---
 
 
 \subsection{Causal inference versus heuristic strategies}
 
 In the present study, both Bayesian causal-inference model and heuristic strategies were able to capture the main behavioral regularities observed in the auditory duration judgments, including noise-dependent biases toward visual duration. Notably, the probabilistic cue-switching model provided equal or superior fits to the behavioral data compared to causal-inference model across multiple model-comparison criteria. At the same time, causal-inference model did not produce uniquely diagnostic predictions within the experimentally tested conflict range. This convergence suggests that explicit inference about the causal structure does not contribute to the observed behavior. 
 
+%%% --- adding this: switching-probability mechanism as positive evidence ---
+Beyond providing the best overall fit, the cue-switching model offered an interpretable account of the noise dependence. The fitted probability of relying on the visual cue increased roughly threefold across noise conditions, from a group mean of $0.17$ under low auditory noise to $0.51$ under high auditory noise (Wilcoxon signed-rank test, $p = 0.003$; an increase in 10 of 11 participants; Figure~\ref{fig:switchingProb}). Thus observers were estimated to defer to vision about half the time specifically when auditory reliability was poor, giving the model a concrete and consistent mechanism for the noise-dependent visual bias.
+%%% --- end added section ---
+
 The lack of evidence for causal inference should not be interpreted as evidence against its plausibility. Rather, our results highlight a fundamental limitation in discriminating between integration strategies when sensory noise is sufficiently high. Under these conditions, the posterior probability of separate causes remains low even at large cue conflicts. As a result, bias toward the visual stimulus continues to increase approximately linearly with increasing cue conflict. In this regime, heuristic strategies that stochastically select between cues can closely approximate the predictions of more complex inferential models. Recent work has shown that probabilistic switching strategies can reproduce behavioral patterns often interpreted as Bayesian integration, even in the absence of explicit inference over causal structure \citep{ni2024computational}. This perspective aligns with our finding that multiple integration strategies produce near-indistinguishable behavioral signatures in audiovisual-duration perception.
+
+
+%%% --- adding this: "switching preferred" with "models indistinguishable" via model recovery ---
+Importantly, the difficulty of separating these strategies does not undermine the preference for cue switching, because the two findings have different origins. Our model-recovery analysis shows that, in the empirically relevant parameter regime, the cue-switching model was highly identifiable (recovered in 92\% of simulated datasets), whereas the forced-fusion and causal-inference models were mutually confusable. The limited separability we observe therefore reflects the near-equivalence of the two averaging-based models rather than a weakness of the cue-switching account. Consistent with this, cue switching was rarely selected when other models generated the data (in only 6 of 50 datasets generated by forced fusion and 6 of 50 generated by causal inference), so its empirical preference is a recoverable behavioral signature rather than an artifact of its additional flexibility.
+%%% --- end added section ---
+
 
 \subsection{Limits of identifiability and factors shaping audiovisual duration perception}
 
@@ -914,10 +964,9 @@ p(m_a, m_v | C=2)
 
 Because the integrand separates into a function of $y_a$ times a function of $y_v$ and the domains (boundaries) are independent:
 \begin{multline}
-p(m_a, m_v | C=2)
-= \left[\int_{t_{\min}}^{t_{\max}}
-p(m_a | y_a) p(y_a) \, dy_a\right]\\
-\times \left[\int_{t_{\min}}^{t_{\max}}
+\\p(m_a, m_v | C=2)
+=\left[\int_{t_{\min}}^{t_{\max}}
+p(m_a | y_a) p(y_a) \, dy_a\right]\times \left[\int_{t_{\min}}^{t_{\max}}
 p(m_v | y_v) p(y_v) \, dy_v\right].
 \end{multline}
 
@@ -1060,6 +1109,13 @@ To perform this analysis, after fitting each candidate model to the empirical da
 The model-recovery results reveal substantial differences in identifiability across models (Figure~\ref{fig:modelRecoveryResults}). Recovery was strongest for the probabilistic cue switching strategy, which was correctly identified in 92\% of simulated datasets, indicating that this model generates relatively distinctive behavioral predictions. Recovery for the Forced fusion model was more moderate (64\%), with appreciable confusion with causal inference model. In contrast, causal inference showed poor mutual discriminability which is recovered and equally confused with forced fusion model at 44\%. This pattern suggests that only the probabilistic cue switching model generates most distinguishable behavioral signatures but the causal inference model under high sensory noise. Overall, these results indicate that the model-comparison procedure can reliably identify categorical model selection, but provides only limited separation for probabilistic cue switching and for distinctions within the family of averaging-based models.
 
 
+%%% --- adding this: model-recovery asymmetry (cue-switching preference is not spurious flexibility) ---
+% Reproducibility: grid_recovery_summary.ipynb, section 6 (three-model recovery) over model_recovery_results_group_logfixed_ns1_nsim2000/group_*_model_recovery.json (off-diagonal AIC-winner counts).
+
+Importantly, the high recovery of the cue-switching model did not reflect a general tendency to over-select the most flexible model. Cue switching was selected for only $6$ of $50$ datasets generated by forced fusion and $6$ of $50$ generated by causal inference, but for $46$ of $50$ datasets that it generated itself. Its preference in the empirical data therefore reflects a genuine, recoverable behavioral signature rather than spurious model flexibility.
+%%% --- end added section ---
+
+
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth,height=0.58\textheight,keepaspectratio]{assets/figures/emprical_parameter_recovery_nIter_50.pdf}
@@ -1076,7 +1132,11 @@ Using the same synthetic datasets, we also conducted a parameter-recovery analys
 
 \subsection{Extended simulations across sensory-noise and conflict regimes}
 
-To assess when the candidate models should be expected to become distinguishable, we performed an extended model-recovery analysis across simulated sensory-noise and conflict sampling regimes. We simulated datasets from the three candidate models while varying both the sensory-noise range and the maximum audiovisual conflict. Four sensory-noise regimes were considered: very low noise, $\sigma_a,\sigma_v \sim U[0.01,0.20]$; low noise, $\sigma_a,\sigma_v \sim U[0.20,0.40]$; medium noise, $\sigma_a,\sigma_v \sim U[0.30,0.70]$; and an empirical regime based on the range of fitted sensory-noise parameters. For the synthetic regimes, auditory and visual sensory noise parameters were sampled from the same range.
+The grid recovery analysis should be read as a map of model identifiability across possible experimental regimes. Each panel shows how often the generating model was recovered after refitting simulated datasets with all three candidate models. Higher diagonal values indicate better model recovery, whereas off-diagonal values indicate systematic confusions between models. Moving from left to right increases sensory uncertainty, and moving from the top row to the bottom row reduces the maximum conflict range from $0.45\,\mathrm{s}$ to $0.25\,\mathrm{s}$.
+
+This analysis shows that model discriminability depends strongly on both sensory noise and the tested range of audiovisual conflicts. Recovery was generally best when sensory noise was low and the conflict range was wide, and poorest when sensory noise was higher and the conflict range was narrow. Importantly, the empirical recovery panel shows that the experimentally observed regime was one in which Forced fusion and Causal inference were difficult to distinguish, whereas Probabilistic Cue Switching remained relatively identifiable.
+
+To assess when the candidate models should be expected to become perfectly distinguishable, and when the fusion breaks down, we performed an extended model-recovery analysis across simulated sensory-noise and conflict sampling regimes. We simulated datasets from the three candidate models while varying both the sensory-noise range and the maximum audiovisual conflict. Four sensory-noise regimes were sampled from: very low noise, $\sigma_a,\sigma_v \sim U[0.01,0.20]$; low noise, $\sigma_a,\sigma_v \sim U[0.20,0.40]$; medium noise, $\sigma_a,\sigma_v \sim U[0.30,0.70]$; and an empirical regime based on the range of fitted sensory-noise parameters. For the synthetic regimes, auditory and visual sensory noise parameters were sampled from the same range.
 
 Model recovery generally improved as sensory noise decreased and as the maximum conflict range increased from $0.25\,\mathrm{s}$ to $0.45\,\mathrm{s}$. This pattern suggests that larger audiovisual discrepancies and lower sensory uncertainty provide more diagnostic information for distinguishing between integration strategies. For the experimentally tested conflict range, where the maximum conflict was $0.25\,\mathrm{s}$, recovery remained more limited, especially for distinguishing forced fusion from causal inference. However, probabilistic cue switching remained comparatively identifiable in the empirical recovery analysis.
 
@@ -1084,7 +1144,6 @@ One exception was that, under the wider $0.45\,\mathrm{s}$ conflict range, the v
 
 These simulations indicate that model identifiability is strongly constrained by sensory uncertainty and conflict magnitude. In particular, the empirical recovery analysis showed substantial confusion between Forced Fusion and Causal Inference, whereas Probabilistic Cue Switching remained highly identifiable ($92\%$ correct recovery). Thus, within the experimentally tested conflict range and observed sensory-noise levels, competing integration models can generate highly similar behavioral predictions.
 
-One implication of this analysis is that larger audiovisual conflicts could, in principle, improve model discriminability by producing stronger differences in likelihood and AIC across models. However, substantially increasing the conflict range was not feasible for the present experiment. First, audiovisual conflicts were defined relative to each participant's subjective audiovisual bias, so that auditory and visual durations were adjusted to produce approximately matched perceived durations. For three participants with a positive visual-duration bias, this calibration limited the range of negative conflicts that could be presented while keeping stimulus durations within the intended range. Second, extending the maximum conflict to approximately $0.45\,\mathrm{s}$ would have produced highly unusual audiovisual duration pairings. For example, at a $+0.45\,\mathrm{s}$ conflict, the visual stimulus would approach $0.95\,\mathrm{s}$, which may alter sensory uncertainty and produce behavior outside the regime targeted by the experiment. Thus, while larger conflicts may improve theoretical model recovery, they would also change the perceptual and experimental context being modeled. 
 
 %%% ----------------------------%%% ----------------------------
 
@@ -1096,6 +1155,9 @@ One implication of this analysis is that larger audiovisual conflicts could, in 
     \caption{\textbf{Model recovery across sensory-noise and conflict regimes.} Confusion matrices for the three candidate models: Forced Fusion (FF), Causal Inference (CI), and Probabilistic Cue Switching (PCS). Rows indicate the generating model and columns indicate the recovered model selected by AIC. Cell values show row-normalized recovery percentages, with diagonal entries corresponding to correct recovery. Panels compare four sensory-noise regimes and two maximum conflict ranges. The top row uses $\mathrm{conflict}_{\max}=0.45\,\mathrm{s}$, whereas the bottom row uses $\mathrm{conflict}_{\max}=0.25\,\mathrm{s}$. Synthetic sensory-noise regimes were defined as $\sigma_a,\sigma_v\sim U[0.01,0.20]$, $U[0.20,0.40]$, and $U[0.30,0.70]$. The empirical panel highlighted in red was computed from datasets simulated using the fitted participant-level parameters and refitted with all candidate models. Recovery generally decreased with increasing sensory noise and narrower conflict ranges. Under the empirical parameter regime, PCS showed high recovery, whereas FF and CI showed greater mutual confusability.}
     \label{fig:gridModelRecovery}
 \end{figure}
+
+
+One implication of this analysis is that larger audiovisual conflicts could, in principle, improve model discriminability by producing stronger differences in likelihood and AIC across models. However, substantially increasing the conflict range was not feasible for the present experiment. First, audiovisual conflicts were defined relative to each participant's subjective audiovisual bias, so that auditory and visual durations were adjusted to produce approximately matched perceived durations. For three participants with a positive visual-duration bias, this calibration limited the range of negative conflicts that could be presented while keeping stimulus durations within the intended range. Second, extending the maximum conflict to approximately $0.45\,\mathrm{s}$ would have produced highly unusual audiovisual duration pairings. For example, at a $+0.45\,\mathrm{s}$ conflict, the visual stimulus would approach $0.95\,\mathrm{s}$, which may alter sensory uncertainty and produce behavior outside the regime targeted by the experiment. Thus, while larger conflicts may improve theoretical model recovery, they would also change the perceptual and experimental context being modeled. 
 
 
 
