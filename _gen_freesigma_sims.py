@@ -21,7 +21,7 @@ PID_TO_ANON = {'as': 'P01', 'dt': 'P02', 'hh': 'P03', 'ip': 'P04', 'ln2': 'P07',
 PIDS = list(PID_TO_ANON.keys())
 MODELS = ['lognorm', 'fusionOnlyLogNorm', 'switchingFree']
 
-VARIANT = 'LapseFree_sharedPrior'   # free lapse per group, shared causal prior
+VARIANT = 'LapseFix_sharedPrior'    # fixed/shared single lapse (canonical), free sigma
 N_PASSES = 10                       # concat passes -> density comparable to originals
 NSIMUL = 2000
 OUT_ROOT = 'simulated_data_freeSigma'
@@ -38,7 +38,7 @@ def simulate_one(pid, model):
         data, _ = loadData.loadData(f'{pid}_all.csv', verbose=False)
     mc = monteCarloClass.OmerMonteCarlo(data)
     mc.modelName = model
-    mc.sharedLambda = False   # LapseFree -> 3 lapse params
+    mc.sharedLambda = True    # LapseFix -> single shared lapse (canonical)
     mc.freeP_c = False        # sharedPrior
     mc.nSimul = NSIMUL
     mc.modelFit = params

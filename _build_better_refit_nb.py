@@ -78,10 +78,10 @@ MAIN_MODELS = DEFAULT_MAIN_MODELS           # ['lognorm', 'fusionOnlyLogNorm', '
 
 # Model predictions come from the FREE-sigma generative fits (model_fits/P0x), simulated
 # into simulated_data_freeSigma/ by _gen_freesigma_sims.py. With free sensory sigma the
-# causal-inference p_c is no longer pinned near 1, so the models are more separable than
-# the fixed-sigma (unimodalSigma) simulations used by the original clean figure.
+# fits use a single shared lapse (LapseFix), matching the manuscript's single-lambda
+# model-comparison table; p_c is no longer pinned by the fixed-sigma parameterization.
 SIM_DIR = 'simulated_data_freeSigma'
-MODEL_VARIANTS = ['LapseFree_sharedPrior']
+MODEL_VARIANTS = ['LapseFix_sharedPrior']
 
 CANONICAL_CONFLICTS = np.array([-0.25, -0.17, -0.08, 0.0, 0.08, 0.17, 0.25])
 NOISE_LEVELS = [0.1, 1.2]
@@ -90,8 +90,8 @@ OUT_REAL = Path('psychometric_fits_freeMuSigmaLambda_better_real')
 OUT_SIM = Path('psychometric_fits_freeMuSigmaLambda_better_freeSigmaModel_simulated')
 FORCE_REFIT = True                          # recompute the better fits from scratch
 
-# Optimizer budget for the improved fit.
-N_RANDOM_STARTS = 16
+# Optimizer budget for the improved fit (more starts -> fewer jagged local optima).
+N_RANDOM_STARTS = 40
 RNG_SEED = 0""")
 
 code("""# ── Lognormal PF fit per condition (free mu, sigma, lambda) ──────────────────
@@ -159,11 +159,12 @@ def fit_pf_counts_better(pf_x, n_chose, n_total, n_random=N_RANDOM_STARTS, seed=
     sigma_guess = float(max(np.nanstd(pf_x), 0.05))
 
     rng = np.random.default_rng(seed)
-    curated = [
-        [mu_guess, sigma_guess, 0.02],
-        [mu_guess, 0.10, 0.02], [mu_guess, 0.25, 0.05],
-        [0.0, 0.15, 0.02], [0.0, 0.40, 0.05], [mu_guess, 0.60, 0.05],
-    ]
+    # deterministic grid over (mu, sigma, lambda) + the data-driven guess
+    mu_seeds = [mu_guess, 0.0]
+    sigma_seeds = [0.05, 0.10, 0.20, 0.40, 0.80, 1.20]
+    lam_seeds = [0.01, 0.05]
+    curated = [[mu_guess, sigma_guess, 0.02]]
+    curated += [[mu, sig, lam] for mu in mu_seeds for sig in sigma_seeds for lam in lam_seeds]
     randoms = [[rng.uniform(-0.5, 0.5), rng.uniform(0.05, 1.2), rng.uniform(0.0, 0.15)]
                for _ in range(n_random)]
 
@@ -512,6 +513,118 @@ for ext, kw in [('png', dict(dpi=200)), ('pdf', dict(dpi=900, format='pdf')), ('
     plt.savefig(f'{stem}.{ext}', bbox_inches='tight', **kw)
 plt.show()
 print(f'Saved {stem}.png/.pdf/.svg')""")
+
+md("""## Formal model discrimination — trial-level AIC/BIC
+
+The PSE-shift means are model-invariant (all three models fit the same data reproduce the
+same mean bias), so they cannot rank the models. The discrimination lives in the
+**trial-level likelihood** of the free-sigma generative fits (`model_fits/P0x`). Below:
+per-participant ΔAIC/ΔBIC relative to Causal inference, with the Monte-Carlo noise floor
+(AIC SD ≈ 1.9 at nSimul=2000, from `aic_noise_floor_seeds.json`) shown as a reference band.""")
+
+code("""# ── Load free-sigma generative AIC/BIC for the 3 models x 11 participants ─────
+PID_TO_ANON = {'as': 'P01', 'dt': 'P02', 'hh': 'P03', 'ip': 'P04', 'ln2': 'P07',
+               'mh': 'P08', 'ml': 'P09', 'mt': 'P10', 'oy': 'P11', 'qs': 'P12', 'sx': 'P13'}
+GEN_VARIANT = 'LapseFix_sharedPrior'
+
+gen_rows = []
+for pid, anon in PID_TO_ANON.items():
+    for model in MAIN_MODELS:
+        fp = Path('model_fits') / anon / f'{anon}_{model}_{GEN_VARIANT}_fit.json'
+        d = json.loads(fp.read_text())
+        gen_rows.append(dict(pid=pid, model=model, AIC=d['AIC'], BIC=d['BIC'],
+                             logLik=d['logLikelihood'], k=len(d['fittedParams'])))
+gen = pd.DataFrame(gen_rows)
+
+aic = gen.pivot(index='pid', columns='model', values='AIC')[MAIN_MODELS]
+bic = gen.pivot(index='pid', columns='model', values='BIC')[MAIN_MODELS]
+
+# AIC Monte-Carlo noise floor (free-sigma) from the seed-resampling cache, if present.
+AIC_NOISE_FLOOR = 1.9
+try:
+    nf = pd.DataFrame(json.loads(Path('aic_noise_floor_seeds.json').read_text()))
+    nf = nf[nf['fit_source'] == 'Free sensory noise']
+    if not nf.empty:
+        AIC_NOISE_FLOOR = float(nf['AIC_sd'].mean())
+except Exception:
+    pass
+
+# ΔAIC relative to Causal inference (lognorm); negative = better than causal inference.
+REF = 'lognorm'
+dAIC = aic.sub(aic[REF], axis=0)
+dBIC = bic.sub(bic[REF], axis=0)
+wins_aic = aic.idxmin(axis=1).value_counts().reindex(MAIN_MODELS).fillna(0).astype(int)
+wins_bic = bic.idxmin(axis=1).value_counts().reindex(MAIN_MODELS).fillna(0).astype(int)
+
+summary = pd.DataFrame({
+    'mean_dAIC_vs_causal': dAIC.mean(), 'sem_dAIC': dAIC.sem(),
+    'mean_dBIC_vs_causal': dBIC.mean(), 'sem_dBIC': dBIC.sem(),
+    'AIC_wins': wins_aic, 'BIC_wins': wins_bic,
+}).loc[MAIN_MODELS]
+print(f'MC AIC noise floor (SD): {AIC_NOISE_FLOOR:.2f}')
+print('\\nΔAIC/ΔBIC vs Causal inference (negative = better than causal):')
+print(summary.round(2).to_string())""")
+
+code("""# ── Plot: model discrimination (ΔAIC per participant + win counts) ──────────
+fig, (axL, axR) = plt.subplots(1, 2, figsize=(13, 6), gridspec_kw={'width_ratios': [2, 1]})
+
+order = MAIN_MODELS
+xpos = np.arange(len(order))
+# noise-floor reference band around 0 (causal inference reference)
+axL.axhspan(-AIC_NOISE_FLOOR, AIC_NOISE_FLOOR, color='gray', alpha=0.15, zorder=0,
+            label=f'±MC noise floor ({AIC_NOISE_FLOOR:.1f})')
+axL.axhline(0, color=MODEL_COLORS['lognorm'], ls='-', lw=2, alpha=0.8, zorder=1)
+
+rng = np.random.default_rng(1)
+for j, m in enumerate(order):
+    vals = dAIC[m].to_numpy()
+    jit = rng.uniform(-0.12, 0.12, len(vals))
+    axL.scatter(np.full(len(vals), xpos[j]) + jit, vals, s=40,
+                color=MODEL_COLORS.get(m, 'gray'), alpha=0.55, zorder=3,
+                edgecolor='black', linewidth=0.5)
+    mean, sem = dAIC[m].mean(), dAIC[m].sem()
+    axL.errorbar(xpos[j], mean, yerr=sem, fmt='_', color='black', capsize=8,
+                 markersize=22, lw=2.5, zorder=4)
+axL.set_xticks(xpos)
+axL.set_xticklabels([MODEL_DISPLAY[m] for m in order], fontsize=FONT - 4,
+                    rotation=20, ha='right')
+axL.set_ylabel('ΔAIC vs Causal inference', fontsize=FONT)
+axL.set_title('A   Per-participant ΔAIC (negative = beats causal inference)',
+              fontsize=FONT - 3, loc='left')
+axL.axhline(0, color='gray', lw=0.5)
+axL.legend(fontsize=FONT - 6, loc='upper right')
+axL.spines['top'].set_visible(False); axL.spines['right'].set_visible(False)
+
+# Right: AIC win counts
+wc = wins_aic.loc[order]
+axR.bar(xpos, wc.to_numpy(), color=[MODEL_COLORS.get(m, 'gray') for m in order],
+        alpha=0.85, edgecolor='black', linewidth=1.2)
+for j, v in enumerate(wc.to_numpy()):
+    axR.text(xpos[j], v + 0.1, str(int(v)), ha='center', va='bottom', fontsize=FONT)
+axR.set_xticks(xpos)
+axR.set_xticklabels([MODEL_DISPLAY[m] for m in order], fontsize=FONT - 5,
+                    rotation=20, ha='right')
+axR.set_ylabel(f'# participants best by AIC (n={len(PIDS)})', fontsize=FONT - 2)
+axR.set_title('B   Best-fitting model count', fontsize=FONT - 3, loc='left')
+axR.set_ylim(0, len(PIDS))
+axR.spines['top'].set_visible(False); axR.spines['right'].set_visible(False)
+
+plt.tight_layout()
+stem = 'model_discrimination_AIC_freeSigmaModel'
+for ext, kw in [('png', dict(dpi=200)), ('pdf', dict(dpi=900, format='pdf')), ('svg', dict(format='svg'))]:
+    plt.savefig(f'{stem}.{ext}', bbox_inches='tight', **kw)
+plt.show()
+print(f'Saved {stem}.png/.pdf/.svg')
+
+# Paired Wilcoxon: is each alternative better than causal inference across participants?
+from scipy.stats import wilcoxon
+for m in [x for x in MAIN_MODELS if x != REF]:
+    try:
+        stat, p = wilcoxon(aic[m], aic[REF])
+        print(f'{MODEL_DISPLAY[m]:14} vs Causal inference: Wilcoxon p={p:.3f} '
+              f'(mean ΔAIC={dAIC[m].mean():+.2f})')
+    except Exception as e:
+        print(m, 'wilcoxon failed', e)""")
 
 nb = {"cells": cells,
       "metadata": {"kernelspec": {"display_name": "Python 3", "language": "python",
