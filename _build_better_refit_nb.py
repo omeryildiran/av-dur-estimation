@@ -75,13 +75,19 @@ STANDARD_S = 0.5
 PF_MODE = 'lognormal'                       # log cumulative Gaussian on log(test/standard)
 PIDS = ['as', 'dt', 'hh', 'ip', 'ln2', 'mh', 'ml', 'mt', 'oy', 'qs', 'sx']  # n = 11
 MAIN_MODELS = DEFAULT_MAIN_MODELS           # ['lognorm', 'fusionOnlyLogNorm', 'switchingFree']
-MODEL_VARIANTS = DEFAULT_SIM_VARIANTS
+
+# Model predictions come from the FREE-sigma generative fits (model_fits/P0x), simulated
+# into simulated_data_freeSigma/ by _gen_freesigma_sims.py. With free sensory sigma the
+# causal-inference p_c is no longer pinned near 1, so the models are more separable than
+# the fixed-sigma (unimodalSigma) simulations used by the original clean figure.
+SIM_DIR = 'simulated_data_freeSigma'
+MODEL_VARIANTS = ['LapseFree_sharedPrior']
 
 CANONICAL_CONFLICTS = np.array([-0.25, -0.17, -0.08, 0.0, 0.08, 0.17, 0.25])
 NOISE_LEVELS = [0.1, 1.2]
 
 OUT_REAL = Path('psychometric_fits_freeMuSigmaLambda_better_real')
-OUT_SIM = Path('psychometric_fits_freeMuSigmaLambda_better_simulated')
+OUT_SIM = Path('psychometric_fits_freeMuSigmaLambda_better_freeSigmaModel_simulated')
 FORCE_REFIT = True                          # recompute the better fits from scratch
 
 # Optimizer budget for the improved fit.
@@ -249,7 +255,7 @@ def fit_sim_pid(pid, model, force=FORCE_REFIT):
     out = OUT_SIM / pid / f'{pid}_{model}_psychometricFits.json'
     if out.exists() and not force:
         return _load(out)
-    sim_path = simulated_csv_path(pid, model, variants=MODEL_VARIANTS)
+    sim_path = simulated_csv_path(pid, model, variants=MODEL_VARIANTS, sim_dir=SIM_DIR)
     if sim_path is None:
         return pd.DataFrame()
     fit_df = fit_free_table(pd.read_csv(sim_path))
@@ -377,7 +383,7 @@ fig.legend(handles, labels, loc='center right', bbox_to_anchor=(1, 0.5),
            fontsize=FONT - 4, frameon=True, edgecolor='black', fancybox=False)
 plt.tight_layout(rect=(0, 0.05, 0.82, 1))
 
-stem = 'aggregated_mu_vs_models_freeMuSigmaLambda_sem_better'
+stem = 'aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel'
 plt.savefig(f'{stem}.png', dpi=200, bbox_inches='tight')
 plt.savefig(f'{stem}.pdf', dpi=900, format='pdf', bbox_inches='tight')
 plt.savefig(f'{stem}.svg', format='svg', bbox_inches='tight')
@@ -463,11 +469,11 @@ def two_panel_metric(d_agg, m_agg, ylabel, stem, yticks=None, scale=1.0):
 
 
 two_panel_metric(data_sigma, model_sigma, 'PF sigma (log units)',
-                 'aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better')""")
+                 'aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel')""")
 
 code("""# ── Lapse rate (lambda) vs conflict ─────────────────────────────
 two_panel_metric(data_lambda, model_lambda, 'Lapse rate lambda',
-                 'aggregated_lambda_vs_models_freeMuSigmaLambda_sem_better')""")
+                 'aggregated_lambda_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel')""")
 
 code("""# ── Per-participant model–data agreement (RMSE of PSE shift) ─────────
 merged = model_pp.merge(
@@ -501,7 +507,7 @@ ax.set_title(f'Model-data agreement (lower = better, n={len(PIDS)})', fontsize=F
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 plt.tight_layout()
-stem = 'model_vs_data_pse_rmse_better'
+stem = 'model_vs_data_pse_rmse_better_freeSigmaModel'
 for ext, kw in [('png', dict(dpi=200)), ('pdf', dict(dpi=900, format='pdf')), ('svg', dict(format='svg'))]:
     plt.savefig(f'{stem}.{ext}', bbox_inches='tight', **kw)
 plt.show()
