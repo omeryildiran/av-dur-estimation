@@ -1,0 +1,327 @@
+================================================================
+=== fitting lognorm  (16:33:30) ===
+================================================================
+Data files: ['as_all.csv', 'oy_all.csv', 'dt_all.csv', 'hh_all.csv', 'ip_all.csv', 'ln2_all.csv', 'mh_all.csv', 'ml_all.csv', 'mt_all.csv', 'qs_all.csv', 'sx_all.csv']
+Model: lognorm
+, Simulations: 3000
+, Optimizer: bads
+
+ Free P(C=1): False
+Starts: 5, 
+Integration: analytical
+Number of cores to use: 8 (Available: 8)
+Processing 11 files in parallel...
+
+Starting processing for hh_all.csv with args model lognorm, nSimul 3000, optimMethod bads, nStarts 5, freeP_c False, integrationMethod analytical
+
+============================================================
+
+
+=== Processing file: hh_all.csv ===
+
+ Total trials before cleaning
+: 2504
+uniqueSensory: [1.2 0.1] 
+ uniqueStandard: [0.5] 
+ uniqueConflict: [np.float64(-0.25), np.float64(-0.17), np.float64(-0.08), np.float64(0.0), np.float64(0.08), np.float64(0.17), np.float64(0.25)]
+total trials after cleaning: 1414
+Model name set to: lognorm
+
+Shared lambda: True
+Free P(C=1): False
+Integration method: analytical (not used in current implementation)
+
+Fitting Causal Inference Model for hh_all with 411 unique conditions
+Data bounds: t_min=0.108, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.108, t_max=0.954
+Grouped data shape: (411, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 762.7864842462109
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.108, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 762.0058916288958
+
+Starting 5 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Starting processing for as_all.csv with args model lognorm, nSimul 3000, optimMethod bads, nStarts 5, freeP_c False, integrationMethod analytical
+
+============================================================
+
+
+=== Processing file: as_all.csv ===
+
+ Total trials before cleaning
+: 2156
+uniqueSensory: [1.2 0.1] 
+ uniqueStandard: [0.5] 
+ uniqueConflict: [np.float64(-0.25), np.float64(-0.17), np.float64(-0.08), np.float64(0.0), np.float64(0.08), np.float64(0.17), np.float64(0.25)]
+total trials after cleaning: 2155
+Model name set to: lognorm
+
+Shared lambda: True
+Free P(C=1): False
+Integration method: analytical (not used in current implementation)
+
+Fitting Causal Inference Model for as_all with 423 unique conditions
+Data bounds: t_min=0.025, t_max=0.951
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.025, t_max=0.951
+Grouped data shape: (423, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 1158.915920625401
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.025, t_max=0.951 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 1157.9509235594403
+
+Starting 5 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Starting processing for dt_all.csv with args model lognorm, nSimul 3000, optimMethod bads, nStarts 5, freeP_c False, integrationMethod analytical
+
+============================================================
+
+
+=== Processing file: dt_all.csv ===
+
+ Total trials before cleaning
+: 2226
+uniqueSensory: [0.1 1.2] 
+ uniqueStandard: [0.5] 
+ uniqueConflict: [np.float64(-0.25), np.float64(-0.17), np.float64(-0.08), np.float64(0.0), np.float64(0.08), np.float64(0.17), np.float64(0.25)]
+total trials after cleaning: 2226
+Model name set to: lognorm
+
+Shared lambda: True
+Free P(C=1): False
+Integration method: analytical (not used in current implementation)
+
+Fitting Causal Inference Model for dt_all with 452 unique conditions
+Data bounds: t_min=0.208, t_max=0.953
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.208, t_max=0.953
+Grouped data shape: (452, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 1287.0878398765365
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.208, t_max=0.953 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 1288.155496682805
+
+Starting 5 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Starting processing for ln2_all.csv with args model lognorm, nSimul 3000, optimMethod bads, nStarts 5, freeP_c False, integrationMethod analytical
+
+============================================================
+
+
+=== Processing file: ln2_all.csv ===
+
+ Total trials before cleaning
+: 2818
+uniqueSensory: [0.1 1.2] 
+ uniqueStandard: [0.5] 
+ uniqueConflict: [np.float64(-0.25), np.float64(-0.17), np.float64(-0.08), np.float64(0.0), np.float64(0.08), np.float64(0.17), np.float64(0.25)]
+total trials after cleaning: 1994
+Model name set to: lognorm
+
+Shared lambda: True
+Free P(C=1): False
+Integration method: analytical (not used in current implementation)
+
+Fitting Causal Inference Model for ln2_all with 489 unique conditions
+Data bounds: t_min=0.025, t_max=0.954
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.025, t_max=0.954
+Grouped data shape: (489, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 1142.9103517342398
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.025, t_max=0.954 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 1142.4624453316608
+
+Starting 5 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Starting processing for ip_all.csv with args model lognorm, nSimul 3000, optimMethod bads, nStarts 5, freeP_c False, integrationMethod analytical
+
+============================================================
+
+
+=== Processing file: ip_all.csv ===
+
+ Total trials before cleaning
+: 2468
+uniqueSensory: [0.1 1.2] 
+ uniqueStandard: [0.5] 
+ uniqueConflict: [np.float64(-0.25), np.float64(-0.17), np.float64(-0.08), np.float64(0.0), np.float64(0.08), np.float64(0.17), np.float64(0.25)]
+total trials after cleaning: 2156
+Model name set to: lognorm
+
+Shared lambda: True
+Free P(C=1): False
+Integration method: analytical (not used in current implementation)
+
+Fitting Causal Inference Model for ip_all with 493 unique conditions
+Data bounds: t_min=0.025, t_max=0.951
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.025, t_max=0.951
+Grouped data shape: (493, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 1232.0356101941964
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.025, t_max=0.951 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 1231.4819226790826
+
+Starting 5 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Starting processing for mh_all.csv with args model lognorm, nSimul 3000, optimMethod bads, nStarts 5, freeP_c False, integrationMethod analytical
+
+============================================================
+
+
+=== Processing file: mh_all.csv ===
+
+ Total trials before cleaning
+: 2164
+uniqueSensory: [1.2 0.1] 
+ uniqueStandard: [0.5] 
+ uniqueConflict: [np.float64(-0.25), np.float64(-0.17), np.float64(-0.08), np.float64(0.0), np.float64(0.08), np.float64(0.17), np.float64(0.25)]
+total trials after cleaning: 2164
+Model name set to: lognorm
+
+Shared lambda: True
+Free P(C=1): False
+Integration method: analytical (not used in current implementation)
+
+Fitting Causal Inference Model for mh_all with 513 unique conditions
+Data bounds: t_min=0.058, t_max=0.995
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.058, t_max=0.995
+Grouped data shape: (513, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 1221.900535186539
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.058, t_max=0.995 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 1220.6308228863077
+
+Starting 5 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Starting processing for ml_all.csv with args model lognorm, nSimul 3000, optimMethod bads, nStarts 5, freeP_c False, integrationMethod analytical
+
+============================================================
+
+
+=== Processing file: ml_all.csv ===
+
+ Total trials before cleaning
+: 3140
+uniqueSensory: [1.2 0.1] 
+ uniqueStandard: [0.5] 
+ uniqueConflict: [np.float64(-0.25), np.float64(-0.17), np.float64(-0.08), np.float64(0.0), np.float64(0.08), np.float64(0.17), np.float64(0.25)]
+total trials after cleaning: 2174
+Model name set to: lognorm
+
+Shared lambda: True
+Free P(C=1): False
+Integration method: analytical (not used in current implementation)
+
+Fitting Causal Inference Model for ml_all with 599 unique conditions
+Data bounds: t_min=0.049, t_max=0.951
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.049, t_max=0.951
+Grouped data shape: (599, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 1263.4541198791526
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.049, t_max=0.951 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 1262.667685131548
+
+Starting 5 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]Starting processing for oy_all.csv with args model lognorm, nSimul 3000, optimMethod bads, nStarts 5, freeP_c False, integrationMethod analytical
+
+============================================================
+
+
+=== Processing file: oy_all.csv ===
+
+ Total trials before cleaning
+: 2171
+uniqueSensory: [1.2 0.1] 
+ uniqueStandard: [0.5] 
+ uniqueConflict: [np.float64(-0.25), np.float64(-0.17), np.float64(-0.08), np.float64(0.0), np.float64(0.08), np.float64(0.17), np.float64(0.25)]
+total trials after cleaning: 2171
+Model name set to: lognorm
+
+Shared lambda: True
+Free P(C=1): False
+Integration method: analytical (not used in current implementation)
+
+Fitting Causal Inference Model for oy_all with 674 unique conditions
+Data bounds: t_min=0.025, t_max=0.953
+=== DEBUGGING FITTING COMPONENTS ===
+Data bounds: t_min=0.025, t_max=0.953
+Grouped data shape: (674, 11)
+Configuration: sharedLambda=True, freeP_c=False
+Model: lognorm
+Expected parameter length: 5
+Test params length: 5, values: [0.1 0.5 0.5 0.5 0.8]
+✓ Parameter extraction tested for 3 conditions
+Test likelihood: 1177.1531890817541
+=== ALL COMPONENTS TESTED SUCCESSFULLY ===
+Fitting with shared p_c parameter across SNR conditions.
+Bounds shape: (5, 2)
+Using fixed t_min=0.025, t_max=0.953 from data
+Testing likelihood function with reasonable parameters...
+Test likelihood evaluation: 1175.8313055713818
+
+Starting 5 optimization attempts using 'bads'...
+Model is lognorm
+Optimization Attempts:   0%|          | 0/5 [00:00<?, ?it/s]
