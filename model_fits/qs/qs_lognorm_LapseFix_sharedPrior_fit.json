@@ -1,0 +1,16 @@
+{
+    "participantID": "qs",
+    "modelType": "lognorm_LapseFix_sharedPrior",
+    "noiseLabel": null,
+    "fittedParams": [
+        0.09386616020202637,
+        0.2360623223876952,
+        0.8772312816238402,
+        0.4731761932373047,
+        0.7085057400512694
+    ],
+    "AIC": 2501.251686914,
+    "BIC": 2522.193007529413,
+    "logLikelihood": -1245.625843457,
+    "n_conditions": 487
+}

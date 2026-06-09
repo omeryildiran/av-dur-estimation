@@ -1,0 +1,16 @@
+{
+    "participantID": "ml",
+    "modelType": "lognorm_LapseFix_sharedPrior",
+    "noiseLabel": null,
+    "fittedParams": [
+        0.049093091763674435,
+        1.1280399558308334,
+        0.11253759321352919,
+        0.40656648751038876,
+        1.0628390738397293
+    ],
+    "AIC": 2525.8721940231885,
+    "BIC": 2547.848502013766,
+    "logLikelihood": -1257.9360970115943,
+    "n_conditions": 599
+}

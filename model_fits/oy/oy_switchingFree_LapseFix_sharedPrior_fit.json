@@ -1,0 +1,17 @@
+{
+    "participantID": "oy",
+    "modelType": "switchingFree_LapseFix_sharedPrior",
+    "noiseLabel": null,
+    "fittedParams": [
+        0.08661238665789715,
+        0.25228631640873156,
+        0.8505586410031368,
+        0.0914167054361314,
+        0.0771412038226359,
+        0.4574951819740818
+    ],
+    "AIC": 2318.326527869502,
+    "BIC": 2345.405908534976,
+    "logLikelihood": -1153.163263934751,
+    "n_conditions": 674
+}
