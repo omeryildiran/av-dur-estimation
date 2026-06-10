@@ -69,7 +69,7 @@ In previous experiments \citep{shams2005sound,hartcher2014duration}, sensory cue
 % At the neural level, cortical hierarchies have been shown to implement integration or segregation differently across stages. Specifically, early sensory areas tend to process each cue independently, while posterior intraparietal regions integrate signals under a common-cause assumption. Crucially, only anterior intraparietal areas combine sensory estimates weighted by both cue reliability and the inferred likelihood of a shared cause, consistent with hierarchical Bayesian causal inference \citep{rohe2019neural}.
 
 % 7 - Emphasizing the gap about duration and causal inference
-While causal inference has been implicated in multisensory perception across various sensorimotor tasks, much less is known about whether it operates in temporal perception, particularly in duration judgments.  Bayesian causal-inference models posit that perception emerges from a combination of common-cause inference and likelihood-based integration; that is, the brain infers whether different sensory cues share a source and, if so, integrates them accordingly. \cite{hartcher2014duration} provided evidence for optimal cue integration in duration perception under low-conflict conditions: when audiovisual signals specified the same duration, observers combined duration information in a statistically optimal fashion. However, it remains unexplored whether visual and auditory duration are still integrated when the conflict between them becomes substantial, as Bayesian causal inference predicts a breakdown of cue integration under large-conflict conditions. 
+While causal inference has been implicated in multisensory perception across various sensorimotor tasks, much less is known about whether it operates in temporal perception, particularly in duration judgments.  Bayesian causal-inference models posit that perception emerges from a combination of common-cause inference and likelihood-based integration; that is, the brain infers whether different sensory cues share a source and, if so, integrates them accordingly. \cite{hartcher2014duration} provided evidence for optimal cue integration in duration perception under low-conflict conditions: when audiovisual signals specified the similar durations, observers combined duration information in a statistically optimal fashion. However, it remains unexplored whether visual and auditory duration are still integrated when the conflict between them becomes substantial, as Bayesian causal inference predicts a breakdown of cue integration under large-conflict conditions. 
 
 % 9 - introducing our study what we have done
 In the present study, we investigated how observers judge auditory duration when presented with conflicting audiovisual (AV) cues. We manipulated two key factors: the degree of cross-modal cue conflict and auditory cue reliability. Before introducing audiovisual cue conflict, we measured each participant's audiovisual temporal bias in a cross-modal duration-discrimination task and compensated for it in the bimodal experiment. Successful manipulation of auditory cue reliability was confirmed in a separate unimodal experiment. Although participants were instructed to base their judgments on the auditory signal alone, perceived auditory duration was systematically biased toward the task-irrelevant visual duration, especially when the auditory cue was less reliable. Moreover, we observed that visual-induced biases in auditory duration judgments increased approximately linearly with audiovisual conflict magnitude. This pattern differs from the non-linear breakdown of integration predicted by traditional Bayesian causal-inference models. Instead, the observed behavior was consistent with a model in which observers flexibly switched between reliance on auditory and visual cues across trials. Model comparison further suggested that, under substantial sensory uncertainty, multiple computational strategies produce highly similar behavioral predictions, limiting the discriminability of competing integration models.
@@ -82,8 +82,7 @@ With well-controlled experiments and a systematic evaluation of computational mo
     \caption{\textbf{Experimental stimuli and trial procedure.}
     Schematic illustration of the auditory and visual stimuli used in the duration-discrimination tasks. 
     \textbf{A} Example trials of the unimodal auditory task under the low (top) and high (bottom) auditory-noise conditions. In the low-noise condition, the auditory signal (bright green) is clearly distinguishable from the background noise (black). In the high-noise condition, signal and noise overlap substantially.
-    \textbf{B} Trial timeline for the unimodal visual task. A disk outline remained visible throughout the trial to provide a stable visual reference. Each trial consisted of two sequentially presented stimulus durations (a standard and a test), separated by a short inter-stimulus interval (ISI). During each signal duration, the disk was filled (signal-on; shown dark), indicating the presence of the visual stimulus. Pre- and post-stimulus periods flanked the two intervals. The 500-ms standard and an adaptively varied test duration were presented in random order (standard-first order shown). Participants reported whether the first or second duration was longer.
-    }
+    \textbf{B} Trial timeline for the unimodal visual task. A disk outline remained visible throughout the trial to provide a stable visual reference. Each trial consisted of two sequentially presented stimulus durations (a standard and a test), separated by a short inter-stimulus interval (ISI). During each signal duration, the disk was filled (signal-on; shown dark), indicating the presence of the visual stimulus. Pre- and post-stimulus periods flanked the two intervals. The 500-ms standard and an adaptively varied test duration were presented in random order (standard-first order shown). Participants reported whether the first or second duration was longer.}
     \label{fig:unimodal_Timelines}
 \end{figure}
 
@@ -117,26 +116,21 @@ The visual stimulus was a black disk (0.07~cd/m\textsuperscript{2}) displayed in
 
 \subsubsection{Auditory stimuli}
 
-We adapted the stimuli from Hartcher and colleagues \citeyearpar{hartcher2014duration} and Shi and colleagues \citeyearpar{shi2013reducing} in which they created their stimuli by adding a pure-tone signal to a pink-noise background and manipulated duration uncertainty by varying the signal-to-noise ratio. Compared to their manipulation, in our stimulus, we generated white-noise waveforms for both the background and the signals. The background signal had a constant amplitude throughout the trial (Figure~\ref{fig:unimodal_Timelines}) The waveform for the signals had a low, non-zero amplitude before, between and after the pair of standard and test stimuli. During the standard and test, the amplitude was increased. We then differentiated the signal from the background using different broadband filters to ensure that the signal was always detectable even when the background noise was louder than the stimuli. 
+We adapted the stimuli from Hartcher and colleagues \citeyearpar{hartcher2014duration} and Shi and colleagues \citeyearpar{shi2013reducing} in which they created their stimuli by adding a pure-tone signal to a pink-noise background and manipulated duration uncertainty by varying the signal-to-noise ratio. Compared to their manipulation, in our stimulus, we generated white-noise waveforms for both the background and the signals. The background signal had a constant amplitude throughout the trial (Figure~\ref{fig:unimodal_Timelines}) The waveform for the signals had a low, non-zero amplitude before, between and after the pair of standard (fixed at 500ms) and test intervals (varying duration). During the standard and test intervals, the amplitude was increased. We then differentiated the signal from the background using different broadband filters to ensure that the signal was always detectable even when the background noise was louder than the stimuli. 
 
-The auditory signals and the background noise were both filtered white-noise signals sampled at 48~kHz. Each interval's stimulus was a noise burst with increased amplitude modulated by a raised cosine (5~ms cosine ramp up, flat peak, cosine ramp down). The signal was embedded in a continuous background noise that spanned the entire trial. The signals waveform consisted of a pre-stimulus interval, first-interval stimulus,inter-stimulus interval, second-interval stimulus and post-stimulus interval, with the stimulus intervals defined by the raised-cosine amplitude envelope.
+The auditory signals and the background noise were both filtered white-noise signals sampled at 48~kHz. Each interval's stimulus was a noise burst with increased amplitude modulated by a raised cosine (5~ms cosine ramp up, flat peak, cosine ramp down). The signal was embedded in a continuous background noise that spanned the entire trial. The signals waveform consisted of a pre-stimulus interval, first-interval stimulus, inter-stimulus interval, second-interval stimulus and post-stimulus interval, with the stimulus intervals defined by the raised-cosine amplitude envelope.
 
 We manipulated auditory uncertainty by varying the relative amplitude of the continuous background noise with respect to the signal waveform before finally summing the two waveforms. In the low-noise condition, the background amplitude was approximately 0.1 times the stimulus amplitude, whereas in the high-noise condition it was approximately 1.2 times that amplitude. The final mixed waveform was then peak-normalized for playback.
 
 
 To keep the ``signal'' perceptually distinct even with the high noise level, we applied different band-pass filters to the signal and background tracks. The background waveform was band-pass filtered with cutoffs at 10 and 610~Hz. The signal waveform (including the test and standard) was band-pass filtered from 150--775~Hz to make the stimuli more distinguishable from the background. The two waveforms were then summed to create the final stimulus. All filtering was implemented using second-order sections (SOS) Butterworth filters with a filter order of 4.
 
-Auditory stimuli were calibrated using a Br\"uel \& Kj{\ae}r Type 2240 sound level meter positioned at the participant's head location. Sound levels were measured as A-weighted equivalent continuous levels (LAeq). The test and standard stimuli had an average intensity of approximately 70.5~dB~SPL (from the sum of the stimuli and background). In the low-noise condition, the continuous background noise (the sum of the background waveform and the non-stimulus signals waveform) was presented at 57.4~dB~SPL, yielding a signal-to-noise ratio (SNR) of approximately +13.1~dB. In the high-noise condition, the background noise was presented at 67.5~dB~SPL, yielding an SNR of approximately +2.9~dB. All sound intensities are reported as A-weighted levels.
+Auditory stimuli were calibrated using a Bruel \& Kjaer Type 2240 sound level meter positioned at the participant's head location. Sound levels were measured as A-weighted equivalent continuous levels (LAeq). The test and standard stimuli had an average intensity of approximately 70.5~dB~SPL (from the sum of the stimuli and background). In the low-noise condition, the continuous background noise (the sum of the background waveform and the non-stimulus signals waveform) was presented at 57.4~dB~SPL, yielding a signal-to-noise ratio (SNR) of approximately +13.1~dB. In the high-noise condition, the background noise was presented at 67.5~dB~SPL, yielding an SNR of approximately +2.9~dB. All sound intensities are reported as A-weighted levels.
 
 To further characterize the stimulus structure, we additionally measured the sound levels of the individual stimulus components prior to mixing the background and signals waveforms. The background waveform averaged approximately 51.5~dB~SPL in the low-noise condition and 67.0~dB~SPL in the high-noise condition. For the signals waveform, the level during non-stimulus intervals (pre-stimulus, ISI, post-stimulus) was approximately 57.1~dB~SPL in the low-noise condition and 54.5~dB~SPL in the high-noise condition. During the stimulus intervals, levels increased to approximately 70.6~dB~SPL in the low-noise condition and 66.6~dB~SPL in the high-noise condition. These measurements confirm that the stimulus contained a clearly detectable signal embedded in background noise, with the signal interval producing a distinct increase in sound level relative to the baseline.
 
 
-% \begin{figure}
-%     \includegraphics[width=1\linewidth]{assets/figures/unimodalAudioDiagram.png}
-%     \caption{\textbf{Example stimulus waveform for one 2-interval, forced-choice trial.}
-%     A continuous background-noise (gray) spans the entire trial (pre-stimulus, Interval 1, ISI, Interval 2, post-stimulus). The signal, a raised-cosine--gated noise burst whose flat-top equals the intended interval duration (shown in green), appears only during the two stimulus intervals. Background and signal were band-pass filtered over different frequency ranges, summed, and the sum was peak-normalized. Scaling of the background noise relative to the signal implements the SNR manipulation.}
-%     \label{fig:unimodalAudioDiag}
-% \end{figure}
+
 
 
 \subsection{Procedure}
@@ -147,7 +141,7 @@ After completing the unimodal tasks, participants completed the cross-modal base
 
 Finally, participants performed the main experiment, which consisted of three sessions of approximately one hour each. Each session started with a flexible number of practice trials in which participants received feedback about the correctness of their answers until they felt comfortable with each task.
 
-All tasks used a 2IFC design ("Which interval was longer?"). In each trial there was a standard and test stimulus. The order of standard/test stimuli was randomized across trials. Each trial comprised a pre-stimulus noise, first stimulus, an inter-stimulus interval (ISI), second stimulus, and a post-stimulus noise. Short breaks occurred every \textasciitilde 30 trials.
+All tasks used a 2IFC design ("Which interval was longer?"). In each trial there was a standard and test stimulus. The order of standard/test stimuli was randomized across trials. Each trial comprised a pre-stimulus noise, first stimulus, an inter-stimulus interval (ISI), second stimulus, and a post-stimulus noise. Short breaks occurred every ~30 trials.
 
 In the unimodal auditory, unimodal visual, and cross-modal experiments, the standard duration was fixed at 500~ms. In the bimodal experiment, the auditory component of the standard interval was always 500 ms. When audiovisual conflict was 0 ms, the visual component was also nominally 500~ms, but was adjusted based on the participant's audiovisual duration bias (see below). For non-zero conflict conditions, the visual duration was adjusted on each trial according to the conflict level (e.g., +250 ms conflict corresponded to a 750~ms nominal visual duration), while the auditory duration remained fixed at 500~ms.
 
@@ -215,7 +209,7 @@ To measure sensory precision, all participants completed two unimodal duration-d
 
 The log-normal observer model is well suited for duration judgments, as it naturally captures scalar variability consistent with Weber's law and constrains duration estimates to be positive \citep{haigh2021role}. The psychometric function included two parameters: a lapse rate ($\lambda$), capturing stimulus-independent response errors, and a sensitivity parameter ($\sigma_v$ for the visual task and $\sigma_{a,l}$ and $\sigma_{a,h}$ for the low and high auditory-noise conditions), reflecting the uncertainty in sensory encoding (steepness of the psychometric function) in log-duration space.
 
-We did not include a bias parameter ($\mu$) in the main analyses. In a symmetric two-interval, forced-choice (2IFC) design, any additive bias in perceived log-duration would affect both the standard and test intervals equally and therefore cancel in the comparison. Consequently, when  the standard($t_s$) and the test($t_t$) durations are identical, the model predicts $P(\text{``test longer''}) = 0.5$ by symmetry, and no bias term is theoretically required. 
+We did not include a bias parameter ($\mu$) in the main analyses. In a symmetric two-interval, forced-choice (2IFC) design, any additive bias in perceived log-duration would affect both the standard and test intervals equally and therefore cancel in the comparison. Consequently, when  the standard ($t_s$) and the test ($t_t$) durations are identical, the model predicts $P(\text{``test longer''}) = 0.5$ by symmetry, and no bias term is theoretically required. 
 
 Under this model, the probability of judging the test interval as longer than the standard is given by
 \begin{equation}
@@ -230,17 +224,17 @@ where $t_t$ and $t_s$ denote the test and standard durations, respectively, and 
     \centering
     \includegraphics[width=1\linewidth]{assets/figures/psychometric_curves_publication.pdf}
     \caption{\textbf{Unimodal visual and auditory duration-discrimination psychometric functions.}   
-    \textbf{A} Unimodal discrimination thresholds expressed as Weber fractions, derived from log-normal psychometric fits, for the low-noise auditory (red), visual (black), and high-noise auditory (blue) conditions. Each point represents an individual participant. Boxplots display the interquartile range (IQR; 25th--75th percentile), with the median indicated by the central line. Whiskers extend to the most extreme values within 1.5 $\times$ IQR of the first and third quartiles; values beyond this range are treated as outliers. Data points are horizontally jittered for visualization clarity. \textbf{B} Psychometric functions showing $p($``test longer''$)$ as a function of test duration, pooled across all participants and trials. Data points represent proportions calculated within duration bins; error bars indicate binomial standard errors. Solid lines show fitted log-normal psychometric functions. Red: low-noise auditory; black: visual; blue: high-noise auditory. Discrimination precision was highest for low-noise auditory, intermediate for visual, and lowest for high-noise auditory conditions.}    
+     \textbf{B} Psychometric functions showing $p($``test longer''$)$ as a function of test duration, pooled across all participants and trials. Data points represent proportions calculated within duration bins; error bars indicate binomial standard errors. Solid lines show fitted log-normal psychometric functions. Red: low-noise auditory; black: visual; blue: high-noise auditory. Discrimination precision was highest for low-noise auditory, intermediate for visual, and lowest for high-noise auditory conditions.} \textbf{A} Unimodal discrimination thresholds expressed as Weber fractions, derived from log-normal psychometric fits, for the low-noise auditory (red), visual (black), and high-noisse auditory (blue) conditions. Each point represents an individual participant. Boxplots display the interquartile range (IQR; 25th--75th percentile), with the median indicated by the central line. Whiskers extend to the most extreme values within 1.5 $\times$ IQR of the first and third quartiles; values beyond this range are treated as outliers. Data points are horizontally jittered for visualization clarity.
     \label{fig:unimodal_data_fits}
 \end{figure}
 
 %%%%
-The Friedman test and Wilcoxon signed-rank test analysis revealed significant effects of the auditory noise level on temporal-discrimination precision. We conducted all analyses on the raw log-space noise estimates ($\sigma_v$, $\sigma_{a,l}$ and $\sigma_{a,h}$). However, for reporting purposes we converted these to just noticeable differences (JNDs) in milliseconds, defined as the minimum duration increment required to achieve 75\% correct performance and then to Weber fractions (WF). Given a fitted value of $\sigma$, the JND at 75\% accuracy is:
+The Friedman test and Wilcoxon signed-rank test analysis revealed significant effects of the auditory noise level on duration-discrimination precision. We conducted all analyses on the raw log-space noise estimates ($\sigma_v$, $\sigma_{a,l}$ and $\sigma_{a,h}$). However, for reporting purposes we converted these to just noticeable differences (JNDs) in milliseconds, defined as the minimum duration increment required to achieve 75\% correct performance and then to Weber fractions (WF). Given a fitted value of $\sigma$, the JND at 75\% accuracy is:
 \begin{equation}
 \text{JND} = t_s \left( \exp\left(z_{75}\sigma\right) - 1 \right),
 \label{sigma2JND_eq}
 \end{equation}
-where $t_s$ is the standard duration and $z_{75} = \Phi^{-1}(0.75)$ is the inverse cumulative normal value corresponding to 75\% correct.
+where $z_{75} = \Phi^{-1}(0.75)$ is the inverse cumulative normal value corresponding to 75\% correct.
 
 We then computed the WF as the proportional threshold:
 \begin{equation}
@@ -251,7 +245,6 @@ We then computed the WF as the proportional threshold:
 
 For the low- and high-noise auditory and visual conditions, the estimated Weber fractions were 0.18, 2.54, 0.42, respectively, with corresponding median JNDs of 92.5, 1271.8, and 212.7~ms. A Friedman test revealed a significant difference across conditions ($\chi^2(2) = 18.73, p < .001$; Figure~\ref{fig:unimodal_data_fits}), indicating that discrimination thresholds differed across the auditory (low- and high-noise) and visual conditions.
 
-% Pairwise comparisons were conducted using Wilcoxon signed-rank tests with Bonferroni correction ($\alpha = .0167$). $\sigma_{a,l}$ (low auditory-noise condition) was significantly lower than $\sigma_{a,h}$ (high auditory-noise condition, $W = 0$, $p < .001$). The Wilcoxon statistic $W = 0$ indicates that $\sigma_{a,l} < \sigma_{a,h}$ for all participants, in which $W$ denotes the Wilcoxon signed-rank test statistic (the sum of signed ranks). Moreover, $\sigma_{a,l}$ was significantly lower than $\sigma_v$ ($p < .001$). The difference between $\sigma_v$ and $\sigma_{a,h}$ was not significant after Bonferroni correction ($p = 0.18$).
 
 Pairwise comparisons were conducted using Wilcoxon signed-rank tests with Bonferroni correction ($\alpha = .0167$). $\sigma_{a,l}$ (low auditory-noise condition) was significantly lower than $\sigma_{a,h}$ (high auditory-noise condition; $W = 0$, $p < .001$). The value $W = 0$ indicates that, for every participant, the paired difference $\sigma_{a,h} - \sigma_{a,l}$ was positive, i.e., $\sigma_{a,l}$ was lower than $\sigma_{a,h}$ within all participants.  Moreover, $\sigma_{a,l}$ was significantly lower than $\sigma_v$ ($p < .001$). The difference between $\sigma_v$ and $\sigma_{a,h}$ was not significant after Bonferroni correction ($p = 0.18$).
 
@@ -259,8 +252,8 @@ Pairwise comparisons were conducted using Wilcoxon signed-rank tests with Bonfer
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{assets/figures/crossmodalTimeline.png}
-\caption{\textbf{Cross-modal duration-comparison trial structure.} Schematic of a single cross-modal trial. The trial consisted of two sequential stimuli (standard and test), separated by an inter-stimulus interval (dashed vertical lines indicate interval boundaries). \textbf{Top (auditory stream):} Continuous background noise was presented throughout the trial. A signal burst occurred during either the first or second interval. \textbf{Bottom (visual stream):} A disk outline was continuously visible. During the signal duration, the disk was filled. In this task, the visual stimulus was the standard, with a duration of 500-ms. The auditory test duration varied across trials. The auditory test and visual standard were presented in random order. }
+    \includegraphics[width=1\linewidth]{assets/figures/cross_modal_timeline.pdf}
+\caption{\textbf{Cross-modal duration-comparison trial structure.} Schematic of a single cross-modal trial. The trial consisted of two sequential stimuli (standard and test), separated by an inter-stimulus interval (dashed vertical lines indicate interval boundaries). \textbf{Top (auditory):} Continuous background noise was presented throughout the trial. A signal burst occurred during either the first or second interval. \textbf{Bottom (visual):} A disk outline was continuously visible. During the signal duration, the disk was filled. In this task, the visual stimulus was the standard, with a duration of 500-ms. The auditory test duration varied across trials. The auditory test and visual standard were presented in random order. }
     \label{fig:crossmodalDiag}
 \end{figure}
 
@@ -278,7 +271,6 @@ Given the systematic modality-specific biases observed in the cross-modal task, 
     \centering
     \includegraphics[width=1\linewidth]{assets/figures/psychometric_curves_crossmodal.pdf}
   \caption{ \textbf{PSE shifts and psychometric curve fits for the cross-modal duration comparison.} \textbf{A} Point of subjective equality (PSE) shifts for the low-noise auditory (red) and high-noise auditory (blue) conditions. Superimposed are the individual participant data points (horizontally jittered). The PSE shift is the difference between the standard duration (500~ms) and the auditory duration that is perceived as identical to the standard. \textbf{B} Psychometric functions (dots) and model fits (solid lines), showing $p($``auditory test longer''$)$. Binary data were grouped into 7 equally-spaced bins between 0 and 1000~ms (error bars: SEM).     For this plot we pooled the data across all participants then fitted with log-normal cumulative distribution functions (parameters: $\lambda$: lapse rate; $\mu$: PSE, $\sigma$: log-space noise). Solid lines show fit log-normal psychometric functions. 
-  % PSEs are shifted leftward in both conditions, indicating a systematic overestimation of auditory relative to visual duration.
   }
     \label{fig:crossModalData}
 \end{figure}
@@ -301,17 +293,17 @@ To investigate how participants combined auditory and visual cues during duratio
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{assets/figures/pooled_psychometric_functions.pdf}
- \caption{\textbf{Data and fitted psychometric functions in the bimodal experiment.} \textbf{A} Fitted psychometric functions in the low auditory-noise condition. Each curve corresponds to one of seven audiovisual conflict levels ($-250$ to $+250$~ms). Dots show $p($``test longer''$)$ as a function of seven equally spaced test-duration bins. Data points are plotted at the centers of the bins, with dot diameter proportional to the number of trials within each bin. \textbf{B} Same as A, but for the high auditory-noise condition. Psychometric curves shift progressively with conflict magnitude, indicating stronger visual influence on perceived auditory duration under high auditory noise.}
+    \includegraphics[width=1\linewidth]{assets/figures/data_psychometric_functions_freeMuSigmaLambda_lognorm_clean.pdf}
+ \caption{\textbf{Data and fitted psychometric functions in the bimodal experiment.} Fitted psychometric functions in the low auditory-noise condition. Each curve corresponds to one of seven audiovisual conflict levels ($-250$ to $+250$~ms). Dots show $p($``test longer''$)$ as a function of seven equally spaced test-duration bins. Data points are plotted at the centers of the bins, with dot diameter proportional to the number of trials within each bin. \textbf{B} Same as A, but for the high auditory-noise condition. Psychometric curves shift progressively with conflict magnitude, indicating stronger visual influence on perceived auditory duration under high auditory noise.}
     \label{fig:psychometric_conflict_fits}
 \end{figure}
 
-To quantify the results, we extracted the PSE from each psychometric curve and plotted it as a function of the conflict level (Figure~\ref{fig:conflict_pse}). Under the high auditory-noise condition, PSEs showed a nearly linear relationship with conflict magnitude. In contrast, under the low-noise condition, PSEs stayed close to zero, indicating reduced bias toward visual durations. The error bars reflect the 95\% confidence interval from 1000 parametric bootstrap samples. For each sample, we generated responses from the fitted psychometric function, refit the function, and computed the standard error of the resulting parameter estimates. Regression analysis confirmed a linear relationship between cue-conflict magnitude and PSE shifts. Under the high-noise condition, visual conflict magnitude showed a strong positive correlation with PSE shifts ($r$ = 0.963, $p$ $<$ 0.001), with a steep slope of 0.606~ms PSE change per 1 ms of visual conflict. In contrast, under the low-noise condition, the correlation remained strong ($r$ = 0.911, $p$ = 0.004), but had a much shallower slope of 0.144~ms per ms conflict. These results indicate that auditory duration perception was systematically biased toward the visual duration, and that the strength of this bias was modulated by auditory cue reliability.
+To quantify the results, we extracted the PSE from each psychometric curve and plotted it as a function of the conflict level (Figure~\ref{fig:conflict_pse}). Under the high auditory-noise condition, PSEs showed a nearly linear relationship with conflict magnitude. In contrast, under the low-noise condition, PSEs stayed close to zero, indicating reduced bias toward visual durations. The error bars reflect the Standard Error of the Mean across the 11 participant. We have also completed 1000 parametric bootstrapping for aggregated data. For each sample, we generated responses from the fitted psychometric function, refit the function, and computed the standard error of the resulting parameter estimates. Regression analysis confirmed a linear relationship between cue-conflict magnitude and PSE shifts. Under the high-noise condition, visual conflict magnitude showed a strong positive correlation with PSE shifts ($r$ = 0.963, $p$ $<$ 0.001), with a steep slope of 0.606~ms PSE change per 1 ms of visual conflict. In contrast, under the low-noise condition, the correlation remained strong ($r$ = 0.911, $p$ = 0.004), but had a much shallower slope of 0.144~ms per ms conflict. These results indicate that auditory duration perception was systematically biased toward the visual duration, and that the strength of this bias was modulated by auditory cue reliability.
 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf}
-\caption{\textbf{Effect of audiovisual conflict on perceived auditory duration.} Group-averaged point of subjective equality (PSE) estimates as a function of audiovisual duration conflict, shown separately for the low-noise auditory condition (\textbf{A}) and high-noise auditory condition (\textbf{B}). Each data point reflects the mean PSE of pooled data over 11 participants; error bars show bootstrapped 95\% confidence intervals. Under high noise, auditory duration judgments are pulled toward the visual duration. Under low noise, PSEs are more stable across conflict levels, suggesting auditory dominance.}
+\caption{\textbf{Effect of audiovisual conflict on perceived auditory duration.} Group-averaged point of subjective equality (PSE) estimates as a function of audiovisual duration conflict, shown separately for the low-noise auditory condition (\textbf{A}) and high-noise auditory condition (\textbf{B}). Each data point reflects the mean PSE of pooled data over 11 participants; error bars show SEM across participants. Under low noise, PSEs are more stable across conflict levels, suggesting auditory dominance.Under high noise, auditory duration judgments are pulled toward the visual duration.}
     \label{fig:conflict_pse}
 \end{figure}
 
@@ -339,7 +331,7 @@ While all tested models shared the same encoding process, they differed in how e
 \subsection{Forced fusion (Optimal cue integration)}
 The forced-fusion model assumed that observers integrate auditory and visual signals for the auditory-duration judgment regardless of cue-conflict magnitude. Moreover, the integration is optimal, with each cue weighted by its reliability (Eq.~\ref{eq:forced_fusion}). 
 
-This model can be viewed as a special case of the Bayesian causal-inference model in which the prior probability of common cause is fixed at $p_c=1$, i.e., the two cues are always integrated regardless of cue-conflict magnitude. Deviations from this model provide evidence that integration strength varies as a function of cue conflict and uncertainty.
+This model can be viewed as causally inferring the probability of the two cues are 100\% originated from same source and so cues are always integrated regardless of cue-conflict magnitude. 
 
 \subsection{Causal-inference model}
 The Bayesian causal-inference model assumed that the observer first infers whether the auditory and visual cues arise from a common source by computing the posterior probability of a common source given the two cues' sensory measurements:
@@ -347,7 +339,7 @@ The Bayesian causal-inference model assumed that the observer first infers wheth
 p(C = 1 \mid m_a, m_v),
 \label{eq:pc}
 \end{align}
-where $C = 1$ denotes a common cause. The observer then forms a posterior over the task-relevant variable (here, the auditory stimulus duration $s_a$) by averaging over two posteriors. The inferred output is the estimate $\hat{s}_a$:
+where $C = 1$ denotes a common cause. The observer then forms a posterior over the task-relevant variable (here, the auditory stimulus duration $s_a$) by averaging over two posteriors. The observer's posterior distribution over auditory duration is given by:
 \begin{align}
 p(s_a \mid m_a, m_v)
 = {}& p(C = 1 \mid m_a, m_v)\,
@@ -356,7 +348,7 @@ p(s_a \mid m_a, m_v)
    p(s_a \mid m_a,C=2),
 \label{eq:auditory_bimodal_estimate}
 \end{align}
-in which $p(C = 2 \mid m_v, m_a)$ indicates the posterior probability of separate causes. $p(s_a \mid m_v, m_a, C=1)$ and $p(s_a \mid m_a,C=2)$ specify the posteriors over $s_a$ under each causal scenario. The posterior probability of common cause was computed as:
+in which $p(C = 2 \mid m_v, m_a)$ indicates the posterior probability of separate causes. $p(s_a \mid m_v, m_a, C=1)$ and $p(s_a \mid m_a,C=2)$ specify the posteriors over $s_a$ under each causal scenario. The posterior probability of common cause computed as:
 
 
 \begin{equation}
@@ -367,8 +359,7 @@ p(C=1 \mid m_a, m_v)
 p(m_a, m_v \mid C=1)\, p_c
 }{
 \begin{aligned}
-&p(m_a, m_v \mid C=1)\, p_c\\
-&\quad + p(m_a, m_v \mid C=2)\, (1 - p_c)
+&p(m_a, m_v \mid C=1)\, p_c + p(m_a, m_v \mid C=2)\, (1 - p_c)
 \end{aligned}
 }.
 \end{split}
@@ -379,7 +370,7 @@ This model included the prior probability of common cause, $p_c$, which was fitt
 
 We modeled the prior distribution of durations as a truncated uniform distribution over the range of stimulus durations presented in the experiment, $[t_{\min}, t_{\max}]$, providing finite support for the latent duration variable. 
 
-Here the model assumes that participants inferred the stimulus duration based on the inferred causal relationship between the cues presented in the trial. It assumed that the observer started by inferring the posterior probability of both cues originating from a common cause by computing $p(C = 1 \mid m_a, m_v)$. Under this model, observers computed two estimates of the auditory stimulus duration, one based on both auditory and visual measurements, and another based on the auditory measurement alone. The final auditory duration estimate was a weighted average of these two separate estimates, given by:
+Here the model assumed that participants inferred the stimulus duration based on the inferred causal relationship between the cues presented in the trial. It assumed that the observer started by inferring the posterior probability of both cues originating from a common cause by computing $p(C = 1 \mid m_a, m_v)$. Under this model, observers computed two estimates of the auditory stimulus duration, one based on both auditory and visual measurements, and another based on the auditory measurement alone. The final auditory duration estimate was a weighted average of these two separate estimates, given by:
 \begin{align}
 \hat S_{a}
 = {}& p(C=1 \mid m_a,m_v)\,\hat S_{a,C=1} \notag\\
@@ -387,11 +378,34 @@ Here the model assumes that participants inferred the stimulus duration based on
    \hat S_{a,C=2},
 \label{eq:estimate_model_avg}
 \end{align}
-where $\hat S_{a,C=1}$ and $\hat S_{a,C=2}$ denote the estimates of the auditory stimulus under the common-cause and independent-causes assumptions, respectively. This strategy produced an estimate that smoothly interpolated between fusion and segregation as a function of sensory conflict and uncertainty, resulting in graded biases toward the more reliable cue. Causal inference is performed in log-duration space, consistent with the assumed log-Gaussian sensory encoding and inference framework.
+where $\hat S_{a,C=1}$ and $\hat S_{a,C=2}$ denote the estimates of the auditory stimulus under the common-cause and independent-causes assumptions, respectively.
+
+
+The above computation yields an internal estimate of auditory duration for a single interval. In the present two-interval forced-choice task, the same inference process is applied independently to the standard and test intervals, producing estimates $\hat S_{\mathrm{std}}$ and $\hat S_{\mathrm{test}}$. The observer then compares the estimated durations of the test and standard intervals and responds ``test longer'' whenever
+
+\begin{equation}
+\hat S_{\mathrm{test}} > \hat S_{\mathrm{std}}.
+\end{equation}
+
+The predicted response probability is therefore
+
+\begin{equation}
+P(\text{``test longer''})
+=
+P\!\left(
+\hat S_{\mathrm{test}}
+-
+\hat S_{\mathrm{std}}
+>
+0
+\right),
+\end{equation}
+
+where the probability is obtained by marginalizing over the noisy sensory measurements through Monte Carlo simulation.
 
 
 \subsection{Probabilistic cue switching}
-We also considered a probabilistic cue-switching model, in which observers based their decision on either the auditory or the visual cue on each trial (see Methods). Instead of computing posterior probabilities of causal structure, this heuristic strategy selected a single cue stochastically: with fixed selection probability $p_v$, the decision was based solely on the visual estimate, and with probability $1 - p_v$, it was based solely on the auditory estimate. Thus, $p_v$ represents the probability of relying on the visual cue on a given trial. This formulation captures the possibility that observers rely on stable response tendencies rather than dynamically weighting sensory information. Despite its simplicity, the switching strategy can reproduce cue-integration--like patterns when responses are averaged across trials.
+We also considered a probabilistic cue-switching model, in which observers based their decision on either the auditory or the visual cue on each trial (see Methods). Instead of computing posterior probabilities of causal structure, this heuristic strategy selected a single cue stochastically: with fixed selection probability $p_v$, the decision was based solely on the visual estimate, and with probability $1 - p_v$, it was based solely on the auditory estimate. Thus, $p_v$ represents the probability of relying on the visual cue on a given trial. Despite its simplicity, the switching strategy can reproduce cue-integration--like patterns when responses are averaged across trials.
 
 
 
@@ -408,12 +422,11 @@ Causal-inference model typically predicts a non-linear breakdown of integration 
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{assets/figures/aggregated_mu_vs_models_sem.pdf}
+    \includegraphics[width=1\linewidth]{assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf}
 \caption{
 Conflict-dependent biases in auditory duration perception. Point of subjective equality (PSE) shifts as a function of audiovisual conflict for the low auditory-noise condition (\textbf{A}) and high auditory-noise condition (\textbf{B}), averaged over 11 participants. Positive values indicate biases toward longer perceived auditory duration. Red and blue show empirical data (group mean $\pm$~SEM across 11 participants). Other lines indicate model predictions for forced fusion, causal inference, and probabilistic cue switching. The model predictions are jittered horizontally for readability. All model predictions were generated using sensory-noise parameters fitted using the bimodal data. For models, error bars reflect $\pm$~SEM across participant fits.}
 \label{fig:pseConflictModel}
 \end{figure}
-
 \subsection{Model fitting and model comparison}
 All models have a lapse-rate ($\lambda$) parameter, two auditory duration-noise parameters (one for each auditory-noise condition: $\sigma_{a,l}$ and $\sigma_{a,h}$), and one visual duration-noise parameter ($\sigma_{v}$). For models that incorporate causal inference, there is an additional parameter ($p_c$), which captures the prior probability of a common source. For the probabilistic cue-switching model, there are two additional parameters ($p_{v,l}$ and $p_{v,h}$) that specify the probability of switching (i.e., relying on vision rather than audition) in each of the two auditory-noise conditions.
 
@@ -423,7 +436,7 @@ Sensory-noise parameters were fitted using the data from the bimodal task, becau
 
 
 %%% Changed this paragraph
-We evaluated model performance using the Akaike Information Criterion (AIC) at the individual participant level. Model comparison was performed under two assumptions about sensory noise: (a)~sensory noise fixed to values estimated from unimodal task data and (b)~sensory noise fitted directly using the bimodal data (Figure~\ref{fig:modelComparison}). To summarize model preference at the group level while accounting for between-participant variability, we computed the mean per-participant $\Delta$AIC relative to the forced-fusion model, with 95\% confidence intervals obtained from a participant AIC bootstrap ($10{,}000$ resamples; Figure~\ref{fig:meanDeltaAIC}). To confirm that Monte-Carlo evaluation noise in the simulated likelihood did not drive the comparison, we additionally re-evaluated each fitted model's log-likelihood at its maximum-likelihood parameters under 20 independent random seeds (using the same 2000 Monte-Carlo trials per condition) and took the standard deviation of the resulting per-participant AIC as a Monte-Carlo noise floor. This noise floor was small (median $1.6$ and $1.9$ AIC points for the fixed- and free-noise analyses, respectively), and all fits reproduced their stored log-likelihoods within it.
+We evaluated model performance using the Akaike Information Criterion (AIC) at the individual participant level. Model comparison was performed under two assumptions about sensory noise: (a)~sensory noise fixed to values estimated from unimodal task data and (b)~sensory noise fitted directly using the bimodal data (Figure~\ref{fig:modelComparison}). To summarize model preference at the group level, we simply added up each participant's $\Delta$AIC relative to the forced-fusion model across the 11 participants; a negative total means a model had a lower overall AIC than forced fusion (Figure~\ref{fig:sumDeltaAIC}). We attached 95\% confidence intervals to these totals by resampling participants with $10{,}000$ bootstrap resamples. To confirm that Monte-Carlo evaluation noise in the simulated likelihood did not drive the comparison, we additionally re-evaluated each fitted model's log-likelihood at its maximum-likelihood parameters under 20 independent random seeds (using the same 2000 Monte-Carlo trials per condition) and took the standard deviation of the resulting per-participant AIC as a Monte-Carlo noise floor. This noise floor was small (median $1.6$ and $1.9$ AIC points for the fixed- and free-noise analyses, respectively), and all fits reproduced their stored log-likelihoods within it.
 
 % Reproducibility: bootstrap = modelComparisonTable_threeModels.ipynb, section 4 (bootstrap_aic, plot_mean_delta_aic) -> meanDeltaAIC_threeModels.pdf; Monte-Carlo noise floor = co           +mpute_aic_noise_floor.py (cache aic_noise_floor_seeds.json), notebook section 4b.
 
@@ -433,16 +446,16 @@ We evaluated model performance using the Akaike Information Criterion (AIC) at t
 Consistent with the observation that all models captured the data reasonably well (Figure~\ref{fig:pseConflictModel}), model comparison revealed only small differences in fit quality across integration strategies. Below, we report model-comparison results under two conditions: sensory-noise parameters were (1)~fixed to values estimated from the unimodal experiment, or (2)~treated as free parameters and fit directly to the bimodal data.
 
 \subsubsection{Fixed sensory noise}
-In this analysis, we assume that sensory noise is identical for unimodal and bimodal stimuli. Thus, we estimated the noise parameters using the data from the unimodal duration-discrimination tasks, and then used those estimates when fitting the data from the bimodal task. Figure~\ref{fig:modelComparison}A shows the participant-level $\Delta$AIC values, computed as the difference between the AIC of the best-fitting model for each participant and the AIC values of the other models. For most participants (8 out of 11), the probabilistic cue-switching model achieved the lowest $\Delta$AIC among the candidate models, indicating that it provided the best trade-off between goodness of fit and model complexity. The Bayesian causal inference model and the forced-fusion model had larger $\Delta$AIC values. The forced-fusion model was the best-fitting model for only three participants. No other model achieved the lowest $\Delta$AIC for any participant.
+In this analysis, we assume that sensory noise is identical for unimodal and bimodal stimuli. Thus, we estimated the noise parameters using the data from the unimodal duration-discrimination tasks, and then used those estimates when fitting the data from the bimodal task. Figure~\ref{fig:modelComparison}A shows the participant-level $\Delta$AIC values, computed as the difference between the each models' AIC for each participant and the AIC values of the Forced fusion model. For most participants (8 out of 11), the probabilistic cue-switching model achieved the lowest $\Delta$AIC among the candidate models, indicating that it provided the best trade-off between goodness of fit and model complexity. The Bayesian causal-inference model was the best-fitting model for the remaining three participants. The forced-fusion model did not achieve the lowest $\Delta$AIC for any participant.
 
-At the group level, the summed $\Delta$AIC values across participants yielded the same pattern, with the probabilistic cue-switching model overall performing the best (Figure~\ref{fig:modelComparison}A). 
-%%maybe show the figure on appendix but maybe not.
+At the group level, the summed $\Delta$AIC values across participants yielded the same pattern, with the probabilistic cue-switching model overall performing the best (Figure~\ref{fig:modelComparison}A right panel). 
+
 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{assets/figures/modelComparison_threeModels_heatmap.pdf}
  \caption{
-    \textbf{A} Model comparison assuming sensory-noise parameters fixed to values estimated from the unimodal tasks. \textbf{B} Model comparison when sensory-noise parameters were additionally fit to the bimodal data. Left panels show participant-level $\Delta$AIC values for each model (lower values indicate better fit), computed relative to the best-fitting model for that participant. Rows correspond to participants and columns correspond to models. Right panels show the sum of $\Delta$AIC values across participants for each model, providing a group-level comparison. When sensory-noise parameters were fixed (A), the probabilistic cue-switching model provided the best fit for 8 of 11 participants. When the sensory-noise parameters were fit directly to the bimodal data (B), the cue-switching model provided the best fit for 5 of 11 participants.
+    \textbf{A} Model comparison assuming sensory-noise parameters fixed to values estimated from the unimodal tasks. \textbf{B} Model comparison when sensory-noise parameters were additionally fit to the bimodal data. Left panels show participant-level $\Delta$AIC values for each model, computed relative to the forced-fusion model (the baseline column, which is therefore identically zero); negative values (blue) indicate a better fit than forced fusion. Rows correspond to participants and columns correspond to models, and the best-fitting model (lowest AIC) for each participant is outlined. Right panels show the sum of these $\Delta$AIC values across participants for each model, providing a group-level comparison. When sensory-noise parameters were fixed (A), the probabilistic cue-switching model provided the best fit for 8 of 11 participants. When the sensory-noise parameters were fit directly to the bimodal data (B), the cue-switching model provided the best fit for 6 of 11 participants.
     }
     \label{fig:modelComparison}
 \end{figure}
@@ -451,13 +464,13 @@ At the group level, the summed $\Delta$AIC values across participants yielded th
 
 When sensory-noise parameters were fitted using the bimodal data, model comparison revealed substantially weaker separation between candidate models (Figure~\ref{fig:modelComparison}B). Participant-level $\Delta$AIC values showed considerable overlap between models, indicating that multiple integration strategies provided similarly good fits once sensory noise was allowed to vary.
 
-The probabilistic cue-switching model provided the best fits for the largest number of participants (5 out of 11; Figure~\ref{fig:modelComparison}B). At the group level, it also yielded the lowest summed $\Delta$AIC across participants. However, the individual $\Delta$AIC values were very low, suggesting limited discriminability between integration strategies under this assumption.
+The probabilistic cue-switching model provided the best fits for the largest number of participants (6 out of 11; Figure~\ref{fig:modelComparison}B). At the group level, it also yielded the lowest summed $\Delta$AIC across participants. However, the individual $\Delta$AIC values were very low, suggesting limited discriminability between integration strategies under this assumption.
 
 
 %%%% ----- Bootstrapped AIC
 
-\subsubsection{Group-level model preference and its reliability}
-To summarize model preference across participants while accounting for between-participant variability, we computed the mean per-participant $\Delta$AIC relative to the forced-fusion model, with 95\% confidence intervals from a participant bootstrap (Figure~\ref{fig:meanDeltaAIC}). Under fixed sensory noise, both the probabilistic cue-switching model (mean $\Delta$AIC $= -40.8$, 95\% CI $[-70.1,\,-15.3]$) and the causal-inference model ($-18.5$, $[-43.0,\,-2.3]$) fit reliably better than forced fusion, with cue switching preferred overall; both confidence intervals excluded zero. Under free sensory noise, the same ordering held, but the differences were small and not statistically reliable (cue switching $-2.2$, $[-6.9,\,+1.8]$; causal inference $-0.9$, $[-2.7,\,+0.9]$), with both confidence intervals spanning zero.
+\subsubsection{Group-level model comparison and its reliability}
+To summarize models across participants, we summed each participant's $\Delta$AIC relative to the forced-fusion model: a negative sum means the model had a lower total AIC than forced fusion across the group, and the further below zero, the stronger the group-level preference (Figure~\ref{fig:sumDeltaAIC}). Under fixed sensory noise, both the probabilistic cue-switching model (summed $\Delta$AIC $= -448$, 95\% CI $[-764,\,-173]$) and the causal-inference model ($-204$, $[-471,\,-28]$) fit better than forced fusion, with cue switching preferred overall; both confidence intervals fell entirely below zero. Under free sensory noise, the same ordering held, but the totals were much smaller and no longer reliable (cue switching $-34$, $[-73,\,+1]$; causal inference $-1$, $[-17,\,+14]$), with both confidence intervals overlapping zero.
 
 This lack of separation under free sensory noise is not an artifact of Monte-Carlo evaluation noise. The per-participant AIC noise floor (median SD $1.9$ AIC points) was comparable in magnitude to the per-participant $\Delta$AIC itself, so individual-participant model assignments are unreliable in this regime; averaging across the 11 participants, however, reduced the Monte-Carlo contribution to below $1$ AIC point. The null result therefore reflects genuine between-participant variability in model preference rather than simulation noise.
 
@@ -472,9 +485,9 @@ We complemented these criteria with random-effects Bayesian model selection, whi
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{assets/figures/meanDeltaAIC_threeModels.pdf}
-    \caption{\textbf{Group-level model preference with participant bootstrap.} Mean per-participant $\Delta$AIC relative to the forced-fusion model (baseline $=0$, not shown) under fixed (left) and free (right) sensory noise. Black markers show the mean across participants with 95\% confidence intervals from $10{,}000$ participant bootstrap resamples; coloured points show individual participants. Values below zero indicate a better fit than forced fusion. Under fixed sensory noise, the probabilistic cue-switching and causal-inference models fit reliably better than forced fusion; under free sensory noise the differences are small and the confidence intervals span zero.}
-    \label{fig:meanDeltaAIC}
+    \includegraphics[width=0.8\linewidth]{assets/figures/sumDeltaAIC_threeModels.pdf}
+    \caption{\textbf{Group-level model comparison: summed $\Delta$AIC.} Sum of the per-participant $\Delta$AIC relative to the forced-fusion model (the baseline, fixed at $0$ and not shown) under fixed (left) and free (right) sensory noise. Each colored point is the total across the 11 participants for one model, with 95\% confidence intervals from $10{,}000$ participant bootstrap resamples. Values below the dashed zero line indicate a lower total AIC, i.e. a better fit, than forced fusion. Under fixed sensory noise, the probabilistic cue-switching and causal-inference models fit clearly better than forced fusion (intervals below zero); under free sensory noise the totals are much smaller and the confidence intervals overlap zero.}
+    \label{fig:sumDeltaAIC}
 \end{figure}
 
 %%%% ------
@@ -498,13 +511,13 @@ Beyond model comparison, the parameters of the favoured model were themselves co
 \subsubsection{High sensory-encoding noise limits model discriminability}
 To explain the lack of evidence for causal inference even at large audiovisual cue conflicts, we recovered the posterior probability of common cause $P(C=1 \mid m_a, m_v)$ across conflict levels using each participant's fit parameters.
 
-Figure~\ref{fig:posterior_conflict} shows $P(C=1 \mid m_a, m_v)$ for an example participant. Across all conflict levels and auditory-noise conditions, the posterior probability of common cause remained relatively high (i.e., above 0.5), a pattern that was maintained for all participants (Figure~\ref{fig:posterior_individual}). This is due to the large sensory encoding noises estimated from the data. Specifically, when sensory encoding noise is high, even substantial physical conflicts produce overlapping measurement distributions, yielding consistently high posterior probability of common cause. Because the two log likelihoods decrease at comparable rates as conflict grows, their ratio remains approximately constant, and the posterior stays well above 0.5 across all conflict levels especially in the high auditory-noise condition. This indicates that, for this participant, the observer's fitted parameters are consistent with treating the auditory and visual signals as originating from a common source regardless of the imposed conflict, explaining why the causal-inference and forced-fusion models produce similar predictions.
+Figure~\ref{fig:posterior_conflict} shows $P(C=1 \mid m_a, m_v)$ for an example participant. Across all conflict levels and auditory-noise conditions, the posterior probability of common cause remained relatively high (i.e., above 0.5), a pattern that was maintained for all participants (Figure~\ref{fig:posterior_individual}). This is due to the large sensory encoding noises estimated from the data. Specifically, when sensory encoding noise is high, even substantial physical conflicts produce overlapping measurement distributions, yielding consistently high posterior probability of common cause. Because the log likelihood of the measurements under the common-cause hypothesis ($\log P(m_a, m_v \mid C{=}1)$) and under the separate-causes hypothesis ($\log P(m_a, m_v \mid C{=}2)$) decrease at similar rates as conflict grows, their difference (the log-likelihood ratio) remains approximately constant, and the posterior stays well above 0.5 across all conflict levels, especially in the high auditory-noise condition. This indicates that, the observer's fitted parameters are consistent with treating the auditory and visual signals as originating from a common source regardless of the imposed conflict.
 
 This analysis reveals why causal-inference model and forced-fusion models produced similar predictions in our experiment. Given the estimated sensory-noise parameters, the posterior probability of common cause never dropped low enough to produce substantial segregation of cues. The observer's inference remained dominated by the common-cause hypothesis across the entire conflict range, resulting in near-linear, fusion-like behavior. Within the conflict range examined here, competing models predict largely overlapping, noisy psychometric patterns, imposing a fundamental limit on model identifiability rather than reflecting insufficient data or model distinguishability.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{assets/figures/manuscript_posterior_mt_v2.pdf}
+    \includegraphics[width=0.8\linewidth]{assets/figures/manuscript_posterior_p10_v2.pdf}
   \caption{\textbf{Posterior probability of common cause across conflict levels.}
     Log likelihoods and posterior probability of common cause for an example participant, plotted as a function of audiovisual duration conflict. Top row: low-auditory-noise condition; bottom row: high-auditory-noise condition. Left column: log likelihood of the measurements under a common cause, $\log P(m_a, m_v \mid C{=}1)$ (blue) and under separate causes, $\log P(m_a, m_v \mid C{=}2)$ (red), plotted on the same axes so that their relative magnitudes can be compared directly. Right column: Posterior probability of common cause, $P(C{=}1 \mid m_a, m_v)$, with the dotted line marking the fitted prior $p_c$. All quantities were computed via Monte Carlo simulation (500 samples per conflict level) using participant-specific sensory-noise estimates ($\sigma_{a,l}$, $\sigma_{a,h}$, $\sigma_v$) and common-cause prior ($p_c$) obtained from the log-normal causal-inference model fit.}
     \label{fig:posterior_conflict}
@@ -512,7 +525,7 @@ This analysis reveals why causal-inference model and forced-fusion models produc
 
 
 \section{Discussion}
-In this study, we investigated how humans infer duration under conflicting audio and visual cues with varying levels of sensory uncertainty. Previous work has shown that audiovisual duration cues can be integrated in a statistically optimal, reliability-weighted manner \citep{shams2005sound,hartcher2014duration}. Extending this framework, we asked whether such integration is flexibly modulated by causal inference, as observed in audiovisual spatial-localization tasks where large cue conflicts induce non-linear breakdowns of integration \citep{kording2007causal, badde2021causal,hong2021causal}. Contrary to this expectation, we found little evidence for a pronounced non-linear reduction in integration strength. Instead, auditory duration judgments remained largely linear and noise-dependent even at relatively large conflicts, suggesting that short sub-second duration judgments may rely more strongly on heuristic integration strategies than on explicit inference about causal structure.
+In this study, we investigated how humans infer duration under conflicting audio and visual cues with varying levels of sensory uncertainty. Previous work has shown that audiovisual duration cues can be integrated in a statistically optimal, reliability-weighted manner \citep{shams2005sound,hartcher2014duration}. Extending this framework, we asked whether such integration is flexibly modulated by causal inference, as observed in audiovisual spatial-localization tasks where large cue conflicts induce non-linear breakdowns of integration \citep{kording2007causal, badde2021causal,hong2021causal}. Contrary to this expectation, we found little evidence for a pronounced non-linear reduction in integration strength. Instead, auditory duration judgments remained largely linear and noise-dependent even at relatively large conflicts, suggesting that short sub-second duration judgments may rely more strongly on heuristic integration strategies than on inference about causal structure.
  
 To interpret these findings, we compared a set of models spanning Bayesian causal inference and probabilistic cue-switching strategies. Although a probabilistic cue-switching model provided the best overall fit under several model-comparison criteria, forced-fusion and causal-inference model produced highly similar predictions within the experimentally plausible conflict range. While these candidate models differ substantially in their computational assumptions, ranging from explicit causal inference to probabilistic cue switching, their behavioral predictions converge under the levels of sensory conflict and uncertainty tested here. This convergence highlights a fundamental limitation of model identifiability. Within the conflict range tested here ($\pm$250 ms), and in the absence of externally added visual noise (i.e., visual stimuli with clear onset and offset), effective sensory uncertainty remains substantial for at least the visual modality (e.g., $\sigma_v = 0.51$, corresponding to a JND of approximately 200 ms). With these conditions, behavioral biases are close to linear functions of audiovisual conflict. As a result, these distinct integration strategies result in highly similar duration-discrimination patterns, making them difficult to distinguish based on behavior alone.
 
@@ -528,7 +541,7 @@ We emphasize that this lower-than-optimal variability is a separate phenomenon f
 In the present study, both Bayesian causal-inference model and heuristic strategies were able to capture the main behavioral regularities observed in the auditory duration judgments, including noise-dependent biases toward visual duration. Notably, the probabilistic cue-switching model provided equal or superior fits to the behavioral data compared to causal-inference model across multiple model-comparison criteria. At the same time, causal-inference model did not produce uniquely diagnostic predictions within the experimentally tested conflict range. This convergence suggests that explicit inference about the causal structure does not contribute to the observed behavior. 
 
 %%% --- adding this: switching-probability mechanism as positive evidence ---
-Beyond providing the best overall fit, the cue-switching model offered an interpretable account of the noise dependence. The fitted probability of relying on the visual cue increased roughly threefold across noise conditions, from a group mean of $0.17$ under low auditory noise to $0.51$ under high auditory noise (Wilcoxon signed-rank test, $p = 0.003$; an increase in 10 of 11 participants; Figure~\ref{fig:switchingProb}). Thus observers were estimated to defer to vision about half the time specifically when auditory reliability was poor, giving the model a concrete and consistent mechanism for the noise-dependent visual bias.
+Beyond providing the best overall fit, the cue-switching model offered an interpretable account of the noise dependence. The fitted probability of relying on the visual cue increased roughly threefold across noise conditions Figure~\ref{fig:switchingProb}). Thus observers were estimated to defer to vision about half the time specifically when auditory reliability was poor, giving the model a concrete and consistent mechanism for the noise-dependent visual bias.
 %%% --- end added section ---
 
 The lack of evidence for causal inference should not be interpreted as evidence against its plausibility. Rather, our results highlight a fundamental limitation in discriminating between integration strategies when sensory noise is sufficiently high. Under these conditions, the posterior probability of separate causes remains low even at large cue conflicts. As a result, bias toward the visual stimulus continues to increase approximately linearly with increasing cue conflict. In this regime, heuristic strategies that stochastically select between cues can closely approximate the predictions of more complex inferential models. Recent work has shown that probabilistic switching strategies can reproduce behavioral patterns often interpreted as Bayesian integration, even in the absence of explicit inference over causal structure \citep{ni2024computational}. This perspective aligns with our finding that multiple integration strategies produce near-indistinguishable behavioral signatures in audiovisual-duration perception.
@@ -663,7 +676,7 @@ For the standard and test intervals, the posterior means are
 \hat{s}_t &= w\, m_t + (1-w)\,\mu_p.
 \label{eq:posterior_test}
 \end{align}
-This formulation assumes that inference is performed in log-duration space, where sensory noise is approximately Gaussian. Performing integration in linear time would not correspond to the MAP solution under this generative model, but rather to a mis-specified inference strategy.
+This formulation assumed that inference is performed in log-duration space, where sensory noise is approximately Gaussian. Performing integration in linear time would not correspond to the MAP solution under this generative model, but rather to a mis-specified inference strategy.
 
 \paragraph{Posterior difference}
 
@@ -695,7 +708,7 @@ P(\text{``test longer''} \mid s_t, s_s)
 P(m_t - m_s > 0).
 \end{equation}
 
-Because $m_t$ and $m_s$ are independent Gaussians with equal variance $\sigma^2$, their difference follows
+Because $m_t$ and $m_s$ are independent random Gaussian variables with equal variance $\sigma^2$, their difference follows
 \begin{equation}
 m_t - m_s
 \sim
@@ -790,7 +803,7 @@ Note that when the priors differ between modalities ($\mu_{p,a} \neq \mu_{p,v}$)
 
 \subsubsection{Forced fusion}\label{mandatoryFusion}
 
-The forced-fusion model assumes that participants produce an estimate of auditory duration by integrating visual and auditory measurements in log-duration space, weighted by their relative reliabilities. Under this model, the observer always computes the optimal multisensory estimate:
+The forced-fusion model assumed that participants produce an estimate of auditory duration by integrating visual and auditory measurements in log-duration space, weighted by their relative reliabilities. Under this model, the observer always computes the optimal multisensory estimate:
 \begin{equation}
 \label{eq:forced_fusion}
 \hat{s}_{\text{fusion}} = \hat{s}_{c=1} = \frac{J_a}{J_a + J_v} m_a + \frac{J_v}{J_a + J_v} m_v,
@@ -808,7 +821,7 @@ with reliability-based weights:
 w_a = \frac{J_a}{J_a + J_v}, \quad w_v = \frac{J_v}{J_a + J_v}.
 \end{equation}
 
-Here the forced-fusion model serves as an important benchmark: it predicts that PSE shifts should follow a linear relationship with audiovisual conflict, with slope determined solely by cue reliability. This represents the limiting case where the observer \textit{always} assumes a common cause, regardless of sensory evidence. 
+Here the forced-fusion model serves as an important benchmark: it predicts that PSE shifts should follow a linear relationship with audiovisual conflict, with slope determined solely by cue reliability. This represented the limiting case where the observer \textit{always} assumed a common cause, regardless of sensory evidence. 
 
 Under the common-cause assumption ($C=1$), the fused estimate corresponds to a Gaussian posterior whose variance is:
 \begin{equation}
@@ -841,7 +854,7 @@ The probabilistic cue-switching model represents an alternative strategy. On eac
 % This increased variance arises because switching discards information from one modality on each trial, whereas fusion combines information from both. Thus, switching is a suboptimal strategy from an information-theoretic perspective, but it may be computationally simpler to implement.
 
 \subsubsection{Comparison between switching and integration:}
-The key behavioral distinction between switching and averaging lies in the distribution of responses across repeated trials at a fixed conflict level. Under switching, at the observer level, the switching model assumes that on each trial the decision is based on either the auditory or the visual measurement. Across trials, this produces a mixture of decision rules. From the modeler's perspective, this mixture results in psychometric functions that can resemble reliability-weighted integration when averaged across trials, even though no cue averaging occurs within a single trial. Averaging models imply a single fused internal estimate on each trial, centered on the reliability-weighted combination of the true stimulus durations. In contrast, switching models imply cue selection on each trial.
+The key behavioral distinction between switching and averaging lies in the distribution of responses across repeated trials at a fixed conflict level. Under switching, at the observer level, the switching model assumed that on each trial the decision is based on either the auditory or the visual measurement. Across trials, this produces a mixture of decisions. From the modeler's perspective, this mixture results in psychometric functions that can resemble reliability-weighted integration when averaged across trials, even though no cue averaging occurs within a single trial. Averaging models imply a single fused internal estimate on each trial, centered on the reliability-weighted combination of the true stimulus durations. In contrast, switching models imply cue selection on each trial.
 
 
 %%%%
@@ -849,7 +862,7 @@ The key behavioral distinction between switching and averaging lies in the distr
 
 \subsubsection{Likelihood of a common cause}
 
-If the model assumes that both durations arise from a common source, there is a single latent log-duration $y = \log s$, and the measurements (in log-duration space) are:
+If the model assumed that both durations arise from a common source, there is a single latent log-duration $y = \log s$, and the measurements (in log-duration space) are:
 
 \begin{equation}
 \label{eq:ma_given_y}
@@ -875,18 +888,14 @@ p(m_a, m_v | C=1) = \int_{t_{\min}}^{t_{\max}} p(m_a | y) p(m_v | y) p(y) \, dy.
 Let $\Delta_t = t_{\max} - t_{\min}$. Taking the prior out of the integral:
 \begin{equation}
 p(m_a, m_v | C=1)
-= \frac{1}{\Delta_t}
-\int_{t_{\min}}^{t_{\max}}
-p(m_a | y) p(m_v | y) \, dy.
+= \frac{1}{\Delta_t} \int_{t_{\min}}^{t_{\max}} p(m_a | y) p(m_v | y) \, dy.
 \end{equation}
 
 Writing the likelihoods as Gaussians:
 \begin{multline}
-p(m_a, m_v | C=1)
-= \frac{1}{\Delta_t}
+p(m_a, m_v | C=1)=\frac{1}{\Delta_t}
 \int_{t_{\min}}^{t_{\max}}
-\mathcal{N}(m_a; y, \sigma_a^2)\\
-\times \mathcal{N}(m_v; y, \sigma_v^2) \, dy.
+\mathcal{N}(m_a; y, \sigma_a^2 \times \mathcal{N}(m_v; y, \sigma_v^2) \, dy.
 \end{multline}
 
 Because a Gaussian is symmetric in its arguments (mathematically):
@@ -1132,11 +1141,11 @@ Using the same synthetic datasets, we also conducted a parameter-recovery analys
 
 \subsection{Extended simulations across sensory-noise and conflict regimes}
 
+To assess when the candidate models should be expected to become perfectly distinguishable, and under which conditions the hypotheses about cue integration could be disentangled, we performed an extended model-recovery analysis across simulated sensory-noise and conflict sampling regimes. We simulated datasets from the three candidate models while varying both the sensory-noise range and the maximum audiovisual conflict. Four sensory-noise regimes were sampled from: very low noise, $\sigma_a,\sigma_v \sim U[0.01,0.20]$; low noise, $\sigma_a,\sigma_v \sim U[0.20,0.40]$; medium noise, $\sigma_a,\sigma_v \sim U[0.30,0.70]$; and an empirical regime based on the range of fitted sensory-noise parameters. For the synthetic regimes, auditory and visual sensory noise parameters were sampled from the same range.
+
 The grid recovery analysis should be read as a map of model identifiability across possible experimental regimes. Each panel shows how often the generating model was recovered after refitting simulated datasets with all three candidate models. Higher diagonal values indicate better model recovery, whereas off-diagonal values indicate systematic confusions between models. Moving from left to right increases sensory uncertainty, and moving from the top row to the bottom row reduces the maximum conflict range from $0.45\,\mathrm{s}$ to $0.25\,\mathrm{s}$.
 
 This analysis shows that model discriminability depends strongly on both sensory noise and the tested range of audiovisual conflicts. Recovery was generally best when sensory noise was low and the conflict range was wide, and poorest when sensory noise was higher and the conflict range was narrow. Importantly, the empirical recovery panel shows that the experimentally observed regime was one in which Forced fusion and Causal inference were difficult to distinguish, whereas Probabilistic Cue Switching remained relatively identifiable.
-
-To assess when the candidate models should be expected to become perfectly distinguishable, and when the fusion breaks down, we performed an extended model-recovery analysis across simulated sensory-noise and conflict sampling regimes. We simulated datasets from the three candidate models while varying both the sensory-noise range and the maximum audiovisual conflict. Four sensory-noise regimes were sampled from: very low noise, $\sigma_a,\sigma_v \sim U[0.01,0.20]$; low noise, $\sigma_a,\sigma_v \sim U[0.20,0.40]$; medium noise, $\sigma_a,\sigma_v \sim U[0.30,0.70]$; and an empirical regime based on the range of fitted sensory-noise parameters. For the synthetic regimes, auditory and visual sensory noise parameters were sampled from the same range.
 
 Model recovery generally improved as sensory noise decreased and as the maximum conflict range increased from $0.25\,\mathrm{s}$ to $0.45\,\mathrm{s}$. This pattern suggests that larger audiovisual discrepancies and lower sensory uncertainty provide more diagnostic information for distinguishing between integration strategies. For the experimentally tested conflict range, where the maximum conflict was $0.25\,\mathrm{s}$, recovery remained more limited, especially for distinguishing forced fusion from causal inference. However, probabilistic cue switching remained comparatively identifiable in the empirical recovery analysis.
 
