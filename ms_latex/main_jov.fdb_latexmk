@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex main_jov"] 0 "main_jov.aux" "main_jov.bbl" "main_jov" 1781071899.24168 -1
+["bibtex main_jov"] 0 "main_jov.aux" "main_jov.bbl" "main_jov" 1781111812.81576 -1
   "./elife-sample.bib" 1780271638 20990 680107017aebbfddf1dd0ab122cab2dc ""
   "/usr/local/texlive/2025basic/texmf-dist/bibtex/bst/base/apalike.bst" 1292289607 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "main_jov.aux" 1781071899.08973 43317 cb5d9337b1ab90be51f49dfda3116b6b "pdflatex"
+  "main_jov.aux" 1781111812.71362 42797 e3310d0833a178b4aae127aff1c958d3 "pdflatex"
   (generated)
   "main_jov.bbl"
   "main_jov.blg"
   (rewritten before read)
-["pdflatex"] 1781071898.10279 "/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex" "main_jov.pdf" "main_jov" 1781071899.24186 2
-  "/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex" 1781071896.46259 131982 4e73c8117cdf9823c0429eff24fdc1c2 ""
+["pdflatex"] 1781111811.99044 "/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex" "main_jov.pdf" "main_jov" 1781111812.81592 2
+  "/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex" 1781111811.02961 130995 d2083f38c012a0b44a8f114768612ded ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/adobe/symbol/psyr.tfm" 1136768653 1408 5937f58aa508ea2cea4901c07d10f5fe ""
   "/usr/local/texlive/2025basic/texmf-dist/fonts/tfm/adobe/times/ptmb7t.tfm" 1136768653 2172 fd0c924230362ff848a33632ed45dc23 ""
@@ -143,12 +143,12 @@
   "assets/figures/empirical_confusion_3model.pdf" 0 -1 0 ""
   "assets/figures/emprical_parameter_recovery_nIter_50.pdf" 1780631177.09672 69924 22b3d93841d797511cd2a2544aa7ef8e ""
   "assets/figures/grid_three_model_confusion_matrices.pdf" 1780631177.09975 32273 c257fe7b676a2a507bd70e619f05c9f5 ""
-  "assets/figures/manuscript_posterior_mt_v2.pdf" 1780271638 146353 9b1a7a17bd1710547cdf694607bc0ad1 ""
+  "assets/figures/manuscript_posterior_p2_v3.pdf" 0 -1 0 ""
   "assets/figures/modelComparison_threeModels_heatmap.pdf" 1780628479.87617 27507 ffbac99eb05e66b4ca220a84574e403b ""
-  "assets/figures/optimal_integration_comparison.pdf" 1780629937.69089 26706 14a84456379e7c88ca19af8f5cb8e487 ""
+  "assets/figures/optimal_integration_comparison.pdf" 1781097924.99195 26684 1f67c3f459a1e713537d720d036ddd53 ""
   "assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf" 0 -1 0 ""
   "assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf" 0 -1 0 ""
-  "assets/figures/posterior_overlay_per_subject_v2.pdf" 1780271638 360146 316cad6a79a9f027ab3eb053534b2207 ""
+  "assets/figures/posterior_overlay_per_subject_v3.pdf" 0 -1 0 ""
   "assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf" 1780271638 62799 a9afee68c4523a87b8522f665c514730 ""
   "assets/figures/psychometric_curves_crossmodal.pdf" 1780271638 25215 2a21a96eb88f6cb93dc69d00252a1ed6 ""
   "assets/figures/psychometric_curves_publication.pdf" 1780271638 28279 f1ba63d4c1c1fb314c47eb0c2d011580 ""
@@ -156,10 +156,10 @@
   "assets/figures/switching_probability_by_noise.pdf" 1780630776.89198 24566 21acf015f5d9a67cfc00ae0be198f4bd ""
   "assets/figures/unimodal_tasks_timeline.pdf" 1780271638 507385 8b29397f0b48a9b111fbf5c51c7afd20 ""
   "jov.cls" 1780261324.34821 6944 b3226ef9fff22f355b0cc19d3c1f9d23 ""
-  "main_jov.aux" 1781071899.08973 43317 cb5d9337b1ab90be51f49dfda3116b6b "pdflatex"
+  "main_jov.aux" 1781111812.71362 42797 e3310d0833a178b4aae127aff1c958d3 "pdflatex"
   "main_jov.bbl" 1781064737.4128 0 d41d8cd98f00b204e9800998ecf8427e "bibtex main_jov"
-  "main_jov.out" 1781071899.09154 11218 5bce663f27427fc3551d00d959dc323a "pdflatex"
-  "main_jov.tex" 1781071896.46259 131982 4e73c8117cdf9823c0429eff24fdc1c2 ""
+  "main_jov.out" 1781111812.71534 11218 5bce663f27427fc3551d00d959dc323a "pdflatex"
+  "main_jov.tex" 1781111811.02961 130995 d2083f38c012a0b44a8f114768612ded ""
   (generated)
   "main_jov.aux"
   "main_jov.log"

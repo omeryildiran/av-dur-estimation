@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  10 JUN 2026 02:11
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  10 JUN 2026 13:16
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1022,12 +1022,66 @@ LaTeX Warning: Reference `fig:posterior_individual' on page 15 undefined on inpu
 
 
 [15 <./assets/figures/sumDeltaAIC_threeModels.pdf> <./assets/figures/switching_probability_by_noise.pdf>]
-<assets/figures/manuscript_posterior_mt_v2.pdf, id=491, 821.58647pt x 825.33246pt>
-File: assets/figures/manuscript_posterior_mt_v2.pdf Graphic file (type pdf)
-<use assets/figures/manuscript_posterior_mt_v2.pdf>
-Package pdftex.def Info: assets/figures/manuscript_posterior_mt_v2.pdf  used on input line 520.
-(pdftex.def)             Requested size: 208.27496pt x 209.21652pt.
 
+LaTeX Warning: File `assets/figures/manuscript_posterior_p2_v3.pdf' not found on input line 520.
+
+
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:520: Package pdftex.def Error: File `assets/figures/manuscript_posterior_p2_v3.pdf' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.520 ...s/figures/manuscript_posterior_p2_v3.pdf}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+Missing character: There is no a in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no g in font nullfont!
+Missing character: There is no u in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no m in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no n in font nullfont!
+Missing character: There is no u in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no c in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no 2 in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no v in font nullfont!
+Missing character: There is no 3 in font nullfont!
+Missing character: There is no . in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no d in font nullfont!
+Missing character: There is no f in font nullfont!
 
 Package natbib Warning: Citation `shams2005sound' on page 16 undefined on input line 528.
 
@@ -1047,7 +1101,7 @@ Package natbib Warning: Citation `hong2021causal' on page 16 undefined on input 
 
 
 
-[16 <./assets/figures/manuscript_posterior_mt_v2.pdf>]
+[16]
 
 LaTeX Warning: Reference `fig:switchingProb' on page 17 undefined on input line 544.
 
@@ -1059,7 +1113,6 @@ Package natbib Warning: Citation `ni2024computational' on page 17 undefined on i
 
 
 [17]
-
 
 Package natbib Warning: Citation `ernst2002humans' on page 18 undefined on input line 578.
 
@@ -1077,6 +1130,8 @@ Package natbib Warning: Citation `laquitaine2018switching' on page 18 undefined 
 
 
 Package natbib Warning: Citation `ni2024computational' on page 18 undefined on input line 578.
+
+
 
 
 
@@ -1100,16 +1155,17 @@ Overfull \hbox (20.72073pt too wide) detected at line 899
 
 
 
-
-[22]
 Overfull \hbox (81.8732pt too wide) detected at line 980
  []$[]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 2) = [] \OMS/cmsy/m/n/10 ^^B [] \OML/cmm/m/it/10 :$ []  
  []
 
 
 
+[22]
 
 LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 23 undefined on input line 1035.
+
+
 
 
 LaTeX Warning: File `assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf' not found on input line 1041.
@@ -1273,30 +1329,88 @@ LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 23 undefined on 
 
 [23]
 
-<assets/figures/posterior_overlay_per_subject_v2.pdf, id=679, 1705.35226pt x 2325.16727pt>
-File: assets/figures/posterior_overlay_per_subject_v2.pdf Graphic file (type pdf)
-<use assets/figures/posterior_overlay_per_subject_v2.pdf>
-Package pdftex.def Info: assets/figures/posterior_overlay_per_subject_v2.pdf  used on input line 1057.
-(pdftex.def)             Requested size: 221.2929pt x 301.71469pt.
+LaTeX Warning: File `assets/figures/posterior_overlay_per_subject_v3.pdf' not found on input line 1057.
+
+
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1057: Package pdftex.def Error: File `assets/figures/posterior_overlay_per_subject_v3.pdf' not found: using draft setting.
+
+See the pdftex.def package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1057 ...es/posterior_overlay_per_subject_v3.pdf}
+                                                  
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+Missing character: There is no a in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no f in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no g in font nullfont!
+Missing character: There is no u in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no / in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no i in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no v in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no l in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no y in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no r in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no s in font nullfont!
+Missing character: There is no u in font nullfont!
+Missing character: There is no b in font nullfont!
+Missing character: There is no j in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no c in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no v in font nullfont!
+Missing character: There is no 3 in font nullfont!
+Missing character: There is no . in font nullfont!
+Missing character: There is no p in font nullfont!
+Missing character: There is no d in font nullfont!
+Missing character: There is no f in font nullfont!
+
+
+
+LaTeX Warning: Reference `fig:posterior_individual' on page 24 undefined on input line 1065.
+
 
 
 [24]
 
-LaTeX Warning: Reference `fig:posterior_individual' on page 25 undefined on input line 1065.
-
-
-
-
 LaTeX Warning: Reference `fig:optimalIntegrationComp' on page 25 undefined on input line 1070.
 
-<assets/figures/optimal_integration_comparison.pdf, id=686, 739.74966pt x 380.01952pt>
+<assets/figures/optimal_integration_comparison.pdf, id=616, 711.47649pt x 369.781pt>
 File: assets/figures/optimal_integration_comparison.pdf Graphic file (type pdf)
 <use assets/figures/optimal_integration_comparison.pdf>
 Package pdftex.def Info: assets/figures/optimal_integration_comparison.pdf  used on input line 1085.
-(pdftex.def)             Requested size: 260.34271pt x 133.74524pt.
+(pdftex.def)             Requested size: 260.34271pt x 135.3103pt.
 
-
-[25 <./assets/figures/posterior_overlay_per_subject_v2.pdf>]
 
 
 LaTeX Warning: File `assets/figures/empirical_confusion_3model.pdf' not found on input line 1108.
@@ -1359,35 +1473,35 @@ Missing character: There is no p in font nullfont!
 Missing character: There is no d in font nullfont!
 Missing character: There is no f in font nullfont!
 
-LaTeX Warning: Reference `fig:modelRecoveryResults' on page 26 undefined on input line 1118.
 
-<assets/figures/emprical_parameter_recovery_nIter_50.pdf, id=770, 1738.72083pt x 830.58353pt>
+[25 <./assets/figures/optimal_integration_comparison.pdf>]
+
+
+LaTeX Warning: Reference `fig:modelRecoveryResults' on page 26 undefined on input line 1119.
+
+<assets/figures/emprical_parameter_recovery_nIter_50.pdf, id=688, 1738.72083pt x 830.58353pt>
 File: assets/figures/emprical_parameter_recovery_nIter_50.pdf Graphic file (type pdf)
 <use assets/figures/emprical_parameter_recovery_nIter_50.pdf>
 Package pdftex.def Info: assets/figures/emprical_parameter_recovery_nIter_50.pdf  used on input line 1130.
 (pdftex.def)             Requested size: 260.34584pt x 124.3667pt.
 
-
-[26 <./assets/figures/optimal_integration_comparison.pdf>]
-
-
-LaTeX Warning: Reference `fig:parameterRecovery' on page 27 undefined on input line 1137.
+LaTeX Warning: Reference `fig:parameterRecovery' on page 26 undefined on input line 1137.
 
 
-LaTeX Warning: Reference `fig:parameterRecovery' on page 27 undefined on input line 1137.
+LaTeX Warning: Reference `fig:parameterRecovery' on page 26 undefined on input line 1137.
 
 
 
-[27 <./assets/figures/emprical_parameter_recovery_nIter_50.pdf>]
+[26 <./assets/figures/emprical_parameter_recovery_nIter_50.pdf>]
 
-<assets/figures/grid_three_model_confusion_matrices.pdf, id=918, 896.72057pt x 470.26024pt>
+<assets/figures/grid_three_model_confusion_matrices.pdf, id=769, 896.72057pt x 470.26024pt>
 File: assets/figures/grid_three_model_confusion_matrices.pdf Graphic file (type pdf)
 <use assets/figures/grid_three_model_confusion_matrices.pdf>
-Package pdftex.def Info: assets/figures/grid_three_model_confusion_matrices.pdf  used on input line 1163.
+Package pdftex.def Info: assets/figures/grid_three_model_confusion_matrices.pdf  used on input line 1162.
 (pdftex.def)             Requested size: 260.34332pt x 136.52983pt.
 
 
-[28]
+[27]
 
 (./main_jov.bbl)
 
@@ -1395,7 +1509,7 @@ Package natbib Warning: There were undefined citations.
 
 
 
-[29 <./assets/figures/grid_three_model_confusion_matrices.pdf>] (./main_jov.aux)
+[28 <./assets/figures/grid_three_model_confusion_matrices.pdf>] (./main_jov.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -1417,18 +1531,18 @@ Package rerunfilecheck Info: Checksums for `main_jov.out':
 (rerunfilecheck)             After:  5BCE663F27427FC3551D00D959DC323A;11218.
  ) 
 Here is how much of TeX's memory you used:
- 11497 strings out of 474662
- 190048 string characters out of 5751110
- 583470 words of memory out of 5000000
- 34184 multiletter control sequences out of 15000+600000
+ 11542 strings out of 474662
+ 192713 string characters out of 5751110
+ 584470 words of memory out of 5000000
+ 34230 multiletter control sequences out of 15000+600000
  584814 words of font info for 91 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 90i,22n,93p,2263b,521s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,22n,93p,2263b,525s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmri8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on main_jov.pdf (29 pages, 1591498 bytes).
+Output written on main_jov.pdf (28 pages, 1140744 bytes).
 PDF statistics:
- 1150 PDF objects out of 1200 (max. 8388607)
- 510 compressed objects within 6 object streams
- 175 named destinations out of 1000 (max. 500000)
- 66 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 999 PDF objects out of 1000 (max. 8388607)
+ 454 compressed objects within 5 object streams
+ 174 named destinations out of 1000 (max. 500000)
+ 56 words of extra memory for PDF output out of 10000 (max. 10000000)
 
