@@ -302,7 +302,7 @@ To quantify the results, we extracted the PSE from each psychometric curve and p
 
 \begin{figure}
     \centering
-    \includegraphics[width=1\linewidth]{assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf}
+    \includegraphics[width=1\linewidth]{assets/figures/aggregated_data_only_freeMuSigmaLambda_sem_clean.pdf}
 \caption{\textbf{Effect of audiovisual conflict on perceived auditory duration.} Group-averaged point of subjective equality (PSE) estimates as a function of audiovisual duration conflict, shown separately for the low-noise auditory condition (\textbf{A}) and high-noise auditory condition (\textbf{B}). Each data point reflects the mean PSE of pooled data over 11 participants; error bars show SEM across participants. Under low noise, PSEs are more stable across conflict levels, suggesting auditory dominance.Under high noise, auditory duration judgments are pulled toward the visual duration.}
     \label{fig:conflict_pse}
 \end{figure}
@@ -373,8 +373,8 @@ We modeled the prior distribution of durations as a truncated uniform distributi
 Here the model assumed that participants inferred the stimulus duration based on the inferred causal relationship between the cues presented in the trial. It assumed that the observer started by inferring the posterior probability of both cues originating from a common cause by computing $p(C = 1 \mid m_a, m_v)$. Under this model, observers computed two estimates of the auditory stimulus duration, one based on both auditory and visual measurements, and another based on the auditory measurement alone. The final auditory duration estimate was a weighted average of these two separate estimates, given by:
 \begin{align}
 \hat S_{a}
-= {}& p(C=1 \mid m_a,m_v)\,\hat S_{a,C=1} \notag\\
-&+ \bigl(1 - p(C=1 \mid m_a,m_v)\bigr)\,
+= {}& p(C=1 \mid m_a,m_v)\,\hat S_{a,C=1}
++ \bigl(1 - p(C=1 \mid m_a,m_v)\bigr)\,
    \hat S_{a,C=2},
 \label{eq:estimate_model_avg}
 \end{align}
@@ -427,6 +427,18 @@ Causal-inference model typically predicts a non-linear breakdown of integration 
 Conflict-dependent biases in auditory duration perception. Point of subjective equality (PSE) shifts as a function of audiovisual conflict for the low auditory-noise condition (\textbf{A}) and high auditory-noise condition (\textbf{B}), averaged over 11 participants. Positive values indicate biases toward longer perceived auditory duration. Red and blue show empirical data (group mean $\pm$~SEM across 11 participants). Other lines indicate model predictions for forced fusion, causal inference, and probabilistic cue switching. The model predictions are jittered horizontally for readability. All model predictions were generated using sensory-noise parameters fitted using the bimodal data. For models, error bars reflect $\pm$~SEM across participant fits.}
 \label{fig:pseConflictModel}
 \end{figure}
+
+We also examined whether the models captured the width of the fitted psychometric functions. The psychometric funtions sigma parameter indexes sensory uncertainty in log-duration units, with larger values corresponding to shallower psychometric functions and lower precision (Figure~\ref{fig:sigmaConflictModel}). Descriptively, the probabilistic cue-switching model tracked conflict-dependent changes in psychometric-function width more closely than the forced-fusion and causal-inference models. Across the 14 group-averaged noise-by-conflict conditions, the model-data RMSE for psychometric-function width was lower for cue switching (0.048 log units) than for causal inference (0.066) or forced fusion (0.072). Because larger width values correspond to shallower psychometric-function slopes, this suggests that the switching model better captured changes in discrimination precision across conflict conditions.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf}
+\caption{
+Conflict-dependent changes in psychometric-function width. Sigma estimates are shown in log-duration units as a function of audiovisual conflict for the low auditory-noise condition (\textbf{A}) and high auditory-noise condition (\textbf{B}), averaged over 11 participants. Red and blue points show empirical data (group mean $\pm$~SEM across participants). Other lines indicate model predictions for forced fusion, causal inference, and probabilistic cue switching, with model error bars showing $\pm$~SEM across participant fits. Larger sigma values indicate lower duration-discrimination precision.}
+\label{fig:sigmaConflictModel}
+\end{figure}
+
 \subsection{Model fitting and model comparison}
 All models have a lapse-rate ($\lambda$) parameter, two auditory duration-noise parameters (one for each auditory-noise condition: $\sigma_{a,l}$ and $\sigma_{a,h}$), and one visual duration-noise parameter ($\sigma_{v}$). For models that incorporate causal inference, there is an additional parameter ($p_c$), which captures the prior probability of a common source. For the probabilistic cue-switching model, there are two additional parameters ($p_{v,l}$ and $p_{v,h}$) that specify the probability of switching (i.e., relying on vision rather than audition) in each of the two auditory-noise conditions.
 
@@ -436,7 +448,7 @@ Sensory-noise parameters were fitted using the data from the bimodal task, becau
 
 
 %%% Changed this paragraph
-We evaluated model performance using the Akaike Information Criterion (AIC) at the individual participant level. Model comparison was performed under two assumptions about sensory noise: (a)~sensory noise fixed to values estimated from unimodal task data and (b)~sensory noise fitted directly using the bimodal data (Figure~\ref{fig:modelComparison}). To summarize model preference at the group level, we simply added up each participant's $\Delta$AIC relative to the forced-fusion model across the 11 participants; a negative total means a model had a lower overall AIC than forced fusion (Figure~\ref{fig:sumDeltaAIC}). We attached 95\% confidence intervals to these totals by resampling participants with $10{,}000$ bootstrap resamples. To confirm that Monte-Carlo evaluation noise in the simulated likelihood did not drive the comparison, we additionally re-evaluated each fitted model's log-likelihood at its maximum-likelihood parameters under 20 independent random seeds (using the same 2000 Monte-Carlo trials per condition) and took the standard deviation of the resulting per-participant AIC as a Monte-Carlo noise floor. This noise floor was small (median $1.6$ and $1.9$ AIC points for the fixed- and free-noise analyses, respectively), and all fits reproduced their stored log-likelihoods within it.
+We evaluated model performance using the Akaike Information Criterion (AIC) at the individual participant level. Model comparison was performed under two assumptions about sensory noise: (a)~sensory noise fixed to values estimated from unimodal task data and (b)~sensory noise fitted directly using the bimodal data (Figure~\ref{fig:modelComparison}). To summarize model preference at the group level, we simply added up each participant's $\Delta$AIC relative to the forced-fusion model across the 11 participants; a negative total means a model had a lower overall AIC than forced fusion (Figure~\ref{fig:sumDeltaAIC}). We included 95\% confidence intervals to these totals by resampling participants with $10{,}000$ bootstrap resamples. To confirm that Monte-Carlo evaluation noise in the simulated likelihood did not drive the comparison, we additionally re-evaluated each fitted model's log-likelihood at its maximum-likelihood parameters under 20 independent random seeds (using the same 2000 Monte-Carlo trials per condition) and took the standard deviation of the resulting per-participant AIC as a Monte-Carlo noise floor. This noise floor was small (median $1.6$ and $1.9$ AIC points for the fixed- and free-noise analyses, respectively), and all fits reproduced their stored log-likelihoods within it.
 
 % Reproducibility: bootstrap = modelComparisonTable_threeModels.ipynb, section 4 (bootstrap_aic, plot_mean_delta_aic) -> meanDeltaAIC_threeModels.pdf; Monte-Carlo noise floor = co           +mpute_aic_noise_floor.py (cache aic_noise_floor_seeds.json), notebook section 4b.
 
@@ -455,7 +467,7 @@ At the group level, the summed $\Delta$AIC values across participants yielded th
     \centering
     \includegraphics[width=1\linewidth]{assets/figures/modelComparison_threeModels_heatmap.pdf}
  \caption{
-    \textbf{A} Model comparison assuming sensory-noise parameters fixed to values estimated from the unimodal tasks. \textbf{B} Model comparison when sensory-noise parameters were additionally fit to the bimodal data. Left panels show participant-level $\Delta$AIC values for each model, computed relative to the forced-fusion model (the baseline column, which is therefore identically zero); negative values (blue) indicate a better fit than forced fusion. Rows correspond to participants and columns correspond to models, and the best-fitting model (lowest AIC) for each participant is outlined. Right panels show the sum of these $\Delta$AIC values across participants for each model, providing a group-level comparison. When sensory-noise parameters were fixed (A), the probabilistic cue-switching model provided the best fit for 8 of 11 participants. When the sensory-noise parameters were fit directly to the bimodal data (B), the cue-switching model provided the best fit for 6 of 11 participants.
+    \textbf{A} Model comparison assuming sensory-noise parameters fixed to values estimated from the unimodal tasks. \textbf{B} Model comparison when sensory-noise parameters were fit to the bimodal data. Left panels show participant-level $\Delta$AIC values for each model, computed relative to the forced-fusion model (the baseline column, which is therefore identically zero); negative values (blue) indicate a better fit than forced fusion. Rows correspond to participants and columns correspond to models, and the best-fitting model (lowest AIC) for each participant is outlined. Right panels show the sum of these $\Delta$AIC values across participants for each model, providing a group-level comparison. When sensory-noise parameters were fixed (A), the probabilistic cue-switching model provided the best fit for 8 of 11 participants. When the sensory-noise parameters were fit directly to the bimodal data (B), the cue-switching model provided the best fit for 6 of 11 participants.
     }
     \label{fig:modelComparison}
 \end{figure}
@@ -511,7 +523,7 @@ Beyond model comparison, the parameters of the favoured model were themselves co
 \subsubsection{High sensory-encoding noise limits model discriminability}
 To explain the lack of evidence for causal inference even at large audiovisual cue conflicts, we recovered the posterior probability of common cause $P(C=1 \mid m_a, m_v)$ across conflict levels using each participant's fit parameters.
 
-Figure~\ref{fig:posterior_conflict} shows $P(C=1 \mid m_a, m_v)$ for an example participant. Across all conflict levels and auditory-noise conditions, the posterior probability of common cause remained relatively high (i.e., above 0.5), a pattern that was maintained for all participants (Figure~\ref{fig:posterior_individual}). This is due to the large sensory encoding noises estimated from the data. Specifically, when sensory encoding noise is high, even substantial physical conflicts produce overlapping measurement distributions, yielding consistently high posterior probability of common cause. This indicates that, the observer's fitted parameters are consistent with treating the auditory and visual signals as originating from a common source regardless of the imposed conflict.
+Figure~\ref{fig:posterior_conflict} shows $P(C=1 \mid m_a, m_v)$ for an example participant. Across all conflict levels and auditory-noise conditions, the posterior probability of common cause remained relatively high (i.e., above 0.5), a pattern that was maintained for all participants (Figure~\ref{fig:posterior_individual}). This is due to the large sensory encoding noises estimated from the data. Specifically, when sensory encoding noise is high, even substantial physical conflicts produce overlapping measurement distributions, yielding consistently high posterior of common cause. This indicates that, the observer's fitted parameters are consistent with treating the auditory and visual signals as originating from a common source regardless of the imposed conflict.
 
 This analysis reveals why causal-inference model and forced-fusion models produced similar predictions in our experiment. Given the estimated sensory-noise parameters, the posterior probability of common cause never dropped low enough to produce substantial segregation of cues. The observer's inference remained dominated by the common-cause hypothesis across the entire conflict range, resulting in near-linear, fusion-like behavior. Within the conflict range examined here, competing models predict largely overlapping, noisy psychometric patterns, imposing a fundamental limit on model identifiability rather than reflecting insufficient data or model distinguishability.
 
@@ -891,12 +903,11 @@ p(m_a, m_v | C=1)
 = \frac{1}{\Delta_t} \int_{t_{\min}}^{t_{\max}} p(m_a | y) p(m_v | y) \, dy.
 \end{equation}
 
+
 Writing the likelihoods as Gaussians:
-\begin{multline}
-p(m_a, m_v | C=1)=\frac{1}{\Delta_t}
-\int_{t_{\min}}^{t_{\max}}
-\mathcal{N}(m_a; y, \sigma_a^2 \times \mathcal{N}(m_v; y, \sigma_v^2) \, dy.
-\end{multline}
+\begin{equation}
+p(m_a, m_v | C=1) = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(m_a; y, \sigma_a^2) \mathcal{N}(m_v; y, \sigma_v^2) \, dy.
+\end{equation}
 
 Because a Gaussian is symmetric in its arguments (mathematically):
 \begin{equation}
@@ -904,23 +915,19 @@ Because a Gaussian is symmetric in its arguments (mathematically):
 \end{equation}
 
 It is identical to write the likelihood as:
-\begin{multline}
-p(m_a, m_v | C=1)
-= \frac{1}{\Delta_t}
-\int_{t_{\min}}^{t_{\max}}
-\mathcal{N}(y; m_a, \sigma_a^2)\\
-\times \mathcal{N}(y; m_v, \sigma_v^2) \, dy.
-\end{multline}
+\begin{equation}
+p(m_a, m_v | C=1) = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y; m_a, \sigma_a^2) \mathcal{N}(y; m_v, \sigma_v^2) \, dy.
+\end{equation}
+
 
 \subsubsection{Product of two Gaussians and final likelihood}
 
 The integrand is the product of two Gaussians in the same variable $y$.  By completing the square in $y$ (using precisions $J_a$ and $J_v$ defined earlier), this product factors into a Gaussian in $y$ times a term that is constant with respect to $y$:
-\begin{multline}
+\begin{equation}
 \label{eq:product_gaussians_factorization}
 \mathcal{N}(y; m_a, \sigma_a^2)\, \mathcal{N}(y; m_v, \sigma_v^2) 
-= \mathcal{N}(m_a - m_v;\, 0,\, \sigma_a^2 + \sigma_v^2)\\
-\times \mathcal{N}(y;\, \mu_c,\, \sigma_c^2),
-\end{multline}
+= \mathcal{N}(m_a - m_v;\, 0,\, \sigma_a^2 + \sigma_v^2)\;\mathcal{N}(y;\, \mu_c,\, \sigma_c^2),
+\end{equation}
 where the precision-weighted mean and variance of the fused posterior are
 \begin{equation}
 \mu_c = \frac{J_a\, m_a + J_v\, m_v}{J_a + J_v}, 
@@ -928,17 +935,13 @@ where the precision-weighted mean and variance of the fused posterior are
 \sigma_c^2 = \frac{1}{J_a + J_v}.
 \end{equation}
 The first factor, $\mathcal{N}(m_a - m_v; 0, \sigma_a^2 + \sigma_v^2)$, is a constant with respect to $y$ that quantifies the compatibility of the two measurements.  Substituting this factorization into the integral and evaluating the Gaussian over the finite prior support gives:
-\begin{multline}
+\begin{equation}
 \label{eq:likelihood_c1_final}
-p(m_a, m_v \mid C\!=\!1)
-= \frac{1}{\Delta_t}\,
-\mathcal{N}(m_a - m_v;\, 0,\, \sigma_a^2 + \sigma_v^2)\\
-\times \left[
-\Phi\!\left(\frac{t_{\max} - \mu_c}{\sigma_c}\right)
-- \Phi\!\left(\frac{t_{\min} - \mu_c}{\sigma_c}\right)
-\right],
-\end{multline}
+p(m_a, m_v \mid C\!=\!1) = \frac{1}{t_{\max} - t_{\min}}\, \mathcal{N}(m_a - m_v;\, 0,\, \sigma_a^2 + \sigma_v^2) 
+\times \left[\Phi\!\left(\frac{t_{\max} - \mu_c}{\sigma_c}\right) - \Phi\!\left(\frac{t_{\min} - \mu_c}{\sigma_c}\right)\right],
+\end{equation}
 where $\Phi$ is the standard normal cumulative distribution function.
+
 
 \subsubsection{Separate causes}
 
@@ -958,73 +961,53 @@ p(m_v | y_v) \sim \mathcal{N}(y_v, \sigma_v^2).
 
 Since they are bounded by the same max/min durations, the uniform prior densities are:
 \begin{equation}
-p(y_a) = p(y_v) = \frac{1}{\Delta_t}
+p(y_a) = p(y_v) = \frac{1}{t_{\max} - t_{\min}}
 \end{equation}
 over the range $[t_{\min}, t_{\max}]$.
 
 The likelihood of the two measurements under $C=2$ is:
-\begin{multline}
-p(m_a, m_v | C=2)
-= \int \int p(m_a | y_a) p(m_v | y_v)\\
-\times p(y_a) p(y_v) \, dy_a \, dy_v.
-\end{multline}
+\begin{equation}
+p(m_a, m_v | C=2) = \int \int p(m_a | y_a) p(m_v | y_v) p(y_a) p(y_v) \, dy_a \, dy_v.
+\end{equation}
+
 
 \paragraph{Factor the double integral}
 
 Because the integrand separates into a function of $y_a$ times a function of $y_v$ and the domains (boundaries) are independent:
-\begin{multline}
-\\p(m_a, m_v | C=2)
-=\left[\int_{t_{\min}}^{t_{\max}}
-p(m_a | y_a) p(y_a) \, dy_a\right]\times \left[\int_{t_{\min}}^{t_{\max}}
-p(m_v | y_v) p(y_v) \, dy_v\right].
-\end{multline}
-
-Because the integrands are Gaussians in the latent variables, each integral evaluates to a $\Phi$-difference as in the common-cause case. For compactness, define
 \begin{equation}
-\Delta\Phi_x =
-\Phi\!\left(\frac{t_{\max} - m_x}{\sigma_x}\right)
-- \Phi\!\left(\frac{t_{\min} - m_x}{\sigma_x}\right),
-\quad x \in \{a,v\}.
+p(m_a, m_v | C=2) = \left[\int_{t_{\min}}^{t_{\max}} p(m_a | y_a) p(y_a) \, dy_a\right] 
+\times \left[\int_{t_{\min}}^{t_{\max}} p(m_v | y_v) p(y_v) \, dy_v\right].
 \end{equation}
-The separate-causes likelihood is therefore
-\begin{equation}
+
+Because the integrands are Gaussians in the latent variables, each integral evaluates to a $\Phi$-difference as in the common-cause case:
+\begin{align}
 \label{eq:likelihood_c2_final}
 p(m_a, m_v \mid C\!=\!2)
-= \frac{\Delta\Phi_a\,\Delta\Phi_v}{\Delta_t^2}.
-\end{equation}
+= &\left(\frac{1}{t_{\max} - t_{\min}} \left[\Phi\!\left(\frac{t_{\max} - m_a}{\sigma_a}\right) - \Phi\!\left(\frac{t_{\min} - m_a}{\sigma_a}\right)\right]\right) \\
+ &\times \left(\frac{1}{t_{\max} - t_{\min}} \left[\Phi\!\left(\frac{t_{\max} - m_v}{\sigma_v}\right) - \Phi\!\left(\frac{t_{\min} - m_v}{\sigma_v}\right)\right]\right).
+\end{align}
+
 
 
 
 \subsubsection{Posterior probability of common cause}
 
 \begin{equation}
-\begin{split}
-p(C=1 | m_a, m_v)
-= \frac{p(m_a, m_v | C=1) p_c}
-{\begin{aligned}
-&p(m_a, m_v | C=1) p_c\\
-&\quad + (1 - p_c) p(m_a, m_v | C=2)
-\end{aligned}},
-\end{split}
+p(C=1 | m_a, m_v) = \frac{p(m_a, m_v | C=1) p(C=1)}{p(m_a, m_v | C=1) p(C=1) + (1 - p(C=1)) p(m_a, m_v | C=2)},
 \end{equation}
 
 where $p_c$ is the prior probability of common cause.
 
 \subsubsection{Estimate with causal inference}
 
-\begin{align}
-\hat{s}
-= {}& p(C=1 | m_a, m_v) \cdot \hat{s}_{C=1} \notag\\
-&+ (1 - p(C=1 | m_a, m_v)) \cdot m_a,
-\end{align}
+\begin{equation}
+\hat{s} = p(C=1 | m_a, m_v) \cdot \hat{s}_{C=1} + (1 - p(C=1 | m_a, m_v)) \cdot m_a,
+\end{equation}
 where $\hat{s}_{C=1}$ is the reliability-weighted fused estimate (in log-duration space):
-\begin{align}
-\hat{s}_{C=1}
-= {}& \frac{\sigma_v^2}{\sigma_a^2 + \sigma_v^2} m_a
-+ \frac{\sigma_a^2}{\sigma_a^2 + \sigma_v^2} m_v \notag\\
-= {}& \frac{J_a}{J_a + J_v} m_a
-+ \frac{J_v}{J_a + J_v} m_v,
-\end{align}
+\begin{equation}
+\hat{s}_{C=1} = \frac{\sigma_v^2}{\sigma_a^2 + \sigma_v^2} m_a + \frac{\sigma_a^2}{\sigma_a^2 + \sigma_v^2} m_v 
+= \frac{J_a}{J_a + J_v} m_a + \frac{J_v}{J_a + J_v} m_v,
+\end{equation}
 where $J_a = 1/\sigma_a^2$ and $J_v = 1/\sigma_v^2$ denote sensory precisions (with $\sigma_a \in \{\sigma_{a,l}, \sigma_{a,h}\}$ depending on condition). In the segregated case ($C=2$), the observer reports the auditory estimate $m_a$, consistent with the task instruction to judge auditory duration.
 
 
@@ -1032,14 +1015,14 @@ where $J_a = 1/\sigma_a^2$ and $J_v = 1/\sigma_v^2$ denote sensory precisions (w
 
 \subsection{Model fits to individual subjects' data}
 
-Figure~\ref{fig:AppendixConflictPSE_free} shows point of subjective equality (PSE) shifts as a function of audiovisual duration conflict for individual participants, plotted separately for the low and high auditory-noise conditions. Black points with error bars denote empirical PSE estimates derived from psychometric fits. Colored lines indicate model predictions from probabilistic cue-switching, causal inference and forced fusion, using parameters fitted to each participant's bimodal data. This figure illustrates individual differences in bias magnitude and noise dependence, as well as the substantial overlap in predicted PSE--conflict functions across models within the tested conflict range.
+Figure~\ref{fig:AppendixConflictPSE_free} shows point of subjective equality (PSE) shifts as a function of audiovisual duration conflict for individual participants, plotted separately for the low and high auditory-noise conditions. This figure illustrates individual differences in bias magnitude and noise dependence, as well as the substantial overlap in predicted PSE--conflict functions across models within the tested conflict range.
 
 
 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth,height=1\textheight,keepaspectratio]{assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf}
-    \caption{This figure illustrates the relationship between conflict levels and PSE shifts across different auditory-noise conditions for each participant. Here, the $\sigma$ values were estimated using the bimodal data. Error bars represent the mean  95\% confidence interval from bootstrapped data.}  
+    \caption{This figure illustrates the relationship between conflict levels and PSE shifts across different auditory-noise conditions for each participant. Here, the $\sigma$ values were estimated using the bimodal data.}  
     \label{fig:AppendixConflictPSE_free}
 \end{figure}
 

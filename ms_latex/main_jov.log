@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  10 JUN 2026 13:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  10 JUN 2026 23:58
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -337,8 +337,7 @@ File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
 File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count311
 \l__pdf_internal_box=\box60
-)
-No file main_jov.aux.
+) (./main_jov.aux)
 \openout1 = `main_jov.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 37.
@@ -359,7 +358,7 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 37.
 LaTeX Font Info:    ... okay on input line 37.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 37.
 LaTeX Font Info:    ... okay on input line 37.
-(/usr/local/texlive/2025basic/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+ (/usr/local/texlive/2025basic/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count312
 \scratchdimen=\dimen182
@@ -379,6 +378,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
 Package hyperref Info: Link coloring ON on input line 37.
+ (./main_jov.out) (./main_jov.out)
 \@outlinefile=\write3
 \openout3 = `main_jov.out'.
 
@@ -525,7 +525,7 @@ Package natbib Warning: Citation `hartcher2014duration' on page 2 undefined on i
 
 
 [2]
-<assets/figures/unimodal_tasks_timeline.pdf, id=25, 933.4875pt x 483.8075pt>
+<assets/figures/unimodal_tasks_timeline.pdf, id=249, 933.4875pt x 483.8075pt>
 File: assets/figures/unimodal_tasks_timeline.pdf Graphic file (type pdf)
 <use assets/figures/unimodal_tasks_timeline.pdf>
 Package pdftex.def Info: assets/figures/unimodal_tasks_timeline.pdf  used on input line 81.
@@ -545,48 +545,30 @@ Package natbib Warning: Citation `hartcher2014duration' on page 4 undefined on i
 Package natbib Warning: Citation `shi2013reducing' on page 4 undefined on input line 119.
 
 
-LaTeX Warning: Reference `fig:unimodal_Timelines' on page 4 undefined on input line 119.
-
-
 
 
 
 [4]
 
 
-LaTeX Warning: Reference `fig:unimodal_Timelines' on page 5 undefined on input line 165.
-
-
 Package natbib Warning: Citation `prins2012psychometric' on page 5 undefined on input line 167.
-
-
-LaTeX Warning: Reference `fig:bimodalExpScheme' on page 5 undefined on input line 179.
 
 
 
 [5]
 
 
-LaTeX Warning: Reference `fig:unimodal_Timelines' on page 6 undefined on input line 208.
-
-
 Package natbib Warning: Citation `haigh2021role' on page 6 undefined on input line 210.
-
-
-LaTeX Warning: Reference `fig:unimodal_data_fits' on page 6 undefined on input line 219.
 
 
 
 [6]
-<assets/figures/psychometric_curves_publication.pdf, id=81, 862.3053pt x 427.66254pt>
+<assets/figures/psychometric_curves_publication.pdf, id=298, 862.3053pt x 427.66254pt>
 File: assets/figures/psychometric_curves_publication.pdf Graphic file (type pdf)
 <use assets/figures/psychometric_curves_publication.pdf>
 Package pdftex.def Info: assets/figures/psychometric_curves_publication.pdf  used on input line 225.
 (pdftex.def)             Requested size: 260.34271pt x 129.11545pt.
 
-
-
-LaTeX Warning: Reference `fig:unimodal_data_fits' on page 7 undefined on input line 246.
 
 
 LaTeX Warning: File `assets/figures/cross_modal_timeline.pdf' not found on input line 255.
@@ -661,19 +643,12 @@ Missing character: There is no f in font nullfont!
 
 [7 <./assets/figures/psychometric_curves_publication.pdf>]
 
-LaTeX Warning: Reference `fig:crossmodalDiag' on page 8 undefined on input line 262.
-
-
-LaTeX Warning: Reference `fig:crossModalData' on page 8 undefined on input line 264.
-
-
-
-<assets/figures/psychometric_curves_crossmodal.pdf, id=162, 860.4076pt x 427.66254pt>
+<assets/figures/psychometric_curves_crossmodal.pdf, id=382, 860.4076pt x 427.66254pt>
 File: assets/figures/psychometric_curves_crossmodal.pdf Graphic file (type pdf)
 <use assets/figures/psychometric_curves_crossmodal.pdf>
 Package pdftex.def Info: assets/figures/psychometric_curves_crossmodal.pdf  used on input line 272.
 (pdftex.def)             Requested size: 260.34271pt x 129.40257pt.
-<assets/figures/bimodal_exp_scheme_1.pdf, id=163, 639.38875pt x 380.42125pt>
+<assets/figures/bimodal_exp_scheme_1.pdf, id=383, 639.38875pt x 380.42125pt>
 File: assets/figures/bimodal_exp_scheme_1.pdf Graphic file (type pdf)
 <use assets/figures/bimodal_exp_scheme_1.pdf>
 Package pdftex.def Info: assets/figures/bimodal_exp_scheme_1.pdf  used on input line 282.
@@ -683,12 +658,6 @@ LaTeX Font Info:    Font shape `OT1/cmss/m/it' in size <8> not available
 
 
 [8 <./assets/figures/psychometric_curves_crossmodal.pdf>]
-
-LaTeX Warning: Reference `fig:bimodalExpScheme' on page 9 undefined on input line 290.
-
-
-LaTeX Warning: Reference `fig:psychometric_conflict_fits' on page 9 undefined on input line 292.
-
 
 LaTeX Warning: File `assets/figures/data_psychometric_functions_freeMuSigmaLambda_lognorm_clean.pdf' not found on input line 296.
 
@@ -783,67 +752,21 @@ Missing character: There is no p in font nullfont!
 Missing character: There is no d in font nullfont!
 Missing character: There is no f in font nullfont!
 
-LaTeX Warning: Reference `fig:conflict_pse' on page 9 undefined on input line 301.
-
-
 
 
 
 [9 <./assets/figures/bimodal_exp_scheme_1.pdf>]
-<assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf, id=259, 843.0627pt x 437.11806pt>
-File: assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf Graphic file (type pdf)
-<use assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf>
-Package pdftex.def Info: assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf  used on input line 305.
-(pdftex.def)             Requested size: 260.34271pt x 134.98494pt.
+
+LaTeX Warning: File `assets/figures/aggregated_data_only_freeMuSigmaLambda_sem_clean.pdf' not found on input line 305.
 
 
-
-Package natbib Warning: Citation `killeen1987optimal' on page 10 undefined on input line 322.
-
-
-Package natbib Warning: Citation `wittmann2009inner' on page 10 undefined on input line 322.
-
-
-Package natbib Warning: Citation `ren2020ensemble' on page 10 undefined on input line 322.
-
-
-LaTeX Warning: Reference `eq:forced_fusion' on page 10 undefined on input line 332.
-
-
-
-[10 <./assets/figures/pse_vs_conflict_all_1000_bootstrapped_ai.pdf>]
-Overfull \hbox (63.72813pt too wide) detected at line 367
-[]
- []
-
-
-Package natbib Warning: Citation `kording2007causal' on page 11 undefined on input line 369.
-
-
-LaTeX Warning: Hyper reference `app:appendix' on page 11 undefined on input line 369.
-
-
-LaTeX Warning: Hyper reference `causal_inf_equations' on page 11 undefined on input line 369.
-
-
-
-
-
-[11]
-
-LaTeX Warning: Reference `fig:pseConflictModel' on page 12 undefined on input line 417.
-
-
-LaTeX Warning: File `assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf' not found on input line 425.
-
-
-/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:425: Package pdftex.def Error: File `assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf' not found: using draft setting.
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:305: Package pdftex.def Error: File `assets/figures/aggregated_data_only_freeMuSigmaLambda_sem_clean.pdf' not found: using draft setting.
 
 See the pdftex.def package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.425 ...igmaLambda_sem_better_freeSigmaModel.pdf}
+l.305 ...ata_only_freeMuSigmaLambda_sem_clean.pdf}
                                                   
 Try typing  <return>  to proceed.
 If that doesn't work, type  X <return>  to quit.
@@ -874,18 +797,15 @@ Missing character: There is no t in font nullfont!
 Missing character: There is no e in font nullfont!
 Missing character: There is no d in font nullfont!
 Missing character: There is no _ in font nullfont!
-Missing character: There is no m in font nullfont!
-Missing character: There is no u in font nullfont!
-Missing character: There is no _ in font nullfont!
-Missing character: There is no v in font nullfont!
-Missing character: There is no s in font nullfont!
-Missing character: There is no _ in font nullfont!
-Missing character: There is no m in font nullfont!
-Missing character: There is no o in font nullfont!
 Missing character: There is no d in font nullfont!
-Missing character: There is no e in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no t in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no _ in font nullfont!
+Missing character: There is no o in font nullfont!
+Missing character: There is no n in font nullfont!
 Missing character: There is no l in font nullfont!
-Missing character: There is no s in font nullfont!
+Missing character: There is no y in font nullfont!
 Missing character: There is no _ in font nullfont!
 Missing character: There is no f in font nullfont!
 Missing character: There is no r in font nullfont!
@@ -909,130 +829,122 @@ Missing character: There is no s in font nullfont!
 Missing character: There is no e in font nullfont!
 Missing character: There is no m in font nullfont!
 Missing character: There is no _ in font nullfont!
-Missing character: There is no b in font nullfont!
-Missing character: There is no e in font nullfont!
-Missing character: There is no t in font nullfont!
-Missing character: There is no t in font nullfont!
-Missing character: There is no e in font nullfont!
-Missing character: There is no r in font nullfont!
-Missing character: There is no _ in font nullfont!
-Missing character: There is no f in font nullfont!
-Missing character: There is no r in font nullfont!
-Missing character: There is no e in font nullfont!
-Missing character: There is no e in font nullfont!
-Missing character: There is no S in font nullfont!
-Missing character: There is no i in font nullfont!
-Missing character: There is no g in font nullfont!
-Missing character: There is no m in font nullfont!
-Missing character: There is no a in font nullfont!
-Missing character: There is no M in font nullfont!
-Missing character: There is no o in font nullfont!
-Missing character: There is no d in font nullfont!
-Missing character: There is no e in font nullfont!
+Missing character: There is no c in font nullfont!
 Missing character: There is no l in font nullfont!
+Missing character: There is no e in font nullfont!
+Missing character: There is no a in font nullfont!
+Missing character: There is no n in font nullfont!
 Missing character: There is no . in font nullfont!
 Missing character: There is no p in font nullfont!
 Missing character: There is no d in font nullfont!
 Missing character: There is no f in font nullfont!
 
-Package natbib Warning: Citation `acerbi2017practical' on page 12 undefined on input line 433.
+Package natbib Warning: Citation `killeen1987optimal' on page 10 undefined on input line 322.
+
+
+Package natbib Warning: Citation `wittmann2009inner' on page 10 undefined on input line 322.
+
+
+Package natbib Warning: Citation `ren2020ensemble' on page 10 undefined on input line 322.
 
 
 
 
 
-[12]
-
-Package natbib Warning: Citation `badde2020modality' on page 13 undefined on input line 435.
-
-
-LaTeX Warning: Reference `fig:AppendixConflictPSE_unimodal_fits' on page 13 undefined on input line 435.
-
-
-LaTeX Warning: Reference `fig:modelComparison' on page 13 undefined on input line 439.
-
-
-LaTeX Warning: Reference `fig:sumDeltaAIC' on page 13 undefined on input line 439.
-
-
-
-
-LaTeX Warning: Reference `fig:pseConflictModel' on page 13 undefined on input line 446.
-
-
-LaTeX Warning: Reference `fig:modelComparison' on page 13 undefined on input line 449.
-
-
-LaTeX Warning: Reference `fig:modelComparison' on page 13 undefined on input line 451.
-
-<assets/figures/modelComparison_threeModels_heatmap.pdf, id=301, 852.94281pt x 826.55627pt>
-File: assets/figures/modelComparison_threeModels_heatmap.pdf Graphic file (type pdf)
-<use assets/figures/modelComparison_threeModels_heatmap.pdf>
-Package pdftex.def Info: assets/figures/modelComparison_threeModels_heatmap.pdf  used on input line 456.
-(pdftex.def)             Requested size: 260.34271pt x 252.28217pt.
-
-LaTeX Warning: Reference `fig:modelComparison' on page 13 undefined on input line 465.
-
-
-
-[13]
-
-
-LaTeX Warning: Reference `fig:modelComparison' on page 14 undefined on input line 467.
-
-
-LaTeX Warning: Reference `fig:sumDeltaAIC' on page 14 undefined on input line 473.
-
-
-Package natbib Warning: Citation `stephan2009bayesian' on page 14 undefined on input line 482.
-
-
-Package natbib Warning: Citation `rigoux2014bayesian' on page 14 undefined on input line 482.
-
-
-Underfull \hbox (badness 6978) in paragraph at lines 482--484
-[]\OT1/ptm/m/n/10 We com-ple-mented these cri-te-ria with random-effects
+[10]
+Overfull \hbox (63.72813pt too wide) detected at line 367
+[]
  []
 
 
 
+
+Package natbib Warning: Citation `kording2007causal' on page 11 undefined on input line 369.
+
+
+Overfull \hbox (25.93639pt too wide) detected at line 380
+[]
+ []
+
+
+
+[11]
+
+<assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf, id=500, 843.06282pt x 493.44795pt>
+File: assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf Graphic file (type pdf)
+<use assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>
+Package pdftex.def Info: assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf  used on input line 425.
+(pdftex.def)             Requested size: 260.34271pt x 152.37999pt.
+
+LaTeX Warning: Reference `fig:sigmaConflictModel' on page 12 undefined on input line 431.
+
+<assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf, id=501, 843.46355pt x 500.58331pt>
+File: assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf Graphic file (type pdf)
+<use assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>
+Package pdftex.def Info: assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf  used on input line 436.
+(pdftex.def)             Requested size: 260.34271pt x 154.50705pt.
+
+
+[12 <./assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>]
+
+Package natbib Warning: Citation `acerbi2017practical' on page 13 undefined on input line 445.
+
+
+
+
+Package natbib Warning: Citation `badde2020modality' on page 13 undefined on input line 447.
+
+
+
+[13 <./assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>]
+<assets/figures/modelComparison_threeModels_heatmap.pdf, id=664, 852.94281pt x 826.55627pt>
+File: assets/figures/modelComparison_threeModels_heatmap.pdf Graphic file (type pdf)
+<use assets/figures/modelComparison_threeModels_heatmap.pdf>
+Package pdftex.def Info: assets/figures/modelComparison_threeModels_heatmap.pdf  used on input line 468.
+(pdftex.def)             Requested size: 260.34271pt x 252.28217pt.
+
+
+
+
 [14 <./assets/figures/modelComparison_threeModels_heatmap.pdf>]
-<assets/figures/sumDeltaAIC_threeModels.pdf, id=372, 786.64642pt x 386.08453pt>
+
+Package natbib Warning: Citation `stephan2009bayesian' on page 15 undefined on input line 494.
+
+
+Package natbib Warning: Citation `rigoux2014bayesian' on page 15 undefined on input line 494.
+
+
+Underfull \hbox (badness 6978) in paragraph at lines 494--496
+[]\OT1/ptm/m/n/10 We com-ple-mented these cri-te-ria with random-effects
+ []
+
+<assets/figures/sumDeltaAIC_threeModels.pdf, id=729, 786.64642pt x 386.08453pt>
 File: assets/figures/sumDeltaAIC_threeModels.pdf Graphic file (type pdf)
 <use assets/figures/sumDeltaAIC_threeModels.pdf>
-Package pdftex.def Info: assets/figures/sumDeltaAIC_threeModels.pdf  used on input line 488.
+Package pdftex.def Info: assets/figures/sumDeltaAIC_threeModels.pdf  used on input line 500.
 (pdftex.def)             Requested size: 208.27496pt x 102.21765pt.
 
 
-LaTeX Warning: Reference `fig:switchingProb' on page 15 undefined on input line 501.
-
-<assets/figures/switching_probability_by_noise.pdf, id=373, 324.16606pt x 353.8609pt>
+<assets/figures/switching_probability_by_noise.pdf, id=731, 324.16606pt x 353.8609pt>
 File: assets/figures/switching_probability_by_noise.pdf Graphic file (type pdf)
 <use assets/figures/switching_probability_by_noise.pdf>
-Package pdftex.def Info: assets/figures/switching_probability_by_noise.pdf  used on input line 505.
+Package pdftex.def Info: assets/figures/switching_probability_by_noise.pdf  used on input line 517.
 (pdftex.def)             Requested size: 143.18929pt x 156.30942pt.
 
 
-
-LaTeX Warning: Reference `fig:posterior_conflict' on page 15 undefined on input line 514.
-
-
-LaTeX Warning: Reference `fig:posterior_individual' on page 15 undefined on input line 514.
+[15 <./assets/figures/sumDeltaAIC_threeModels.pdf>]
 
 
-
-[15 <./assets/figures/sumDeltaAIC_threeModels.pdf> <./assets/figures/switching_probability_by_noise.pdf>]
-
-LaTeX Warning: File `assets/figures/manuscript_posterior_p2_v3.pdf' not found on input line 520.
+LaTeX Warning: File `assets/figures/manuscript_posterior_p2_v3.pdf' not found on input line 532.
 
 
-/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:520: Package pdftex.def Error: File `assets/figures/manuscript_posterior_p2_v3.pdf' not found: using draft setting.
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:532: Package pdftex.def Error: File `assets/figures/manuscript_posterior_p2_v3.pdf' not found: using draft setting.
 
 See the pdftex.def package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.520 ...s/figures/manuscript_posterior_p2_v3.pdf}
+l.532 ...s/figures/manuscript_posterior_p2_v3.pdf}
                                                   
 Try typing  <return>  to proceed.
 If that doesn't work, type  X <return>  to quit.
@@ -1083,55 +995,48 @@ Missing character: There is no p in font nullfont!
 Missing character: There is no d in font nullfont!
 Missing character: There is no f in font nullfont!
 
-Package natbib Warning: Citation `shams2005sound' on page 16 undefined on input line 528.
+Package natbib Warning: Citation `shams2005sound' on page 16 undefined on input line 540.
 
 
-Package natbib Warning: Citation `hartcher2014duration' on page 16 undefined on input line 528.
+Package natbib Warning: Citation `hartcher2014duration' on page 16 undefined on input line 540.
 
 
-Package natbib Warning: Citation `kording2007causal' on page 16 undefined on input line 528.
+Package natbib Warning: Citation `kording2007causal' on page 16 undefined on input line 540.
 
 
-Package natbib Warning: Citation `badde2021causal' on page 16 undefined on input line 528.
+Package natbib Warning: Citation `badde2021causal' on page 16 undefined on input line 540.
 
 
-Package natbib Warning: Citation `hong2021causal' on page 16 undefined on input line 528.
-
-
+Package natbib Warning: Citation `hong2021causal' on page 16 undefined on input line 540.
 
 
 
-[16]
-
-LaTeX Warning: Reference `fig:switchingProb' on page 17 undefined on input line 544.
+[16 <./assets/figures/switching_probability_by_noise.pdf>]
 
 
-Package natbib Warning: Citation `ni2024computational' on page 17 undefined on input line 547.
-
-
+Package natbib Warning: Citation `ni2024computational' on page 17 undefined on input line 559.
 
 
 
 [17]
 
-Package natbib Warning: Citation `ernst2002humans' on page 18 undefined on input line 578.
+
+Package natbib Warning: Citation `ernst2002humans' on page 18 undefined on input line 590.
 
 
-Package natbib Warning: Citation `van2008distortions' on page 18 undefined on input line 578.
+Package natbib Warning: Citation `van2008distortions' on page 18 undefined on input line 590.
 
 
-Package natbib Warning: Citation `hartcher2014duration' on page 18 undefined on input line 578.
+Package natbib Warning: Citation `hartcher2014duration' on page 18 undefined on input line 590.
 
 
-Package natbib Warning: Citation `caruso2018single' on page 18 undefined on input line 578.
+Package natbib Warning: Citation `caruso2018single' on page 18 undefined on input line 590.
 
 
-Package natbib Warning: Citation `laquitaine2018switching' on page 18 undefined on input line 578.
+Package natbib Warning: Citation `laquitaine2018switching' on page 18 undefined on input line 590.
 
 
-Package natbib Warning: Citation `ni2024computational' on page 18 undefined on input line 578.
-
-
+Package natbib Warning: Citation `ni2024computational' on page 18 undefined on input line 590.
 
 
 
@@ -1148,36 +1053,70 @@ Package natbib Warning: Citation `ni2024computational' on page 18 undefined on i
 
 
 [21]
-Overfull \hbox (20.72073pt too wide) detected at line 899
- []$[]  \OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 1) = [] [][] \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 y; ^^[[] \OMS/cmsy/m/n/10 ^^B N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 y; ^^[[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dy:$ []  
+
+
+Overfull \hbox (33.42908pt too wide) detected at line 910
+[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 1) = [] [][] \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 y; ^^[[]\OT1/cmr/m/n/10 )\OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 y; ^^[[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dy:
  []
 
 
+Overfull \hbox (33.42908pt too wide) detected at line 920
+[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 1) = [] [][] \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 )\OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dy:
+ []
 
 
-Overfull \hbox (81.8732pt too wide) detected at line 980
- []$[]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 2) = [] \OMS/cmsy/m/n/10 ^^B [] \OML/cmm/m/it/10 :$ []  
+Overfull \hbox (25.7926pt too wide) detected at line 930
+[][][]\OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 ) = \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ;  0\OML/cmm/m/it/10 ;  ^^[[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[]\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ;  \OML/cmm/m/it/10 ^^V[];  ^^[[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 ;
  []
 
 
 
 [22]
-
-LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 23 undefined on input line 1035.
-
-
-
-
-LaTeX Warning: File `assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf' not found on input line 1041.
+Overfull \hbox (144.169pt too wide) detected at line 942
+[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 C  \OT1/cmr/m/n/10 =  1) = [] \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ;  0\OML/cmm/m/it/10 ;  ^^[[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[]\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/10 ^^B [] \OML/cmm/m/it/10 ;
+ []
 
 
-/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1041: Package pdftex.def Error: File `assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf' not found: using draft setting.
+Overfull \hbox (8.34494pt too wide) detected at line 971
+[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 2) = [] [] \OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 y[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 y[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dy[] dy[]:
+ []
+
+
+Overfull \hbox (71.8732pt too wide) detected at line 980
+[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 2) = [] \OMS/cmsy/m/n/10 ^^B [] \OML/cmm/m/it/10 :
+ []
+
+
+
+
+Overfull \hbox (68.92096pt too wide) detected at line 988
+[]
+ []
+
+
+Overfull \hbox (93.52818pt too wide) detected at line 997
+[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 1\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 m[]; m[]\OT1/cmr/m/n/10 ) = []\OML/cmm/m/it/10 ;
+ []
+
+
+Overfull \hbox (2.57675pt too wide) detected at line 1010
+[][][][] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 m[] \OT1/cmr/m/n/10 + []\OML/cmm/m/it/10 m[] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 m[] \OT1/cmr/m/n/10 + []\OML/cmm/m/it/10 m[];
+ []
+
+
+
+[23]
+
+LaTeX Warning: File `assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf' not found on input line 1024.
+
+
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1024: Package pdftex.def Error: File `assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf' not found: using draft setting.
 
 See the pdftex.def package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.1041 ...cipant_mu_freeMuSigmaLambda_byNoise.pdf}
+l.1024 ...cipant_mu_freeMuSigmaLambda_byNoise.pdf}
                                                   
 Try typing  <return>  to proceed.
 If that doesn't work, type  X <return>  to quit.
@@ -1246,16 +1185,16 @@ Missing character: There is no p in font nullfont!
 Missing character: There is no d in font nullfont!
 Missing character: There is no f in font nullfont!
 
-LaTeX Warning: File `assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf' not found on input line 1049.
+LaTeX Warning: File `assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf' not found on input line 1032.
 
 
-/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1049: Package pdftex.def Error: File `assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf' not found: using draft setting.
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1032: Package pdftex.def Error: File `assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf' not found: using draft setting.
 
 See the pdftex.def package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.1049 ...articipant_mu_unimodalSigma_byNoise.pdf}
+l.1032 ...articipant_mu_unimodalSigma_byNoise.pdf}
                                                   
 Try typing  <return>  to proceed.
 If that doesn't work, type  X <return>  to quit.
@@ -1320,25 +1259,18 @@ Missing character: There is no p in font nullfont!
 Missing character: There is no d in font nullfont!
 Missing character: There is no f in font nullfont!
 
-LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 23 undefined on input line 1050.
 
 
-LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 23 undefined on input line 1050.
+LaTeX Warning: File `assets/figures/posterior_overlay_per_subject_v3.pdf' not found on input line 1040.
 
 
-
-[23]
-
-LaTeX Warning: File `assets/figures/posterior_overlay_per_subject_v3.pdf' not found on input line 1057.
-
-
-/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1057: Package pdftex.def Error: File `assets/figures/posterior_overlay_per_subject_v3.pdf' not found: using draft setting.
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1040: Package pdftex.def Error: File `assets/figures/posterior_overlay_per_subject_v3.pdf' not found: using draft setting.
 
 See the pdftex.def package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.1057 ...es/posterior_overlay_per_subject_v3.pdf}
+l.1040 ...es/posterior_overlay_per_subject_v3.pdf}
                                                   
 Try typing  <return>  to proceed.
 If that doesn't work, type  X <return>  to quit.
@@ -1396,33 +1328,27 @@ Missing character: There is no d in font nullfont!
 Missing character: There is no f in font nullfont!
 
 
-
-LaTeX Warning: Reference `fig:posterior_individual' on page 24 undefined on input line 1065.
-
-
-
 [24]
 
-LaTeX Warning: Reference `fig:optimalIntegrationComp' on page 25 undefined on input line 1070.
-
-<assets/figures/optimal_integration_comparison.pdf, id=616, 711.47649pt x 369.781pt>
+<assets/figures/optimal_integration_comparison.pdf, id=955, 711.47649pt x 369.781pt>
 File: assets/figures/optimal_integration_comparison.pdf Graphic file (type pdf)
 <use assets/figures/optimal_integration_comparison.pdf>
-Package pdftex.def Info: assets/figures/optimal_integration_comparison.pdf  used on input line 1085.
+Package pdftex.def Info: assets/figures/optimal_integration_comparison.pdf  used on input line 1068.
 (pdftex.def)             Requested size: 260.34271pt x 135.3103pt.
 
 
+[25 <./assets/figures/optimal_integration_comparison.pdf>]
 
-LaTeX Warning: File `assets/figures/empirical_confusion_3model.pdf' not found on input line 1108.
+LaTeX Warning: File `assets/figures/empirical_confusion_3model.pdf' not found on input line 1091.
 
 
-/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1108: Package pdftex.def Error: File `assets/figures/empirical_confusion_3model.pdf' not found: using draft setting.
+/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex:1091: Package pdftex.def Error: File `assets/figures/empirical_confusion_3model.pdf' not found: using draft setting.
 
 See the pdftex.def package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.1108 .../figures/empirical_confusion_3model.pdf}
+l.1091 .../figures/empirical_confusion_3model.pdf}
                                                   
 Try typing  <return>  to proceed.
 If that doesn't work, type  X <return>  to quit.
@@ -1474,42 +1400,39 @@ Missing character: There is no d in font nullfont!
 Missing character: There is no f in font nullfont!
 
 
-[25 <./assets/figures/optimal_integration_comparison.pdf>]
 
 
-LaTeX Warning: Reference `fig:modelRecoveryResults' on page 26 undefined on input line 1119.
-
-<assets/figures/emprical_parameter_recovery_nIter_50.pdf, id=688, 1738.72083pt x 830.58353pt>
+[26]
+<assets/figures/emprical_parameter_recovery_nIter_50.pdf, id=1031, 1738.72083pt x 830.58353pt>
 File: assets/figures/emprical_parameter_recovery_nIter_50.pdf Graphic file (type pdf)
 <use assets/figures/emprical_parameter_recovery_nIter_50.pdf>
-Package pdftex.def Info: assets/figures/emprical_parameter_recovery_nIter_50.pdf  used on input line 1130.
+Package pdftex.def Info: assets/figures/emprical_parameter_recovery_nIter_50.pdf  used on input line 1113.
 (pdftex.def)             Requested size: 260.34584pt x 124.3667pt.
 
-LaTeX Warning: Reference `fig:parameterRecovery' on page 26 undefined on input line 1137.
-
-
-LaTeX Warning: Reference `fig:parameterRecovery' on page 26 undefined on input line 1137.
 
 
 
-[26 <./assets/figures/emprical_parameter_recovery_nIter_50.pdf>]
-
-<assets/figures/grid_three_model_confusion_matrices.pdf, id=769, 896.72057pt x 470.26024pt>
+[27 <./assets/figures/emprical_parameter_recovery_nIter_50.pdf>]
+<assets/figures/grid_three_model_confusion_matrices.pdf, id=1112, 896.72057pt x 470.26024pt>
 File: assets/figures/grid_three_model_confusion_matrices.pdf Graphic file (type pdf)
 <use assets/figures/grid_three_model_confusion_matrices.pdf>
-Package pdftex.def Info: assets/figures/grid_three_model_confusion_matrices.pdf  used on input line 1162.
+Package pdftex.def Info: assets/figures/grid_three_model_confusion_matrices.pdf  used on input line 1145.
 (pdftex.def)             Requested size: 260.34332pt x 136.52983pt.
 
 
-[27]
 
-(./main_jov.bbl)
+
+[28 <./assets/figures/grid_three_model_confusion_matrices.pdf>] (./main_jov.bbl)
 
 Package natbib Warning: There were undefined citations.
 
 
 
-[28 <./assets/figures/grid_three_model_confusion_matrices.pdf>] (./main_jov.aux)
+
+
+[29
+
+] (./main_jov.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -1521,28 +1444,22 @@ LaTeX Warning: There were undefined references.
 
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
-
-Package rerunfilecheck Warning: File `main_jov.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `main_jov.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  5BCE663F27427FC3551D00D959DC323A;11218.
+Package rerunfilecheck Info: File `main_jov.out' has not changed.
+(rerunfilecheck)             Checksum: 5BCE663F27427FC3551D00D959DC323A;11218.
  ) 
 Here is how much of TeX's memory you used:
- 11542 strings out of 474662
- 192713 string characters out of 5751110
- 584470 words of memory out of 5000000
- 34230 multiletter control sequences out of 15000+600000
- 584814 words of font info for 91 fonts, out of 8000000 for 9000
+ 11613 strings out of 474662
+ 193837 string characters out of 5751110
+ 599490 words of memory out of 5000000
+ 34294 multiletter control sequences out of 15000+600000
+ 583188 words of font info for 89 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 90i,22n,93p,2263b,525s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,22n,93p,2263b,479s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmss10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmss8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmri8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on main_jov.pdf (28 pages, 1140744 bytes).
+Output written on main_jov.pdf (29 pages, 1179073 bytes).
 PDF statistics:
- 999 PDF objects out of 1000 (max. 8388607)
- 454 compressed objects within 5 object streams
- 174 named destinations out of 1000 (max. 500000)
- 56 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1344 PDF objects out of 1440 (max. 8388607)
+ 665 compressed objects within 7 object streams
+ 176 named destinations out of 1000 (max. 500000)
+ 509 words of extra memory for PDF output out of 10000 (max. 10000000)
 
