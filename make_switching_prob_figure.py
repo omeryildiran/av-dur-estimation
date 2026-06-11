@@ -51,7 +51,7 @@ ax.set_xticks([x0, x1])
 ax.set_xticklabels(['Low\nauditory noise', 'High\nauditory noise'], fontsize=12)
 ax.set_xlim(-0.35, 1.35)
 ax.set_ylim(-0.03, 1.0)
-ax.set_ylabel(r'Switching probability toward vision  $p_v$', fontsize=12)
+ax.set_ylabel(r'Probability of switching toward vision $p_v$', fontsize=12)
 ax.tick_params(axis='y', labelsize=11)
 ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
 p_txt = 'p = %.3f' % pval if pval >= 0.001 else 'p < 0.001'
