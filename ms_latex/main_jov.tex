@@ -11,9 +11,15 @@
 \usepackage{booktabs,tabularx}
 \usepackage{float}
 \usepackage{rotating}
-
+% jov.cls loads the obsolete `times` package and uses old font declarations
+% such as \sf in captions. Use modern font encoding/text fonts when available
+% so \textbf selects a real bold face reliably.
+\usepackage[T1]{fontenc}
+\IfFileExists{newtxtext.sty}{\usepackage{newtxtext}}{}
+%\IfFileExists{tgheros.sty}{\usepackage{tgheros}}{}
 \makeatletter
 \providecommand{\@LN@col}[1]{}
+\renewcommand{\captionfonts}{\normalfont\footnotesize\sffamily}
 \makeatother
 
 \setlength{\parindent}{0.25in}
@@ -268,12 +274,12 @@ To investigate how participants combined auditory and visual cues during duratio
     \label{fig:psychometric_conflict_fits}
 \end{figure}
 
-To quantify the results, we extracted the PSE from each psychometric curve and plotted it as a function of the conflict level (Figure~\ref{fig:conflict_pse}). Under the high auditory-noise condition, PSEs showed a nearly linear relationship with conflict magnitude. In contrast, under the low-noise condition, PSEs stayed close to zero, indicating reduced bias toward visual durations. The error bars reflect the standard error of the mean across the 11 participants. We have also completed 1000 parametric bootstrapping for aggregated data. For each sample, we generated responses from the fitted psychometric function, refit the function, and computed the standard error of the resulting parameter estimates. Regression analysis confirmed a linear relationship between cue-conflict magnitude and PSE shift. Under the high-noise condition, visual conflict magnitude showed a strong positive correlation with PSE shifts ($r$ = 0.963, $p$ $<$ 0.001), with a steep slope of 0.606~ms PSE change per 1 ms of visual conflict. In contrast, under the low-noise condition, the correlation remained strong ($r$ = 0.911, $p$ = 0.004), but had a much shallower slope of 0.144~ms per ms conflict. These results indicate that auditory duration perception was systematically biased toward the visual duration, and that the strength of this bias was modulated by auditory cue reliability.
+To quantify the results, we extracted the PSE from each psychometric curve and plotted it as a function of the conflict level (Figure~\ref{fig:conflict_pse}). Under the high auditory-noise condition, PSEs showed a nearly linear relationship with conflict magnitude. In contrast, under the low-noise condition, PSEs stayed close to zero, indicating reduced bias toward visual durations. The error bars reflect the standard error of the mean across the 11 participants. We quantified this effect by fitting a linear regression of PSE shift on signed cue-conflict level separately for each participant and auditory-noise condition. The resulting slopes were positive in both conditions (low noise: mean slope = 0.148~ms/ms, SEM = 0.048, $t(10) = 3.11$, $p = .011$; high noise: mean slope = 0.505~ms/ms, SEM = 0.083, $t(10) = 6.11$, $p < .001$). Slopes were significantly larger under high than low auditory noise (paired $t(10) = 5.65$, $p < .001$), indicating that auditory duration perception was systematically biased toward the visual duration, and that the strength of this bias was modulated by auditory cue reliability.
 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{assets/figures/aggregated_data_only_freeMuSigmaLambda_sem_clean.pdf}
-\caption{\textbf{Effect of audiovisual conflict on perceived auditory duration.} Group-averaged values of the shift of the point of subjective equality (PSE) toward the visual duration as a function of audiovisual duration conflict, shown separately for the low-noise (\textbf{A}) and high-noise (\textbf{B}) auditory conditions. Each data point reflects the mean PSE shift of the data pooled over 11 participants; error bars show SEM across participants. Under low noise, PSEs are more stable across conflict levels, suggesting auditory dominance. Under high noise, auditory duration judgments are pulled toward the visual duration.}
+\caption{\textbf{Effect of audiovisual conflict on perceived auditory duration.} Group-averaged values of the shift of the point of subjective equality (PSE) toward the visual duration as a function of audiovisual duration conflict, shown separately for the low-noise (\textbf{A}) and high-noise (\textbf{B}) auditory conditions. Each data point reflects the mean PSE shift across 11 participants; error bars show SEM across participants. Under low noise, PSEs are more stable across conflict levels, suggesting auditory dominance. Under high noise, auditory duration judgments are pulled toward the visual duration.}
     \label{fig:conflict_pse}
 \end{figure}
 
@@ -470,12 +476,12 @@ We complemented these criteria with random-effects Bayesian model selection, whi
 % Reproducibility: make_switching_prob_figure.py -> switching_probability_by_noise.{pdf,png}; reads model_fits/<pid>/<pid>_switchingFree_LapseFix_sharedPrior_fit.json (p_v,low = fittedParams[3], p_v,high = fittedParams[5]).
 
 \subsubsection{Switching probabilities increase with auditory noise}
-Beyond model comparison, the parameters of the favored model were themselves consistent with the cue-switching account. The fitted probability of relying on the visual duration ($p_v$) increased markedly with auditory noise, rising from a group mean of $0.17$ under low auditory noise to $0.51$ under high auditory noise (Wilcoxon signed-rank test, $p = 0.003$; an increase in $10$ of $11$ participants; Figure~\ref{fig:switchingProb}). Thus, observers were estimated to rely on the visual duration roughly half of the time when auditory reliability was low, but only about one in six trials when it was high, providing a concrete and consistent mechanism for the noise-dependent visual bias.
+Beyond model comparison, the parameters of the favored model were themselves consistent with the cue-switching account. The fitted probability of relying on the visual duration ($p_v$) increased markedly with auditory noise, rising from a group mean of $0.17$ under low auditory noise to $0.53$ under high auditory noise (Wilcoxon signed-rank test, $p < 0.001$; an increase in $11$ of $11$ participants; Figure~\ref{fig:switchingProb}). Thus, observers were estimated to rely on the visual duration roughly half of the time when auditory reliability was low, but only about one in six trials when it was high, providing a concrete and consistent mechanism for the noise-dependent visual bias.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.55\linewidth]{assets/figures/switching_probability_by_noise.pdf}
-    \caption{\textbf{Fitted switching probabilities increase with auditory noise.} Each thin line shows one participant's fitted probability of relying on the visual duration ($p_v$) in the low- and high-auditory-noise conditions, estimated from the probabilistic cue-switching model (free sensory-noise fits). The probability of relying on vision increased with auditory noise in $10$ of $11$ participants (group means $0.17 \rightarrow 0.51$; Wilcoxon signed-rank $p = 0.003$). Black line show group means $\pm$ SEM.}
+    \caption{\textbf{Fitted switching probabilities increase with auditory noise.} Each colored thin line shows one participant's fitted probability of relying on the visual duration ($p_v$) in the low- and high-auditory-noise conditions, estimated from the probabilistic cue-switching model (free sensory-noise fits). The probability of relying on vision increased with auditory noise in $11$ of $11$ participants (group means $0.17 \rightarrow 0.53$; Wilcoxon signed-rank $p < 0.001$). Black diamonds and line show group means $\pm$ SEM.}
     \label{fig:switchingProb}
 \end{figure}
 %%% --- end added section ---
@@ -489,7 +495,7 @@ This analysis reveals why the causal-inference and forced-fusion models produced
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\linewidth]{assets/figures/manuscript_posterior_p2_v3.pdf}
+    \includegraphics[width=0.8\linewidth]{assets/figures/manuscript_posterior_p10_v3.pdf}
   \caption{\textbf{Posterior probability of a common cause across conflict levels.}
      Likelihoods and posterior probability of a common cause for an example participant, plotted as a function of audiovisual duration conflict. Top row: low-auditory-noise condition; bottom row: high-auditory-noise condition. Left column: log likelihood of the measurements under a common cause, $\log P(m_a, m_v \mid C{=}1)$ (blue) and under separate causes, $\log P(m_a, m_v \mid C{=}2)$ (red), plotted on the same axes so that their relative magnitudes can be compared directly. Right column: Posterior probability of common cause, $P(C{=}1 \mid m_a, m_v)$, with the dotted line marking the fitted prior $p_c$. All quantities were computed via Monte Carlo simulation (500 samples per conflict level) using participant-specific sensory-noise estimates ($\sigma_{a,l}$, $\sigma_{a,h}$, $\sigma_v$) and common-cause prior ($p_c$) obtained from the log-normal causal-inference model fit.}
     \label{fig:posterior_conflict}
@@ -552,7 +558,7 @@ This work was supported by NIH grant EY08266 and the NYUAD Center for Brain and 
 \label{app:appendix}
 
 \subsection{Model parameters}
-\begin{table*}[tbp]
+\begin{table}[H]
 \centering
 \caption{Model parameter descriptions}
 \label{tab:model_parameters}
@@ -570,7 +576,7 @@ Probabilistic cue switching & 1 & 3 & --& $p_{v,l},p_{v,h}$& 6\\
 \vspace{0.5em}
 \footnotesize
 \textit{Note.} Sensory noise parameters $\sigma_{a,l}$, $\sigma_{a,h}$, and $\sigma_v$ represent auditory (low and high noise) and visual standard deviations in log space. Prior parameter $p_c$ is the prior probability of common cause. Other parameters $p_{v,l}$ and $p_{v,h}$ are the switching-probability parameters in low and high auditory noise for the probabilistic cue-switching model.
-\end{table*}
+\end{table}
 
 \subsection{Task formulations}
 This section provides the mathematical formulations for the psychometric models used in each experimental task. We describe how duration estimates arise from noisy sensory measurements and how observers make comparison judgments.
@@ -583,7 +589,8 @@ In the unimodal tasks (auditory-only or visual-only), participants compared the 
 % P(\text{``test longer''}) = P(\hat{s}_t > \hat{s}_s| s_t, s_s) = P(\hat{s}_t - \hat{s}_s > 0).
 % \end{equation}
 
-\paragraph{Sensory encoding in log-space}
+\textit{Sensory encoding in log-space}
+
 To capture Weber-like scaling of temporal uncertainty (scalar variability), we assume that duration is encoded in logarithmic space and corrupted by additive Gaussian noise. Each duration measurement $m$ is drawn from a Gaussian distribution centered on the log-transformed true stimulus duration:
 \begin{equation}
 m \sim \mathcal{N}(\log s, \sigma^2).
@@ -692,48 +699,34 @@ The point of subjective equality (PSE; parameter $\mu$) quantified the modality-
 
 
 \paragraph{Posterior means}
-Using the precision notation introduced earlier ($J_a = 1/\sigma_a^2$, $J_v = 1/\sigma_v^2$, $J_{p,a} = 1/\sigma_{p,a}^2$, $J_{p,v} = 1/\sigma_{p,v}^2$), the posterior mean for the auditory estimate in log-duration space is:
+One way to interpret cross-modal biases is as a difference in the modality-specific posterior estimates. In a full Bayesian formulation with modality-specific Gaussian priors, the posterior mean for the auditory estimate in log-duration space would be
 \begin{equation}
-\mu_{\hat{s},a} = \frac{J_a \cdot \log s_a + J_{p,a} \cdot \mu_{p,a}}{J_a + J_{p,a}}.
+\mu_{\hat{s},a} = \frac{J_a \cdot \log s_a + J_{p,a} \cdot \mu_{p,a}}{J_a + J_{p,a}},
 \end{equation}
-Similarly for the visual estimate:
+and similarly for the visual estimate,
 \begin{equation}
-\mu_{\hat{s},v} = \frac{J_v \cdot \log s_v + J_{p,v} \cdot \mu_{p,v}}{J_v + J_{p,v}}.
+\mu_{\hat{s},v} = \frac{J_v \cdot \log s_v + J_{p,v} \cdot \mu_{p,v}}{J_v + J_{p,v}},
 \end{equation}
+where $J_a = 1/\sigma_a^2$, $J_v = 1/\sigma_v^2$, $J_{p,a}=1/\sigma_{p,a}^2$, and $J_{p,v}=1/\sigma_{p,v}^2$. Under this interpretation, differences in modality-specific prior means or prior strengths could produce an auditory--visual bias even when physical durations are matched.
 
-\paragraph{Posterior variances}
-The variance of the posterior for each modality is the inverse of the sum of precisions:
+However, these modality-specific prior parameters were not fit as separate free parameters in our analysis. Instead, their net effect was absorbed into a single cross-modal PSE parameter, $\mu_{cm}$, estimated directly from the cross-modal psychometric function.
+
+\paragraph{Psychometric function}
+Let
 \begin{equation}
-\sigma_{\hat{s},a}^2 = \frac{1}{J_a + J_{p,a}}, \qquad
-\sigma_{\hat{s},v}^2 = \frac{1}{J_v + J_{p,v}}.
+x_{cm} = \log(s_a/s_v),
 \end{equation}
-
-\paragraph{Decision rule}
-
-The probability of perceiving the auditory stimulus as longer is
-
+where $s_a$ and $s_v$ are the auditory and visual durations. The response probability was
 \begin{equation}
-P(\text{``auditory longer''}\mid s_a,s_v)
+P(\text{"auditory longer"})
 =
-\iint_{\hat{s}_a(m_a)>\hat{s}_v(m_v)}
-p(m_a\mid s_a)\,
-p(m_v\mid s_v)\,
-dm_a\,dm_v.
+\frac{\lambda_{cm}}{2}
++ (1-\lambda_{cm})\,
+\Phi\left(
+\frac{x_{cm}-\mu_{cm}}{\sigma_{cm}}
+\right),
 \end{equation}
-The distribution of this difference is:
-\begin{equation}
-\hat{s}_a - \hat{s}_v \sim \mathcal{N}\left(\mu_{\hat{s},a} - \mu_{\hat{s},v},\; \sigma_{\hat{s},a}^2 + \sigma_{\hat{s},v}^2\right).
-\end{equation}
-Thus, the probability of perceiving auditory as longer is:
-\begin{equation}
-P(\hat{s}_a > \hat{s}_v) = \Phi\left( \frac{\mu_{\hat{s},a} - \mu_{\hat{s},v}}{\sqrt{\sigma_{\hat{s},a}^2 + \sigma_{\hat{s},v}^2}} \right).
-\end{equation}
-Including a lapse rate $\lambda_{cm}$ for the cross-modal task:
-\begin{equation}
-P(\text{respond ``auditory longer''}) = \frac{\lambda_{cm}}{2} + (1-\lambda_{cm}) \cdot \Phi\left( \frac{\mu_{\hat{s},a} - \mu_{\hat{s},v}}{\sqrt{\sigma_{\hat{s},a}^2 + \sigma_{\hat{s},v}^2}} \right).
-\end{equation}
-
-Note that when the priors differ between modalities ($\mu_{p,a} \neq \mu_{p,v}$), a systematic bias emerges even when physical durations are matched ($s_a = s_v$). This is the cross-modal bias that we measured and corrected for in the main bimodal experiment.
+where $\lambda_{cm}$ is the lapse rate, $\sigma_{cm}$ is the fitted psychometric slope, and $\mu_{cm}$ is the fitted cross-modal bias. Thus, $\mu_{cm}=0$ corresponds to no auditory--visual bias, whereas nonzero values indicate that one modality had to be physically longer or shorter for the two intervals to be perceived as equal. This fitted bias is the cross-modal bias that we measured and corrected for in the main bimodal experiment.
 
 \subsection{Models of audiovisual duration estimation}
 
@@ -746,7 +739,10 @@ The forced-fusion model assumes that participants produce an estimate of auditor
 \end{equation}
 where $m_a$ and $m_v$ denote noisy sensory measurements in log-duration space, and $J_a = 1/\sigma_a^2$, $J_v = 1/\sigma_v^2$ are the corresponding precisions (with $\sigma_a \in \{\sigma_{a,l}, \sigma_{a,h}\}$ depending on the condition).
 
-Note that we omit an explicit prior over duration in this expression. In our 2IFC task, the same duration prior would be applied to both the standard and test intervals, so it would not affect any duration comparisons made by the participant. By contrast, in the Bayesian causal-inference model below, a bounded duration prior is required to evaluate the marginal likelihoods under the common-cause and separate-causes hypotheses.
+
+This expression contains no explicit duration prior. A common prior applied to both intervals would not change the reliability-weighted mean comparison that determines the direction of the response, although it would change the posterior variance. In the fitted forced-fusion model, we therefore used the measurement-noise parameters ($\sigma_a$, $\sigma_v$) to determine the reliability weights, and did not include additional prior-mean or prior-variance parameters.
+
+
 
 The above formula can equivalently be written as a reliability-weighted sum of the measurements:
 \begin{equation}
@@ -759,12 +755,6 @@ w_a = \frac{J_a}{J_a + J_v}, \quad w_v = \frac{J_v}{J_a + J_v}.
 
 Here the forced-fusion model serves as an important benchmark: it predicts that PSE shifts should follow a linear relationship with audiovisual conflict, with slope determined solely by cue reliability. This represented the limiting case where the observer \textit{always} assumes a common cause, regardless of sensory evidence. 
 
-Under the common-cause assumption ($C=1$), the fused estimate corresponds to a Gaussian posterior whose variance is:
-\begin{equation}
-\sigma_{C=1}^2 = \frac{\sigma_a^2 \sigma_v^2}{\sigma_a^2 + \sigma_v^2}
-= \frac{1}{J_a + J_v}.
-\label{eq:fusion_var}
-\end{equation}
 
 In forced-fusion models, this estimate is used on every trial, leading to a linear relationship between audiovisual conflict and bias. In contrast, Bayesian causal-inference models combine this fused estimate with segregated estimates according to the posterior probability of common cause, $p(C=1 \mid m_a,m_v)$. Because this posterior probability decreases with increasing conflict, the effective integration strength becomes conflict-dependent, producing nonlinear bias functions.
 
@@ -794,7 +784,7 @@ The key behavioral distinction between switching and causal inference lies in th
 %%%%
 \subsection{Bayesian causal-inference model}\label{causal_inf_equations}
 
-\subsubsection{Likelihood of a common cause}
+\paragraph{Evidence for a common cause}
 
 If the model assumed that both durations arise from a common source, there is a single latent log-duration $y = \log s$, and the measurements (in log-duration space) are:
 
@@ -813,7 +803,7 @@ We assume that the participant uses a flat prior over the log-duration $y$ rangi
 p(y) = \frac{1}{t_{\max} - t_{\min}}. 
 \text{  } t_{min}<y<t_{max}
 \end{equation}
-To find the likelihood of a common cause, we need a single integrand bounded between $t_{\min}$ and $t_{\max}$:
+To compute the evidence for a common cause, we marginalize over the unknown latent duration $y$:
 \begin{equation}
 \label{eq:likelihood_c1_integral}
 p(m_a, m_v | C=1) = \int_{t_{\min}}^{t_{\max}} p(m_a | y) p(m_v | y) p(y) \, dy.
@@ -831,12 +821,12 @@ Because a Gaussian is symmetric in its arguments:
 \begin{equation}
 \mathcal{N}(m_a; y, \sigma_a^2) = \mathcal{N}(y; m_a, \sigma_a^2).
 \end{equation}
-It is identical to write the likelihood as:
+It is identical to write the evidence as:
 \begin{equation}
 p(m_a, m_v | C=1) = \frac{1}{t_{\max} - t_{\min}} \int_{t_{\min}}^{t_{\max}} \mathcal{N}(y; m_a, \sigma_a^2) \mathcal{N}(y; m_v, \sigma_v^2) \, dy.
 \end{equation}
 
-\subsubsection{Product of two Gaussians and the final likelihood}
+\paragraph{Product of two Gaussians and the final evidence}
 
 The integrand is the product of two Gaussians in the same variable $y$. By completing the square in $y$ (using the precisions $J_a$ and $J_v$ defined earlier), this product factors into a Gaussian in $y$ times a term that is constant with respect to $y$:
 \begin{equation}
@@ -858,9 +848,7 @@ p(m_a, m_v \mid C\!=\!1) = \frac{1}{t_{\max} - t_{\min}}\, \mathcal{N}(m_a - m_v
 \end{equation}
 where $\Phi$ is the standard normal cumulative distribution function.
 
-\subsubsection{Separate causes}
-
-\paragraph{Generative model, separate causes}
+\paragraph{Separate causes}
 
 Now assuming two separate sources, we estimate two latent durations for each modality ($y_a$ and $y_v$).
 
@@ -880,13 +868,10 @@ p(y_a) = p(y_v) = \frac{1}{t_{\max} - t_{\min}}
 \end{equation}
 over the range $[t_{\min}, t_{\max}]$.
 
-The likelihood of the two measurements under $C=2$ is:
+The evidence for the two measurements under $C=2$ is:
 \begin{equation}
 p(m_a, m_v | C=2) = \int \int p(m_a | y_a) p(m_v | y_v) p(y_a) p(y_v) \, dy_a \, dy_v.
 \end{equation}
-
-
-\paragraph{Factor the double integral}
 
 Because the integrand separates into a function of $y_a$ times a function of $y_v$ and the domains (boundaries) are independent:
 \begin{equation}
@@ -902,15 +887,17 @@ p(m_a, m_v \mid C\!=\!2)
  &\times \left(\frac{1}{t_{\max} - t_{\min}} \left[\Phi\!\left(\frac{t_{\max} - m_v}{\sigma_v}\right) - \Phi\!\left(\frac{t_{\min} - m_v}{\sigma_v}\right)\right]\right).
 \end{align}
 
-\subsubsection{Posterior probability of common cause}
+\paragraph{Posterior probability of common cause}
 
+The posterior probability of a common cause is obtained by combining the common-cause and separate-causes evidences with the prior probability of common cause:
 \begin{equation}
 p(C=1 | m_a, m_v) = \frac{p(m_a, m_v | C=1) p(C=1)}{p(m_a, m_v | C=1) p(C=1) + (1 - p(C=1)) p(m_a, m_v | C=2)},
 \end{equation}
 where $p_c$ is the prior probability of common cause.
 
-\subsubsection{Estimate with causal inference}
+\paragraph{Estimate with causal inference}
 
+The final auditory-duration estimate is a posterior-weighted average of the fused estimate under a common cause and the auditory estimate under separate causes:
 \begin{equation}
 \hat{s} = p(C=1 | m_a, m_v) \cdot \hat{s}_{C=1} + (1 - p(C=1 | m_a, m_v)) \cdot m_a,
 \end{equation}
@@ -958,9 +945,10 @@ To further illustrate how the causal-inference model interprets audiovisual conf
 
 \subsection{Unimodal-derived predictions of bimodal uncertainty}
 
-Figure~\ref{fig:optimalIntegrationComp} compares empirically observed audiovisual variability ($\sigma_{AV}$) with variability predicted under optimal reliability-weighted integration ($\sigma_{\mathrm{opt}}$), derived from unimodal sensory-noise estimates. 
+Figure~\ref{fig:optimalIntegrationComp} compares empirically observed audiovisual variability ($\sigma_{AV}$) with variability predicted under optimal reliability-weighted integration ($\sigma_{\mathrm{opt}}$), derived from unimodal sensory-noise estimates.  This calculation is used only for the comparison of observed and predicted uncertainty.
 
-Under the assumption of statistically optimal cue combination with independent Gaussian noise, the predicted audiovisual variance is given by
+Under the assumption of statistically optimal cue combination with independent Gaussian measurement noise and no additional duration-prior variance term, the predicted audiovisual variance is given by
+
 \begin{equation}
 \sigma_{\mathrm{opt}}^2 = \frac{\sigma_a^2 \sigma_v^2}{\sigma_a^2 + \sigma_v^2}
 = \frac{1}{J_a + J_v},
@@ -1018,7 +1006,7 @@ Importantly, the high recovery of the cue-switching model did not reflect a gene
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth,height=0.58\textheight,keepaspectratio]{assets/figures/emprical_parameter_recovery_nIter_50.pdf}
-    \caption{\textbf{Parameter-recovery analysis for model validation.} Each row corresponds to a generative model and each column to a model parameter. Synthetic datasets ($N = 50$) were generated from fitted group-level parameter distributions and refit with the same model. Scatterplots show true versus recovered parameter values; dashed diagonals indicate perfect recovery and gray bands show a $\pm 5\%$ tolerance region. Insets report Pearson correlation ($r$) and RMSE. Sensory-noise and lapse parameters were generally well recovered, whereas causal-prior and switching parameters were less constrained.}
+    \caption{\textbf{Parameter-recovery analysis for model validation.} Each row corresponds to a generative model and each column to a model parameter. Synthetic datasets ($N = 50$) were generated from fitted group-level parameter distributions and refit with the same model. Scatterplots show true versus recovered parameter values; dashed diagonals indicate perfect recovery and gray bands show a $\pm 5\%$ tolerance region. Insets report Pearson correlation ($r$) and RMSE. Sensory-noise and lapse parameters were generally well recovered, whereas causal-prior parameter were less constrained.}
     \label{fig:parameterRecovery}
 \end{figure}
 

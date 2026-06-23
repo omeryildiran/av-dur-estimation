@@ -119,7 +119,7 @@ _RC = {
     'figure.dpi'        : 100,
     'savefig.dpi'       : 300,
     'savefig.bbox'      : 'tight',
-    'savefig.pad_inches': 0.1,
+    'savefig.pad_inches': 0.4,
 }
 
 def setup_style(sns_style='white', sns_context='talk'):
