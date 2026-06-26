@@ -232,8 +232,8 @@ Pairwise comparisons were conducted using Wilcoxon signed-rank tests with Bonfer
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{assets/figures/cross_modal_timeline.pdf}
-\caption{\textbf{Cross-modal duration-comparison trial structure.} Schematic of a single cross-modal trial. The trial consisted of two sequential stimuli (standard and test), separated by an inter-stimulus interval (dashed vertical lines indicate interval boundaries). \textbf{Top (auditory):} Continuous background noise was presented throughout the trial. A signal burst occurred during either the first or second interval. \textbf{Bottom (visual):} A disk outline was continuously visible. During the signal duration, the disk was filled. In this task, the visual stimulus was the standard, with a duration perceptually equivalent to an auditory duration of 500-ms. The auditory test duration varied across trials. The auditory test and visual standard were presented in mini-blocks of 10~trials with a fixed order of test and standard. Across mini-blocks the order of test vs. standard was randomized. }
+    \includegraphics[width=1\linewidth]{assets/figures/crossmodalTimeline.png}
+\caption{\textbf{Cross-modal duration-comparison trial structure.} Schematic of a single cross-modal trial. The trial consisted of two sequential stimuli (standard and test), separated by an inter-stimulus interval (dashed vertical lines indicate interval boundaries). \textbf{Top (auditory):} Continuous background noise was presented throughout the trial. A signal burst occurred during the auditory-test interval. \textbf{Bottom (visual):} A disk outline was continuously visible. During the signal duration, the disk was filled. In this task, the visual stimulus was the standard, with a duration perceptually equivalent to an auditory duration of 500-ms. The auditory test duration varied across trials. The example order shown places the visual standard before the auditory test. }
     \label{fig:crossmodalDiag}
 \end{figure}
 
@@ -695,30 +695,15 @@ P(\text{respond ``test longer''}) = \frac{\lambda}{2} + (1-\lambda) \cdot \Phi\l
 
 In the cross-modal task, participants compared the duration of an auditory interval with that of a visual interval and reported which appeared longer. Responses were fitted with a cumulative log-normal psychometric function using maximum-likelihood estimation.
 
-The point of subjective equality (PSE; parameter $\mu$) quantified the modality-specific duration bias, indicating the physical offset required for auditory and visual intervals to be perceived as equal in duration. The slope parameter $\sigma$ captured discrimination sensitivity.
+Theoretically, a cross-modal bias could be described as a difference between auditory and visual duration estimates. However, we did not fit separate modality-specific prior means or prior variances. Instead, the cross-modal task was fit with a single psychometric bias parameter, $\mu_{cm}$.
 
-
-\paragraph{Posterior means}
-One way to interpret cross-modal biases is as a difference in the modality-specific posterior estimates. In a full Bayesian formulation with modality-specific Gaussian priors, the posterior mean for the auditory estimate in log-duration space would be
-\begin{equation}
-\mu_{\hat{s},a} = \frac{J_a \cdot \log s_a + J_{p,a} \cdot \mu_{p,a}}{J_a + J_{p,a}},
-\end{equation}
-and similarly for the visual estimate,
-\begin{equation}
-\mu_{\hat{s},v} = \frac{J_v \cdot \log s_v + J_{p,v} \cdot \mu_{p,v}}{J_v + J_{p,v}},
-\end{equation}
-where $J_a = 1/\sigma_a^2$, $J_v = 1/\sigma_v^2$, $J_{p,a}=1/\sigma_{p,a}^2$, and $J_{p,v}=1/\sigma_{p,v}^2$. Under this interpretation, differences in modality-specific prior means or prior strengths could produce an auditory--visual bias even when physical durations are matched.
-
-However, these modality-specific prior parameters were not fit as separate free parameters in our analysis. Instead, their net effect was absorbed into a single cross-modal PSE parameter, $\mu_{cm}$, estimated directly from the cross-modal psychometric function.
-
-\paragraph{Psychometric function}
 Let
 \begin{equation}
 x_{cm} = \log(s_a/s_v),
 \end{equation}
 where $s_a$ and $s_v$ are the auditory and visual durations. The response probability was
 \begin{equation}
-P(\text{"auditory longer"})
+P(\text{``auditory longer''})
 =
 \frac{\lambda_{cm}}{2}
 + (1-\lambda_{cm})\,

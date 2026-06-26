@@ -166,7 +166,7 @@ Pairwise comparisons were conducted using Wilcoxon signed-rank tests with Bonfer
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{assets/figures/crossmodalTimeline.png}
-\caption{\textbf{Cross-modal duration-comparison trial structure.} Schematic of a single cross-modal trial. The trial consisted of two sequential stimuli (standard and test), separated by an inter-stimulus interval (dashed vertical lines indicate interval boundaries). \textbf{Top (auditory stream):} Continuous background noise was presented throughout the trial. A signal burst occurred during either the first or second interval. \textbf{Bottom (visual stream):} A disk outline was continuously visible. During the signal duration, the disk was filled. In this task, the visual stimulus was the standard, with a duration of 500-ms. The auditory test duration varied across trials. The auditory test and visual standard were presented in random order. }
+\caption{\textbf{Cross-modal duration-comparison trial structure.} Schematic of a single cross-modal trial. The trial consisted of two sequential stimuli (standard and test), separated by an inter-stimulus interval (dashed vertical lines indicate interval boundaries). \textbf{Top (auditory stream):} Continuous background noise was presented throughout the trial. A signal burst occurred during the auditory-test interval. \textbf{Bottom (visual stream):} A disk outline was continuously visible. During the signal duration, the disk was filled. In this task, the visual stimulus was the standard, with a duration of 500-ms. The auditory test duration varied across trials. The example order shown places the visual standard before the auditory test. }
     \label{fig:crossmodalDiag}
 \end{figure}
 
@@ -741,49 +741,23 @@ P(\text{``test longer''}) = \frac{\lambda}{2} + (1-\lambda) \cdot \Phi\left( \fr
 
 In the cross-modal task, participants compared the duration of an auditory interval with that of a visual interval and reported which appeared longer. Responses were fitted with a cumulative log-normal psychometric function using maximum-likelihood estimation.
 
-The point of subjective equality (PSE; parameter $\mu$) quantified the modality-specific duration bias, indicating the physical offset required for auditory and visual intervals to be perceived as equal in duration. The slope parameter $\sigma$ captured discrimination sensitivity.
+Theoretically, a cross-modal bias could be described as a difference between auditory and visual duration estimates. However, we did not fit separate modality-specific prior means or prior variances. Instead, the cross-modal task was fit with a single psychometric bias parameter, $\mu_{cm}$.
 
-
-\paragraph{Posterior means}
-Using the precision notation introduced earlier ($J_a = 1/\sigma_a^2$, $J_v = 1/\sigma_v^2$, $J_{p,a} = 1/\sigma_{p,a}^2$, $J_{p,v} = 1/\sigma_{p,v}^2$), the posterior mean for the auditory estimate in log-duration space is:
+Let
 \begin{equation}
-\mu_{\hat{s},a} = \frac{J_a \cdot \log s_a + J_{p,a} \cdot \mu_{p,a}}{J_a + J_{p,a}}.
+x_{cm} = \log(s_a/s_v),
 \end{equation}
-
-Similarly for the visual estimate:
+where $s_a$ and $s_v$ are the auditory and visual durations. The response probability was
 \begin{equation}
-\mu_{\hat{s},v} = \frac{J_v \cdot \log s_v + J_{p,v} \cdot \mu_{p,v}}{J_v + J_{p,v}}.
+P(\text{``auditory longer''})
+=
+\frac{\lambda_{cm}}{2}
++ (1-\lambda_{cm})\,
+\Phi\left(
+\frac{x_{cm}-\mu_{cm}}{\sigma_{cm}}
+\right),
 \end{equation}
-
-\paragraph{Posterior variances}
-The variance of the posterior for each modality is the inverse of the sum of precisions:
-\begin{equation}
-\sigma_{\hat{s},a}^2 = \frac{1}{J_a + J_{p,a}}, \qquad
-\sigma_{\hat{s},v}^2 = \frac{1}{J_v + J_{p,v}}.
-\end{equation}
-
-\paragraph{Decision rule}
-The probability of perceiving the auditory stimulus as longer is:
-\begin{equation}
-P(\hat{s}_a > \hat{s}_v) = P(\hat{s}_a - \hat{s}_v > 0).
-\end{equation}
-
-The distribution of this difference is:
-\begin{equation}
-\hat{s}_a - \hat{s}_v \sim \mathcal{N}\left(\mu_{\hat{s},a} - \mu_{\hat{s},v},\; \sigma_{\hat{s},a}^2 + \sigma_{\hat{s},v}^2\right).
-\end{equation}
-
-Thus, the probability of perceiving auditory as longer is:
-\begin{equation}
-P(\hat{s}_a > \hat{s}_v) = \Phi\left( \frac{\mu_{\hat{s},a} - \mu_{\hat{s},v}}{\sqrt{\sigma_{\hat{s},a}^2 + \sigma_{\hat{s},v}^2}} \right).
-\end{equation}
-
-Including a lapse rate $\lambda_{cm}$ for the cross-modal task:
-\begin{equation}
-P(\text{``auditory longer''}) = \frac{\lambda_{cm}}{2} + (1-\lambda_{cm}) \cdot \Phi\left( \frac{\mu_{\hat{s},a} - \mu_{\hat{s},v}}{\sqrt{\sigma_{\hat{s},a}^2 + \sigma_{\hat{s},v}^2}} \right).
-\end{equation}
-
-Note that when the priors differ between modalities ($\mu_{p,a} \neq \mu_{p,v}$), a systematic bias emerges even when physical durations are matched ($s_a = s_v$). This is the cross-modal bias that we measured and corrected for in the main bimodal experiment.
+where $\lambda_{cm}$ is the lapse rate, $\sigma_{cm}$ is the fitted psychometric slope, and $\mu_{cm}$ is the fitted cross-modal bias. Thus, $\mu_{cm}=0$ corresponds to no auditory--visual bias, whereas nonzero values indicate that one modality had to be physically longer or shorter for the two intervals to be perceived as equal. This fitted bias is the cross-modal bias that we measured and corrected for in the main bimodal experiment.
 
 \subsection{Models of audiovisual duration estimation}
 
