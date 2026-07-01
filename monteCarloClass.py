@@ -594,9 +594,51 @@ class OmerMonteCarlo(fitPychometric):
         fused_S_av = (J_AV_A * m_a + J_AV_V * m_v) / (J_AV_A + J_AV_V)
         return fused_S_av
 
+    # ---- Boxcar-prior point estimates ----
+    # The causal-structure inference (posterior_C1 via L_C1/L_C2) already uses
+    # the boxcar prior y ~ Uniform[t_min, t_max]. To be consistent, the duration
+    # point estimates must use the SAME prior. Under a Gaussian likelihood
+    # N(m; y, sigma^2) and a boxcar prior, the Bayes posterior mean of y is the
+    # mean of a truncated normal N(m, sigma^2) restricted to [t_min, t_max]:
+    #     E[y | m] = m + sigma * (phi(alpha) - phi(beta)) / (Phi(beta) - Phi(alpha))
+    # with alpha = (t_min - m)/sigma, beta = (t_max - m)/sigma.
+    # Using the raw m (or the plain precision-weighted fusion) instead is the
+    # improper-flat-prior estimate; that was the inconsistency being fixed here.
+    def truncated_normal_mean(self, mu, sigma, t_min, t_max):
+        """Posterior mean of the hidden duration under a Gaussian likelihood
+        centered at `mu` (scale `sigma`) and a boxcar prior on [t_min, t_max].
+
+        `mu` may be an array (Monte Carlo measurements); `sigma`, `t_min`,
+        `t_max` are scalars in the same space as `mu` (log space for the
+        log-normal / switching models, which pass log-transformed bounds)."""
+        mu = np.asarray(mu, dtype=float)
+        alpha = (t_min - mu) / sigma 
+        beta = (t_max - mu) / sigma
+        Z = norm.cdf(beta) - norm.cdf(alpha)
+        num = norm.pdf(alpha) - norm.pdf(beta)
+        # When the measurement is many sigma outside the box, the prior mass Z
+        # underflows to exactly 0 (0/0); the posterior then collapses onto the
+        # nearest boundary, which np.clip(mu, ...) recovers. The exact formula is
+        # used everywhere Z is representable (i.e. every draw that occurs with
+        # non-negligible probability).
+        safe = Z > 1e-300
+        est = mu + sigma * num / np.where(safe, Z, 1.0)
+        est = np.where(safe & np.isfinite(est), est, np.clip(mu, t_min, t_max))
+        # The true truncated mean always lies within the box.
+        return np.clip(est, t_min, t_max)
+
+    def fusionAV_boxcar(self, m_a, m_v, sigma_a, sigma_v, t_min, t_max):
+        """Common-cause (C=1) estimate under the boxcar prior: the precision-
+        weighted fusion posterior N(mu_c, sigma_c^2) passed through the
+        truncated-normal correction on [t_min, t_max]."""
+        J_a = 1.0 / sigma_a**2
+        J_v = 1.0 / sigma_v**2
+        mu_c = (J_a * m_a + J_v * m_v) / (J_a + J_v)
+        sigma_c = np.sqrt(1.0 / (J_a + J_v))
+        return self.truncated_normal_mean(mu_c, sigma_c, t_min, t_max)
 
 
-   # Vectorized causal inference functions 
+   # Vectorized causal inference functions
     def p_single(self,m,sigma,t_min,t_max):
         """p(m | C=2)     and Gaussian measurement noise N(m; y, sigma^2). 
         and Gaussian measurement noise N(m; y, sigma^2)."""
@@ -685,15 +727,15 @@ class OmerMonteCarlo(fitPychometric):
 
 
     def causalInference_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max):
-        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
+        # Boxcar-prior estimates for each causal structure (see truncated_normal_mean):
+        #   C=1 (common cause): truncated fusion posterior mean
+        #   C=2 (separate)    : truncated single-cue (auditory) posterior mean
+        est_C1 = self.fusionAV_boxcar(m_a, m_v, sigma_a, sigma_v, t_min, t_max)
+        est_C2 = self.truncated_normal_mean(m_a, sigma_a, t_min, t_max)
         # Calculate likelihoods
         post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
 
-        # convert back to linear scale if measurements are in log scale
-        # Note: logLinearMismatch measurements are already in linear scale (generated via exp(log-normal))
-
-
-        final_estimate = post_C1 * fused_S_av + (1 - post_C1) * m_a
+        final_estimate = post_C1 * est_C1 + (1 - post_C1) * est_C2
 
         return final_estimate
     
@@ -723,16 +765,16 @@ class OmerMonteCarlo(fitPychometric):
         """
         # Calculate posterior probability of common cause
         post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
-        
-        # Compute estimates for both causal structures
-        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
-        est_separate = m_a
-        
+
+        # Boxcar-prior estimates for both causal structures (see truncated_normal_mean)
+        fused_S_av = self.fusionAV_boxcar(m_a, m_v, sigma_a, sigma_v, t_min, t_max)
+        est_separate = self.truncated_normal_mean(m_a, sigma_a, t_min, t_max)
+
         # Sample causal structure using Bernoulli distribution based on posterior.
         # For each trial, use the fused estimate with probability P(C=1 | m).
         sampled_C1 = np.random.uniform(0, 1, size=np.shape(post_C1)) < post_C1
 
-        
+
         # Select estimate based on sampled causal structure
         final_estimate = sampled_C1 * fused_S_av + (1 - sampled_C1) * est_separate
         
@@ -768,11 +810,11 @@ class OmerMonteCarlo(fitPychometric):
         """
         # Calculate posterior probability of common cause
         post_C1 = self.posterior_C1(m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max)
-        
-        # Compute estimates for both causal structures
-        fused_S_av = self.fusionAV_vectorized(m_a, m_v, sigma_a, sigma_v)
-        est_separate = m_a
-        
+
+        # Boxcar-prior estimates for both causal structures (see truncated_normal_mean)
+        fused_S_av = self.fusionAV_boxcar(m_a, m_v, sigma_a, sigma_v, t_min, t_max)
+        est_separate = self.truncated_normal_mean(m_a, sigma_a, t_min, t_max)
+
         # Determine which causal structure is more probable
         # Handle both scalar and array cases
         if np.isscalar(post_C1):
@@ -785,21 +827,23 @@ class OmerMonteCarlo(fitPychometric):
         
         return final_estimate
 
-    def switching_vectorized(self, m_a, m_v, sigma_a, sigma_v):
+    def switching_vectorized(self, m_a, m_v, sigma_a, sigma_v, t_min, t_max):
         """
         Switching model - switch between auditory and visual estimates based on reliability.
-        
+
         This model randomly chooses between auditory and visual modalities for each trial,
         with the probability of choosing each modality based on their relative reliabilities.
         More reliable modalities (lower noise) are chosen more often.
-        
+
         Parameters:
         -----------
         m_a, m_v : array-like
             Auditory and visual measurements
         sigma_a, sigma_v : float
             Measurement noise standard deviations
-            
+        t_min, t_max : float
+            Boxcar-prior bounds (same space as the measurements)
+
         Returns:
         --------
         final_estimate : array
@@ -808,19 +852,23 @@ class OmerMonteCarlo(fitPychometric):
         # Determine which modality is more reliable (lower noise = higher reliability)
         # Probability of using visual = auditory noise^2 / (auditory noise^2 + visual noise^2)
         p_use_visual = sigma_a**2 / (sigma_a**2 + sigma_v**2)
-        
+
         # Handle array shape for random sampling
         if np.isscalar(m_a):
             shape = 1
         else:
             shape = m_a.shape
-        
+
         # Randomly decide which modality to use based on reliability
         use_visual = np.random.uniform(0, 1, size=shape) < p_use_visual
-        
+
+        # Boxcar-prior single-cue estimate for each modality (see truncated_normal_mean)
+        est_a = self.truncated_normal_mean(m_a, sigma_a, t_min, t_max)
+        est_v = self.truncated_normal_mean(m_v, sigma_v, t_min, t_max)
+
         # Select estimate based on chosen modality
-        final_estimate = (1 - use_visual) * m_a + use_visual * m_v
-        
+        final_estimate = (1 - use_visual) * est_a + use_visual * est_v
+
         return final_estimate
 
     def switching_with_conflict_vectorized(self, m_a, m_v, sigma_a, sigma_v, p_c, t_min, t_max, k):
@@ -866,26 +914,34 @@ class OmerMonteCarlo(fitPychometric):
         
         # Randomly decide which modality to use based on conflict-modulated probability
         use_visual = np.random.uniform(0, 1, size=shape) < p_visual
-        
+
+        # Boxcar-prior single-cue estimate for each modality (see truncated_normal_mean)
+        est_a = self.truncated_normal_mean(m_a, sigma_a, t_min, t_max)
+        est_v = self.truncated_normal_mean(m_v, sigma_v, t_min, t_max)
+
         # Select estimate based on chosen modality
-        final_estimate = (1 - use_visual) * m_a + use_visual * m_v
-        
+        final_estimate = (1 - use_visual) * est_a + use_visual * est_v
+
         return final_estimate
-    
-    def switching_free_vectorized(self, m_a, m_v, p_switch):
+
+    def switching_free_vectorized(self, m_a, m_v, p_switch, sigma_a, sigma_v, t_min, t_max):
         """
         Switching model with free switching probability parameter.
-        
+
         This model switches between auditory and visual estimates based on a free
         switching probability parameter p_switch, independent of noise levels.
-        
+
         Parameters:
         -----------
         m_a, m_v : array-like
             Auditory and visual measurements
         p_switch : float
             Probability of using visual estimate (0 = always auditory, 1 = always visual)
-            
+        sigma_a, sigma_v : float
+            Measurement noise standard deviations (for the boxcar-prior estimate)
+        t_min, t_max : float
+            Boxcar-prior bounds (same space as the measurements)
+
         Returns:
         --------
         final_estimate : array
@@ -896,13 +952,17 @@ class OmerMonteCarlo(fitPychometric):
             shape = 1
         else:
             shape = m_a.shape
-        
+
         # Randomly decide which modality to use based on p_switch
         use_visual = np.random.uniform(0, 1, size=shape) < p_switch
-        
+
+        # Boxcar-prior single-cue estimate for each modality (see truncated_normal_mean)
+        est_a = self.truncated_normal_mean(m_a, sigma_a, t_min, t_max)
+        est_v = self.truncated_normal_mean(m_v, sigma_v, t_min, t_max)
+
         # Select estimate based on chosen modality
-        final_estimate = (1 - use_visual) * m_a + use_visual * m_v
-        
+        final_estimate = (1 - use_visual) * est_a + use_visual * est_v
+
         return final_estimate
     
     
@@ -985,8 +1045,9 @@ class OmerMonteCarlo(fitPychometric):
             m_v_s = np.random.normal(S_v_s, sigma_av_v, nSimul)
             m_a_t = np.random.normal(S_a_t, sigma_av_a, nSimul)
             m_v_t = np.random.normal(S_v_t, sigma_av_v, nSimul)
-            est_standard = self.fusionAV_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
-            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            # Boxcar-prior fusion estimate (linear space)
+            est_standard = self.fusionAV_boxcar(m_a_s, m_v_s, sigma_av_a, sigma_av_v, t_min, t_max)
+            est_test = self.fusionAV_boxcar(m_a_t, m_v_t, sigma_av_a, sigma_av_v, t_min, t_max)
 
         elif self.modelName ==  "fusionOnlyLogNorm":
             nSimul = self.nSimul
@@ -996,10 +1057,10 @@ class OmerMonteCarlo(fitPychometric):
             m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
             m_a_t = np.random.normal(loc=np.log(S_a_t), scale=sigma_av_a, size=nSimul)
             m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
-            # Fusion in log space (fusionAV_vectorized works the same way for log-space values)
-            est_standard = self.fusionAV_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
+            # Boxcar-prior fusion estimate in LOG space (bounds are log-transformed), then exp back
+            est_standard = self.fusionAV_boxcar(m_a_s, m_v_s, sigma_av_a, sigma_av_v, np.log(t_min), np.log(t_max))
             est_standard=np.exp(est_standard)  # Convert back to linear space
-            est_test = self.fusionAV_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            est_test = self.fusionAV_boxcar(m_a_t, m_v_t, sigma_av_a, sigma_av_v, np.log(t_min), np.log(t_max))
             est_test=np.exp(est_test)  # Convert back to linear space
 
         elif self.modelName == "selection":
@@ -1024,9 +1085,9 @@ class OmerMonteCarlo(fitPychometric):
             m_v_s = np.random.normal(loc=np.log(S_v_s), scale=sigma_av_v, size=nSimul)
             m_v_t = np.random.normal(loc=np.log(S_v_t), scale=sigma_av_v, size=nSimul)
             
-            # Switching model estimates (in log space)
-            est_standard = self.switching_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v)
-            est_test = self.switching_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v)
+            # Switching model estimates (in log space; bounds are log-transformed)
+            est_standard = self.switching_vectorized(m_a_s, m_v_s, sigma_av_a, sigma_av_v, np.log(t_min), np.log(t_max))
+            est_test = self.switching_vectorized(m_a_t, m_v_t, sigma_av_a, sigma_av_v, np.log(t_min), np.log(t_max))
             
             # Note: Conversion to linear space happens later in the common section
 
@@ -1058,8 +1119,9 @@ class OmerMonteCarlo(fitPychometric):
             
             # For switchingFree, p_c is actually p_switch passed in
             p_switch = p_c
-            est_standard = self.switching_free_vectorized(m_a_s, m_v_s, p_switch)
-            est_test = self.switching_free_vectorized(m_a_t, m_v_t, p_switch)
+            # Estimates in LOG space (bounds are log-transformed)
+            est_standard = self.switching_free_vectorized(m_a_s, m_v_s, p_switch, sigma_av_a, sigma_av_v, np.log(t_min), np.log(t_max))
+            est_test = self.switching_free_vectorized(m_a_t, m_v_t, p_switch, sigma_av_a, sigma_av_v, np.log(t_min), np.log(t_max))
             
             # Note: Conversion to linear space happens later in the common section
 
@@ -2110,5 +2172,3 @@ if __name__ == "__main__":
     # Simulate and plot psychometric data
     uniqueSensory = np.unique(data[sensoryVar])
     uniqueConflict = np.unique(data[conflictVar])
-
-
