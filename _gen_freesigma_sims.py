@@ -24,12 +24,13 @@ MODELS = ['lognorm', 'fusionOnlyLogNorm', 'switchingFree']
 VARIANT = 'LapseFix_sharedPrior'    # fixed/shared single lapse (canonical), free sigma
 N_PASSES = 10                       # concat passes -> density comparable to originals
 NSIMUL = 2000
-OUT_ROOT = 'simulated_data_freeSigma'
+OUT_ROOT = 'simulated_data_boxcar'
 
 
 def simulate_one(pid, model):
-    anon = PID_TO_ANON[pid]
-    fit_path = f'model_fits/{anon}/{anon}_{model}_{VARIANT}_fit.json'
+    # Boxcar refits live under lowercase pid folders (model_fits/boxcarFits/<pid>/),
+    # not the anonymized P0x free-sigma tree.
+    fit_path = f'model_fits/boxcarFits/{pid}/{pid}_{model}_{VARIANT}_fit.json'
     if not os.path.exists(fit_path):
         return None, f'missing fit {fit_path}'
     params = json.load(open(fit_path))['fittedParams']
