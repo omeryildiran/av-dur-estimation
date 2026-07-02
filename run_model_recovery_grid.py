@@ -64,9 +64,12 @@ SIGMA_LEVELS = {
         'sigma_v': (0.30, 0.70),
     },
     'd': {
-        'label':   'd empirical [σa:0.11–0.48, σv:0.14–1.60]',
-        'sigma_a': (0.11, 0.48),
-        'sigma_v': (0.14, 1.60),
+        # >>> OMER — CHOOSE HERE: empirical σ-regime range for the 'd' cell.
+        # Boxcar-consistent (min–max of the boxcar lognorm fits, n=11). Old non-boxcar
+        # values were σa:0.11–0.48, σv:0.14–1.60 — restore those for the original regime.
+        'label':   'd empirical [σa:0.12–0.66, σv:0.26–1.13]',
+        'sigma_a': (0.12, 0.66),
+        'sigma_v': (0.26, 1.13),
     },
 }
 
@@ -81,11 +84,13 @@ MODELS_DEFAULT = [
 LAMBDA_RANGE = (0.001, 0.40)
 PC_RANGE     = (0.001, 0.999)
 
-# Empirical group-level stats for sigma level 'd' (Normal sampling)
-# Source: lognorm fits to n=12 participants
+# Empirical group-level stats for sigma level 'd' (Normal sampling).
+# >>> OMER — CHOOSE HERE: boxcar-consistent (mean, std) from the boxcar lognorm fits,
+# n=11 (model_fits/boxcarFits/*_lognorm_LapseFix_sharedPrior_fit.json). Old non-boxcar
+# values were sigma_a:(0.277, 0.105), sigma_v:(0.559, 0.375) — restore for original regime.
 _SIGMA_D_NORMAL = {
-    'sigma_a': (0.277, 0.105),  # (mean, std)
-    'sigma_v': (0.559, 0.375),
+    'sigma_a': (0.315, 0.169),  # (mean, std)
+    'sigma_v': (0.533, 0.291),
 }
 
 ABBR = {
@@ -370,8 +375,11 @@ def main():
                         help='Optimiser restarts (default 3; was 5).')
     parser.add_argument('--delta_max_pct',     type=float, default=0.90)
     parser.add_argument('--n_jobs',            type=int,   default=None)
+    # >>> OMER — CHOOSE HERE: output dir. Default is the boxcar-consistent dir (keeps the
+    # old non-boxcar grid intact). Pass --save_dir model_recovery_grid_results_logfixed_ns1_nsim2000
+    # to overwrite the original. Must match GRID_DIR in grid_recovery_summary.ipynb.
     parser.add_argument('--save_dir',          type=str,
-                        default='model_recovery_grid_results')
+                        default='model_recovery_grid_results_boxcar_ns1_nsim2000')
     parser.add_argument('--save_every',        type=int,   default=1,
                         help='Checkpoint to JSON every N completed iterations '
                              '(default 1 = save after every iteration). '

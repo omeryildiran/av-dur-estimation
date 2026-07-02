@@ -35,23 +35,27 @@ import loadData
 import monteCarloClass
 
 
-def load_group_parameter_statistics(model_name, participants=None):
+def load_group_parameter_statistics(model_name, participants=None,
+                                    model_fits_dir="model_fits/boxcarFits"):
     """
     Load fitted parameters for all participants and compute group statistics.
-    
+
     Args:
         model_name: Name of the model (e.g., 'lognorm', 'fusionOnlyLogNorm')
         participants: Optional list of participant IDs. If None, loads all available.
-    
+        model_fits_dir: Directory of per-participant fits that define the empirical
+            parameter regime we sample from.
+            >>> OMER — CHOOSE HERE:
+            'model_fits/boxcarFits' -> boxcar-consistent recovery (matches the boxcar
+                prior now used in monteCarloClass); this is the default.
+            'model_fits'            -> the original free-sigma (non-boxcar) fits.
+
     Returns:
         dict with 'mean', 'std', 'n_participants', 'all_params' for each parameter
     """
     # Model name to filename mapping
     # LapseFix = sharedLambda=True (one shared lambda across conflict conditions)
     model_suffix = f"{model_name}_LapseFix_sharedPrior"
-    
-    # Find all participant directories
-    model_fits_dir = "model_fits"
     if participants is None:
         participant_dirs = [d for d in os.listdir(model_fits_dir) 
                           if os.path.isdir(os.path.join(model_fits_dir, d)) 
@@ -331,13 +335,21 @@ def main():
                         help='Monte Carlo simulations for fitting')
     parser.add_argument('--nStarts', type=int, default=1,
                         help='Optimization starting points')
-    parser.add_argument('--save_dir', type=str, default='model_recovery_results_group',
+    # >>> OMER — CHOOSE HERE: output dir. Default is the boxcar-consistent dir (keeps the
+    # old non-boxcar results intact). Pass --save_dir model_recovery_results_group_logfixed_ns1_nsim2000
+    # to overwrite the original non-boxcar results instead. Must match EMP_DIR /
+    # PARAM_RECOV_EMP_DIR in grid_recovery_summary.ipynb.
+    parser.add_argument('--save_dir', type=str, default='model_recovery_results_group_boxcar_ns1_nsim2000',
                         help='Directory to save results')
+    # >>> OMER — CHOOSE HERE: which fits define the empirical parameter regime to sample.
+    # 'model_fits/boxcarFits' = boxcar-consistent (default); 'model_fits' = original free-sigma.
+    parser.add_argument('--model_fits_dir', type=str, default='model_fits/boxcarFits',
+                        help='Per-participant fits dir used for group-level parameter sampling')
     parser.add_argument('--n_jobs', type=int, default=None,
                         help='Number of parallel jobs (default: number of CPUs - 1)')
     parser.add_argument('--template_participant', type=str, default='as',
                         help='Participant ID to use as template for experimental design')
-    
+
     args = parser.parse_args()
     
     # Determine number of parallel workers
@@ -368,9 +380,10 @@ def main():
     # Load group statistics for each model
     print("\nLoading group parameter statistics...")
     group_stats_dict = {}
+    print(f"  (empirical parameter regime from: {args.model_fits_dir})")
     for model in args.models:
         try:
-            stats = load_group_parameter_statistics(model)
+            stats = load_group_parameter_statistics(model, model_fits_dir=args.model_fits_dir)
             group_stats_dict[model] = stats
             print(f"  {model}: {stats['n_participants']} participants, {len(stats['mean'])} params")
         except Exception as e:
