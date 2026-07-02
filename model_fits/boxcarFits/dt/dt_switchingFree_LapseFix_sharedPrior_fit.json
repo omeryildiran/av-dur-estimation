@@ -1,0 +1,17 @@
+{
+    "participantID": "dt",
+    "modelType": "switchingFree_LapseFix_sharedPrior",
+    "noiseLabel": null,
+    "fittedParams": [
+        0.23446224969638196,
+        0.11794513232332426,
+        0.4751253869836106,
+        0.27206811688584764,
+        0.1647082518653955,
+        0.6540304117343367
+    ],
+    "AIC": 2549.7969784063166,
+    "BIC": 2574.47907148531,
+    "logLikelihood": -1268.8984892031583,
+    "n_conditions": 452
+}
