@@ -694,7 +694,7 @@ class OmerMonteCarlo(fitPychometric):
         #     integral = max(integral, 1e-10)
         #     return integral
                 
-        return prior * sigma_c/np.sqrt(sigma_a**2 * sigma_v**2) * (hi_cdf-lo_cdf) * expo
+        return prior * sigma_c/np.sqrt(2 * np.pi * sigma_a**2 * sigma_v**2) * (hi_cdf-lo_cdf) * expo
 
 
     def posterior_C1(self,m_a,m_v,sigma_a,
