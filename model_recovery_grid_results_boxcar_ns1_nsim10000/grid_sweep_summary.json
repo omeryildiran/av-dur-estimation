@@ -1,0 +1,367 @@
+{
+  "args": {
+    "sigma_levels": [
+      "a",
+      "b",
+      "c",
+      "d"
+    ],
+    "conflict_levels": [
+      0.25,
+      0.45
+    ],
+    "models": [
+      "lognorm",
+      "fusionOnlyLogNorm",
+      "switchingFree"
+    ],
+    "n_iter": 50,
+    "n_conflict_steps": 9,
+    "n_trials_per_cell": 20,
+    "nSimul": 10000,
+    "nStarts": 1,
+    "delta_max_pct": 0.9,
+    "n_jobs": 32,
+    "save_dir": "model_recovery_grid_results_boxcar_ns1_nsim10000",
+    "save_every": 1,
+    "force": false,
+    "no_nstart_plots": false,
+    "pilot": false
+  },
+  "sigma_levels": {
+    "a": {
+      "label": "a [0.01\u20130.20]",
+      "sigma_a": [
+        0.01,
+        0.2
+      ],
+      "sigma_v": [
+        0.01,
+        0.2
+      ]
+    },
+    "b": {
+      "label": "b [0.20\u20130.40]",
+      "sigma_a": [
+        0.2,
+        0.4
+      ],
+      "sigma_v": [
+        0.2,
+        0.4
+      ]
+    },
+    "c": {
+      "label": "c [0.30\u20130.70]",
+      "sigma_a": [
+        0.3,
+        0.7
+      ],
+      "sigma_v": [
+        0.3,
+        0.7
+      ]
+    },
+    "d": {
+      "label": "d empirical [\u03c3a:0.12\u20130.66, \u03c3v:0.26\u20131.13]",
+      "sigma_a": [
+        0.12,
+        0.66
+      ],
+      "sigma_v": [
+        0.26,
+        1.13
+      ]
+    }
+  },
+  "grid": [
+    {
+      "sigma_key": "a",
+      "sigma_label": "a [0.01\u20130.20]",
+      "sigma_a_range": [
+        0.01,
+        0.2
+      ],
+      "sigma_v_range": [
+        0.01,
+        0.2
+      ],
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.7666666666666666,
+      "per_model_diag_aic": {
+        "lognorm": 0.72,
+        "fusionOnlyLogNorm": 0.8,
+        "switchingFree": 0.78
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 36,
+          "fusionOnlyLogNorm": 13,
+          "switchingFree": 1
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 10,
+          "fusionOnlyLogNorm": 40,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 8,
+          "switchingFree": 39
+        }
+      }
+    },
+    {
+      "sigma_key": "a",
+      "sigma_label": "a [0.01\u20130.20]",
+      "sigma_a_range": [
+        0.01,
+        0.2
+      ],
+      "sigma_v_range": [
+        0.01,
+        0.2
+      ],
+      "conflict_max": 0.45,
+      "mean_diag_recovery_aic": 0.8666666666666666,
+      "per_model_diag_aic": {
+        "lognorm": 0.7,
+        "fusionOnlyLogNorm": 0.96,
+        "switchingFree": 0.94
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 35,
+          "fusionOnlyLogNorm": 12,
+          "switchingFree": 3
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 2,
+          "fusionOnlyLogNorm": 48,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 2,
+          "fusionOnlyLogNorm": 1,
+          "switchingFree": 47
+        }
+      }
+    },
+    {
+      "sigma_key": "b",
+      "sigma_label": "b [0.20\u20130.40]",
+      "sigma_a_range": [
+        0.2,
+        0.4
+      ],
+      "sigma_v_range": [
+        0.2,
+        0.4
+      ],
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.6666666666666666,
+      "per_model_diag_aic": {
+        "lognorm": 0.62,
+        "fusionOnlyLogNorm": 0.82,
+        "switchingFree": 0.56
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 31,
+          "fusionOnlyLogNorm": 16,
+          "switchingFree": 3
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 8,
+          "fusionOnlyLogNorm": 41,
+          "switchingFree": 1
+        },
+        "switchingFree": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 19,
+          "switchingFree": 28
+        }
+      }
+    },
+    {
+      "sigma_key": "b",
+      "sigma_label": "b [0.20\u20130.40]",
+      "sigma_a_range": [
+        0.2,
+        0.4
+      ],
+      "sigma_v_range": [
+        0.2,
+        0.4
+      ],
+      "conflict_max": 0.45,
+      "mean_diag_recovery_aic": 0.9333333333333332,
+      "per_model_diag_aic": {
+        "lognorm": 0.96,
+        "fusionOnlyLogNorm": 0.96,
+        "switchingFree": 0.88
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 48,
+          "fusionOnlyLogNorm": 1,
+          "switchingFree": 1
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 2,
+          "fusionOnlyLogNorm": 48,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 3,
+          "switchingFree": 44
+        }
+      }
+    },
+    {
+      "sigma_key": "c",
+      "sigma_label": "c [0.30\u20130.70]",
+      "sigma_a_range": [
+        0.3,
+        0.7
+      ],
+      "sigma_v_range": [
+        0.3,
+        0.7
+      ],
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.5,
+      "per_model_diag_aic": {
+        "lognorm": 0.34,
+        "fusionOnlyLogNorm": 0.86,
+        "switchingFree": 0.3
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 17,
+          "fusionOnlyLogNorm": 27,
+          "switchingFree": 6
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 3,
+          "fusionOnlyLogNorm": 43,
+          "switchingFree": 4
+        },
+        "switchingFree": {
+          "lognorm": 2,
+          "fusionOnlyLogNorm": 33,
+          "switchingFree": 15
+        }
+      }
+    },
+    {
+      "sigma_key": "c",
+      "sigma_label": "c [0.30\u20130.70]",
+      "sigma_a_range": [
+        0.3,
+        0.7
+      ],
+      "sigma_v_range": [
+        0.3,
+        0.7
+      ],
+      "conflict_max": 0.45,
+      "mean_diag_recovery_aic": 0.8933333333333332,
+      "per_model_diag_aic": {
+        "lognorm": 1.0,
+        "fusionOnlyLogNorm": 0.88,
+        "switchingFree": 0.8
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 50,
+          "fusionOnlyLogNorm": 0,
+          "switchingFree": 0
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 6,
+          "fusionOnlyLogNorm": 44,
+          "switchingFree": 0
+        },
+        "switchingFree": {
+          "lognorm": 6,
+          "fusionOnlyLogNorm": 4,
+          "switchingFree": 40
+        }
+      }
+    },
+    {
+      "sigma_key": "d",
+      "sigma_label": "d empirical [\u03c3a:0.12\u20130.66, \u03c3v:0.26\u20131.13]",
+      "sigma_a_range": [
+        0.12,
+        0.66
+      ],
+      "sigma_v_range": [
+        0.26,
+        1.13
+      ],
+      "conflict_max": 0.25,
+      "mean_diag_recovery_aic": 0.5364259178848845,
+      "per_model_diag_aic": {
+        "lognorm": 0.2653061224489796,
+        "fusionOnlyLogNorm": 0.8333333333333334,
+        "switchingFree": 0.5106382978723404
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 13,
+          "fusionOnlyLogNorm": 28,
+          "switchingFree": 8
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 7,
+          "fusionOnlyLogNorm": 40,
+          "switchingFree": 1
+        },
+        "switchingFree": {
+          "lognorm": 4,
+          "fusionOnlyLogNorm": 19,
+          "switchingFree": 24
+        }
+      }
+    },
+    {
+      "sigma_key": "d",
+      "sigma_label": "d empirical [\u03c3a:0.12\u20130.66, \u03c3v:0.26\u20131.13]",
+      "sigma_a_range": [
+        0.12,
+        0.66
+      ],
+      "sigma_v_range": [
+        0.26,
+        1.13
+      ],
+      "conflict_max": 0.45,
+      "mean_diag_recovery_aic": 0.857648525028266,
+      "per_model_diag_aic": {
+        "lognorm": 0.782608695652174,
+        "fusionOnlyLogNorm": 0.8541666666666666,
+        "switchingFree": 0.9361702127659575
+      },
+      "confusion_aic": {
+        "lognorm": {
+          "lognorm": 36,
+          "fusionOnlyLogNorm": 5,
+          "switchingFree": 5
+        },
+        "fusionOnlyLogNorm": {
+          "lognorm": 6,
+          "fusionOnlyLogNorm": 41,
+          "switchingFree": 1
+        },
+        "switchingFree": {
+          "lognorm": 1,
+          "fusionOnlyLogNorm": 2,
+          "switchingFree": 44
+        }
+      }
+    }
+  ]
+}

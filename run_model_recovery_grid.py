@@ -379,7 +379,7 @@ def main():
     # old non-boxcar grid intact). Pass --save_dir model_recovery_grid_results_logfixed_ns1_nsim2000
     # to overwrite the original. Must match GRID_DIR in grid_recovery_summary.ipynb.
     parser.add_argument('--save_dir',          type=str,
-                        default='model_recovery_grid_results_boxcar_ns1_nsim2000')
+                        default='model_recovery_grid_results_boxcar_ns1_nsim10000')
     parser.add_argument('--save_every',        type=int,   default=1,
                         help='Checkpoint to JSON every N completed iterations '
                              '(default 1 = save after every iteration). '
