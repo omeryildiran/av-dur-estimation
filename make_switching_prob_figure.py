@@ -1,9 +1,9 @@
 """Fitted switching probabilities p_v (toward vision) per auditory-noise condition.
 
 Mechanistic figure for the cue-switching account: each participant's fitted
-probability of relying on vision rises with auditory noise. Source: free-sigma
-switchingFree fits (model_fits/, LapseFix sharedPrior). Saves to repo root and
-ms_latex/assets/figures/.
+probability of relying on vision rises with auditory noise. Source: boxcar
+switchingFree fits (model_fits/boxcarFits/, LapseFix sharedPrior). Saves to the
+repo root and ms_latex/assets/figures/.
 """
 import json
 from pathlib import Path
@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import wilcoxon
 
 PIDS = ['as', 'dt', 'hh', 'ip', 'ln2', 'mh', 'ml', 'mt', 'oy', 'qs', 'sx']
+MODEL_FITS_DIR = Path('model_fits/boxcarFits')
 PARTICIPANT_COLORS = {
     pid: plt.get_cmap('tab20', len(PIDS))(i) for i, pid in enumerate(PIDS)
 }
@@ -20,7 +21,7 @@ PARTICIPANT_COLORS = {
 # (display reorder [0,1,4,2,3,5] -> [lambda, sa_l, sa_h, sv, p_v_l, p_v_h]); p_v_l=raw[3], p_v_h=raw[5]
 rows = []
 for pid in PIDS:
-    fit_path = Path('model_fits') / pid / f'{pid}_switchingFree_LapseFix_sharedPrior_fit.json'
+    fit_path = MODEL_FITS_DIR / pid / f'{pid}_switchingFree_LapseFix_sharedPrior_fit.json'
     with fit_path.open() as fh:
         d = json.load(fh)
     p = d['fittedParams']
