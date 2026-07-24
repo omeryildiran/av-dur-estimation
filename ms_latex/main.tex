@@ -474,15 +474,15 @@ We complemented these criteria with random-effects Bayesian model selection, whi
 %%%% ------
 
 %%% --- adding this: switching-probability mechanism (figure + paragraph) ---
-% Reproducibility: make_switching_prob_figure.py -> switching_probability_by_noise.{pdf,png}; reads model_fits/<pid>/<pid>_switchingFree_LapseFix_sharedPrior_fit.json (p_v,low = fittedParams[3], p_v,high = fittedParams[5]).
+% Reproducibility: make_switching_prob_figure.py -> switching_probability_by_noise.{pdf,png}; reads model_fits/boxcarFits/<pid>/<pid>_switchingFree_LapseFix_sharedPrior_fit.json (p_v,low = fittedParams[3], p_v,high = fittedParams[5]).
 
 \subsubsection{Switching probabilities increase with auditory noise}
-Beyond model comparison, the parameters of the favored model were themselves consistent with the cue-switching account. The fitted probability of relying on the visual duration ($p_v$) increased markedly with auditory noise, rising from a group mean of $0.17$ under low auditory noise to $0.53$ under high auditory noise (Wilcoxon signed-rank test, $p < 0.001$; an increase in $11$ of $11$ participants; Figure~\ref{fig:switchingProb}). Thus, observers were estimated to rely on the visual duration roughly half of the time when auditory reliability was low, but only about one in six trials when it was high, providing a concrete and consistent mechanism for the noise-dependent visual bias.
+Beyond model comparison, the parameters of the favored model were themselves consistent with the cue-switching account. The fitted probability of relying on the visual duration ($p_v$) increased markedly with auditory noise, rising from a group mean of $0.25$ under low auditory noise to $0.62$ under high auditory noise (Wilcoxon signed-rank test, $p = 0.001$; an increase in $11$ of $11$ participants; Figure~\ref{fig:switchingProb}). Thus, observers were estimated to rely on the visual duration on roughly one-quarter of trials when auditory noise was low and nearly two-thirds of trials when it was high, providing a concrete and consistent mechanism for the noise-dependent visual bias.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.55\linewidth]{assets/figures/switching_probability_by_noise.pdf}
-    \caption{\textbf{Fitted switching probabilities increase with auditory noise.} Each colored thin line shows one participant's fitted probability of relying on the visual duration ($p_v$) in the low- and high-auditory-noise conditions, estimated from the probabilistic cue-switching model (free sensory-noise fits). The probability of relying on vision increased with auditory noise in $11$ of $11$ participants (group means $0.17 \rightarrow 0.53$; Wilcoxon signed-rank $p < 0.001$). Black diamonds and line show group means $\pm$ SEM.}
+    \caption{\textbf{Fitted switching probabilities increase with auditory noise.} Each colored thin line shows one participant's fitted probability of relying on the visual duration ($p_v$) in the low- and high-auditory-noise conditions, estimated from the probabilistic cue-switching model (boxcar fits). The probability of relying on vision increased with auditory noise in $11$ of $11$ participants (group means $0.25 \rightarrow 0.62$; Wilcoxon signed-rank $p = 0.001$). Black diamonds and line show group means $\pm$ SEM.}
     \label{fig:switchingProb}
 \end{figure}
 %%% --- end added section ---
