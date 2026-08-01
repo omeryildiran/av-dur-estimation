@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  31 JUL 2026 23:06
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  31 JUL 2026 23:55
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -769,15 +769,15 @@ LaTeX Warning: Hyper reference `app:appendix' on page 11 undefined on input line
 LaTeX Warning: Hyper reference `causal_inf_equations' on page 11 undefined on input line 341.
 
 
-Overfull \hbox (25.93639pt too wide) detected at line 352
+
+
+Overfull \hbox (22.24901pt too wide) detected at line 352
 []
  []
 
 
-
-
-Overfull \hbox (212.997pt too wide) detected at line 374
-[][][]\OML/cmm/m/it/10 P\OT1/cmr/m/n/10 ([] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 S[]; S[]\OT1/cmr/m/n/10 ) = [] [] \U/msb/m/n/10 I  [] \OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 S[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 S[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dm[] dm[];
+Overfull \hbox (200.87209pt too wide) detected at line 374
+[][][]\OML/cmm/m/it/10 P\OT1/cmr/m/n/10 ([] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 s[]; s[]\OT1/cmr/m/n/10 ) = [] [] \U/msb/m/n/10 I  [] \OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 s[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 s[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dm[] dm[];
  []
 
 
@@ -803,17 +803,17 @@ Package pdftex.def Info: assets/figures/aggregated_sigma_vs_models_freeMuSigmaLa
 (pdftex.def)             Requested size: 260.34271pt x 154.50705pt.
 
 
-[12 <./assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf> <./assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>]
+[12 <./assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>]
 
 Package natbib Warning: Citation `acerbi2017practical' on page 13 undefined on input line 411.
+
+
 
 
 Package natbib Warning: Citation `badde2020modality' on page 13 undefined on input line 413.
 
 
 LaTeX Warning: Reference `fig:AppendixConflictPSE_unimodal_fits' on page 13 undefined on input line 413.
-
-
 
 
 LaTeX Warning: Reference `fig:modelComparison' on page 13 undefined on input line 416.
@@ -825,18 +825,20 @@ LaTeX Warning: Reference `fig:pseConflictModel' on page 13 undefined on input li
 LaTeX Warning: Reference `fig:modelComparison' on page 13 undefined on input line 427.
 
 
-LaTeX Warning: Reference `fig:modelComparison' on page 13 undefined on input line 429.
 
-<assets/figures/modelComparison_threeModels_heatmap.pdf, id=495, 852.94281pt x 826.55627pt>
+[13 <./assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>]
+
+LaTeX Warning: Reference `fig:modelComparison' on page 14 undefined on input line 429.
+
+<assets/figures/modelComparison_threeModels_heatmap.pdf, id=501, 852.94281pt x 826.55627pt>
 File: assets/figures/modelComparison_threeModels_heatmap.pdf Graphic file (type pdf)
 <use assets/figures/modelComparison_threeModels_heatmap.pdf>
 Package pdftex.def Info: assets/figures/modelComparison_threeModels_heatmap.pdf  used on input line 434.
 (pdftex.def)             Requested size: 156.20721pt x 151.37183pt.
 
-
-[13]
-
 LaTeX Warning: Reference `fig:modelComparison' on page 14 undefined on input line 443.
+
+
 
 
 LaTeX Warning: Reference `fig:modelComparison' on page 14 undefined on input line 445.
@@ -850,8 +852,6 @@ Overfull \hbox (4.4537pt too wide) in paragraph at lines 452--453
  []
 
 
-
-
 Package natbib Warning: Citation `stephan2009bayesian' on page 14 undefined on input line 460.
 
 
@@ -862,14 +862,15 @@ Underfull \hbox (badness 6978) in paragraph at lines 460--462
 []\T1/ptm/m/n/10 We com-ple-mented these cri-te-ria with random-effects
  []
 
-<assets/figures/sumDeltaAIC_threeModels.pdf, id=503, 786.64642pt x 386.08453pt>
+
+
+[14 <./assets/figures/modelComparison_threeModels_heatmap.pdf>]
+<assets/figures/sumDeltaAIC_threeModels.pdf, id=567, 786.64642pt x 386.08453pt>
 File: assets/figures/sumDeltaAIC_threeModels.pdf Graphic file (type pdf)
 <use assets/figures/sumDeltaAIC_threeModels.pdf>
 Package pdftex.def Info: assets/figures/sumDeltaAIC_threeModels.pdf  used on input line 465.
 (pdftex.def)             Requested size: 208.27496pt x 102.21765pt.
 
-
-[14 <./assets/figures/modelComparison_threeModels_heatmap.pdf>]
 
 LaTeX Warning: Reference `fig:switchingProb' on page 15 undefined on input line 476.
 
@@ -1019,7 +1020,7 @@ LaTeX Warning: Reference `eq:posterior_difference' on page 19 undefined on input
 
 
 [19]
-Overfull \hbox (42.37152pt too wide) detected at line 708
+Overfull \hbox (42.58684pt too wide) detected at line 708
 [][][][] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 ^^V[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[][];  [] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;  ^^L[] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;
  []
 
@@ -1038,11 +1039,11 @@ Overfull \hbox (33.42908pt too wide) detected at line 779
  []
 
 
+
+
 Overfull \hbox (25.7926pt too wide) detected at line 788
 [][][]\OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 ) = \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ;  0\OML/cmm/m/it/10 ;  ^^[[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[]\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ;  \OML/cmm/m/it/10 ^^V[];  ^^[[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 ;
  []
-
-
 
 
 Overfull \hbox (144.169pt too wide) detected at line 800
@@ -1060,24 +1061,24 @@ Overfull \hbox (71.8732pt too wide) detected at line 835
  []
 
 
+
+[21]
 Overfull \hbox (68.92096pt too wide) detected at line 843
 []
  []
 
 
-
-[21]
 Overfull \hbox (93.52818pt too wide) detected at line 851
 [][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 1\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 m[]; m[]\OT1/cmr/m/n/10 ) = []\OML/cmm/m/it/10 ;
  []
 
 
-Overfull \hbox (41.22273pt too wide) detected at line 871
+Overfull \hbox (41.43805pt too wide) detected at line 871
 [][][][] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 ^^V[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[][];  [] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;  ^^L[] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;
  []
 
 
-Overfull \hbox (62.31055pt too wide) detected at line 882
+Overfull \hbox (62.52586pt too wide) detected at line 882
 [][][][] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 m[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[][];  [] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;  ^^L[] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 :
  []
 
@@ -1247,6 +1248,10 @@ LaTeX Warning: Reference `fig:AppendixConflictPSE_free' on page 22 undefined on 
 
 
 [22]
+Overfull \vbox (10.82497pt too high) has occurred while \output is active []
+
+
+
 
 LaTeX Warning: File `assets/figures/posterior_overlay_per_subject_v3.pdf' not found on input line 914.
 
@@ -1313,8 +1318,6 @@ Missing character: There is no . in font nullfont!
 Missing character: There is no p in font nullfont!
 Missing character: There is no d in font nullfont!
 Missing character: There is no f in font nullfont!
-
-
 
 LaTeX Warning: Reference `fig:posterior_individual' on page 23 undefined on input line 922.
 
@@ -1426,20 +1429,23 @@ Package pdftex.def Info: assets/figures/grid_three_model_confusion_matrices.pdf 
 (pdftex.def)             Requested size: 260.34332pt x 136.52983pt.
 
 
-[27]
-
-<assets/figures/low_noise_visual_noise_inflation.pdf, id=1030, 382.28493pt x 307.67308pt>
+[27 <./assets/figures/grid_three_model_confusion_matrices.pdf>]
+<assets/figures/low_noise_visual_noise_inflation.pdf, id=1122, 382.28493pt x 307.67308pt>
 File: assets/figures/low_noise_visual_noise_inflation.pdf Graphic file (type pdf)
 <use assets/figures/low_noise_visual_noise_inflation.pdf>
 Package pdftex.def Info: assets/figures/low_noise_visual_noise_inflation.pdf  used on input line 1035.
 (pdftex.def)             Requested size: 150.99924pt x 121.52719pt.
-(./main_jov.bbl)
+ (./main_jov.bbl)
 
 Package natbib Warning: There were undefined citations.
 
 
 
-[28 <./assets/figures/grid_three_model_confusion_matrices.pdf> <./assets/figures/low_noise_visual_noise_inflation.pdf>] (./main_jov.aux)
+
+
+[28
+
+ <./assets/figures/low_noise_visual_noise_inflation.pdf>] (./main_jov.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -1463,13 +1469,13 @@ Package rerunfilecheck Info: Checksums for `main_jov.out':
 Here is how much of TeX's memory you used:
  11728 strings out of 474662
  192641 string characters out of 5751110
- 585322 words of memory out of 5000000
+ 584322 words of memory out of 5000000
  34422 multiletter control sequences out of 15000+600000
  605828 words of font info for 91 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
  90i,22n,93p,2263b,531s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx0800.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss0800.375pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss1000.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx1440.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx2074.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss0800.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsi0800.600pk></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmri8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on main_jov.pdf (28 pages, 1450868 bytes).
+Output written on main_jov.pdf (28 pages, 1453322 bytes).
 PDF statistics:
  1557 PDF objects out of 1728 (max. 8388607)
  543 compressed objects within 6 object streams

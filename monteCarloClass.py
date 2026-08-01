@@ -705,23 +705,16 @@ class OmerMonteCarlo(fitPychometric):
         L1 = self.L_C1(m_a, m_v, sigma_a, sigma_v, t_min, t_max)  
         L2 = self.L_C2(m_a, m_v, sigma_a, sigma_v, t_min, t_max)  # Fixed: consistent parameter order
         
-        # posterior with numerical stability
-        denominator = L1*p_c + L2*(1-p_c)
-        
-        lratio = L1 / (L2+1e-20)
-        postC1=lratio * p_c / (lratio * p_c + (1 - p_c))
-        return postC1
-        # # Handle both scalar and array cases
-        # if np.isscalar(denominator):
-        #     if denominator == 0:
-        #         postC1 = p_c
-        #     else:
-        #         postC1 = L1*p_c / denominator
-        # else:
-        #     # Array case - use np.where to handle element-wise
-        #     postC1 = np.where(denominator == 0, p_c, L1*p_c / denominator)
-        
-        return postC1
+        # Bayes rule with an explicit fallback for joint likelihood underflow.
+        # If both likelihoods are numerically zero, the measurements provide no
+        # usable evidence and the posterior safely reverts to the prior p_c.
+        weighted_L1 = np.asarray(L1, dtype=float) * p_c
+        weighted_L2 = np.asarray(L2, dtype=float) * (1 - p_c)
+        denominator = weighted_L1 + weighted_L2
+        postC1 = np.full_like(denominator, p_c, dtype=float)
+        np.divide(weighted_L1, denominator, out=postC1,
+                  where=np.isfinite(denominator) & (denominator > 0))
+        return np.clip(postC1, 0.0, 1.0)
             
             
 

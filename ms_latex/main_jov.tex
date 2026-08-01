@@ -289,11 +289,11 @@ To explain participants' behavior in the audiovisual duration-conflict task, we 
 All models assume that internal representations of auditory and visual durations are noisy. To capture Weber-like scaling of temporal uncertainty (scalar variability), we assume that durations are encoded in logarithmic space with additive Gaussian noise: 
 
 \begin{equation}
-p(m_a \mid s_a) \sim \mathcal{N}(\log s_a,\sigma_a^2), \qquad
-p(m_v \mid s_v) \sim \mathcal{N}(\log s_v,\sigma_v^2).
+m_a \mid s_a \sim \mathcal{N}(\log s_a,\sigma_a^2), \qquad
+m_v \mid s_v \sim \mathcal{N}(\log s_v,\sigma_v^2).
 \end{equation}
 
-\noindent Here, $s_a$ and $s_v$ denote stimulus durations in linear time units, whereas $m_a$ and $m_v$ represent internal measurements in log-duration space. Because encoding noise is Gaussian in log space, the implied distribution of internal measurements expressed in linear time is log-normal. This formulation naturally produces scalar variability, such that uncertainty scales proportionally with stimulus duration. Scalar variability is a characteristic feature of perception of time and motivates this log-duration encoding. Thus, both encoding and decoding are performed in log-duration space \citep{killeen1987optimal, wittmann2009inner,ren2020ensemble}.
+\noindent Here, $s_a$ and $s_v$ denote stimulus durations in linear time units, and $y_a=\log s_a$ and $y_v=\log s_v$ denote the corresponding latent log-durations. The variables $m_a$ and $m_v$ represent noisy internal measurements in log-duration space. Because encoding noise is Gaussian in log space, the implied distribution of internal measurements expressed in linear time is log-normal. This formulation naturally produces scalar variability, such that uncertainty scales proportionally with stimulus duration. Scalar variability is a characteristic feature of perception of time and motivates this log-duration encoding. Thus, both encoding and decoding are performed in log-duration space \citep{killeen1987optimal, wittmann2009inner,ren2020ensemble}.
 
 \subsection{Decoding strategy}
 While all tested models share the same encoding process, they differ in how encoded information is integrated and read out across sensory modalities. We consider three classes of integration and decision strategies: forced fusion, causal inference, and heuristic cue selection. We describe each of the three models next.  
@@ -312,16 +312,16 @@ The Bayesian causal-inference model assumes that the observer first infers wheth
 p(C = 1 \mid m_a, m_v),
 \label{eq:pc}
 \end{align}
-where $C = 1$ denotes a common cause. The observer then forms a posterior over the task-relevant variable (here, the auditory stimulus duration $s_a$) by averaging over two posteriors. The observer's posterior distribution over auditory duration is given by:
+where $C = 1$ denotes a common cause. The observer then forms a posterior over the task-relevant latent log-duration, $y_a=\log s_a$, by averaging over two posteriors. The observer's posterior distribution over auditory log-duration is given by:
 \begin{align}
-p(s_a \mid m_a, m_v)
+p(y_a \mid m_a, m_v)
 = {}& p(C = 1 \mid m_a, m_v)\,
-      p(s_a \mid m_a, m_v,C=1) \notag\\
+      p(y_a \mid m_a, m_v,C=1) \notag\\
 &+ p(C = 2 \mid m_a, m_v)\,
-   p(s_a \mid m_a,C=2),
+   p(y_a \mid m_a,C=2),
 \label{eq:auditory_bimodal_estimate}
 \end{align}
-in which $p(C = 2 \mid m_v, m_a)$ indicates the posterior probability of separate causes. $p(s_a \mid m_v, m_a, C=1)$ and $p(s_a \mid m_a,C=2)$ specify the posteriors over $s_a$ under each causal scenario. The posterior probability of common cause is computed as:
+in which $p(C = 2 \mid m_v, m_a)$ indicates the posterior probability of separate causes. $p(y_a \mid m_v, m_a, C=1)$ and $p(y_a \mid m_a,C=2)$ specify the posteriors over auditory log-duration under each causal scenario. The posterior probability of common cause is computed as:
 
 \begin{equation}
 \begin{split}
@@ -340,36 +340,36 @@ p(m_a, m_v \mid C=1)\, p_c
 
 This model includes the prior probability of common cause, $p_c$, which is fitted to the data. Likelihoods under the common-cause and separate-causes hypotheses are computed by marginalizing over the latent true stimulus durations using a bounded prior, following the standard formulation of Bayesian causal inference \citep{kording2007causal}. Full expressions, choice of prior distribution, and analytical derivations are provided in the \hyperref[app:appendix]{Appendix}, specifically in \hyperref[causal_inf_equations]{the Bayesian causal-inference model subsection}.
 
-We model the prior distribution of durations as a truncated uniform distribution over the range of stimulus durations presented in the experiment, $[t_{\min}, t_{\max}]$, providing finite support for the latent duration variable. 
+Let $s_{\min}$ and $s_{\max}$ denote the lower and upper physical-duration bounds used by the model. Because inference is performed in log-duration space, the model uses a bounded uniform prior over $[t_{\min},t_{\max}]$, where $t_{\min}=\log s_{\min}$ and $t_{\max}=\log s_{\max}$. These bounds provide finite support for the latent log-duration variable.
 
-Here, the model assumes that participants infer the stimulus duration based on the inferred causal relationship between the cues presented in the trial. The observer first infers the posterior probability that both cues originate from a common cause by computing $p(C = 1 \mid m_a, m_v)$. Under this model, observers compute two estimates of the auditory stimulus duration, one based on the common-cause scenario that relies on both the auditory and visual measurements, and another for the separate-causes scenario based on the auditory measurement alone. For each scenario, the model uses the Bayes least-squares (BLS) estimate, that is, the posterior mean under squared-error loss. The final auditory duration estimate is a weighted average of these two estimates, given by:
+Here, the model assumes that participants infer the stimulus duration based on the inferred causal relationship between the cues presented in the trial. The observer first infers the posterior probability that both cues originate from a common cause by computing $p(C = 1 \mid m_a, m_v)$. Under this model, observers compute two estimates of the auditory log-duration, one based on the common-cause scenario that relies on both the auditory and visual measurements, and another for the separate-causes scenario based on the auditory measurement alone. For each scenario, the model uses the Bayes least-squares (BLS) estimate, that is, the posterior mean under squared-error loss in log-duration space. The final auditory log-duration estimate is a weighted average of these two estimates, given by:
 \begin{align}
-\hat S_{a}
-= {}& p(C=1 \mid m_a,m_v)\,\hat S_{a,C=1}
+\hat y_{a}
+= {}& p(C=1 \mid m_a,m_v)\,\hat y_{a,C=1}
 + \bigl(1 - p(C=1 \mid m_a,m_v)\bigr)\,
-   \hat S_{a,C=2},
+   \hat y_{a,C=2},
 \label{eq:estimate_model_avg}
 \end{align}
-where $\hat S_{a,C=1}$ and $\hat S_{a,C=2}$ denote the posterior-mean estimates of the auditory stimulus under the common-cause and separate-causes assumptions, respectively. Because the latent-duration prior has bounded uniform (boxcar) support, these are means of truncated-normal posteriors rather than maximum a posteriori estimates; their full expressions are given in the Appendix.
-The above computation yields an internal estimate of auditory duration for a single interval. In the present two-interval forced-choice task, the same inference process is applied independently to the standard and test intervals, producing estimates $\hat S_{\mathrm{std}}$ and $\hat S_{\mathrm{test}}$. The observer then compares the estimated durations of the test and standard intervals and responds ``test longer'' whenever
+where $\hat y_{a,C=1}$ and $\hat y_{a,C=2}$ denote the posterior-mean estimates of auditory log-duration under the common-cause and separate-causes assumptions, respectively. Because the latent log-duration prior has bounded uniform (boxcar) support, these are means of truncated-normal posteriors rather than maximum a posteriori estimates; their full expressions are given in the Appendix. The corresponding estimate in physical time is $\hat s_a=\exp(\hat y_a)$.
+The above computation yields an internal estimate of auditory log-duration for a single interval. In the present two-interval forced-choice task, the same inference process is applied independently to the standard and test intervals, producing estimates $\hat y_{\mathrm{std}}$ and $\hat y_{\mathrm{test}}$. Because exponentiation is monotonic, comparing these log-duration estimates is equivalent to comparing the corresponding physical-duration estimates, $\exp(\hat y_{\mathrm{std}})$ and $\exp(\hat y_{\mathrm{test}})$. The observer therefore responds ``test longer'' whenever
 \begin{equation}
-\hat S_{\mathrm{test}} > \hat S_{\mathrm{std}}.
+\hat y_{\mathrm{test}} > \hat y_{\mathrm{std}}.
 \end{equation}
 
 From the modeler's perspective, the predicted response probability is obtained by marginalizing over the noisy sensory measurements:
 \begin{equation}
-P(\text{``test longer''}\mid S_{\mathrm{test}},S_{\mathrm{std}})
+P(\text{``test longer''}\mid s_{\mathrm{test}},s_{\mathrm{std}})
 =
 \int \int
 \mathbb{I}
 \!\left[
-\hat S_{\mathrm{test}}(m_{\mathrm{test}})
+\hat y_{\mathrm{test}}(m_{\mathrm{test}})
 -
-\hat S_{\mathrm{std}}(m_{\mathrm{std}})
+\hat y_{\mathrm{std}}(m_{\mathrm{std}})
 >0
 \right]
-p(m_{\mathrm{test}}\mid S_{\mathrm{test}})
-p(m_{\mathrm{std}}\mid S_{\mathrm{std}})
+p(m_{\mathrm{test}}\mid s_{\mathrm{test}})
+p(m_{\mathrm{std}}\mid s_{\mathrm{std}})
 \,dm_{\mathrm{test}}\,dm_{\mathrm{std}},
 \end{equation}
 where $\mathbb{I}[\cdot]$ denotes the indicator function.
@@ -377,7 +377,7 @@ where $\mathbb{I}[\cdot]$ denotes the indicator function.
 In practice, this probability is approximated using Monte Carlo simulation by repeatedly sampling noisy measurements for the test and standard intervals, applying the model-specific decoding rule, and computing the proportion of samples for which the decoded test duration exceeded the decoded standard duration.
 
 \subsection{Probabilistic cue switching}
-We also considered a probabilistic cue-switching model, in which observers based their decision on either the auditory or the visual cue on each trial (see Methods). Instead of computing posterior probabilities of causal structure, this heuristic strategy selects a single cue stochastically: with fixed selection probability $p_v$, the decision is based solely on the visual estimate, and with probability $1 - p_v$, it is based solely on the auditory estimate. Thus, $p_v$ represents the probability of relying on the visual cue on a given trial. Despite its simplicity, the switching strategy can reproduce cue-integration--like patterns when responses are averaged across trials.
+We also considered a probabilistic cue-switching model, in which observers based their decision on either the auditory or the visual cue on each trial (see Methods). Instead of computing posterior probabilities of causal structure, this heuristic strategy selects a single cue stochastically. In auditory-noise condition $j\in\{l,h\}$, the decision is based solely on the visual estimate with probability $p_{v,j}$ and solely on the auditory estimate with probability $1-p_{v,j}$. Thus, the model has separate visual-selection probabilities, $p_{v,l}$ and $p_{v,h}$, for the low- and high-auditory-noise conditions. Despite its simplicity, the switching strategy can reproduce cue-integration--like patterns when responses are averaged across trials.
 
 \subsection{Modeling results}
 
@@ -408,7 +408,7 @@ We also examined whether the models captured the slope of the fitted psychometri
 \subsection{Model fitting and model comparison}
 All models have a lapse-rate ($\lambda$) parameter, two auditory duration-noise parameters (one for each auditory-noise condition: $\sigma_{a,l}$ and $\sigma_{a,h}$), and one visual duration-noise parameter ($\sigma_{v}$). For models that incorporate causal inference, there is an additional parameter ($p_c$), which captures the prior probability of a common source. For the probabilistic cue-switching model, there are two additional parameters ($p_{v,l}$ and $p_{v,h}$) that specify the probability of switching (i.e., relying on vision rather than audition) in each of the two auditory-noise conditions.
 
-We fit each model to each participant's data (from the two auditory-noise conditions jointly) using maximum-likelihood estimation. For each model, we computed the predicted probability of responding ``test longer" for every stimulus condition via Monte Carlo simulation. Specifically, on each simulated trial, we drew noisy internal measurements of auditory and visual durations from the encoding model, applied the model's integration or decision rule to produce an estimate of the auditory stimulus, and then determined whether the test estimate was longer than the standard estimate. For each condition, that is, for each combination of auditory test duration, standard duration, cue conflict, and noise level, we simulated 3000 Monte Carlo trials (i.e., repeated draws of internal sensory measurements). For each Monte-Carlo trial we generated samples of the auditory and visual internal measurements according to the model's encoding-noise assumptions and determined the model's response for that trial. The predicted response probability for each condition was computed as the proportion of simulated trials for that condition for which the model observer judged the test duration as longer. The log-likelihood of each model was then computed using the binomial likelihood of the observed responses given the predicted probabilities across all conditions. Parameter bounds were chosen based on plausible ranges for sensory noise and lapse rates. In the causal-inference model, the prior over stimulus duration was assumed to be uniformly distributed over the range of test durations presented for each participant. Parameters were estimated by minimizing the negative log-likelihood using Bayesian Adaptive Direct Search \citep{acerbi2017practical}. To reduce the risk of local minima, the optimization was repeated from 10 random initial parameter values.
+We fit each model to each participant's data (from the two auditory-noise conditions jointly) using maximum-likelihood estimation. For each model, we computed the predicted probability of responding ``test longer'' for every stimulus condition via Monte Carlo simulation. Specifically, on each simulated trial, we drew noisy internal measurements of auditory and visual durations from the encoding model, applied the model's integration or decision rule to produce an estimate of the auditory stimulus, and then determined whether the test estimate was longer than the standard estimate. For each condition, that is, for each combination of auditory test duration, standard duration, cue conflict, and noise level, we simulated 3000 Monte Carlo trials (i.e., repeated draws of internal sensory measurements). For each Monte-Carlo trial we generated samples of the auditory and visual internal measurements according to the model's encoding-noise assumptions and determined the model's response for that trial. The predicted response probability for each condition was computed as the proportion of simulated trials for that condition for which the model observer judged the test duration as longer. The log-likelihood of each model was then computed using the binomial likelihood of the observed responses given the predicted probabilities across all conditions. Parameter bounds were chosen based on plausible ranges for sensory noise and lapse rates. The physical bounds $s_{\min}$ and $s_{\max}$ were fixed to the minimum and maximum test durations for each participant; the log-normal models applied the bounded uniform prior over the corresponding log-space interval $[\log s_{\min},\log s_{\max}]$. Parameters were estimated by minimizing the negative log-likelihood using Bayesian Adaptive Direct Search \citep{acerbi2017practical}. To reduce the risk of local minima, the optimization was repeated from 10 random initial parameter values.
 
 Sensory-noise parameters were fitted using the data from the bimodal task, because effective noise may differ between unimodal and bimodal contexts due to attentional allocation and cross-modal interactions \citep{badde2020modality}. To ensure robustness, we also evaluated all models using sensory-noise parameters estimated using the psychometric function fits to the unimodal-task data. The results using these parameter estimates were qualitatively consistent (Figure~\ref{fig:AppendixConflictPSE_unimodal_fits}).
 
@@ -520,7 +520,7 @@ Beyond providing the best overall fit, the cue-switching model offered an interp
 The lack of evidence for causal inference should not be interpreted as evidence against its plausibility. Rather, our results highlight a fundamental limitation in discriminating between integration strategies when sensory noise is sufficiently high. Under these conditions, the posterior probability of separate causes remains low even at large cue conflicts. As a result, bias toward the visual stimulus continues to increase approximately linearly with increasing cue conflict. In this regime, heuristic strategies that stochastically select between cues can closely approximate the predictions of more complex inferential models. Recent work has shown that probabilistic switching strategies can reproduce behavioral patterns often interpreted as Bayesian integration, even in the absence of explicit inference over causal structure \citep{ni2024computational}. This perspective aligns with our finding that multiple integration strategies produce near-indistinguishable behavioral signatures in audiovisual-duration perception.
 
 %%% --- adding this: "switching preferred" with "models indistinguishable" via model recovery ---
-The difficulty of separating these strategies, however, does not undermine the preference for cue switching, because the two findings have different origins. Our model-recovery analysis shows that, in the empirically relevant parameter regime, the cue-switching model was highly identifiable (recovered in 84\% of simulated datasets), whereas the forced-fusion and causal-inference models were mutually confusable. The limited separability we observe therefore reflects the near-equivalence of the two averaging-based models rather than a weakness of the cue-switching account. Consistent with this, cue switching was rarely selected when other models generated the data (in only 6 of 50 datasets generated by forced fusion and 6 of 50 generated by causal inference), so its empirical preference is a recoverable behavioral signature rather than an artifact of its additional flexibility.
+The difficulty of separating these strategies, however, does not undermine the preference for cue switching, because the two findings have different origins. Our model-recovery analysis shows that, in the empirically relevant parameter regime, the cue-switching model was highly identifiable (recovered in 84\% of simulated datasets), whereas the forced-fusion and causal-inference models were mutually confusable. The limited separability we observe therefore reflects the near-equivalence of the two averaging-based models rather than a weakness of the cue-switching account. Consistent with this, cue switching was rarely selected when other models generated the data (in only 5 of 50 datasets generated by forced fusion and 5 of 50 generated by causal inference), so its empirical preference is a recoverable behavioral signature rather than an artifact of its additional flexibility.
 %%% --- end added section ---
 
 \subsection{Asymmetry between shorter and longer audiovisual bias}
@@ -599,9 +599,9 @@ and assume a Gaussian prior over log-duration,
 \label{eq:prior}
 \end{equation}
 
-Under these assumptions, the posterior over log-duration is Gaussian. Throughout this paper we use \emph{precision} (inverse variance) to simplify expressions involving reliability weighting.  We write $J = 1/\sigma^2$ for the sensory precision and $J_p = 1/\sigma_p^2$ for the prior precision; more generally, $J_x \equiv 1/\sigma_x^2$ for any subscripted variance. The posterior mean (optimal estimator under squared-error loss in log-duration space) is then
+Under these assumptions, the posterior over log-duration is Gaussian. Throughout this paper we use \emph{precision} (inverse variance) to simplify expressions involving reliability weighting.  We write $J = 1/\sigma^2$ for the sensory precision and $J_p = 1/\sigma_p^2$ for the prior precision; more generally, $J_x \equiv 1/\sigma_x^2$ for any subscripted variance. The posterior mean of latent log-duration, denoted $\hat{y}$ (the optimal estimator under squared-error loss in log-duration space), is then
 \begin{equation}
-\hat{s}
+\hat{y}
 =
 \frac{J}{J + J_p} \, m
 +
@@ -610,7 +610,7 @@ Under these assumptions, the posterior over log-duration is Gaussian. Throughout
 \end{equation}
 which can be written compactly as
 \begin{equation}
-\hat{s}
+\hat{y}
 =
 w\, m + (1-w)\,\mu_p,
 \qquad
@@ -619,18 +619,18 @@ w = \frac{J}{J + J_p},
 \end{equation}
 and the variance of the posterior is
 \begin{equation}
-\sigma_{\hat{s}}^2 = \frac{1}{J + J_p}.
+\sigma_{\hat{y}}^2 = \frac{1}{J + J_p}.
 \label{eq:posterior_var}
 \end{equation}
-Here, all quantities ($m$, $\hat{s}$, $\mu_p$, $\sigma^2$, $\sigma_p^2$) are in log-duration space.
+Here, all quantities ($m$, $\hat{y}$, $\mu_p$, $\sigma^2$, $\sigma_p^2$) are in log-duration space. The corresponding physical-duration estimate is $\hat{s}=\exp(\hat{y})$.
 
 For the standard and test intervals, the posterior means are
 \begin{align}
-\hat{s}_s &= w\, m_s + (1-w)\,\mu_p,
+\hat{y}_s &= w\, m_s + (1-w)\,\mu_p,
 \label{eq:posterior_standard} 
 \end{align}
 \begin{align}
-\hat{s}_t &= w\, m_t + (1-w)\,\mu_p.
+\hat{y}_t &= w\, m_t + (1-w)\,\mu_p.
 \label{eq:posterior_test}
 \end{align}
 This formulation assumes that inference is performed in log-duration space, where sensory noise is Gaussian. For the Gaussian-prior example above, the posterior is Gaussian and its mean and mode coincide. The implemented models, however, use a bounded uniform prior and a BLS readout; consequently, the relevant estimate is the mean of the resulting truncated-normal posterior, as derived below.
@@ -639,7 +639,7 @@ This formulation assumes that inference is performed in log-duration space, wher
 
 The difference between the two posterior estimates is therefore
 \begin{equation}
-\hat{s}_t - \hat{s}_s
+\hat{y}_t - \hat{y}_s
 =
 w\,(m_t - m_s).
 \label{eq:posterior_difference}
@@ -648,7 +648,7 @@ Because the same prior is applied to both intervals, the prior mean $\mu_p$ canc
 
 \paragraph{Decision rule}
 
-Decisions are based on the comparison of posterior estimates, such that the observer concludes that the test is longer when $\hat{s}_t > \hat{s}_s$. Under the assumptions above, the posterior difference reduces to Eq.\ref{eq:posterior_difference}, so that the decision is equivalent to comparing the measurements directly, i.e., determining whether $m_t - m_s> 0$. From the modeler's perspective, the response probability is obtained by marginalizing over the measurement noise. Because $m_t$ and $m_s$ are independent random Gaussian variables with equal variance $\sigma^2$, their difference follows
+Decisions are based on the comparison of posterior log-duration estimates, such that the observer concludes that the test is longer when $\hat{y}_t > \hat{y}_s$. This is equivalent to comparing the corresponding physical-duration estimates because exponentiation is monotonic. Under the assumptions above, the posterior difference reduces to Eq.\ref{eq:posterior_difference}, so that the decision is equivalent to comparing the measurements directly, i.e., determining whether $m_t - m_s> 0$. From the modeler's perspective, the response probability is obtained by marginalizing over the measurement noise. Because $m_t$ and $m_s$ are independent random Gaussian variables with equal variance $\sigma^2$, their difference follows
 \begin{equation}
 m_t - m_s
 \sim
@@ -685,7 +685,7 @@ The point of subjective equality (PSE; parameter $\mu$) quantified the modality-
 
 \subsubsection{Forced fusion}\label{mandatoryFusion}
 
-The forced-fusion model assumes that participants produce an estimate of auditory duration by integrating visual and auditory measurements in log-duration space, weighted by their relative reliabilities. The precision-weighted Gaussian component of the common-cause posterior has mean and standard deviation
+The forced-fusion model assumes that participants produce an estimate of auditory log-duration by integrating visual and auditory measurements in log-duration space, weighted by their relative reliabilities. The precision-weighted Gaussian component of the common-cause posterior has mean and standard deviation
 \begin{equation}
 \label{eq:forced_fusion}
 \mu_c = \frac{J_a m_a + J_v m_v}{J_a + J_v},
@@ -694,9 +694,9 @@ The forced-fusion model assumes that participants produce an estimate of auditor
 \end{equation}
 where $m_a$ and $m_v$ denote noisy sensory measurements in log-duration space, and $J_a = 1/\sigma_a^2$, $J_v = 1/\sigma_v^2$ are the corresponding precisions (with $\sigma_a \in \{\sigma_{a,l}, \sigma_{a,h}\}$ depending on the condition).
 
-The implemented readout applies the same bounded uniform prior over log-duration, $[t_{\min},t_{\max}]$, used in the causal-inference model. The resulting posterior is a normal distribution with parameters $\mu_c$ and $\sigma_c$, truncated to these bounds. The forced-fusion estimate is its Bayes least-squares (BLS) estimate, i.e., its posterior mean:
+The implemented readout applies the same bounded uniform prior over log-duration, $[t_{\min},t_{\max}]$, used in the causal-inference model. The resulting posterior is a normal distribution with parameters $\mu_c$ and $\sigma_c$, truncated to these bounds. The forced-fusion estimate of log-duration is its Bayes least-squares (BLS) estimate, i.e., its posterior mean:
 \begin{equation}
-\hat{s}_{\text{fusion}}
+\hat{y}_{\text{fusion}}
 =
 \mu_c+\sigma_c
 \frac{\phi(\alpha_c)-\phi(\beta_c)}
@@ -706,7 +706,7 @@ The implemented readout applies the same bounded uniform prior over log-duration
 \quad
 \beta_c=\frac{t_{\max}-\mu_c}{\sigma_c},
 \end{equation}
-where $\phi$ and $\Phi$ are the standard normal density and cumulative distribution functions. Thus, the implemented estimate is a posterior mean rather than a maximum a posteriori (MAP) estimate. Away from the prior bounds, the truncation correction becomes negligible and the estimate approaches the usual reliability-weighted mean $\mu_c$.
+where $\phi$ and $\Phi$ are the standard normal density and cumulative distribution functions. Thus, the implemented estimate is a posterior mean rather than a maximum a posteriori (MAP) estimate. Away from the prior bounds, the truncation correction becomes negligible and the estimate approaches the usual reliability-weighted mean $\mu_c$. The corresponding physical-duration estimate is $\hat{s}_{\text{fusion}}=\exp(\hat{y}_{\text{fusion}})$.
 
 Here the forced-fusion model serves as an important benchmark: it predicts that PSE shifts should follow a linear relationship with audiovisual conflict, with slope determined solely by cue reliability. This represents the limiting case where the observer \textit{always} assumes a common cause, regardless of sensory evidence. 
 In forced-fusion models, this estimate is used on every trial, leading to a linear relationship between audiovisual conflict and bias. In contrast, Bayesian causal-inference models combine this fused estimate with segregated estimates according to the posterior probability of a common cause, $p(C=1 \mid m_a,m_v)$. Because this posterior probability decreases with increasing conflict, the effective integration strength becomes conflict-dependent, producing nonlinear bias functions.
@@ -715,7 +715,7 @@ Before truncation, the common-cause posterior variance is $\sigma_c^2=1/(J_a+J_v
 %%%%
 \subsubsection{Probabilistic cue switching}
 
-The probabilistic cue-switching model represents an alternative strategy. On each trial, the observer stochastically selects \textit{one} modality and bases the estimate entirely on that cue. For the selected modality, the implementation uses the BLS estimate under the same bounded uniform prior: the mean of the single-cue truncated-normal posterior. Thus, the selected cue is decoded using a posterior mean rather than its raw measurement or a MAP estimate. This contrasts with averaging-based strategies that combine information from both modalities. The probability of using the visual cue is a free parameter of the model.
+The probabilistic cue-switching model represents an alternative strategy. On each trial, the observer stochastically selects \textit{one} modality and bases the estimate entirely on that cue. For the selected modality, the implementation uses the BLS estimate of log-duration under the same bounded uniform prior: the mean of the single-cue truncated-normal posterior. The corresponding physical-duration estimate is obtained by exponentiation. Thus, the selected cue is decoded using a posterior mean rather than its raw measurement or a MAP estimate. This contrasts with averaging-based strategies that combine information from both modalities. The probability of using the visual cue is a free parameter of the model.
 
 % \paragraph{Comparison with averaging models:}
 % While the \textit{expected value} of the switching estimate equals that of optimal fusion:
@@ -750,10 +750,10 @@ and
 m_v \sim \mathcal{N}(y, \sigma_v^2).
 \end{equation}
 
-We assume that the participant uses a flat prior over the log-duration $y$ ranging over $[t_{\min}, t_{\max}]$ (where $t_{\min}$ and $t_{\max}$ denote the bounds of the log-duration range presented in the experiment). This prior is needed to normalize the integral below to compute the evidence for a common cause. The prior is
+Let $s_{\min}$ and $s_{\max}$ denote the physical-duration bounds fixed from the range of test durations, and define the corresponding log-space bounds as $t_{\min}=\log s_{\min}$ and $t_{\max}=\log s_{\max}$. We assume that the participant uses a flat prior over the latent log-duration $y$ on $[t_{\min},t_{\max}]$. This prior is needed to normalize the integral below to compute the evidence for a common cause. The prior is
 \begin{equation}
-p(y) = \frac{1}{t_{\max} - t_{\min}}. 
-\text{ for } t_{\min}<y<t_{\max}
+p(y) = \frac{1}{t_{\max} - t_{\min}},
+\qquad t_{\min}<y<t_{\max}.
 \end{equation}
 To compute the evidence for a common cause, we marginalize over the unknown latent duration $y$:
 \begin{equation}
@@ -807,11 +807,11 @@ Under the separate-causes hypothesis, we estimate two latent durations, one for 
 These latent durations $y_a$ and $y_v$ are independent of each other but both are bounded by the same $t_{\min}$ and $t_{\max}$, and they generate measurements from noisy Gaussian distributions:
 
 \begin{equation}
-p(m_a | y_a) \sim \mathcal{N}(y_a, \sigma_a^2),
+m_a \mid y_a \sim \mathcal{N}(y_a, \sigma_a^2),
 \end{equation}
 
 \begin{equation}
-p(m_v | y_v) \sim \mathcal{N}(y_v, \sigma_v^2).
+m_v \mid y_v \sim \mathcal{N}(y_v, \sigma_v^2).
 \end{equation}
 
 Because they are bounded by the same minimum and maximum durations, the uniform prior densities are:
@@ -852,7 +852,7 @@ p(C=1 | m_a, m_v) = \frac{p(m_a, m_v | C=1) p(C=1)}{p(m_a, m_v | C=1) p(C=1) + (
 where $p(C = 1)$ is the prior probability of common cause.
 
 \paragraph{Estimate with causal inference}
-The bounded uniform prior above is used both to compute the marginal likelihoods and to decode duration under each causal structure. The duration readout is the Bayes least-squares estimate (posterior mean) under squared-error loss. Under a common cause, first define the precision-weighted Gaussian parameters
+The bounded uniform prior above is used both to compute the marginal likelihoods and to decode log-duration under each causal structure. The readout is the Bayes least-squares estimate (posterior mean) under squared-error loss in log-duration space. Under a common cause, first define the precision-weighted Gaussian parameters
 \begin{equation}
 \mu_c = \frac{J_a m_a + J_v m_v}{J_a + J_v},
 \qquad
@@ -860,7 +860,7 @@ The bounded uniform prior above is used both to compute the marginal likelihoods
 \end{equation}
 After applying the bounded uniform prior, the posterior is this Gaussian truncated to $[t_{\min},t_{\max}]$. Its mean is
 \begin{equation}
-\hat{s}_{C=1}
+\hat{y}_{C=1}
 = \mu_c + \sigma_c
 \frac{\phi(\alpha_c)-\phi(\beta_c)}
 {\Phi(\beta_c)-\Phi(\alpha_c)},
@@ -871,7 +871,7 @@ After applying the bounded uniform prior, the posterior is this Gaussian truncat
 \end{equation}
 where $\phi$ and $\Phi$ are the standard normal density and cumulative distribution functions, respectively. Under separate causes, the task-relevant auditory posterior is a Gaussian centered on $m_a$, truncated to the same bounds, and its mean is
 \begin{equation}
-\hat{s}_{a,C=2}
+\hat{y}_{a,C=2}
 = m_a + \sigma_a
 \frac{\phi(\alpha_a)-\phi(\beta_a)}
 {\Phi(\beta_a)-\Phi(\alpha_a)},
@@ -880,13 +880,13 @@ where $\phi$ and $\Phi$ are the standard normal density and cumulative distribut
 \quad
 \beta_a=\frac{t_{\max}-m_a}{\sigma_a}.
 \end{equation}
-The final auditory-duration estimate is the posterior-probability-weighted average of these two BLS estimates:
+The final auditory log-duration estimate is the posterior-probability-weighted average of these two BLS estimates:
 
 \begin{equation}
-\hat{s} = p(C=1 | m_a, m_v) \cdot \hat{s}_{C=1}
-+ (1 - p(C=1 | m_a, m_v)) \cdot \hat{s}_{a,C=2}.
+\hat{y}_a = p(C=1 | m_a, m_v) \cdot \hat{y}_{C=1}
++ (1 - p(C=1 | m_a, m_v)) \cdot \hat{y}_{a,C=2}.
 \end{equation}
-Here, $J_a = 1/\sigma_a^2$ and $J_v = 1/\sigma_v^2$ denote sensory precisions (with $\sigma_a \in \{\sigma_{a,l}, \sigma_{a,h}\}$ depending on condition). All measurements, bounds, and estimates in these expressions are in log-duration space. In the segregated case ($C=2$), only the auditory posterior contributes to the task response, consistent with the instruction to judge auditory duration.
+Here, $J_a = 1/\sigma_a^2$ and $J_v = 1/\sigma_v^2$ denote sensory precisions (with $\sigma_a \in \{\sigma_{a,l}, \sigma_{a,h}\}$ depending on condition). All measurements, bounds, and estimates in these expressions are in log-duration space. The corresponding estimate in physical time is $\hat{s}_a=\exp(\hat{y}_a)$. In the segregated case ($C=2$), only the auditory posterior contributes to the task response, consistent with the instruction to judge auditory duration.
 
 
 \subsection{Model fits to individual subjects' data}
@@ -976,9 +976,9 @@ To perform this analysis, after fitting each candidate model to the empirical da
 The model-recovery results reveal substantial differences in identifiability across models (Figure~\ref{fig:modelRecoveryResults}). Recovery was strongest for the probabilistic cue-switching strategy, which was correctly identified in 84\% of simulated datasets, indicating that this model generates relatively distinctive behavioral predictions. Recovery for the forced-fusion model was moderate (74\%), with appreciable confusion with the causal-inference model. In contrast, the causal-inference model showed poor mutual discriminability; 44\% of the time the recovered model was correct and also 46\% of the time the results were confused with the forced-fusion model. This pattern suggests that only the probabilistic cue-switching model generates distinguishable behavioral data.
 
 %%% --- adding this: model-recovery asymmetry (cue-switching preference is not spurious flexibility) ---
-% Reproducibility: grid_recovery_summary.ipynb, section 6 (three-model recovery) over model_recovery_results_group_logfixed_ns1_nsim2000/group_*_model_recovery.json (off-diagonal AIC-winner counts).
+% Reproducibility: grid_recovery_summary.ipynb, section 6 (three-model recovery) over model_recovery_results_group_boxcar_ns1_nsim2000/group_*_model_recovery.json (off-diagonal AIC-winner counts).
 
-Importantly, the high recovery of the cue-switching model did not reflect a general tendency to over-select the most flexible model. Cue switching was selected for only $6$ of $50$ datasets generated by the forced-fusion model and by $6$ of $50$ datasets generated by the causal-inference model, but it was selected for $46$ of $50$ datasets generated by the cue-switching model. Its preference in the empirical data therefore reflects a genuine, recoverable behavioral signature rather than spurious model flexibility.
+Importantly, the high recovery of the cue-switching model did not reflect a general tendency to over-select the most flexible model. Cue switching was selected for only $5$ of $50$ datasets generated by the forced-fusion model and $5$ of $50$ datasets generated by the causal-inference model, but it was selected for $42$ of $50$ datasets generated by the cue-switching model. Its preference in the empirical data therefore reflects a genuine, recoverable behavioral signature rather than spurious model flexibility.
 %%% --- end added section ---
 
 
@@ -1002,18 +1002,18 @@ Thus, parameter recovery supports the reliability of the main response-shaping c
 
 \subsection{Extended simulations across sensory-noise and conflict regimes}
 
-To assess when the candidate models should be expected to become distinguishable, and under which conditions the hypotheses about cue integration could be disentangled, we performed an extended model-recovery analysis across simulated sensory-noise and conflict sampling regimes. We simulated datasets from the three candidate models while varying both the sensory-noise range and the maximum audiovisual conflict. Four sensory-noise regimes were simulated: very low noise, $\sigma_a,\sigma_v \sim U[0.01,0.20]$; low noise, $\sigma_a,\sigma_v \sim U[0.20,0.40]$; medium noise, $\sigma_a,\sigma_v \sim U[0.30,0.70]$; and an empirical regime based on the range of fitted sensory-noise parameters. For the synthetic regimes, auditory and visual sensory-noise parameters were sampled from the same range.
+To assess when the candidate models should be expected to become distinguishable, and under which conditions the hypotheses about cue integration could be disentangled, we performed an extended model-recovery analysis across simulated sensory-noise and conflict sampling regimes. We simulated datasets from the three candidate models while varying both the sensory-noise range and the maximum audiovisual conflict. Three synthetic sensory-noise regimes were sampled uniformly: very low noise, $\sigma_a,\sigma_v \sim U[0.01,0.20]$; low noise, $\sigma_a,\sigma_v \sim U[0.20,0.40]$; and medium noise, $\sigma_a,\sigma_v \sim U[0.30,0.70]$. The rightmost column contains two empirically informed analyses that used different sampling procedures. For the experimentally tested maximum conflict ($0.25\,\mathrm{s}$), parameters were sampled from the fitted group-level distributions. For the wider maximum conflict ($0.45\,\mathrm{s}$), sensory-noise parameters were sampled uniformly over the empirical fitted ranges ($\sigma_a \in [0.12,0.66]$ and $\sigma_v \in [0.26,1.13]$).
 
-The grid recovery analysis should be read as a map of model identifiability across possible experimental regimes. Each panel shows how often the generating model was recovered after refitting simulated datasets with all three candidate models. Higher diagonal values indicate better model recovery, whereas off-diagonal values indicate systematic confusions between models. Sensory uncertainty increases from left to right across the first three (synthetic) columns, whereas the rightmost column corresponds to the empirical regime simulated from the fitted participant-level parameters and is therefore not a further step along this synthetic-noise axis. Moving from the top row to the bottom row reduces the maximum conflict range from $0.45\,\mathrm{s}$ to $0.25\,\mathrm{s}$.
+The grid recovery analysis should be read as a map of model identifiability across possible experimental regimes. Each panel shows how often the generating model was recovered after refitting simulated datasets with all three candidate models. Higher diagonal values indicate better model recovery, whereas off-diagonal values indicate systematic confusions between models. Sensory uncertainty increases from left to right across the first three uniformly sampled synthetic columns. The empirically informed rightmost column is not a continuation of this synthetic-noise axis, and its two panels should not be treated as identically sampled. Moving from the top row to the bottom row reduces the maximum conflict range from $0.45\,\mathrm{s}$ to $0.25\,\mathrm{s}$.
 
-This analysis shows that model discriminability depends strongly on both sensory noise and the tested range of audiovisual conflicts. Recovery was generally best when sensory noise was low and the conflict range was wide, and poorest when sensory noise was higher and the conflict range was narrow. Importantly, the empirical recovery panel shows that the experimentally observed regime was one in which forced fusion and causal inference were difficult to distinguish, whereas probabilistic cue switching remained relatively identifiable.
+This analysis shows that model discriminability depends strongly on both sensory noise and the tested range of audiovisual conflicts. Recovery was generally best when sensory noise was low and the conflict range was wide, and poorest when sensory noise was higher and the conflict range was narrow. Importantly, the lower-right empirical recovery panel shows that the experimentally observed regime was one in which forced fusion and causal inference were difficult to distinguish, whereas probabilistic cue switching remained relatively identifiable.
 
-When reading the cue-swictching row across columns, it is important not to treat all four panels as a single monotonic noise sweep. Across the three synthetic regimes, recovery of the cue-switching model declined steadily as sensory noise increased (for the $0.25\,\mathrm{s}$ conflict range, from $86\%$ in the very-low-noise regime to $48\%$ and $28\%$ in the low- and medium-noise regimes), with its simulated datasets increasingly misclassified as forced fusion. The empirical column does not continue this downward trend: because it was generated from the fitted participant-level parameters rather than a uniform noise range, it sits off the synthetic-noise axis, and its high recovery ($84\%$) reflects that the empirically fitted parameters occupy a regime in which cue switching produces a particularly distinctive behavioral signature. The apparent increase in cue-switching recovery from the medium-noise column to the empirical column is therefore a consequence of placing an off-axis regime adjacent to the synthetic gradient, not a genuine non-monotonic dependence on sensory noise.
+When reading the cue-switching row across columns, it is important not to treat all four panels as a single monotonic noise sweep. Across the three synthetic regimes, recovery of the cue-switching model declined steadily as sensory noise increased (for the $0.25\,\mathrm{s}$ conflict range, from $86\%$ in the very-low-noise regime to $48\%$ and $28\%$ in the low- and medium-noise regimes), with its simulated datasets increasingly misclassified as forced fusion. The lower-right empirical recovery panel does not continue this downward trend: its high recovery ($84\%$) reflects parameters sampled from the fitted group-level distributions, under which cue switching produces a particularly distinctive behavioral signature. Its placement next to the uniformly sampled synthetic regimes should therefore not be interpreted as a non-monotonic dependence on sensory noise.
 
 
 Model recovery generally improved as sensory noise decreased and as the maximum conflict range increased from $0.25\,\mathrm{s}$ to $0.45\,\mathrm{s}$. This pattern suggests that larger audiovisual discrepancies and lower sensory uncertainty provide more diagnostic information for distinguishing between integration strategies. For the experimentally tested conflict range, where the maximum conflict was $0.25\,\mathrm{s}$, recovery remained more limited, especially for distinguishing forced fusion from causal inference. However, probabilistic cue switching remained comparatively identifiable in the empirical recovery analysis.
 
-One exception to the general trend occurred under the wider $0.45\,\mathrm{s}$ conflict range, where recovery in the very-low-noise regime was slightly poorer than in the low-noise regime. This reduction was driven partly by an asymmetric confusion: $24\%$ of datasets generated by the causal-inference model were classified as forced fusion. Inspection of the fitted parameters revealed a compensatory mechanism underlying this confusion (Figure~\ref{fig:visualNoiseInflation}). When forced fusion was fitted to the 50 causal-inference-generated datasets, its estimate of visual sensory noise exceeded the generating value in every dataset. Median $\sigma_v$ increased from $0.085$ in the generating model to $1.085$ in the forced-fusion fit, corresponding to a median paired increase of $1.008$ (bootstrap 95\% CI $[0.825,1.205]$; two-sided Wilcoxon signed-rank test, $W=0$, $p<.001$). By treating the visual cue as substantially less reliable, forced fusion reduces its influence and can approximate the relatively flat, auditory-dominated responses produced by causal inference when precise sensory measurements favor separate causes. Thus, the reduced recovery does not indicate that the models make equivalent predictions under the same parameters; rather, forced fusion mimics causal-inference behavior through compensatory inflation of its visual-noise parameter.
+One exception to the general trend occurred under the wider \(0.45\,\mathrm{s}\) conflict range, where recovery in the very-low-noise regime was slightly poorer than in the low-noise regime. This reduction was driven partly by an asymmetric confusion: \(24\%\) of datasets generated by the causal-inference model were classified as forced fusion. Inspection of the fitted parameters revealed a compensatory mechanism underlying this confusion (Figure~\ref{fig:visualNoiseInflation}). When forced fusion was fitted to the 50 causal-inference-generated datasets, its estimate of visual sensory noise exceeded the generating value in every dataset. Median \(\sigma_v\) increased from \(0.085\) in the generating model to \(1.085\) in the forced-fusion fit, corresponding to a median paired increase of \(1.008\) (bootstrap 95\% CI \([0.825,1.205]\); two-sided Wilcoxon signed-rank test, \(W=0\), \(p<.001\)). By treating the visual cue as substantially less reliable, forced fusion reduces its influence and can approximate the relatively flat, auditory-dominated responses produced by causal inference when precise sensory measurements favor separate causes. Thus, the reduced recovery does not indicate that the models make equivalent predictions under the same parameters; rather, forced fusion mimics causal-inference behavior through compensatory inflation of its visual-noise parameter.
 These simulations indicate that model identifiability is strongly constrained by sensory uncertainty and conflict magnitude. In particular, the empirical recovery analysis showed substantial confusion between forced fusion and causal inference, whereas probabilistic cue switching remained highly identifiable ($84\%$ correct recovery). Thus, within the experimentally tested conflict range and observed sensory-noise levels, competing integration models can generate highly similar behavioral predictions.
 
 %%% ----------------------------%%% ----------------------------
@@ -1022,7 +1022,7 @@ These simulations indicate that model identifiability is strongly constrained by
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth,height=1\textheight,keepaspectratio]{assets/figures/grid_three_model_confusion_matrices.pdf}
-    \caption{\textbf{Model recovery across sensory-noise and conflict regimes.} Confusion matrices for the three candidate models: forced fusion, causal inference, and probabilistic cue switching. Rows indicate the generating model, and columns indicate the recovered model selected by AIC. Cell values show row-normalized recovery percentages, with diagonal entries corresponding to correct recovery. Panels compare four sensory-noise regimes and two maximum conflict ranges. Row~\textbf{A} (top) uses $\mathrm{conflict}_{\max}=0.45\,\mathrm{s}$, whereas row~\textbf{B} (bottom) uses $\mathrm{conflict}_{\max}=0.25\,\mathrm{s}$. Synthetic sensory-noise regimes were defined as $\sigma_a,\sigma_v \sim U[0.01,0.20]$, $U[0.20,0.40]$, and $U[0.30,0.70]$, corresponding to the first three columns from left to right. The empirical panel, highlighted in red, was computed from datasets simulated using the fitted participant-level parameters and then refitted with all candidate models. The upper-right confusion matrix was also computed from datasets simulated using the fitted participant-level parameters, except that a larger conflict range ($\pm0.45\,\mathrm{s}$) was simulated. Because the empirical (rightmost) column was generated from the fitted participant-level parameters rather than a synthetic noise range, it lies off the left-to-right noise gradient defined by the first three columns and should not be read as a continuation of it; its high cue-switching recovery therefore does not represent a non-monotonic reversal of the noise trend. Recovery generally decreased with increasing sensory noise and narrower conflict ranges. Under the empirical parameter regime, probabilistic cue switching showed excellent recovery, whereas forced fusion and causal inference exhibited greater mutual confusability.}        
+    \caption{\textbf{Model recovery across sensory-noise and conflict regimes.} Confusion matrices for the three candidate models: forced fusion, causal inference, and probabilistic cue switching. Rows indicate the generating model, and columns indicate the recovered model selected by AIC. Cell values show row-normalized recovery percentages, with diagonal entries corresponding to correct recovery. Row~\textbf{A} (top) uses $\mathrm{conflict}_{\max}=0.45\,\mathrm{s}$, whereas row~\textbf{B} (bottom) uses $\mathrm{conflict}_{\max}=0.25\,\mathrm{s}$. The first three columns use uniformly sampled synthetic sensory-noise regimes: $\sigma_a,\sigma_v \sim U[0.01,0.20]$, $U[0.20,0.40]$, and $U[0.30,0.70]$. The rightmost column is empirically informed but uses different sampling procedures across rows. The lower-right panel, highlighted in red, uses parameters sampled from the fitted group-level distributions and reproduces the experimentally tested conflict range. The upper-right panel uses uniform sampling over the empirical fitted ranges ($\sigma_a \in [0.12,0.66]$, $\sigma_v \in [0.26,1.13]$) with the wider conflict range. Consequently, the rightmost column lies off the synthetic noise gradient and its two panels should not be interpreted as identically sampled. Recovery generally decreased with increasing sensory noise and narrower conflict ranges. In the lower-right empirical recovery panel, probabilistic cue switching showed strong recovery, whereas forced fusion and causal inference exhibited greater mutual confusability.}
     \label{fig:gridModelRecovery}
     \end{figure}
 
