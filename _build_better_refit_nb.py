@@ -44,6 +44,9 @@ from scipy.stats import norm
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import seaborn as sns
+from plot_style import setup_style, FONT_SIZE_LABEL
+
+setup_style()
 
 import loadData
 from free_psychometric_refits import (
@@ -56,19 +59,7 @@ from free_psychometric_refits import (
     DEFAULT_SIM_VARIANTS,
 )""")
 
-code("""FONT = 18
-plt.rcParams.update({
-    'font.size': FONT, 'axes.labelsize': FONT, 'axes.titlesize': FONT + 2,
-    'xtick.labelsize': FONT, 'ytick.labelsize': FONT, 'legend.fontsize': FONT,
-    'font.family': 'sans-serif',
-    'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
-    'axes.linewidth': 1.5, 'lines.linewidth': 2.0, 'lines.markersize': 8,
-    'xtick.major.width': 1.5, 'ytick.major.width': 1.5,
-    'xtick.major.size': 6, 'ytick.major.size': 6,
-    'legend.frameon': True, 'legend.framealpha': 0.8, 'legend.edgecolor': 'black',
-    'figure.dpi': 100, 'savefig.dpi': 300,
-    'savefig.bbox': 'tight', 'savefig.pad_inches': 0.1, 'axes.grid': False,
-})""")
+code("""FONT = FONT_SIZE_LABEL""")
 
 code("""# ── Configuration ────────────────────────────────────────────
 STANDARD_S = 0.5
@@ -457,7 +448,7 @@ def two_panel_metric(d_agg, m_agg, ylabel, stem, yticks=None, scale=1.0):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
     axes[0].set_ylabel(ylabel, fontsize=FONT)
-    fig.supxlabel('Cue conflict (ms)', fontsize=FONT, x=0.5)
+    fig.supxlabel('Cue conflict (ms)', fontsize=FONT, x=0.5, y=0.04)
     hs.append(Line2D([], [], color='none'))
     ls_.append(f'±SEM (n={len(PIDS)})')
     fig.legend(hs, ls_, loc='center right', bbox_to_anchor=(1, 0.5), fontsize=FONT - 4,
@@ -469,7 +460,7 @@ def two_panel_metric(d_agg, m_agg, ylabel, stem, yticks=None, scale=1.0):
     print(f'Saved {stem}.png/.pdf/.svg')
 
 
-two_panel_metric(data_sigma, model_sigma, 'PF sigma (log units)',
+two_panel_metric(data_sigma, model_sigma, 'σ of psychometric function\\n(log-duration unit)',
                  'aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel')""")
 
 code("""# ── Lapse rate (lambda) vs conflict ─────────────────────────────

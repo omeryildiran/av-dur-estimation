@@ -10,6 +10,9 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import wilcoxon
+from plot_style import setup_style
+
+setup_style()
 
 PIDS = ['as', 'dt', 'hh', 'ip', 'ln2', 'mh', 'ml', 'mt', 'oy', 'qs', 'sx']
 MODEL_FITS_DIR = Path('model_fits/boxcarFits')
