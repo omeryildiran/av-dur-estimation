@@ -104,6 +104,12 @@ _RC = {
     'ytick.major.width' : 1.5,
     'xtick.major.size'  : 6,
     'ytick.major.size'  : 6,
+    'xtick.direction'   : 'out',
+    'ytick.direction'   : 'out',
+    'xtick.bottom'      : True,
+    'xtick.top'         : False,
+    'ytick.left'        : True,
+    'ytick.right'       : False,
 
     # Lines & markers
     'lines.linewidth'   : 2.0,
