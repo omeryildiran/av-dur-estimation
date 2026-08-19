@@ -1,96 +1,120 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  19 AUG 2026 01:41
-entering extended mode
- restricted \write18 enabled.
- file:line:error style messages enabled.
- %&-line parsing enabled.
-**"/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex"
-(/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/ms_latex/main_jov.tex
+This is LuaHBTeX, Version 1.22.0 (TeX Live 2025)  (format=lualatex 2025.3.20)  19 AUG 2026 19:28
+ restricted system commands enabled.
+**main_jov.tex
+(./main_jov.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
-(./jov.cls
+Lua module: luaotfload 2024-12-03 v3.29 Lua based OpenType font support
+Lua module: lualibs 2023-07-13 v2.76 ConTeXt Lua standard libraries.
+Lua module: lualibs-extended 2023-07-13 v2.76 ConTeXt Lua libraries -- extended collection.
+luaotfload | conf : Root cache directory is "/Users/omer/Library/TinyTeX/texmf-var/luatex-cache/generic/names".
+luaotfload | init : Loading fontloader "fontloader-2023-12-28.lua" from kpse-resolved path "/Users/omer/Library/TinyTeX/texmf-dist/tex/luatex/luaotfload/fontloader-2023-12-28.lua".
+Lua-only attribute luaotfload@noligature = 1
+luaotfload | init : Context OpenType loader version 3.134
+Inserting `luaotfload.node_processor' in `pre_linebreak_filter'.
+Inserting `luaotfload.node_processor' in `hpack_filter'.
+Inserting `luaotfload.glyph_stream' in `glyph_stream_provider'.
+Inserting `luaotfload.define_font' in `define_font'.
+Lua-only attribute luaotfload_color_attribute = 2
+luaotfload | conf : Root cache directory is "/Users/omer/Library/TinyTeX/texmf-var/luatex-cache/generic/names".
+Inserting `luaotfload.harf.strip_prefix' in `find_opentype_file'.
+Inserting `luaotfload.harf.strip_prefix' in `find_truetype_file'.
+Removing  `luaotfload.glyph_stream' from `glyph_stream_provider'.
+Inserting `luaotfload.harf.glyphstream' in `glyph_stream_provider'.
+Inserting `luaotfload.harf.finalize_vlist' in `post_linebreak_filter'.
+Inserting `luaotfload.harf.finalize_hlist' in `hpack_filter'.
+Inserting `luaotfload.cleanup_files' in `wrapup_run'.
+Inserting `luaotfload.harf.finalize_unicode' in `finish_pdffile'.
+Inserting `luaotfload.glyphinfo' in `glyph_info'.
+Lua-only attribute luaotfload.letterspace_done = 3
+Inserting `luaotfload.aux.set_sscale_dimens' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.set_font_index' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.patch_cambria_domh' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.fixup_fontdata' in `luaotfload.patch_font_unsafe'.
+Inserting `luaotfload.aux.set_capheight' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.set_xheight' in `luaotfload.patch_font'.
+Inserting `luaotfload.rewrite_fontname' in `luaotfload.patch_font'.
+Inserting `tracingstacklevels' in `input_level_string'. (./jov.cls
 Document Class: jov 2008/12/16 Journal of Vision class
-(/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/article.cls
+(/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2024/06/29 v1.4n Standard LaTeX document class
-(/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/size10.clo
+(/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/size10.clo
 File: size10.clo 2024/06/29 v1.4n Standard LaTeX file (size option)
-)
-\c@part=\count196
-\c@section=\count197
-\c@subsection=\count198
-\c@subsubsection=\count199
-\c@paragraph=\count266
-\c@subparagraph=\count267
-\c@figure=\count268
-\c@table=\count269
+luaotfload | db : Font names database loaded from /Users/omer/Library/TinyTeX/texmf-var/luatex-cache/generic/names/luaotfload-names.luc.gz)
+\c@part=\count194
+\c@section=\count195
+\c@subsection=\count196
+\c@subsubsection=\count197
+\c@paragraph=\count198
+\c@subparagraph=\count199
+\c@figure=\count266
+\c@table=\count267
 \abovecaptionskip=\skip49
 \belowcaptionskip=\skip50
-\bibindent=\dimen141
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/color.sty
+\bibindent=\dimen140
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/color.sty
 Package: color 2024/06/23 v1.3e Standard LaTeX Color (DPC)
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics-cfg/color.cfg
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics-cfg/color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
-Package color Info: Driver file: pdftex.def on input line 149.
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics-def/pdftex.def
-File: pdftex.def 2024/04/13 v1.2c Graphics/color driver for pdftex
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/mathcolor.ltx)) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/times.sty
+Package color Info: Driver file: luatex.def on input line 149.
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics-def/luatex.def
+File: luatex.def 2024/04/13 v1.2e Graphics/color driver for luatex
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/mathcolor.ltx)) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/times.sty
 Package: times 2020/03/25 PSNFSS-v9.3 (SPQR) 
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/hyperref.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/hyperref.sty
 Package: hyperref 2024-11-05 v7.01l Hypertext links for LaTeX
- (/usr/local/texlive/2025basic/texmf-dist/tex/generic/iftex/iftex.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/iftex/iftex.sty
 Package: iftex 2024/12/12 v1.0g TeX engine tests
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/keyval.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/keyval.sty
 Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
 \KV@toks@=\toks17
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty
 Package: kvsetkeys 2022-10-05 v1.19 Key value parser (HO)
-) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/kvdefinekeys/kvdefinekeys.sty
 Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
-) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/pdfescape/pdfescape.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/pdfescape/pdfescape.sty
 Package: pdfescape 2019/12/09 v1.15 Implements pdfTeX's escape features (HO)
- (/usr/local/texlive/2025basic/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
 Package: ltxcmds 2023-12-04 v1.26 LaTeX kernel commands for general use (HO)
-) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
 Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO)
- (/usr/local/texlive/2025basic/texmf-dist/tex/generic/infwarerr/infwarerr.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/infwarerr/infwarerr.sty
 Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
 )
 Package pdftexcmds Info: \pdf@primitive is available.
 Package pdftexcmds Info: \pdf@ifprimitive is available.
 Package pdftexcmds Info: \pdfdraftmode found.
-)) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hycolor/hycolor.sty
+\pdftexcmds@toks=\toks18
+)) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hycolor/hycolor.sty
 Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/nameref.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2023-11-26 v2.56 Cross-referencing by name of section
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/refcount/refcount.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/refcount/refcount.sty
 Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
-) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/gettitlestring/gettitlestring.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/kvoptions/kvoptions.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/kvoptions/kvoptions.sty
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
 ))
-\c@section@level=\count270
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/etoolbox/etoolbox.sty
+\c@section@level=\count268
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2025/02/11 v2.5l e-TeX tools for LaTeX (JAW)
-\etb@tempcnta=\count271
-) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/stringenc/stringenc.sty
+\etb@tempcnta=\count269
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/stringenc/stringenc.sty
 Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO)
 )
-\@linkdim=\dimen142
-\Hy@linkcounter=\count272
-\Hy@pagecounter=\count273
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/pd1enc.def
+\@linkdim=\dimen141
+\Hy@linkcounter=\count270
+\Hy@pagecounter=\count271
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/pd1enc.def
 File: pd1enc.def 2024-11-05 v7.01l Hyperref: PDFDocEncoding definition (HO)
-Now handling font encoding PD1 ...
-... no UTF-8 mapping file for font encoding PD1
-) (/usr/local/texlive/2025basic/texmf-dist/tex/generic/intcalc/intcalc.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/intcalc/intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
-\Hy@SavedSpaceFactor=\count274
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/puenc.def
+\Hy@SavedSpaceFactor=\count272
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/puenc.def
 File: puenc.def 2024-11-05 v7.01l Hyperref: PDF Unicode definition (HO)
-Now handling font encoding PU ...
-... no UTF-8 mapping file for font encoding PU
 )
 Package hyperref Info: Option `colorlinks' set `true' on input line 4040.
 Package hyperref Info: Option `pageanchor' set `true' on input line 4040.
@@ -101,21 +125,21 @@ Package hyperref Info: Plain pages OFF on input line 4172.
 Package hyperref Info: Backreferencing OFF on input line 4177.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4424.
-\c@Hy@tempcnt=\count275
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/url/url.sty
+\c@Hy@tempcnt=\count273
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/url/url.sty
 \Urlmuskip=\muskip17
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
 LaTeX Info: Redefining \url on input line 4763.
-\XeTeXLinkMargin=\dimen143
- (/usr/local/texlive/2025basic/texmf-dist/tex/generic/bitset/bitset.sty
+\XeTeXLinkMargin=\dimen142
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/bitset/bitset.sty
 Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
- (/usr/local/texlive/2025basic/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/bigintcalc/bigintcalc.sty
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO)
 ))
-\Fld@menulength=\count276
-\Field@Width=\dimen144
-\Fld@charsize=\dimen145
+\Fld@menulength=\count274
+\Field@Width=\dimen143
+\Fld@charsize=\dimen144
 Package hyperref Info: Hyper figures OFF on input line 6042.
 Package hyperref Info: Link nesting OFF on input line 6047.
 Package hyperref Info: Hyper index ON on input line 6050.
@@ -123,223 +147,209 @@ Package hyperref Info: backreferencing OFF on input line 6057.
 Package hyperref Info: Link coloring ON on input line 6060.
 Package hyperref Info: Link coloring with OCG OFF on input line 6067.
 Package hyperref Info: PDF/A mode OFF on input line 6072.
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/atbegshi-ltx.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/atbegshi-ltx.sty
 Package: atbegshi-ltx 2021/01/10 v1.0c Emulation of the original atbegshi
 package with kernel methods
 )
-\Hy@abspage=\count277
-\c@Item=\count278
-\c@Hfootnote=\count279
+\Hy@abspage=\count275
+\c@Item=\count276
+\c@Hfootnote=\count277
 )
-Package hyperref Info: Driver (autodetected): hpdftex.
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/hyperref/hpdftex.def
-File: hpdftex.def 2024-11-05 v7.01l Hyperref driver for pdfTeX
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/atveryend-ltx.sty
+Package hyperref Info: Driver (autodetected): hluatex.
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/hyperref/hluatex.def
+File: hluatex.def 2024-11-05 v7.01l Hyperref driver for luaTeX
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/atveryend-ltx.sty
 Package: atveryend-ltx 2020/08/19 v1.0a Emulation of the original atveryend package
 with kernel methods
 )
-\Fld@listcount=\count280
-\c@bookmark@seq@number=\count281
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty
+\Fld@listcount=\count278
+\c@bookmark@seq@number=\count279
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/rerunfilecheck/rerunfilecheck.sty
 Package: rerunfilecheck 2022-07-10 v1.10 Rerun checks for auxiliary files (HO)
- (/usr/local/texlive/2025basic/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/generic/uniquecounter/uniquecounter.sty
 Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 )
 Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 285.
 )
 \Hy@SectionHShift=\skip51
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/natbib/natbib.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/natbib/natbib.sty
 Package: natbib 2010/09/13 8.31b (PWD, AO)
 \bibhang=\skip52
 \bibsep=\skip53
 LaTeX Info: Redefining \cite on input line 694.
-\c@NAT@ctr=\count282
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/pifont.sty
+\c@NAT@ctr=\count280
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/pifont.sty
 Package: pifont 2020/03/25 PSNFSS-v9.3 Pi font support (SPQR) 
 LaTeX Font Info:    Trying to load font information for U+pzd on input line 63.
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/upzd.fd
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/upzd.fd
 File: upzd.fd 2001/06/04 font definitions for U/pzd.
 )
 LaTeX Font Info:    Trying to load font information for U+psy on input line 64.
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/upsy.fd
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/upsy.fd
 File: upsy.fd 2001/06/04 font definitions for U/psy.
 ))
-\c@nauthors=\count283
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/inputenc.sty
+\c@nauthors=\count281
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/inputenc.sty
 Package: inputenc 2024/02/08 v1.3d Input encoding file
-\inpenc@prehook=\toks18
-\inpenc@posthook=\toks19
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/lineno/lineno.sty
-Package: lineno 2025/01/29 line numbers on paragraphs v5.4
-\linenopenalty=\count284
-\output=\toks20
-\linenoprevgraf=\count285
-\linenumbersep=\dimen146
-\linenumberwidth=\dimen147
-\c@linenumber=\count286
-\c@pagewiselinenumber=\count287
-\c@LN@truepage=\count288
-\c@internallinenumber=\count289
-\c@internallinenumbers=\count290
-\quotelinenumbersep=\dimen148
-\bframerule=\dimen149
-\bframesep=\dimen150
-\bframebox=\box52
-LaTeX Info: Redefining \\ on input line 3187.
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amsmath.sty
+\inpenc@prehook=\toks19
+\inpenc@posthook=\toks20
+
+
+Package inputenc Warning: inputenc package ignored with utf8 based engines.
+
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsmath.sty
 Package: amsmath 2024/11/05 v2.17t AMS math features
 \@mathmargin=\skip54
 
 For additional information on amsmath, use the `?' option.
-(/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amstext.sty
+(/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amstext.sty
 Package: amstext 2021/08/26 v2.01 AMS text
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amsgen.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks21
-\ex@=\dimen151
-)) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amsbsy.sty
+\ex@=\dimen145
+)) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
-\pmbraise@=\dimen152
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsmath/amsopn.sty
+\pmbraise@=\dimen146
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsmath/amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
-\inf@bad=\count291
-LaTeX Info: Redefining \frac on input line 233.
-\uproot@=\count292
-\leftroot@=\count293
+\inf@bad=\count282
+LaTeX Info: Redefining \frac on input line 235.
+\uproot@=\count283
+\leftroot@=\count284
 LaTeX Info: Redefining \overline on input line 398.
 LaTeX Info: Redefining \colon on input line 409.
-\classnum@=\count294
-\DOTSCASE@=\count295
+\classnum@=\count285
+\DOTSCASE@=\count286
 LaTeX Info: Redefining \ldots on input line 495.
 LaTeX Info: Redefining \dots on input line 498.
 LaTeX Info: Redefining \cdots on input line 619.
-\Mathstrutbox@=\box53
-\strutbox@=\box54
+\Mathstrutbox@=\box52
+\strutbox@=\box53
 LaTeX Info: Redefining \big on input line 721.
 LaTeX Info: Redefining \Big on input line 722.
 LaTeX Info: Redefining \bigg on input line 723.
 LaTeX Info: Redefining \Bigg on input line 724.
-\big@size=\dimen153
+\big@size=\dimen147
 LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
-\macc@depth=\count296
+\macc@depth=\count287
 LaTeX Info: Redefining \bmod on input line 904.
 LaTeX Info: Redefining \pmod on input line 909.
 LaTeX Info: Redefining \smash on input line 939.
 LaTeX Info: Redefining \relbar on input line 969.
 LaTeX Info: Redefining \Relbar on input line 970.
-\c@MaxMatrixCols=\count297
+\c@MaxMatrixCols=\count288
 \dotsspace@=\muskip18
-\c@parentequation=\count298
-\dspbrk@lvl=\count299
+\c@parentequation=\count289
+\dspbrk@lvl=\count290
 \tag@help=\toks22
-\row@=\count300
-\column@=\count301
-\maxfields@=\count302
+\row@=\count291
+\column@=\count292
+\maxfields@=\count293
 \andhelp@=\toks23
-\eqnshift@=\dimen154
-\alignsep@=\dimen155
-\tagshift@=\dimen156
-\tagwidth@=\dimen157
-\totwidth@=\dimen158
-\lineht@=\dimen159
+\eqnshift@=\dimen148
+\alignsep@=\dimen149
+\tagshift@=\dimen150
+\tagwidth@=\dimen151
+\totwidth@=\dimen152
+\lineht@=\dimen153
 \@envbody=\toks24
 \multlinegap=\skip55
 \multlinetaggap=\skip56
 \mathdisplay@stack=\toks25
 LaTeX Info: Redefining \[ on input line 2953.
 LaTeX Info: Redefining \] on input line 2954.
-)
-\@LN@amsmath@ams@eqpen=\count303
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsfonts/amssymb.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/amssymb.sty
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/amsfonts.sty
 Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
 \symAMSa=\mathgroup4
 \symAMSb=\mathgroup5
 LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
-)) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/graphicx.sty
+)) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/graphicx.sty
 Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/graphics.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/graphics.sty
 Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/trig.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/trig.sty
 Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
-Package graphics Info: Driver file: pdftex.def on input line 106.
+Package graphics Info: Driver file: luatex.def on input line 106.
 )
-\Gin@req@height=\dimen160
-\Gin@req@width=\dimen161
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/booktabs/booktabs.sty
+\Gin@req@height=\dimen154
+\Gin@req@width=\dimen155
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/booktabs/booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
-\heavyrulewidth=\dimen162
-\lightrulewidth=\dimen163
-\cmidrulewidth=\dimen164
-\belowrulesep=\dimen165
-\belowbottomsep=\dimen166
-\aboverulesep=\dimen167
-\abovetopsep=\dimen168
-\cmidrulesep=\dimen169
-\cmidrulekern=\dimen170
-\defaultaddspace=\dimen171
-\@cmidla=\count304
-\@cmidlb=\count305
-\@aboverulesep=\dimen172
-\@belowrulesep=\dimen173
-\@thisruleclass=\count306
-\@lastruleclass=\count307
-\@thisrulewidth=\dimen174
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/tools/tabularx.sty
+\heavyrulewidth=\dimen156
+\lightrulewidth=\dimen157
+\cmidrulewidth=\dimen158
+\belowrulesep=\dimen159
+\belowbottomsep=\dimen160
+\aboverulesep=\dimen161
+\abovetopsep=\dimen162
+\cmidrulesep=\dimen163
+\cmidrulekern=\dimen164
+\defaultaddspace=\dimen165
+\@cmidla=\count294
+\@cmidlb=\count295
+\@aboverulesep=\dimen166
+\@belowrulesep=\dimen167
+\@thisruleclass=\count296
+\@lastruleclass=\count297
+\@thisrulewidth=\dimen168
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/tools/tabularx.sty
 Package: tabularx 2023/12/11 v2.12a `tabularx' package (DPC)
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/tools/array.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/tools/array.sty
 Package: array 2024/10/17 v2.6g Tabular extension package (FMi)
-\col@sep=\dimen175
-\ar@mcellbox=\box55
-\extrarowheight=\dimen176
+\col@sep=\dimen169
+\ar@mcellbox=\box54
+\extrarowheight=\dimen170
 \NC@list=\toks26
 \extratabsurround=\skip57
 \backup@length=\skip58
-\ar@cellbox=\box56
+\ar@cellbox=\box55
 )
-\TX@col@width=\dimen177
-\TX@old@table=\dimen178
-\TX@old@col=\dimen179
-\TX@target=\dimen180
-\TX@delta=\dimen181
-\TX@cols=\count308
+\TX@col@width=\dimen171
+\TX@old@table=\dimen172
+\TX@old@col=\dimen173
+\TX@target=\dimen174
+\TX@delta=\dimen175
+\TX@cols=\count298
 \TX@ftn=\toks27
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/float/float.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/float/float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count309
+\c@float@type=\count299
 \float@exts=\toks28
-\float@box=\box57
+\float@box=\box56
 \@float@everytoks=\toks29
-\@floatcapt=\box58
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/graphics/rotating.sty
+\@floatcapt=\box57
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/graphics/rotating.sty
 Package: rotating 2016/08/11 v2.16d rotated objects in LaTeX
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/ifthen.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/ifthen.sty
 Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
 )
-\c@r@tfl@t=\count310
+\c@r@tfl@t=\count300
 \rotFPtop=\skip59
 \rotFPbot=\skip60
-\rot@float@box=\box59
+\rot@float@box=\box58
 \rot@mess@toks=\toks30
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/base/fontenc.sty
+) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/base/fontenc.sty
 Package: fontenc 2021/04/29 v2.0v Standard LaTeX package
 LaTeX Font Info:    Trying to load font information for T1+ptm on input line 116.
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/psnfss/t1ptm.fd
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/psnfss/t1ptm.fd
 File: t1ptm.fd 2001/06/04 font definitions for T1/ptm.
-)) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
-File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count311
-\l__pdf_internal_box=\box60
+)) (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-luatex.def
+File: l3backend-luatex.def 2024-05-08 L3 backend support: PDF output (LuaTeX)
+\l__color_backend_stack_int=\count301
+Inserting `l3color' in `luaotfload.parse_color'.
+\l__pdf_internal_box=\box59
 ) (./main_jov.aux)
-\openout1 = `main_jov.aux'.
+\openout1 = main_jov.aux
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 42.
 LaTeX Font Info:    ... okay on input line 42.
@@ -351,6 +361,8 @@ LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 42.
 LaTeX Font Info:    ... okay on input line 42.
 LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 42.
 LaTeX Font Info:    ... okay on input line 42.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 42.
+LaTeX Font Info:    ... okay on input line 42.
 LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 42.
 LaTeX Font Info:    ... okay on input line 42.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 42.
@@ -359,381 +371,29 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 42.
 LaTeX Font Info:    ... okay on input line 42.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 42.
 LaTeX Font Info:    ... okay on input line 42.
- (/usr/local/texlive/2025basic/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
-[Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count312
-\scratchdimen=\dimen182
-\scratchbox=\box61
-\nofMPsegments=\count313
-\nofMParguments=\count314
-\everyMPshowfont=\toks31
-\MPscratchCnt=\count315
-\MPscratchDim=\dimen183
-\MPnumerator=\count316
-\makeMPintoPDFobject=\count317
-\everyMPtoPDFconversion=\toks32
-) (/usr/local/texlive/2025basic/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+ (/Users/omer/Library/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/grfext/grfext.sty
-Package: grfext 2019/12/03 v1.3 Manage graphics extensions (HO)
-)
-Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
-Package grfext Info: Graphics extension search list:
-(grfext)             [.pdf,.png,.jpg,.mps,.jpeg,.jbig2,.jb2,.PDF,.PNG,.JPG,.JPEG,.JBIG2,.JB2,.eps]
-(grfext)             \AppendGraphicsExtensions on input line 504.
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
-File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
-))
-Package hyperref Info: Link coloring ON on input line 42.
- (./main_jov.out) (./main_jov.out)
-\@outlinefile=\write3
-\openout3 = `main_jov.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 44.
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 44.
- (/usr/local/texlive/2025basic/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
 
-
-
-[1{/usr/local/texlive/2025basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
-
-
-{/usr/local/texlive/2025basic/texmf-dist/fonts/enc/dvips/base/8r.enc}]
-
-
-
-[2]
-
-<assets/figures/unimodal_tasks_timeline.pdf, id=356, 933.4875pt x 483.8075pt>
-File: assets/figures/unimodal_tasks_timeline.pdf Graphic file (type pdf)
-<use assets/figures/unimodal_tasks_timeline.pdf>
-Package pdftex.def Info: assets/figures/unimodal_tasks_timeline.pdf  used on input line 86.
-(pdftex.def)             Requested size: 260.34271pt x 134.92627pt.
-
-
-[3 <./assets/figures/unimodal_tasks_timeline.pdf>]
-
-
-
-[4]
-
-
-
-[5]
-<assets/figures/crossmodalTimeline.pdf, id=415, 1499.6025pt x 501.875pt>
-File: assets/figures/crossmodalTimeline.pdf Graphic file (type pdf)
-<use assets/figures/crossmodalTimeline.pdf>
-Package pdftex.def Info: assets/figures/crossmodalTimeline.pdf  used on input line 168.
-(pdftex.def)             Requested size: 260.34271pt x 87.1249pt.
-<assets/figures/bimodal_exp_scheme_1.pdf, id=417, 639.38875pt x 380.42125pt>
-File: assets/figures/bimodal_exp_scheme_1.pdf Graphic file (type pdf)
-<use assets/figures/bimodal_exp_scheme_1.pdf>
-Package pdftex.def Info: assets/figures/bimodal_exp_scheme_1.pdf  used on input line 181.
-(pdftex.def)             Requested size: 260.34271pt x 154.89983pt.
-
-
-
-
-[6 <./assets/figures/crossmodalTimeline.pdf> <./assets/figures/bimodal_exp_scheme_1.pdf>]
-
-<assets/figures/psychometric_curves_publication.pdf, id=451, 883.96373pt x 452.51135pt>
-File: assets/figures/psychometric_curves_publication.pdf Graphic file (type pdf)
-<use assets/figures/psychometric_curves_publication.pdf>
-Package pdftex.def Info: assets/figures/psychometric_curves_publication.pdf  used on input line 236.
-(pdftex.def)             Requested size: 260.34271pt x 133.27563pt.
-
-
-[7]
-
-<assets/figures/psychometric_curves_crossmodal.pdf, id=469, 883.91447pt x 452.51135pt>
-File: assets/figures/psychometric_curves_crossmodal.pdf Graphic file (type pdf)
-<use assets/figures/psychometric_curves_crossmodal.pdf>
-Package pdftex.def Info: assets/figures/psychometric_curves_crossmodal.pdf  used on input line 257.
-(pdftex.def)             Requested size: 221.2929pt x 113.28636pt.
-
-
-[8 <./assets/figures/psychometric_curves_publication.pdf>]
-<assets/figures/data_psychometric_functions_freeMuSigmaLambda_lognorm_clean.pdf, id=546, 906.5092pt x 596.54062pt>
-File: assets/figures/data_psychometric_functions_freeMuSigmaLambda_lognorm_clean.pdf Graphic file (type pdf)
-<use assets/figures/data_psychometric_functions_freeMuSigmaLambda_lognorm_clean.pdf>
-Package pdftex.def Info: assets/figures/data_psychometric_functions_freeMuSigmaLambda_lognorm_clean.pdf  used on input line 271.
-(pdftex.def)             Requested size: 260.34271pt x 171.31749pt.
-
-
-<assets/figures/aggregated_data_only_freeMuSigmaLambda_sem_clean.pdf, id=548, 776.17125pt x 440.41602pt>
-File: assets/figures/aggregated_data_only_freeMuSigmaLambda_sem_clean.pdf Graphic file (type pdf)
-<use assets/figures/aggregated_data_only_freeMuSigmaLambda_sem_clean.pdf>
-Package pdftex.def Info: assets/figures/aggregated_data_only_freeMuSigmaLambda_sem_clean.pdf  used on input line 280.
-(pdftex.def)             Requested size: 260.34271pt x 147.7234pt.
-
-
-[9 <./assets/figures/psychometric_curves_crossmodal.pdf> <./assets/figures/data_psychometric_functions_freeMuSigmaLambda_lognorm_clean.pdf>]
-
-
-Overfull \hbox (63.72813pt too wide) detected at line 339
-[]
- []
-
-
-
-[10 <./assets/figures/aggregated_data_only_freeMuSigmaLambda_sem_clean.pdf>]
-Overfull \hbox (25.93639pt too wide) detected at line 352
-[]
- []
-
-
-
-
-Overfull \hbox (212.997pt too wide) detected at line 374
-[][][]\OML/cmm/m/it/10 P\OT1/cmr/m/n/10 ([] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 S[]; S[]\OT1/cmr/m/n/10 ) = [] [] \U/msb/m/n/10 I  [] \OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 S[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 S[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dm[] dm[];
- []
-
-
-
-[11]
-<assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf, id=743, 898.91142pt x 463.67712pt>
-File: assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf Graphic file (type pdf)
-<use assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>
-Package pdftex.def Info: assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf  used on input line 392.
-(pdftex.def)             Requested size: 260.34271pt x 134.28604pt.
-
-
-<assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf, id=745, 875.64346pt x 464.82722pt>
-File: assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf Graphic file (type pdf)
-<use assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>
-Package pdftex.def Info: assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf  used on input line 403.
-(pdftex.def)             Requested size: 260.34271pt x 138.20093pt.
-
-
-[12 <./assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf> <./assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>]
-
-<assets/figures/modelComparison_threeModels_heatmap.pdf, id=902, 658.01222pt x 820.2217pt>
-File: assets/figures/modelComparison_threeModels_heatmap.pdf Graphic file (type pdf)
-<use assets/figures/modelComparison_threeModels_heatmap.pdf>
-Package pdftex.def Info: assets/figures/modelComparison_threeModels_heatmap.pdf  used on input line 430.
-(pdftex.def)             Requested size: 156.20721pt x 194.71707pt.
-
-
-[13 <./assets/figures/modelComparison_threeModels_heatmap.pdf>]
-Overfull \hbox (4.4537pt too wide) in paragraph at lines 448--449
-\T1/ptm/m/n/10 switching model (summed $\OT1/cmr/m/n/10 ^^A$\T1/ptm/m/n/10 AIC $\OT1/cmr/m/n/10 = \OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 448$\T1/ptm/m/n/10 , 95% CI $\OT1/cmr/m/n/10 [\OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 764\OML/cmm/m/it/10 ;  \OMS/cmsy/m/n/10 ^^@\OT1/cmr/m/n/10 173]$\T1/ptm/m/n/10 )
- []
-
-
-Underfull \hbox (badness 6978) in paragraph at lines 456--458
-[]\T1/ptm/m/n/10 We com-ple-mented these cri-te-ria with random-effects
- []
-
-
-
-<assets/figures/sumDeltaAIC_threeModels.pdf, id=974, 813.95842pt x 420.58717pt>
-File: assets/figures/sumDeltaAIC_threeModels.pdf Graphic file (type pdf)
-<use assets/figures/sumDeltaAIC_threeModels.pdf>
-Package pdftex.def Info: assets/figures/sumDeltaAIC_threeModels.pdf  used on input line 461.
-(pdftex.def)             Requested size: 234.30684pt x 121.06868pt.
-<assets/figures/switching_probability_by_noise.pdf, id=976, 348.83575pt x 380.71361pt>
-File: assets/figures/switching_probability_by_noise.pdf Graphic file (type pdf)
-<use assets/figures/switching_probability_by_noise.pdf>
-Package pdftex.def Info: assets/figures/switching_probability_by_noise.pdf  used on input line 476.
-(pdftex.def)             Requested size: 208.27496pt x 227.30875pt.
-
-
-[14 <./assets/figures/sumDeltaAIC_threeModels.pdf>]
-
-<assets/figures/manuscript_posterior_p10_v3.pdf, id=1036, 894.79755pt x 896.8255pt>
-File: assets/figures/manuscript_posterior_p10_v3.pdf Graphic file (type pdf)
-<use assets/figures/manuscript_posterior_p10_v3.pdf>
-Package pdftex.def Info: assets/figures/manuscript_posterior_p10_v3.pdf  used on input line 491.
-(pdftex.def)             Requested size: 234.30684pt x 234.83862pt.
-
-
-[15 <./assets/figures/switching_probability_by_noise.pdf> <./assets/figures/manuscript_posterior_p10_v3.pdf>]
-
-
-
-[16]
-
-
-
-[17]
-Overfull \hbox (60.0753pt too wide) in paragraph at lines 547--557
- [][] 
- []
-
-
-
-
-
-[18]
-
-
-Overfull \hbox (42.37152pt too wide) detected at line 704
-[][][][] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 ^^V[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[][];  [] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;  ^^L[] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;
- []
-
-
-
-[19]
-
-
-Overfull \hbox (33.42908pt too wide) detected at line 767
-[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 1) = [] [][] \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 y; ^^[[]\OT1/cmr/m/n/10 )\OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 y; ^^[[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dy:
- []
-
-
-Overfull \hbox (33.42908pt too wide) detected at line 775
-[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 1) = [] [][] \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 )\OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dy:
- []
-
-
-Overfull \hbox (25.7926pt too wide) detected at line 784
-[][][]\OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ; \OML/cmm/m/it/10 m[]; ^^[[]\OT1/cmr/m/n/10 ) = \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ;  0\OML/cmm/m/it/10 ;  ^^[[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[]\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y\OT1/cmr/m/n/10 ;  \OML/cmm/m/it/10 ^^V[];  ^^[[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 ;
- []
-
-
-
-[20]
-Overfull \hbox (144.169pt too wide) detected at line 796
-[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[] \OMS/cmsy/m/n/10 j \OML/cmm/m/it/10 C  \OT1/cmr/m/n/10 =  1) = [] \OMS/cmsy/m/n/10 N\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[] \OMS/cmsy/m/n/10 ^^@ \OML/cmm/m/it/10 m[]\OT1/cmr/m/n/10 ;  0\OML/cmm/m/it/10 ;  ^^[[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[]\OT1/cmr/m/n/10 ) \OMS/cmsy/m/n/10 ^^B [] \OML/cmm/m/it/10 ;
- []
-
-
-Overfull \hbox (8.34494pt too wide) detected at line 822
-[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 2) = [] [] \OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 y[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 y[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y[]\OT1/cmr/m/n/10 )\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 y[]\OT1/cmr/m/n/10 ) \OML/cmm/m/it/10 dy[] dy[]:
- []
-
-
-Overfull \hbox (71.8732pt too wide) detected at line 831
-[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 m[]; m[]\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 2) = [] \OMS/cmsy/m/n/10 ^^B [] \OML/cmm/m/it/10 :
- []
-
-
-
-
-Overfull \hbox (68.92096pt too wide) detected at line 839
-[]
- []
-
-
-Overfull \hbox (93.52818pt too wide) detected at line 847
-[][][]\OML/cmm/m/it/10 p\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 C \OT1/cmr/m/n/10 = 1\OMS/cmsy/m/n/10 j\OML/cmm/m/it/10 m[]; m[]\OT1/cmr/m/n/10 ) = []\OML/cmm/m/it/10 ;
- []
-
-
-Overfull \hbox (41.22273pt too wide) detected at line 867
-[][][][] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 ^^V[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[][];  [] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;  ^^L[] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;
- []
-
-
-Overfull \hbox (62.31055pt too wide) detected at line 878
-[][][][] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 m[] \OT1/cmr/m/n/10 + \OML/cmm/m/it/10 ^^[[][];  [] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 ;  ^^L[] \OT1/cmr/m/n/10 = []\OML/cmm/m/it/10 :
- []
-
-
-
-[21]
-<assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf, id=1272, 2163.04106pt x 1122.15488pt>
-File: assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf Graphic file (type pdf)
-<use assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf>
-Package pdftex.def Info: assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf  used on input line 894.
-(pdftex.def)             Requested size: 260.31285pt x 135.04659pt.
-<assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf, id=1273, 2163.04106pt x 1122.15488pt>
-File: assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf Graphic file (type pdf)
-<use assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf>
-Package pdftex.def Info: assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf  used on input line 902.
-(pdftex.def)             Requested size: 260.31285pt x 135.04659pt.
-
-
-<assets/figures/posterior_overlay_per_subject_v3.pdf, id=1276, 1748.41585pt x 2359.81184pt>
-File: assets/figures/posterior_overlay_per_subject_v3.pdf Graphic file (type pdf)
-<use assets/figures/posterior_overlay_per_subject_v3.pdf>
-Package pdftex.def Info: assets/figures/posterior_overlay_per_subject_v3.pdf  used on input line 910.
-(pdftex.def)             Requested size: 221.2929pt x 298.64854pt.
-
-
-[22 <./assets/figures/per_participant_mu_freeMuSigmaLambda_byNoise.pdf> <./assets/figures/per_participant_mu_unimodalSigma_byNoise.pdf> <./assets/figures/posterior_overlay_per_subject_v3.pdf>]
-
-<assets/figures/optimal_integration_comparison.pdf, id=1626, 754.81314pt x 413.1547pt>
-File: assets/figures/optimal_integration_comparison.pdf Graphic file (type pdf)
-<use assets/figures/optimal_integration_comparison.pdf>
-Package pdftex.def Info: assets/figures/optimal_integration_comparison.pdf  used on input line 939.
-(pdftex.def)             Requested size: 260.34271pt x 142.50069pt.
-
-
-[23 <./assets/figures/optimal_integration_comparison.pdf>]
-<assets/figures/empirical_confusion_3model.pdf, id=1689, 377.13947pt x 286.47214pt>
-File: assets/figures/empirical_confusion_3model.pdf Graphic file (type pdf)
-<use assets/figures/empirical_confusion_3model.pdf>
-Package pdftex.def Info: assets/figures/empirical_confusion_3model.pdf  used on input line 962.
-(pdftex.def)             Requested size: 260.34271pt x 197.75778pt.
-
-
-<assets/figures/emprical_parameter_recovery_nIter_50.pdf, id=1691, 1775.34642pt x 872.7736pt>
-File: assets/figures/emprical_parameter_recovery_nIter_50.pdf Graphic file (type pdf)
-<use assets/figures/emprical_parameter_recovery_nIter_50.pdf>
-Package pdftex.def Info: assets/figures/emprical_parameter_recovery_nIter_50.pdf  used on input line 983.
-(pdftex.def)             Requested size: 260.33076pt x 127.98055pt.
-
-
-[24 <./assets/figures/empirical_confusion_3model.pdf>]
-
-
-
-[25 <./assets/figures/emprical_parameter_recovery_nIter_50.pdf>]
-
-<assets/figures/grid_three_model_confusion_matrices.pdf, id=1836, 937.3162pt x 501.09398pt>
-File: assets/figures/grid_three_model_confusion_matrices.pdf Graphic file (type pdf)
-<use assets/figures/grid_three_model_confusion_matrices.pdf>
-Package pdftex.def Info: assets/figures/grid_three_model_confusion_matrices.pdf  used on input line 1020.
-(pdftex.def)             Requested size: 260.33pt x 139.17374pt.
-
-
-[26 <./assets/figures/grid_three_model_confusion_matrices.pdf>]
-<assets/figures/low_noise_visual_noise_inflation.pdf, id=1921, 382.28493pt x 307.67308pt>
-File: assets/figures/low_noise_visual_noise_inflation.pdf Graphic file (type pdf)
-<use assets/figures/low_noise_visual_noise_inflation.pdf>
-Package pdftex.def Info: assets/figures/low_noise_visual_noise_inflation.pdf  used on input line 1031.
-(pdftex.def)             Requested size: 150.99924pt x 121.52719pt.
- (./main_jov.bbl
-
-
-
-[27 <./assets/figures/low_noise_visual_noise_inflation.pdf>]
-
-
-
-[28])
-
-
-
-[29
-
-] (./main_jov.aux)
- ***********
-LaTeX2e <2024-11-01> patch level 2
-L3 programming layer <2025-01-18>
- ***********
-Package rerunfilecheck Info: File `main_jov.out' has not changed.
-(rerunfilecheck)             Checksum: A4C88BF3B4E3A7556F8141D7BBB8C7C6;9757.
- ) 
-Here is how much of TeX's memory you used:
- 11820 strings out of 474662
- 189036 string characters out of 5751110
- 607346 words of memory out of 5000000
- 34460 multiletter control sequences out of 15000+600000
- 603025 words of font info for 89 fonts, out of 8000000 for 9000
- 319 hyphenation exceptions out of 8191
- 90i,22n,93p,2263b,646s stack positions out of 10000i,1000n,20000p,200000b,200000s
- </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx0800.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss0800.375pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss1000.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx1440.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx2074.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss0800.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsi0800.600pk></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmri8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on main_jov.pdf (29 pages, 1902327 bytes).
-PDF statistics:
- 2376 PDF objects out of 2487 (max. 8388607)
- 947 compressed objects within 10 object streams
- 212 named destinations out of 1000 (max. 500000)
- 514 words of extra memory for PDF output out of 10000 (max. 10000000)
-
+! LaTeX Error: File `grfext.sty' not found.
+
+Type X to quit or <RETURN> to proceed,
+or enter new name. (Default extension: sty)
+
+Enter file name: 
+! Emergency stop.
+<read *> 
+         
+l.179   \RequirePackage{grfext}\relax
+                                     
+
+Here is how much of LuaTeX's memory you used:
+ 10729 strings out of 475506
+ 100000,662416 words of node,token memory allocated
+ 439 words of node memory still in use:
+   3 hlist, 1 rule, 1 dir, 3 kern, 1 glyph, 4 attribute, 57 glue_spec, 4 attribute_list, 3 if_stack, 1 write nodes
+   avail lists: 2:10,3:3,4:1,5:3,7:2,9:2
+ 33537 multiletter control sequences out of 65536+600000
+ 19 fonts using 1027671 bytes
+ 87i,0n,88p,1752b,87s stack positions out of 10000i,1000n,20000p,200000b,200000s
+!  ==> Fatal error occurred, no output PDF file produced!

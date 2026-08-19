@@ -19,9 +19,9 @@ TARGET_MODELS = {
     'switchingFree_sharedPrior': 'Probabilistic cue switching',
 }
 FIT_SOURCE_CONFIGS = {
-    'free_sigma':     {'label': 'Free sensory noise',  'glob': 'model_fits/**/*.json',
+    'free_sigma':     {'label': 'Free sensory noise',  'glob': 'model_fits/boxcarFits/**/*.json',
                        'excl_sub': ('all','lnd1','ln1','loglinear'), 'excl_tag': ('LapseFree',)},
-    'unimodal_sigma': {'label': 'Fixed sensory noise', 'glob': 'unimodalSigma_modelFits/**/*.json',
+    'unimodal_sigma': {'label': 'Fixed sensory noise', 'glob': 'unimodalSigma_modelFits_singleLapse/**/*.json',
                        'excl_sub': ('all','lnd1','ln1','loglinear'), 'excl_tag': ()},
 }
 
@@ -39,6 +39,7 @@ def load_fits(source):
         rows.append({'participantID': str(d.get('participantID', parts[0])).lower(),
                      'modelType': TARGET_MODELS[raw_tag], 'fit_file': fp,
                      'fittedParams': d['fittedParams'], 'logLikelihood': d['logLikelihood'],
+                     'nFreeParameters': d.get('nFreeParameters'),
                      'modelName': parts[1], 'sharedLambda': ('LapseFix' in fn),
                      'freeP_c': ('contextualPrior' in fn)})
     return rows
@@ -87,7 +88,8 @@ def _compute_rows(seeds, nsimul, verbose=True):
                 mc_by_csv[csv] = mc
             mc = mc_by_csv[csv]
             mc.modelName = r['modelName']; mc.sharedLambda = r['sharedLambda']; mc.freeP_c = r['freeP_c']
-            params = np.asarray(r['fittedParams'], float); k = len(params)
+            params = np.asarray(r['fittedParams'], float)
+            k = int(r['nFreeParameters']) if r['nFreeParameters'] is not None else len(params)
             lls = []
             for s in seeds:
                 np.random.seed(s)

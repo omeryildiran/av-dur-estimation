@@ -219,7 +219,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
     parser.add_argument(
-        "--output-dir", type=Path, default=Path("unimodalSigma_singleLapse_modelFits")
+        "--output-dir", type=Path, default=Path("unimodalSigma_modelFits_singleLapse")
     )
     parser.add_argument("--n-simul", type=int, default=3000)
     parser.add_argument("--n-starts", type=int, default=5)
