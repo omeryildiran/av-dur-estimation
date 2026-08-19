@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  18 AUG 2026 23:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  19 AUG 2026 01:41
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -454,7 +454,7 @@ Package pdftex.def Info: assets/figures/psychometric_curves_publication.pdf  use
 File: assets/figures/psychometric_curves_crossmodal.pdf Graphic file (type pdf)
 <use assets/figures/psychometric_curves_crossmodal.pdf>
 Package pdftex.def Info: assets/figures/psychometric_curves_crossmodal.pdf  used on input line 257.
-(pdftex.def)             Requested size: 260.34271pt x 133.27563pt.
+(pdftex.def)             Requested size: 221.2929pt x 113.28636pt.
 
 
 [8 <./assets/figures/psychometric_curves_publication.pdf>]
@@ -496,14 +496,14 @@ Overfull \hbox (212.997pt too wide) detected at line 374
 
 
 [11]
-<assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf, id=742, 898.91142pt x 463.67712pt>
+<assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf, id=743, 898.91142pt x 463.67712pt>
 File: assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf Graphic file (type pdf)
 <use assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>
 Package pdftex.def Info: assets/figures/aggregated_mu_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf  used on input line 392.
 (pdftex.def)             Requested size: 260.34271pt x 134.28604pt.
 
 
-<assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf, id=744, 875.64346pt x 464.82722pt>
+<assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf, id=745, 875.64346pt x 464.82722pt>
 File: assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf Graphic file (type pdf)
 <use assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf>
 Package pdftex.def Info: assets/figures/aggregated_sigma_vs_models_freeMuSigmaLambda_sem_better_freeSigmaModel.pdf  used on input line 403.
@@ -535,12 +535,12 @@ Underfull \hbox (badness 6978) in paragraph at lines 456--458
 File: assets/figures/sumDeltaAIC_threeModels.pdf Graphic file (type pdf)
 <use assets/figures/sumDeltaAIC_threeModels.pdf>
 Package pdftex.def Info: assets/figures/sumDeltaAIC_threeModels.pdf  used on input line 461.
-(pdftex.def)             Requested size: 208.27496pt x 107.61732pt.
+(pdftex.def)             Requested size: 234.30684pt x 121.06868pt.
 <assets/figures/switching_probability_by_noise.pdf, id=976, 348.83575pt x 380.71361pt>
 File: assets/figures/switching_probability_by_noise.pdf Graphic file (type pdf)
 <use assets/figures/switching_probability_by_noise.pdf>
 Package pdftex.def Info: assets/figures/switching_probability_by_noise.pdf  used on input line 476.
-(pdftex.def)             Requested size: 143.18929pt x 156.27367pt.
+(pdftex.def)             Requested size: 208.27496pt x 227.30875pt.
 
 
 [14 <./assets/figures/sumDeltaAIC_threeModels.pdf>]
@@ -549,7 +549,7 @@ Package pdftex.def Info: assets/figures/switching_probability_by_noise.pdf  used
 File: assets/figures/manuscript_posterior_p10_v3.pdf Graphic file (type pdf)
 <use assets/figures/manuscript_posterior_p10_v3.pdf>
 Package pdftex.def Info: assets/figures/manuscript_posterior_p10_v3.pdf  used on input line 491.
-(pdftex.def)             Requested size: 208.27496pt x 208.7424pt.
+(pdftex.def)             Requested size: 234.30684pt x 234.83862pt.
 
 
 [15 <./assets/figures/switching_probability_by_noise.pdf> <./assets/figures/manuscript_posterior_p10_v3.pdf>]
@@ -559,13 +559,13 @@ Package pdftex.def Info: assets/figures/manuscript_posterior_p10_v3.pdf  used on
 [16]
 
 
+
+[17]
 Overfull \hbox (60.0753pt too wide) in paragraph at lines 547--557
  [][] 
  []
 
 
-
-[17]
 
 
 
@@ -730,7 +730,7 @@ Here is how much of TeX's memory you used:
  319 hyphenation exceptions out of 8191
  90i,22n,93p,2263b,646s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx0800.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss0800.375pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss1000.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx1440.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsx2074.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecss0800.600pk> </Users/omer/Library/texlive/2025basic/texmf-var/fonts/pk/ljfour/jknappen/ec/ecsi0800.600pk></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/times/utmri8a.pfb></usr/local/texlive/2025basic/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on main_jov.pdf (29 pages, 1902128 bytes).
+Output written on main_jov.pdf (29 pages, 1902327 bytes).
 PDF statistics:
  2376 PDF objects out of 2487 (max. 8388607)
  947 compressed objects within 10 object streams

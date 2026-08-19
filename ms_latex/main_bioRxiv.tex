@@ -1,18 +1,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Journal of Vision submission manuscript
-%%% Uses the unofficial JOV LaTeX class/template file jov.cls.
+%%% bioRxiv preprint manuscript
+%%% Compile from this directory with: latexmk -pdf main_bioRxiv.tex
+%%% Add the `linenumbers` class option for a line-numbered review copy.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\documentclass{jov}
+\documentclass{biorxiv}
 
-            \usepackage[utf8]{inputenc}
-\IfFileExists{lineno.sty}{\usepackage{lineno}}{}
+\usepackage[utf8]{inputenc}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs,tabularx}
 \usepackage{float}
 \usepackage{rotating}
-% jov.cls loads the obsolete `times` package and uses old font declarations
-% so \textbf selects a real bold face reliably.
 \usepackage[T1]{fontenc}
 \IfFileExists{newtxtext.sty}{\usepackage{newtxtext}}{}
 %\IfFileExists{tgheros.sty}{\usepackage{tgheros}}{}
@@ -23,10 +21,6 @@
 
 \setlength{\parindent}{0.25in}
 \setlength{\parskip}{0pt}
-\ifdefined\linenumbers
-\linenumbers
-\fi
-
 \title{Duration judgments with conflicting audiovisual cues}
 \author{Yildiran}{\"{O}mer F.}{Department of Psychology, New York University}{New York, NY, USA}{}{omer.yildiran@nyu.edu}
 \author{Ni}{Long}{Department of Psychology and Center for Neural Science, New York University}{New York, NY, USA}{}{}
@@ -35,6 +29,8 @@
 \abstract{How does the brain integrate conflicting temporal information across sensory modalities? Previous work has shown that observers integrate audiovisual duration cues optimally when the conflict between the two cues is small. Does causal inference lead to a breakdown of audiovisual integration when duration conflicts are large? Here, we address this question by testing a wide range of cue conflicts in an auditory duration-discrimination task. In the bimodal task, participants compared the auditory durations of a test and a standard stimulus. Audiovisual durations were consistent in the test stimulus, but differed by seven conflict durations ($\pm 250$~ms) in the standard stimulus. Auditory durations were tested at two levels of noise. We found that auditory duration percepts shifted systematically toward the visual duration, especially with high auditory noise. The shift was proportional to the cue-conflict magnitude, inconsistent with the predictions of causal inference. We compared several models. A heuristic model in which the observer probabilistically switches between the visual and auditory cues was preferred for most participants, although performance differences across models were small. Model simulations further revealed that given the measured sensory noise, competing models can be discriminated only with unreasonably large conflicts. Within the conflict range tested here, all models produced largely overlapping, near-linear shifts as a function of the cue conflict magnitude. Our results suggest that observers do not rely on causal inference when judging auditory durations under our conditions. Although the heuristic cue-switching model was favored by model comparison, high sensory variability in auditory duration encoding---particularly under high auditory-noise conditions---limits the discriminability of competing computational models. Under such levels of encoding noise, forced fusion, causal inference, and probabilistic cue switching models generate highly similar predictions across the experimentally tested conflict range.}
 
 \keywords{audiovisual integration; duration perception; causal inference; cue conflict; multisensory perception; psychophysics}
+\biorxivcategory{Neuroscience}
+\biorxivlicense{CC BY 4.0}
 
 \providecommand{\citep}[1]{\cite{#1}}
 \providecommand{\citeyearpar}[1]{(\citeyear{#1})}
