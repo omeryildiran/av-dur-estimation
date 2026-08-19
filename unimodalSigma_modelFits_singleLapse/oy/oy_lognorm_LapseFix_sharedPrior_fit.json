@@ -1,0 +1,191 @@
+{
+  "participantID": "oy",
+  "modelType": "lognorm_LapseFix_sharedPrior",
+  "fittedParams": [
+    0.22579238075269387,
+    0.1664710987614825,
+    0.9972884708510001,
+    0.9999999998137356,
+    0.3571849427130406
+  ],
+  "AIC": 2342.183293100601,
+  "BIC": 2351.2097533224255,
+  "logLikelihood": -1169.0916465503005,
+  "n_conditions": 674,
+  "nFreeParameters": 2,
+  "sharedLambda": true,
+  "freeP_c": false,
+  "fixedSensorySigmas": {
+    "sigma_a_low": 0.1664710987614825,
+    "sigma_v": 0.9972884708510001,
+    "sigma_a_high": 0.3571849427130406
+  },
+  "unimodalSigmaSourceFiles": [
+    "data/oy_auditory_fits.mat",
+    "data/oy_visual_fits.mat"
+  ],
+  "nSimul": 3000,
+  "optimizer": "bads",
+  "nStartHistory": [
+    {
+      "start": 1,
+      "initialFreeParams": [
+        0.2761153408566948,
+        0.20164310010208886
+      ],
+      "fittedFreeParams": [
+        0.2318548773509625,
+        0.9999999999883585
+      ],
+      "optimizerNLL": 1170.6537029642122,
+      "checkedNLL": 1171.4056824654856,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 568.8885071277618
+    },
+    {
+      "start": 2,
+      "initialFreeParams": [
+        0.28606258381506416,
+        0.22015134518327864
+      ],
+      "fittedFreeParams": [
+        0.23287715959548952,
+        0.9999998092651368
+      ],
+      "optimizerNLL": 1170.4959098055126,
+      "checkedNLL": 1170.9770431251202,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 504.3695800304413
+    },
+    {
+      "start": 3,
+      "initialFreeParams": [
+        0.25547951387532863,
+        0.3053933723615354
+      ],
+      "fittedFreeParams": [
+        0.2309687417943962,
+        0.9999999998137356
+      ],
+      "optimizerNLL": 1170.3352291152733,
+      "checkedNLL": 1170.2180918731328,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 600.3506829738617
+    },
+    {
+      "start": 4,
+      "initialFreeParams": [
+        0.28744503401056287,
+        0.5248767321494551
+      ],
+      "fittedFreeParams": [
+        0.228512000733614,
+        0.9999999880790711
+      ],
+      "optimizerNLL": 1170.659001976072,
+      "checkedNLL": 1170.5703163681446,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 506.79521584510803
+    },
+    {
+      "start": 5,
+      "initialFreeParams": [
+        0.15255102659464995,
+        0.45361233271859513
+      ],
+      "fittedFreeParams": [
+        0.22582844219207765,
+        0.9999998092651368
+      ],
+      "optimizerNLL": 1170.469242394318,
+      "checkedNLL": 1171.3330409542064,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 618.2744338512421
+    },
+    {
+      "start": 6,
+      "initialFreeParams": [
+        0.08757972927222385,
+        0.27456996589973837
+      ],
+      "fittedFreeParams": [
+        0.22631467520943843,
+        0.9999999999534339
+      ],
+      "optimizerNLL": 1170.3522897586001,
+      "checkedNLL": 1171.4505178962697,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 552.5906128883362
+    },
+    {
+      "start": 7,
+      "initialFreeParams": [
+        0.24134748487765512,
+        0.5883137069445501
+      ],
+      "fittedFreeParams": [
+        0.23089448162728807,
+        0.9999999999883585
+      ],
+      "optimizerNLL": 1170.5228849807368,
+      "checkedNLL": 1171.1661447361676,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 685.9784772396088
+    },
+    {
+      "start": 8,
+      "initialFreeParams": [
+        0.2281231956886122,
+        0.4302065325571301
+      ],
+      "fittedFreeParams": [
+        0.22893322486877443,
+        0.9999998092651368
+      ],
+      "optimizerNLL": 1170.5248994693345,
+      "checkedNLL": 1170.1190981870388,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 630.9995839595795
+    },
+    {
+      "start": 9,
+      "initialFreeParams": [
+        0.31953205862793715,
+        0.7885012032657381
+      ],
+      "fittedFreeParams": [
+        0.2282475036912598,
+        0.9999999998137356
+      ],
+      "optimizerNLL": 1170.441590152106,
+      "checkedNLL": 1171.266436771235,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 722.535453081131
+    },
+    {
+      "start": 10,
+      "initialFreeParams": [
+        0.24491875108467834,
+        0.5902755657606898
+      ],
+      "fittedFreeParams": [
+        0.22579238075269387,
+        0.9999999998137356
+      ],
+      "optimizerNLL": 1170.688675056505,
+      "checkedNLL": 1169.0916465503005,
+      "success": true,
+      "message": "BADS completed",
+      "elapsedSeconds": 474.79662799835205
+    }
+  ]
+}
