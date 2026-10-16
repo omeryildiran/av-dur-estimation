@@ -2,9 +2,8 @@
 
 Code and data for the paper:
 
-> **Bayesian Causal Inference Accounts for Audio-Visual Duration Estimation**  
+> **Duration judgments with conflicting audiovisual cues**  
 > Omer Faruk Yildiran, Michael S. Landy  
-> *[Journal / bioRxiv]*, 2025
 
 ## Overview
 
