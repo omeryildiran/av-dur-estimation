@@ -1,0 +1,35 @@
+{
+  "dataset": "full",
+  "code": "ip",
+  "participantID": "P04",
+  "model": "switchingFree",
+  "modelLabel": "Probabilistic cue switching",
+  "freeParams": [
+    0.1181642882878145,
+    0.0055326084014720575,
+    0.20241333504164555
+  ],
+  "fittedParams": [
+    0.1181642882878145,
+    0.2751536557724896,
+    0.30363545243418627,
+    0.0055326084014720575,
+    0.36879218157725985,
+    0.20241333504164555
+  ],
+  "nLL": 1209.1839735896626,
+  "nLL_optimizer": 1209.2894375607398,
+  "AIC": 2424.3679471793253,
+  "k": 3,
+  "n_conditions": 493,
+  "n_trials": 2156,
+  "sigmas": {
+    "sigma_a_low": 0.2751536557724896,
+    "sigma_v": 0.30363545243418627,
+    "sigma_a_high": 0.36879218157725985
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 118,
+  "seconds": 88.4
+}

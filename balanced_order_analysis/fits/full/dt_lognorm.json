@@ -1,0 +1,33 @@
+{
+  "dataset": "full",
+  "code": "dt",
+  "participantID": "P02",
+  "model": "lognorm",
+  "modelLabel": "Causal inference",
+  "freeParams": [
+    0.17357669893360814,
+    0.6368983101801126
+  ],
+  "fittedParams": [
+    0.17357669893360814,
+    0.23594394981761085,
+    0.5142048512222803,
+    0.6368983101801126,
+    1.571775308011099
+  ],
+  "nLL": 1278.0732916807326,
+  "nLL_optimizer": 1280.4127847760321,
+  "AIC": 2560.146583361465,
+  "k": 2,
+  "n_conditions": 452,
+  "n_trials": 2226,
+  "sigmas": {
+    "sigma_a_low": 0.23594394981761085,
+    "sigma_v": 0.5142048512222803,
+    "sigma_a_high": 1.571775308011099
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 158,
+  "seconds": 157.0
+}

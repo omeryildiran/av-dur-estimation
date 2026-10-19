@@ -1,0 +1,31 @@
+{
+  "dataset": "balanced",
+  "code": "ip",
+  "participantID": "P04",
+  "model": "fusionOnlyLogNorm",
+  "modelLabel": "Forced fusion",
+  "freeParams": [
+    0.3669505213387791
+  ],
+  "fittedParams": [
+    0.3669505213387791,
+    0.2751536557724896,
+    0.30363545243418627,
+    0.36879218157725985
+  ],
+  "nLL": 1015.2481290264441,
+  "nLL_optimizer": 1014.7744494773758,
+  "AIC": 2032.4962580528882,
+  "k": 1,
+  "n_conditions": 411,
+  "n_trials": 1742,
+  "sigmas": {
+    "sigma_a_low": 0.2751536557724896,
+    "sigma_v": 0.30363545243418627,
+    "sigma_a_high": 0.36879218157725985
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 10,
+  "seconds": 3.6
+}

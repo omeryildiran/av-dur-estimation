@@ -1,0 +1,33 @@
+{
+  "dataset": "full",
+  "code": "sx",
+  "participantID": "P13",
+  "model": "lognorm",
+  "modelLabel": "Causal inference",
+  "freeParams": [
+    0.17025261472812475,
+    0.9996428031637146
+  ],
+  "fittedParams": [
+    0.17025261472812475,
+    0.17447016703405704,
+    0.43060209250750653,
+    0.9996428031637146,
+    0.44131866044697843
+  ],
+  "nLL": 1128.8145250769978,
+  "nLL_optimizer": 1129.3353551188281,
+  "AIC": 2261.6290501539956,
+  "k": 2,
+  "n_conditions": 548,
+  "n_trials": 2071,
+  "sigmas": {
+    "sigma_a_low": 0.17447016703405704,
+    "sigma_v": 0.43060209250750653,
+    "sigma_a_high": 0.44131866044697843
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 113,
+  "seconds": 130.9
+}

@@ -1,6 +1,6 @@
 ExpTesting = 0
 ExpTraining= 0
-fullScreen=0
+fullScreen=1
 expName = 'auditoryDurEst'
 expCondition='auditory'
 

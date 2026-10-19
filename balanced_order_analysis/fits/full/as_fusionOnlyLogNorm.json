@@ -1,0 +1,31 @@
+{
+  "dataset": "full",
+  "code": "as",
+  "participantID": "P01",
+  "model": "fusionOnlyLogNorm",
+  "modelLabel": "Forced fusion",
+  "freeParams": [
+    0.11849927633562947
+  ],
+  "fittedParams": [
+    0.11849927633562947,
+    0.16859332455383802,
+    0.8372813699889714,
+    2.4748737341529163
+  ],
+  "nLL": 1147.825026794175,
+  "nLL_optimizer": 1148.822647345649,
+  "AIC": 2297.65005358835,
+  "k": 1,
+  "n_conditions": 423,
+  "n_trials": 2155,
+  "sigmas": {
+    "sigma_a_low": 0.16859332455383802,
+    "sigma_v": 0.8372813699889714,
+    "sigma_a_high": 2.4748737341529163
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 8,
+  "seconds": 3.0
+}

@@ -1,0 +1,35 @@
+{
+  "dataset": "balanced",
+  "code": "sx",
+  "participantID": "P13",
+  "model": "switchingFree",
+  "modelLabel": "Probabilistic cue switching",
+  "freeParams": [
+    0.001432498773196884,
+    0.395498103968575,
+    0.9995339021848224
+  ],
+  "fittedParams": [
+    0.001432498773196884,
+    0.17447016703405704,
+    0.43060209250750653,
+    0.395498103968575,
+    0.44131866044697843,
+    0.9995339021848224
+  ],
+  "nLL": 659.7411499550672,
+  "nLL_optimizer": 658.7881317732741,
+  "AIC": 1325.4822999101343,
+  "k": 3,
+  "n_conditions": 333,
+  "n_trials": 1318,
+  "sigmas": {
+    "sigma_a_low": 0.17447016703405704,
+    "sigma_v": 0.43060209250750653,
+    "sigma_a_high": 0.44131866044697843
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 132,
+  "seconds": 63.4
+}

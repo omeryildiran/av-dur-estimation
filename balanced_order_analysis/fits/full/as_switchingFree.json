@@ -1,0 +1,35 @@
+{
+  "dataset": "full",
+  "code": "as",
+  "participantID": "P01",
+  "model": "switchingFree",
+  "modelLabel": "Probabilistic cue switching",
+  "freeParams": [
+    0.02953358964432722,
+    0.1462554092959514,
+    0.9980670125459908
+  ],
+  "fittedParams": [
+    0.02953358964432722,
+    0.16859332455383802,
+    0.8372813699889714,
+    0.1462554092959514,
+    2.4748737341529163,
+    0.9980670125459908
+  ],
+  "nLL": 1143.8374305028576,
+  "nLL_optimizer": 1144.129256076985,
+  "AIC": 2293.6748610057152,
+  "k": 3,
+  "n_conditions": 423,
+  "n_trials": 2155,
+  "sigmas": {
+    "sigma_a_low": 0.16859332455383802,
+    "sigma_v": 0.8372813699889714,
+    "sigma_a_high": 2.4748737341529163
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 200,
+  "seconds": 131.1
+}

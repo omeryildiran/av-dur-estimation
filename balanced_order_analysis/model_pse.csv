@@ -1,0 +1,913 @@
+dataset,code,participantID,model,modelLabel,audNoise,conflict,conflict_ms,pse_ms
+full,ip,P04,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-0.5575033697113319
+full,ip,P04,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,0.0341152794355315
+full,ip,P04,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,0.5619990448408885
+full,ip,P04,switchingFree,Probabilistic cue switching,0.1,0.0,0,1.0708001826312818
+full,ip,P04,switchingFree,Probabilistic cue switching,0.1,0.083,83,1.4891267644943085
+full,ip,P04,switchingFree,Probabilistic cue switching,0.1,0.167,167,1.7485786196923536
+full,ip,P04,switchingFree,Probabilistic cue switching,0.1,0.25,250,1.9766913685854703
+full,ip,P04,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-66.89505535347462
+full,ip,P04,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-41.76938424889099
+full,ip,P04,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-20.24051719691783
+full,ip,P04,switchingFree,Probabilistic cue switching,1.2,0.0,0,-0.7133325584801065
+full,ip,P04,switchingFree,Probabilistic cue switching,1.2,0.083,83,16.929890960190264
+full,ip,P04,switchingFree,Probabilistic cue switching,1.2,0.167,167,32.68863924421495
+full,ip,P04,switchingFree,Probabilistic cue switching,1.2,0.25,250,46.327633410848115
+full,hh,P03,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-102.68457301245881
+full,hh,P03,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-61.87382035383554
+full,hh,P03,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-28.980730324243197
+full,hh,P03,switchingFree,Probabilistic cue switching,0.1,0.0,0,-4.488961457979501
+full,hh,P03,switchingFree,Probabilistic cue switching,0.1,0.083,83,16.441836392305454
+full,hh,P03,switchingFree,Probabilistic cue switching,0.1,0.167,167,34.154817044618866
+full,hh,P03,switchingFree,Probabilistic cue switching,0.1,0.25,250,48.65655066015928
+full,hh,P03,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-250.84068276684292
+full,hh,P03,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-167.43297852228022
+full,hh,P03,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-84.87794216643269
+full,hh,P03,switchingFree,Probabilistic cue switching,1.2,0.0,0,-1.791739201444209
+full,hh,P03,switchingFree,Probabilistic cue switching,1.2,0.083,83,81.493947306445
+full,hh,P03,switchingFree,Probabilistic cue switching,1.2,0.167,167,166.0950182858506
+full,hh,P03,switchingFree,Probabilistic cue switching,1.2,0.25,250,249.73896253690765
+full,ln2,P07,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-18.648801265285453
+full,ln2,P07,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-12.124328505699333
+full,ln2,P07,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-5.105290055916978
+full,ln2,P07,switchingFree,Probabilistic cue switching,0.1,0.0,0,0.41933491284562585
+full,ln2,P07,switchingFree,Probabilistic cue switching,0.1,0.083,83,4.774955465129294
+full,ln2,P07,switchingFree,Probabilistic cue switching,0.1,0.167,167,8.691912177213212
+full,ln2,P07,switchingFree,Probabilistic cue switching,0.1,0.25,250,11.959266771901511
+full,ln2,P07,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-226.86649191195835
+full,ln2,P07,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-139.69206569116298
+full,ln2,P07,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-53.79415190897369
+full,ln2,P07,switchingFree,Probabilistic cue switching,1.2,0.0,0,27.127520205664002
+full,ln2,P07,switchingFree,Probabilistic cue switching,1.2,0.083,83,99.26791202856167
+full,ln2,P07,switchingFree,Probabilistic cue switching,1.2,0.167,167,170.1400686213409
+full,ln2,P07,switchingFree,Probabilistic cue switching,1.2,0.25,250,239.20502784678655
+full,ml,P09,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-102.92862888675414
+full,ml,P09,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-62.91961339036367
+full,ml,P09,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-29.05888350501601
+full,ml,P09,switchingFree,Probabilistic cue switching,0.1,0.0,0,-0.3383218016602685
+full,ml,P09,switchingFree,Probabilistic cue switching,0.1,0.083,83,24.592555290229523
+full,ml,P09,switchingFree,Probabilistic cue switching,0.1,0.167,167,46.78250312399401
+full,ml,P09,switchingFree,Probabilistic cue switching,0.1,0.25,250,66.48432271705163
+full,ml,P09,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-245.4377417473232
+full,ml,P09,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-162.12919992394998
+full,ml,P09,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-79.50138726420458
+full,ml,P09,switchingFree,Probabilistic cue switching,1.2,0.0,0,4.696716661495959
+full,ml,P09,switchingFree,Probabilistic cue switching,1.2,0.083,83,85.96176005895606
+full,ml,P09,switchingFree,Probabilistic cue switching,1.2,0.167,167,167.98781611165325
+full,ml,P09,switchingFree,Probabilistic cue switching,1.2,0.25,250,249.9110519277401
+full,dt,P02,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-38.180229337783366
+full,dt,P02,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-22.31566775445276
+full,dt,P02,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-8.823259314353793
+full,dt,P02,switchingFree,Probabilistic cue switching,0.1,0.0,0,2.0800917350048964
+full,dt,P02,switchingFree,Probabilistic cue switching,0.1,0.083,83,12.059990488492378
+full,dt,P02,switchingFree,Probabilistic cue switching,0.1,0.167,167,20.264250405711227
+full,dt,P02,switchingFree,Probabilistic cue switching,0.1,0.25,250,27.99457079511647
+full,dt,P02,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-245.29118437140812
+full,dt,P02,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-166.3787231549712
+full,dt,P02,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-82.69520627971549
+full,dt,P02,switchingFree,Probabilistic cue switching,1.2,0.0,0,5.411569982382458
+full,dt,P02,switchingFree,Probabilistic cue switching,1.2,0.083,83,89.59716306023613
+full,dt,P02,switchingFree,Probabilistic cue switching,1.2,0.167,167,170.49938381856256
+full,dt,P02,switchingFree,Probabilistic cue switching,1.2,0.25,250,248.02943217349394
+full,as,P01,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-12.61653587424183
+full,as,P01,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-6.298176783131604
+full,as,P01,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-0.9178174037617337
+full,as,P01,switchingFree,Probabilistic cue switching,0.1,0.0,0,4.356433465436682
+full,as,P01,switchingFree,Probabilistic cue switching,0.1,0.083,83,8.74355528976789
+full,as,P01,switchingFree,Probabilistic cue switching,0.1,0.167,167,12.83129913831349
+full,as,P01,switchingFree,Probabilistic cue switching,0.1,0.25,250,15.941815322537355
+full,as,P01,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-251.35913444617174
+full,as,P01,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-170.85824642161816
+full,as,P01,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-88.11290011271805
+full,as,P01,switchingFree,Probabilistic cue switching,1.2,0.0,0,-3.7785425149476914
+full,as,P01,switchingFree,Probabilistic cue switching,1.2,0.083,83,78.70972655637587
+full,as,P01,switchingFree,Probabilistic cue switching,1.2,0.167,167,162.5026334098697
+full,as,P01,switchingFree,Probabilistic cue switching,1.2,0.25,250,247.00169295332674
+full,mh,P08,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-115.19455934011613
+full,mh,P08,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-71.85319715477777
+full,mh,P08,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-33.57594110588447
+full,mh,P08,switchingFree,Probabilistic cue switching,0.1,0.0,0,-0.3097037632866506
+full,mh,P08,switchingFree,Probabilistic cue switching,0.1,0.083,83,30.29868301144345
+full,mh,P08,switchingFree,Probabilistic cue switching,0.1,0.167,167,57.35916996754209
+full,mh,P08,switchingFree,Probabilistic cue switching,0.1,0.25,250,81.98371598855026
+full,mh,P08,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-227.05833641723717
+full,mh,P08,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-149.0124590138827
+full,mh,P08,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-72.6847890831348
+full,mh,P08,switchingFree,Probabilistic cue switching,1.2,0.0,0,4.684511516222956
+full,mh,P08,switchingFree,Probabilistic cue switching,1.2,0.083,83,83.20697986981219
+full,mh,P08,switchingFree,Probabilistic cue switching,1.2,0.167,167,159.46796610943846
+full,mh,P08,switchingFree,Probabilistic cue switching,1.2,0.25,250,235.2224587562183
+full,mt,P10,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-24.967433718949106
+full,mt,P10,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-16.28773332895622
+full,mt,P10,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-7.509140870461895
+full,mt,P10,switchingFree,Probabilistic cue switching,0.1,0.0,0,-0.40580148074031985
+full,mt,P10,switchingFree,Probabilistic cue switching,0.1,0.083,83,5.4805429834787756
+full,mt,P10,switchingFree,Probabilistic cue switching,0.1,0.167,167,10.32394294683192
+full,mt,P10,switchingFree,Probabilistic cue switching,0.1,0.25,250,14.310831190920803
+full,mt,P10,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-244.223949737887
+full,mt,P10,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-159.08967299427619
+full,mt,P10,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-73.96904828489708
+full,mt,P10,switchingFree,Probabilistic cue switching,1.2,0.0,0,10.657918046329984
+full,mt,P10,switchingFree,Probabilistic cue switching,1.2,0.083,83,86.93189613820817
+full,mt,P10,switchingFree,Probabilistic cue switching,1.2,0.167,167,165.39640355285158
+full,mt,P10,switchingFree,Probabilistic cue switching,1.2,0.25,250,245.46679936578852
+balanced,hh,P03,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-76.973874124795
+balanced,hh,P03,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-49.74916246488015
+balanced,hh,P03,switchingFree,Probabilistic cue switching,0.1,0.0,0,-1.3048093696597651
+balanced,hh,P03,switchingFree,Probabilistic cue switching,0.1,0.083,83,19.045398521804422
+balanced,hh,P03,switchingFree,Probabilistic cue switching,0.1,0.25,250,51.639968554396454
+balanced,hh,P03,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-250.85740768795552
+balanced,hh,P03,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-167.43399794412056
+balanced,hh,P03,switchingFree,Probabilistic cue switching,1.2,0.0,0,-1.9332147669748334
+balanced,hh,P03,switchingFree,Probabilistic cue switching,1.2,0.083,83,81.3585905685259
+balanced,hh,P03,switchingFree,Probabilistic cue switching,1.2,0.25,250,249.7912802972988
+full,qs,P12,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-11.749528151522581
+full,qs,P12,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-8.102036767644705
+full,qs,P12,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-3.5145783582684054
+full,qs,P12,switchingFree,Probabilistic cue switching,0.1,0.0,0,-0.060295825173473094
+full,qs,P12,switchingFree,Probabilistic cue switching,0.1,0.083,83,3.1134422556962082
+full,qs,P12,switchingFree,Probabilistic cue switching,0.1,0.167,167,5.615922814699137
+full,qs,P12,switchingFree,Probabilistic cue switching,0.1,0.25,250,7.594522403197912
+full,qs,P12,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-81.47795913594908
+full,qs,P12,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-49.96291285381266
+full,qs,P12,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-23.015638343296672
+full,qs,P12,switchingFree,Probabilistic cue switching,1.2,0.0,0,-0.3353214825714268
+full,qs,P12,switchingFree,Probabilistic cue switching,1.2,0.083,83,19.68504876968058
+full,qs,P12,switchingFree,Probabilistic cue switching,1.2,0.167,167,37.02236083433785
+full,qs,P12,switchingFree,Probabilistic cue switching,1.2,0.25,250,51.963317251581984
+full,oy,P11,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-17.74180964028538
+full,oy,P11,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-8.207488688697417
+full,oy,P11,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,0.5434985886151322
+full,oy,P11,switchingFree,Probabilistic cue switching,0.1,0.0,0,7.980356335004823
+full,oy,P11,switchingFree,Probabilistic cue switching,0.1,0.083,83,14.706436621157891
+full,oy,P11,switchingFree,Probabilistic cue switching,0.1,0.167,167,21.03419937608031
+full,oy,P11,switchingFree,Probabilistic cue switching,0.1,0.25,250,26.693786381384644
+full,oy,P11,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-15.16953592866982
+full,oy,P11,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-6.078302549194836
+full,oy,P11,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,1.3860852847644711
+full,oy,P11,switchingFree,Probabilistic cue switching,1.2,0.0,0,7.849738079624191
+full,oy,P11,switchingFree,Probabilistic cue switching,1.2,0.083,83,13.336535494940627
+full,oy,P11,switchingFree,Probabilistic cue switching,1.2,0.167,167,17.918894939144113
+full,oy,P11,switchingFree,Probabilistic cue switching,1.2,0.25,250,21.998090936111602
+balanced,as,P01,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-19.287959915519124
+balanced,as,P01,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-10.038453343425624
+balanced,as,P01,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-1.7576742813247836
+balanced,as,P01,switchingFree,Probabilistic cue switching,0.1,0.0,0,6.172986969582905
+balanced,as,P01,switchingFree,Probabilistic cue switching,0.1,0.083,83,12.630667265038365
+balanced,as,P01,switchingFree,Probabilistic cue switching,0.1,0.167,167,18.508372131089246
+balanced,as,P01,switchingFree,Probabilistic cue switching,0.1,0.25,250,23.342200292977623
+balanced,as,P01,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-251.25371233332217
+balanced,as,P01,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-170.77788010645517
+balanced,as,P01,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-88.26467832137519
+balanced,as,P01,switchingFree,Probabilistic cue switching,1.2,0.0,0,-3.737879109116715
+balanced,as,P01,switchingFree,Probabilistic cue switching,1.2,0.083,83,78.71401365620312
+balanced,as,P01,switchingFree,Probabilistic cue switching,1.2,0.167,167,162.44951293369903
+balanced,as,P01,switchingFree,Probabilistic cue switching,1.2,0.25,250,247.1990361943429
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-15.822346322991955
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-10.339543140330143
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-4.332656415300729
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,0.1,0.0,0,0.44611490233081863
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,0.1,0.083,83,4.231433923873262
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,0.1,0.167,167,7.594053493437114
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,0.1,0.25,250,10.382902519126658
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-230.58411290884416
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-143.68836473796176
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-57.758813599611656
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,1.2,0.0,0,24.35393364957217
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,1.2,0.083,83,97.87747661381651
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,1.2,0.167,167,170.83425271841125
+balanced,ln2,P07,switchingFree,Probabilistic cue switching,1.2,0.25,250,241.91677205317075
+balanced,ip,P04,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-0.710703225259901
+balanced,ip,P04,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-0.03740357349812928
+balanced,ip,P04,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,0.5625326570363187
+balanced,ip,P04,switchingFree,Probabilistic cue switching,0.1,0.0,0,1.1215150886136893
+balanced,ip,P04,switchingFree,Probabilistic cue switching,0.1,0.083,83,1.624550274683223
+balanced,ip,P04,switchingFree,Probabilistic cue switching,0.1,0.167,167,1.9745008619075355
+balanced,ip,P04,switchingFree,Probabilistic cue switching,0.1,0.25,250,2.265818010799725
+balanced,ip,P04,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-56.509986148240266
+balanced,ip,P04,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-35.608883134331194
+balanced,ip,P04,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-17.19081950648488
+balanced,ip,P04,switchingFree,Probabilistic cue switching,1.2,0.0,0,-0.8337422545278694
+balanced,ip,P04,switchingFree,Probabilistic cue switching,1.2,0.083,83,13.988721651135517
+balanced,ip,P04,switchingFree,Probabilistic cue switching,1.2,0.167,167,26.972680844322696
+balanced,ip,P04,switchingFree,Probabilistic cue switching,1.2,0.25,250,38.08632784736543
+full,sx,P13,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-157.19875561824543
+full,sx,P13,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-99.68934017989368
+full,sx,P13,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-46.67519782540614
+full,sx,P13,switchingFree,Probabilistic cue switching,0.1,0.0,0,1.0567440639284165
+full,sx,P13,switchingFree,Probabilistic cue switching,0.1,0.083,83,43.615152974038395
+full,sx,P13,switchingFree,Probabilistic cue switching,0.1,0.167,167,82.9488312413581
+full,sx,P13,switchingFree,Probabilistic cue switching,0.1,0.25,250,119.08047413261058
+full,sx,P13,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-246.41800720793788
+full,sx,P13,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-163.10946710487983
+full,sx,P13,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-82.80493775041525
+full,sx,P13,switchingFree,Probabilistic cue switching,1.2,0.0,0,-2.1248167254203087
+full,sx,P13,switchingFree,Probabilistic cue switching,1.2,0.083,83,77.89293817606213
+full,sx,P13,switchingFree,Probabilistic cue switching,1.2,0.167,167,160.31858149957546
+full,sx,P13,switchingFree,Probabilistic cue switching,1.2,0.25,250,241.05675323995413
+balanced,dt,P02,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-36.53049553143434
+balanced,dt,P02,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-21.548924781270628
+balanced,dt,P02,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-8.618216179963001
+balanced,dt,P02,switchingFree,Probabilistic cue switching,0.1,0.0,0,1.7705206234086557
+balanced,dt,P02,switchingFree,Probabilistic cue switching,0.1,0.083,83,11.369200720760197
+balanced,dt,P02,switchingFree,Probabilistic cue switching,0.1,0.167,167,19.259069186959856
+balanced,dt,P02,switchingFree,Probabilistic cue switching,0.1,0.25,250,26.73533387602445
+balanced,dt,P02,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-246.453484390372
+balanced,dt,P02,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-167.32859287313894
+balanced,dt,P02,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-83.93009159941562
+balanced,dt,P02,switchingFree,Probabilistic cue switching,1.2,0.0,0,3.685870517207035
+balanced,dt,P02,switchingFree,Probabilistic cue switching,1.2,0.083,83,88.09965997744695
+balanced,dt,P02,switchingFree,Probabilistic cue switching,1.2,0.167,167,169.92246721431914
+balanced,dt,P02,switchingFree,Probabilistic cue switching,1.2,0.25,250,247.9212587639611
+balanced,ml,P09,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-54.988867086401385
+balanced,ml,P09,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-33.62567304757075
+balanced,ml,P09,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-15.215997066953591
+balanced,ml,P09,switchingFree,Probabilistic cue switching,0.1,0.0,0,-0.11186414295788483
+balanced,ml,P09,switchingFree,Probabilistic cue switching,0.1,0.083,83,12.903977915328824
+balanced,ml,P09,switchingFree,Probabilistic cue switching,0.1,0.167,167,24.33528839749266
+balanced,ml,P09,switchingFree,Probabilistic cue switching,0.1,0.25,250,33.90011202026555
+balanced,ml,P09,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-242.35890656525748
+balanced,ml,P09,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-157.88291923739806
+balanced,ml,P09,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-69.0526473779407
+balanced,ml,P09,switchingFree,Probabilistic cue switching,1.2,0.0,0,22.13091331617012
+balanced,ml,P09,switchingFree,Probabilistic cue switching,1.2,0.083,83,100.8553049901415
+balanced,ml,P09,switchingFree,Probabilistic cue switching,1.2,0.167,167,177.56129087705975
+balanced,ml,P09,switchingFree,Probabilistic cue switching,1.2,0.25,250,251.01607067354314
+balanced,mh,P08,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-105.9357493990149
+balanced,mh,P08,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-66.1042883839722
+balanced,mh,P08,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-30.66841859492525
+balanced,mh,P08,switchingFree,Probabilistic cue switching,0.1,0.0,0,-0.13706230398402575
+balanced,mh,P08,switchingFree,Probabilistic cue switching,0.1,0.083,83,27.82072597063334
+balanced,mh,P08,switchingFree,Probabilistic cue switching,0.1,0.167,167,52.09099032131026
+balanced,mh,P08,switchingFree,Probabilistic cue switching,0.1,0.25,250,74.2226184266318
+balanced,mh,P08,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-226.08616125250524
+balanced,mh,P08,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-148.02467227324095
+balanced,mh,P08,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-71.8259754802702
+balanced,mh,P08,switchingFree,Probabilistic cue switching,1.2,0.0,0,5.089146003606992
+balanced,mh,P08,switchingFree,Probabilistic cue switching,1.2,0.083,83,82.9297333019593
+balanced,mh,P08,switchingFree,Probabilistic cue switching,1.2,0.167,167,158.4477718575722
+balanced,mh,P08,switchingFree,Probabilistic cue switching,1.2,0.25,250,233.75482522361034
+balanced,qs,P12,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-21.14637708869732
+balanced,qs,P12,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-14.402701795704132
+balanced,qs,P12,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-6.72838666971276
+balanced,qs,P12,switchingFree,Probabilistic cue switching,0.1,0.0,0,-0.6768618425944117
+balanced,qs,P12,switchingFree,Probabilistic cue switching,0.1,0.083,83,4.814403346078633
+balanced,qs,P12,switchingFree,Probabilistic cue switching,0.1,0.167,167,9.007206776698196
+balanced,qs,P12,switchingFree,Probabilistic cue switching,0.1,0.25,250,12.535999026646817
+balanced,qs,P12,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-110.95067789740104
+balanced,qs,P12,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-68.49077843215778
+balanced,qs,P12,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-32.06152485930131
+balanced,qs,P12,switchingFree,Probabilistic cue switching,1.2,0.0,0,-0.6729512074501454
+balanced,qs,P12,switchingFree,Probabilistic cue switching,1.2,0.083,83,27.041520537010587
+balanced,qs,P12,switchingFree,Probabilistic cue switching,1.2,0.167,167,51.69435386884758
+balanced,qs,P12,switchingFree,Probabilistic cue switching,1.2,0.25,250,73.75213611836395
+balanced,mt,P10,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-27.601300620784418
+balanced,mt,P10,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-17.778655093564634
+balanced,mt,P10,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-8.132371390467796
+balanced,mt,P10,switchingFree,Probabilistic cue switching,0.1,0.0,0,-0.22517926709242353
+balanced,mt,P10,switchingFree,Probabilistic cue switching,0.1,0.083,83,6.227643594562626
+balanced,mt,P10,switchingFree,Probabilistic cue switching,0.1,0.167,167,11.500601302266267
+balanced,mt,P10,switchingFree,Probabilistic cue switching,0.1,0.25,250,15.860529244732913
+balanced,mt,P10,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-244.2786931320518
+balanced,mt,P10,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-158.9605195812254
+balanced,mt,P10,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-73.75427021182207
+balanced,mt,P10,switchingFree,Probabilistic cue switching,1.2,0.0,0,11.048006211399342
+balanced,mt,P10,switchingFree,Probabilistic cue switching,1.2,0.083,83,87.10350265161027
+balanced,mt,P10,switchingFree,Probabilistic cue switching,1.2,0.167,167,165.24637811525244
+balanced,mt,P10,switchingFree,Probabilistic cue switching,1.2,0.25,250,245.13583787956549
+balanced,sx,P13,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-80.15942995001846
+balanced,sx,P13,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-50.413710789966814
+balanced,sx,P13,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,-24.76476625061652
+balanced,sx,P13,switchingFree,Probabilistic cue switching,0.1,0.0,0,-2.259209076410751
+balanced,sx,P13,switchingFree,Probabilistic cue switching,0.1,0.083,83,17.498158034998212
+balanced,sx,P13,switchingFree,Probabilistic cue switching,0.1,0.167,167,35.283169469876526
+balanced,sx,P13,switchingFree,Probabilistic cue switching,0.1,0.25,250,51.24729106247838
+balanced,sx,P13,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-251.24059031088564
+balanced,sx,P13,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-167.06549786941767
+balanced,sx,P13,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,-85.29155439519143
+balanced,sx,P13,switchingFree,Probabilistic cue switching,1.2,0.0,0,-2.4070197542917504
+balanced,sx,P13,switchingFree,Probabilistic cue switching,1.2,0.083,83,80.5978015281904
+balanced,sx,P13,switchingFree,Probabilistic cue switching,1.2,0.167,167,166.1857131015504
+balanced,sx,P13,switchingFree,Probabilistic cue switching,1.2,0.25,250,249.57931993022498
+full,as,P01,lognorm,Causal inference,0.1,-0.25,-250,-12.40944309531078
+full,as,P01,lognorm,Causal inference,0.1,-0.167,-167,-8.038911478160992
+full,as,P01,lognorm,Causal inference,0.1,-0.083,-83,-4.035002280884492
+full,as,P01,lognorm,Causal inference,0.1,0.0,0,-0.5746091918676366
+full,as,P01,lognorm,Causal inference,0.1,0.083,83,2.2354867153855373
+full,as,P01,lognorm,Causal inference,0.1,0.167,167,4.756065744591753
+full,as,P01,lognorm,Causal inference,0.1,0.25,250,7.079681617991662
+full,as,P01,lognorm,Causal inference,1.2,-0.25,-250,-230.19384054290953
+full,as,P01,lognorm,Causal inference,1.2,-0.167,-167,-151.53146038352787
+full,as,P01,lognorm,Causal inference,1.2,-0.083,-83,-72.935223874456
+full,as,P01,lognorm,Causal inference,1.2,0.0,0,1.0421796562620766
+full,as,P01,lognorm,Causal inference,1.2,0.083,83,73.55142176363128
+full,as,P01,lognorm,Causal inference,1.2,0.167,167,145.96471198268134
+full,as,P01,lognorm,Causal inference,1.2,0.25,250,213.48844498685182
+balanced,oy,P11,switchingFree,Probabilistic cue switching,0.1,-0.25,-250,-16.840281038536798
+balanced,oy,P11,switchingFree,Probabilistic cue switching,0.1,-0.167,-167,-7.835066191862195
+balanced,oy,P11,switchingFree,Probabilistic cue switching,0.1,-0.083,-83,0.5582649701403319
+balanced,oy,P11,switchingFree,Probabilistic cue switching,0.1,0.0,0,7.797371484457805
+balanced,oy,P11,switchingFree,Probabilistic cue switching,0.1,0.083,83,14.254803447706577
+balanced,oy,P11,switchingFree,Probabilistic cue switching,0.1,0.167,167,20.332990434103305
+balanced,oy,P11,switchingFree,Probabilistic cue switching,0.1,0.25,250,25.744127928030046
+balanced,oy,P11,switchingFree,Probabilistic cue switching,1.2,-0.25,-250,-12.122798481491227
+balanced,oy,P11,switchingFree,Probabilistic cue switching,1.2,-0.167,-167,-4.606991755580159
+balanced,oy,P11,switchingFree,Probabilistic cue switching,1.2,-0.083,-83,1.4798154336941316
+balanced,oy,P11,switchingFree,Probabilistic cue switching,1.2,0.0,0,6.992265254422536
+balanced,oy,P11,switchingFree,Probabilistic cue switching,1.2,0.083,83,11.565114152174761
+balanced,oy,P11,switchingFree,Probabilistic cue switching,1.2,0.167,167,15.48368873924144
+balanced,oy,P11,switchingFree,Probabilistic cue switching,1.2,0.25,250,18.86817194297219
+full,hh,P03,lognorm,Causal inference,0.1,-0.25,-250,-1.3586649004371232
+full,hh,P03,lognorm,Causal inference,0.1,-0.167,-167,-1.3390115574400951
+full,hh,P03,lognorm,Causal inference,0.1,-0.083,-83,-1.3195515435759364
+full,hh,P03,lognorm,Causal inference,0.1,0.0,0,-1.3195515435759364
+full,hh,P03,lognorm,Causal inference,0.1,0.083,83,-1.2954421335758526
+full,hh,P03,lognorm,Causal inference,0.1,0.167,167,-1.2954421335758526
+full,hh,P03,lognorm,Causal inference,0.1,0.25,250,-1.2954421335758526
+full,hh,P03,lognorm,Causal inference,1.2,-0.25,-250,-239.91977538972492
+full,hh,P03,lognorm,Causal inference,1.2,-0.167,-167,-159.5540877475206
+full,hh,P03,lognorm,Causal inference,1.2,-0.083,-83,-79.24455636232591
+full,hh,P03,lognorm,Causal inference,1.2,0.0,0,1.48110133554602
+full,hh,P03,lognorm,Causal inference,1.2,0.083,83,79.77493458639928
+full,hh,P03,lognorm,Causal inference,1.2,0.167,167,156.73558482069626
+full,hh,P03,lognorm,Causal inference,1.2,0.25,250,231.36151210440792
+full,ml,P09,lognorm,Causal inference,0.1,-0.25,-250,-106.45572501561762
+full,ml,P09,lognorm,Causal inference,0.1,-0.167,-167,-66.45948012250219
+full,ml,P09,lognorm,Causal inference,0.1,-0.083,-83,-30.605176571913972
+full,ml,P09,lognorm,Causal inference,0.1,0.0,0,-0.1780627876548646
+full,ml,P09,lognorm,Causal inference,0.1,0.083,83,27.290496438159728
+full,ml,P09,lognorm,Causal inference,0.1,0.167,167,53.35824665556066
+full,ml,P09,lognorm,Causal inference,0.1,0.25,250,76.36562739228015
+full,ml,P09,lognorm,Causal inference,1.2,-0.25,-250,-235.81607915533064
+full,ml,P09,lognorm,Causal inference,1.2,-0.167,-167,-156.13232188151542
+full,ml,P09,lognorm,Causal inference,1.2,-0.083,-83,-77.40856015361308
+full,ml,P09,lognorm,Causal inference,1.2,0.0,0,0.7364428373728416
+full,ml,P09,lognorm,Causal inference,1.2,0.083,83,76.8354356895502
+full,ml,P09,lognorm,Causal inference,1.2,0.167,167,151.1841279480811
+full,ml,P09,lognorm,Causal inference,1.2,0.25,250,223.13924216101077
+full,ln2,P07,lognorm,Causal inference,0.1,-0.25,-250,-11.648476084069436
+full,ln2,P07,lognorm,Causal inference,0.1,-0.167,-167,-8.7865740979845
+full,ln2,P07,lognorm,Causal inference,0.1,-0.083,-83,-4.823984190260755
+full,ln2,P07,lognorm,Causal inference,0.1,0.0,0,-0.6439208039671351
+full,ln2,P07,lognorm,Causal inference,0.1,0.083,83,3.035129170287254
+full,ln2,P07,lognorm,Causal inference,0.1,0.167,167,6.605720516439706
+full,ln2,P07,lognorm,Causal inference,0.1,0.25,250,9.915068453985821
+full,ln2,P07,lognorm,Causal inference,1.2,-0.25,-250,-179.48261539918477
+full,ln2,P07,lognorm,Causal inference,1.2,-0.167,-167,-107.8846417932019
+full,ln2,P07,lognorm,Causal inference,1.2,-0.083,-83,-42.90538499215607
+full,ln2,P07,lognorm,Causal inference,1.2,0.0,0,12.800053122631105
+full,ln2,P07,lognorm,Causal inference,1.2,0.083,83,61.401713874895016
+full,ln2,P07,lognorm,Causal inference,1.2,0.167,167,105.30060309598932
+full,ln2,P07,lognorm,Causal inference,1.2,0.25,250,144.1721850887211
+full,mh,P08,lognorm,Causal inference,0.1,-0.25,-250,-87.23219786259257
+full,mh,P08,lognorm,Causal inference,0.1,-0.167,-167,-67.71896027157509
+full,mh,P08,lognorm,Causal inference,0.1,-0.083,-83,-34.68926481779144
+full,mh,P08,lognorm,Causal inference,0.1,0.0,0,-0.34980671266254815
+full,mh,P08,lognorm,Causal inference,0.1,0.083,83,31.188477672241532
+full,mh,P08,lognorm,Causal inference,0.1,0.167,167,59.52822775249067
+full,mh,P08,lognorm,Causal inference,0.1,0.25,250,83.68637825842407
+full,mh,P08,lognorm,Causal inference,1.2,-0.25,-250,-208.2962453933991
+full,mh,P08,lognorm,Causal inference,1.2,-0.167,-167,-138.47037261121363
+full,mh,P08,lognorm,Causal inference,1.2,-0.083,-83,-67.32951510556434
+full,mh,P08,lognorm,Causal inference,1.2,0.0,0,0.08124429542200051
+full,mh,P08,lognorm,Causal inference,1.2,0.083,83,62.49574239192612
+full,mh,P08,lognorm,Causal inference,1.2,0.167,167,121.01852201967634
+full,mh,P08,lognorm,Causal inference,1.2,0.25,250,175.17360263213544
+full,dt,P02,lognorm,Causal inference,0.1,-0.25,-250,-26.813029562962775
+full,dt,P02,lognorm,Causal inference,0.1,-0.167,-167,-16.98337444203385
+full,dt,P02,lognorm,Causal inference,0.1,-0.083,-83,-8.146501906376002
+full,dt,P02,lognorm,Causal inference,0.1,0.0,0,0.033769010048922965
+full,dt,P02,lognorm,Causal inference,0.1,0.083,83,7.063700576086185
+full,dt,P02,lognorm,Causal inference,0.1,0.167,167,13.530514652439262
+full,dt,P02,lognorm,Causal inference,0.1,0.25,250,18.839935720649017
+full,dt,P02,lognorm,Causal inference,1.2,-0.25,-250,-212.9124671471887
+full,dt,P02,lognorm,Causal inference,1.2,-0.167,-167,-141.77692979695365
+full,dt,P02,lognorm,Causal inference,1.2,-0.083,-83,-67.99585242589178
+full,dt,P02,lognorm,Causal inference,1.2,0.0,0,2.0750692960945782
+full,dt,P02,lognorm,Causal inference,1.2,0.083,83,69.8969798970015
+full,dt,P02,lognorm,Causal inference,1.2,0.167,167,133.86865030673601
+full,dt,P02,lognorm,Causal inference,1.2,0.25,250,194.74800600599872
+full,mt,P10,lognorm,Causal inference,0.1,-0.25,-250,-32.05897552523152
+full,mt,P10,lognorm,Causal inference,0.1,-0.167,-167,-25.230432019559935
+full,mt,P10,lognorm,Causal inference,0.1,-0.083,-83,-12.83433743584611
+full,mt,P10,lognorm,Causal inference,0.1,0.0,0,-0.4177628525607324
+full,mt,P10,lognorm,Causal inference,0.1,0.083,83,10.779941980669228
+full,mt,P10,lognorm,Causal inference,0.1,0.167,167,21.176283546678
+full,mt,P10,lognorm,Causal inference,0.1,0.25,250,29.956633836310754
+full,mt,P10,lognorm,Causal inference,1.2,-0.25,-250,-236.1952186114888
+full,mt,P10,lognorm,Causal inference,1.2,-0.167,-167,-152.92637339969207
+full,mt,P10,lognorm,Causal inference,1.2,-0.083,-83,-66.61164745038755
+full,mt,P10,lognorm,Causal inference,1.2,0.0,0,16.773782650202463
+full,mt,P10,lognorm,Causal inference,1.2,0.083,83,92.85453937190447
+full,mt,P10,lognorm,Causal inference,1.2,0.167,167,163.4713832599719
+full,mt,P10,lognorm,Causal inference,1.2,0.25,250,229.98767295013954
+balanced,hh,P03,lognorm,Causal inference,0.1,-0.25,-250,-0.5414824198653467
+balanced,hh,P03,lognorm,Causal inference,0.1,-0.167,-167,-0.5052628006135818
+balanced,hh,P03,lognorm,Causal inference,0.1,0.0,0,-0.4649855387898194
+balanced,hh,P03,lognorm,Causal inference,0.1,0.083,83,-0.375355625650331
+balanced,hh,P03,lognorm,Causal inference,0.1,0.25,250,-0.375355625650331
+balanced,hh,P03,lognorm,Causal inference,1.2,-0.25,-250,-238.6135188827153
+balanced,hh,P03,lognorm,Causal inference,1.2,-0.167,-167,-159.42730126549225
+balanced,hh,P03,lognorm,Causal inference,1.2,0.0,0,1.6311370701350691
+balanced,hh,P03,lognorm,Causal inference,1.2,0.083,83,79.85714960629942
+balanced,hh,P03,lognorm,Causal inference,1.2,0.25,250,231.0597572947014
+full,ip,P04,lognorm,Causal inference,0.1,-0.25,-250,-0.5365880353809804
+full,ip,P04,lognorm,Causal inference,0.1,-0.167,-167,-0.4659827472731637
+full,ip,P04,lognorm,Causal inference,0.1,-0.083,-83,-0.156943144945354
+full,ip,P04,lognorm,Causal inference,0.1,0.0,0,0.14486701917559852
+full,ip,P04,lognorm,Causal inference,0.1,0.083,83,0.5220309024752678
+full,ip,P04,lognorm,Causal inference,0.1,0.167,167,0.7404160950118532
+full,ip,P04,lognorm,Causal inference,0.1,0.25,250,0.9390212156521471
+full,ip,P04,lognorm,Causal inference,1.2,-0.25,-250,-1.5183913761785406
+full,ip,P04,lognorm,Causal inference,1.2,-0.167,-167,-1.3261203678175404
+full,ip,P04,lognorm,Causal inference,1.2,-0.083,-83,-0.7963271151660845
+full,ip,P04,lognorm,Causal inference,1.2,0.0,0,-0.32196714368676327
+full,ip,P04,lognorm,Causal inference,1.2,0.083,83,0.23675683891244415
+full,ip,P04,lognorm,Causal inference,1.2,0.167,167,0.7399485610067869
+full,ip,P04,lognorm,Causal inference,1.2,0.25,250,1.0317151332223107
+full,oy,P11,lognorm,Causal inference,0.1,-0.25,-250,-9.647764510714696
+full,oy,P11,lognorm,Causal inference,0.1,-0.167,-167,-5.845421741458468
+full,oy,P11,lognorm,Causal inference,0.1,-0.083,-83,-3.0722792963805423
+full,oy,P11,lognorm,Causal inference,0.1,0.0,0,-0.5818248997837006
+full,oy,P11,lognorm,Causal inference,0.1,0.083,83,1.5227010034428723
+full,oy,P11,lognorm,Causal inference,0.1,0.167,167,3.433217518718279
+full,oy,P11,lognorm,Causal inference,0.1,0.25,250,4.894868015735021
+full,oy,P11,lognorm,Causal inference,1.2,-0.25,-250,-37.32431962278476
+full,oy,P11,lognorm,Causal inference,1.2,-0.167,-167,-22.144617761851837
+full,oy,P11,lognorm,Causal inference,1.2,-0.083,-83,-9.56808031299261
+full,oy,P11,lognorm,Causal inference,1.2,0.0,0,0.5850448521046436
+full,oy,P11,lognorm,Causal inference,1.2,0.083,83,9.599786939244236
+full,oy,P11,lognorm,Causal inference,1.2,0.167,167,17.85459373307763
+full,oy,P11,lognorm,Causal inference,1.2,0.25,250,24.607516322491698
+balanced,as,P01,lognorm,Causal inference,0.1,-0.25,-250,-11.523477970298735
+balanced,as,P01,lognorm,Causal inference,0.1,-0.167,-167,-7.6276595679889425
+balanced,as,P01,lognorm,Causal inference,0.1,-0.083,-83,-3.6581788828163875
+balanced,as,P01,lognorm,Causal inference,0.1,0.0,0,-0.5469685644753919
+balanced,as,P01,lognorm,Causal inference,0.1,0.083,83,2.142319401804871
+balanced,as,P01,lognorm,Causal inference,0.1,0.167,167,4.6299629426642674
+balanced,as,P01,lognorm,Causal inference,0.1,0.25,250,6.729527675448432
+balanced,as,P01,lognorm,Causal inference,1.2,-0.25,-250,-228.66636144950442
+balanced,as,P01,lognorm,Causal inference,1.2,-0.167,-167,-149.4935977363116
+balanced,as,P01,lognorm,Causal inference,1.2,-0.083,-83,-71.35921321778244
+balanced,as,P01,lognorm,Causal inference,1.2,0.0,0,1.2341838439633435
+balanced,as,P01,lognorm,Causal inference,1.2,0.083,83,72.02204738194828
+balanced,as,P01,lognorm,Causal inference,1.2,0.167,167,141.8613372120743
+balanced,as,P01,lognorm,Causal inference,1.2,0.25,250,207.96335425192137
+balanced,dt,P02,lognorm,Causal inference,0.1,-0.25,-250,-33.69579939966177
+balanced,dt,P02,lognorm,Causal inference,0.1,-0.167,-167,-21.473599912034402
+balanced,dt,P02,lognorm,Causal inference,0.1,-0.083,-83,-9.701789530533688
+balanced,dt,P02,lognorm,Causal inference,0.1,0.0,0,-0.01845639439967961
+balanced,dt,P02,lognorm,Causal inference,0.1,0.083,83,8.779314426049512
+balanced,dt,P02,lognorm,Causal inference,0.1,0.167,167,16.180574756684884
+balanced,dt,P02,lognorm,Causal inference,0.1,0.25,250,23.64319232114742
+balanced,dt,P02,lognorm,Causal inference,1.2,-0.25,-250,-220.07334053452422
+balanced,dt,P02,lognorm,Causal inference,1.2,-0.167,-167,-146.43825222597994
+balanced,dt,P02,lognorm,Causal inference,1.2,-0.083,-83,-71.07001970760074
+balanced,dt,P02,lognorm,Causal inference,1.2,0.0,0,2.9289526791219656
+balanced,dt,P02,lognorm,Causal inference,1.2,0.083,83,71.68514971404316
+balanced,dt,P02,lognorm,Causal inference,1.2,0.167,167,139.35613390366098
+balanced,dt,P02,lognorm,Causal inference,1.2,0.25,250,201.80856504000144
+full,qs,P12,lognorm,Causal inference,0.1,-0.25,-250,-2.222622947879782
+full,qs,P12,lognorm,Causal inference,0.1,-0.167,-167,-2.1129589698632434
+full,qs,P12,lognorm,Causal inference,0.1,-0.083,-83,-1.3490980113888829
+full,qs,P12,lognorm,Causal inference,0.1,0.0,0,-0.4180406666352554
+full,qs,P12,lognorm,Causal inference,0.1,0.083,83,0.622042328944028
+full,qs,P12,lognorm,Causal inference,0.1,0.167,167,1.3765899958455563
+full,qs,P12,lognorm,Causal inference,0.1,0.25,250,1.9957113609561095
+full,qs,P12,lognorm,Causal inference,1.2,-0.25,-250,-4.376302010216326
+full,qs,P12,lognorm,Causal inference,1.2,-0.167,-167,-3.9189472321347063
+full,qs,P12,lognorm,Causal inference,1.2,-0.083,-83,-2.3692702852167735
+full,qs,P12,lognorm,Causal inference,1.2,0.0,0,-0.3764337109001814
+full,qs,P12,lognorm,Causal inference,1.2,0.083,83,1.2135241649935402
+full,qs,P12,lognorm,Causal inference,1.2,0.167,167,2.8424073066151134
+full,qs,P12,lognorm,Causal inference,1.2,0.25,250,4.358150856052845
+balanced,ln2,P07,lognorm,Causal inference,0.1,-0.25,-250,-14.198181392380105
+balanced,ln2,P07,lognorm,Causal inference,0.1,-0.167,-167,-10.318477211946176
+balanced,ln2,P07,lognorm,Causal inference,0.1,-0.083,-83,-5.468127756099506
+balanced,ln2,P07,lognorm,Causal inference,0.1,0.0,0,-0.6248067223716403
+balanced,ln2,P07,lognorm,Causal inference,0.1,0.083,83,3.8851581958904147
+balanced,ln2,P07,lognorm,Causal inference,0.1,0.167,167,8.127541522791493
+balanced,ln2,P07,lognorm,Causal inference,0.1,0.25,250,11.825476257041444
+balanced,ln2,P07,lognorm,Causal inference,1.2,-0.25,-250,-194.4699575884294
+balanced,ln2,P07,lognorm,Causal inference,1.2,-0.167,-167,-118.84745532960444
+balanced,ln2,P07,lognorm,Causal inference,1.2,-0.083,-83,-47.7356659988854
+balanced,ln2,P07,lognorm,Causal inference,1.2,0.0,0,13.310696871151162
+balanced,ln2,P07,lognorm,Causal inference,1.2,0.083,83,67.51745041979318
+balanced,ln2,P07,lognorm,Causal inference,1.2,0.167,167,117.25735121680681
+balanced,ln2,P07,lognorm,Causal inference,1.2,0.25,250,162.13280276950948
+full,sx,P13,lognorm,Causal inference,0.1,-0.25,-250,-46.013379620132355
+full,sx,P13,lognorm,Causal inference,0.1,-0.167,-167,-28.386171776542845
+full,sx,P13,lognorm,Causal inference,0.1,-0.083,-83,-12.734048840865263
+full,sx,P13,lognorm,Causal inference,0.1,0.0,0,-0.3221991626830567
+full,sx,P13,lognorm,Causal inference,0.1,0.083,83,10.49106646306075
+full,sx,P13,lognorm,Causal inference,0.1,0.167,167,20.546335539968098
+full,sx,P13,lognorm,Causal inference,0.1,0.25,250,29.02968075484713
+full,sx,P13,lognorm,Causal inference,1.2,-0.25,-250,-149.4408576330996
+full,sx,P13,lognorm,Causal inference,1.2,-0.167,-167,-94.13091929377454
+full,sx,P13,lognorm,Causal inference,1.2,-0.083,-83,-44.48987170763452
+full,sx,P13,lognorm,Causal inference,1.2,0.0,0,0.1838493819795728
+full,sx,P13,lognorm,Causal inference,1.2,0.083,83,41.36734633959471
+full,sx,P13,lognorm,Causal inference,1.2,0.167,167,79.3766186860646
+full,sx,P13,lognorm,Causal inference,1.2,0.25,250,115.31362600714267
+balanced,mt,P10,lognorm,Causal inference,0.1,-0.25,-250,-28.79145630162333
+balanced,mt,P10,lognorm,Causal inference,0.1,-0.167,-167,-23.197043126635343
+balanced,mt,P10,lognorm,Causal inference,0.1,-0.083,-83,-12.058075893518316
+balanced,mt,P10,lognorm,Causal inference,0.1,0.0,0,-0.4290537179025278
+balanced,mt,P10,lognorm,Causal inference,0.1,0.083,83,10.062123472255768
+balanced,mt,P10,lognorm,Causal inference,0.1,0.167,167,19.75093411222517
+balanced,mt,P10,lognorm,Causal inference,0.1,0.25,250,27.702176982780102
+balanced,mt,P10,lognorm,Causal inference,1.2,-0.25,-250,-231.63615786049513
+balanced,mt,P10,lognorm,Causal inference,1.2,-0.167,-167,-148.09487379633447
+balanced,mt,P10,lognorm,Causal inference,1.2,-0.083,-83,-61.5832355934397
+balanced,mt,P10,lognorm,Causal inference,1.2,0.0,0,22.005330681295288
+balanced,mt,P10,lognorm,Causal inference,1.2,0.083,83,94.98674928731022
+balanced,mt,P10,lognorm,Causal inference,1.2,0.167,167,162.77667497110116
+balanced,mt,P10,lognorm,Causal inference,1.2,0.25,250,225.5892551485904
+balanced,ml,P09,lognorm,Causal inference,0.1,-0.25,-250,-47.20383930786348
+balanced,ml,P09,lognorm,Causal inference,0.1,-0.167,-167,-35.96086169783297
+balanced,ml,P09,lognorm,Causal inference,0.1,-0.083,-83,-18.264854785433826
+balanced,ml,P09,lognorm,Causal inference,0.1,0.0,0,-0.6894770829859453
+balanced,ml,P09,lognorm,Causal inference,0.1,0.083,83,16.079458868942798
+balanced,ml,P09,lognorm,Causal inference,0.1,0.167,167,30.944567425594705
+balanced,ml,P09,lognorm,Causal inference,0.1,0.25,250,43.70684822956872
+balanced,ml,P09,lognorm,Causal inference,1.2,-0.25,-250,-212.6212309820633
+balanced,ml,P09,lognorm,Causal inference,1.2,-0.167,-167,-139.30369039211294
+balanced,ml,P09,lognorm,Causal inference,1.2,-0.083,-83,-62.247508530614894
+balanced,ml,P09,lognorm,Causal inference,1.2,0.0,0,9.775204928656468
+balanced,ml,P09,lognorm,Causal inference,1.2,0.083,83,75.7691017436296
+balanced,ml,P09,lognorm,Causal inference,1.2,0.167,167,134.1920364557191
+balanced,ml,P09,lognorm,Causal inference,1.2,0.25,250,187.38335999843147
+full,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-13.594624992496751
+full,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-8.613562978393109
+full,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-4.262064757356132
+full,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.6436185801180216
+full,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,2.3682180086169735
+full,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,5.106634996762782
+full,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,7.442276753690691
+full,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-231.59215981212532
+full,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-152.67890139663004
+full,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-73.97662984394954
+full,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,0.7174117263963886
+full,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,74.10354352707826
+full,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,149.06908507826523
+full,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,217.9190459447916
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-56.89247152488047
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-33.89221360657929
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-15.444467280220476
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,0.10865065194187729
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,13.875549114424569
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,25.725588897977268
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,36.23240908342529
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-232.4265979516101
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-154.46149137626142
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-75.51391909943072
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,2.4044208097651065
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,75.8794786091347
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,149.20413814091148
+full,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,220.1840955080674
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-1.3587893996134803
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-1.33908762662166
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-1.3196117762270254
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-1.3196117762270254
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,-1.2955068966596373
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,-1.2955068966596373
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,-1.2955068966596373
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-240.02288971996467
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-159.6249300977057
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-79.3024264256525
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,1.5178693922074382
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,79.90235530323054
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,156.9191215748067
+full,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,231.8792158497609
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-33.04878894465568
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-19.886894081000584
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-8.855794069947686
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.5243568946575183
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,7.094227992710089
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,14.058445449655066
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,19.7288548833805
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-236.87154249829624
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-157.9044729970831
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-77.2154987329236
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,2.2641208887315134
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,77.68293763720602
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,153.37978577621814
+full,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,227.57107389329866
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-132.41480925271554
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-82.68028880536166
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-39.15422643243088
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-1.2809578384030962
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,33.30572552788369
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,65.4488415700366
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,95.52030222536901
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-165.61695617374116
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-105.75263451409938
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-50.3866419252676
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,-1.2347224920524202
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,44.086758765720326
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,88.20204384305963
+full,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,129.152898622662
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-140.9745277928997
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-88.22228173790991
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-41.14155351025772
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.11394518326218739
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,37.28187359611235
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,72.39879664783844
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,105.78252848993431
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-229.26602390189475
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-151.08137093000195
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-75.10610528660855
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,0.052257576354630686
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,71.74002609884256
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,143.85173306100108
+full,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,213.62789449938225
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-109.25420480612851
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-67.04533919143535
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-30.712729402851025
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.1173041640521455
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,27.424877538528293
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,53.61893305833843
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,76.7376859604767
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-236.08939895894693
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-156.52058965460208
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-77.50740518211575
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,0.9005016507556141
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,77.31511821566284
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,152.24581866886246
+full,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,224.47636483364687
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-58.81866212864034
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-36.09951014560542
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-16.577493859046832
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.48741733615470517
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,13.626005732798596
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,26.498514449337375
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,37.81786209193538
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-246.31251393576036
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-164.32529053789975
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-81.71972609394979
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,1.9646470352310264
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,82.85725594223959
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,163.03971384510075
+full,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,243.45107764371576
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-9.847126071724832
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-5.94215523182573
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-3.157472239042558
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.5871622536058885
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,1.5297636964564099
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,3.515570161270465
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,4.954232434458139
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-38.01728011717576
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-22.625685810538364
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-9.75832353191558
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,0.5621269789231054
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,9.551976281101272
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,17.80892918788379
+full,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,24.709687716400254
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-68.9485504599618
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-41.682537681154045
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-19.029182818596666
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.3315702645106944
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,15.905111714215604
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,31.15341355299439
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,44.84243134855059
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-118.41109608112993
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-73.30382890921466
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-34.41940711571589
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,-0.711753013509453
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,29.377804615084322
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,57.928068719993675
+full,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,83.43087778496906
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-13.59446492027111
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-8.613427748937585
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-4.262001597769349
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.6435502159987672
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,2.368321257298023
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,5.106687002088495
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,7.442164506673232
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-231.59208934111803
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-152.67880066882321
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-73.97718318498092
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,0.716692577163669
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,74.10273995292471
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,149.06850092245904
+balanced,as,P01,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,217.91903144393632
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-46.226097319568005
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-28.460146516530948
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-12.748817226264197
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.3428211079546939
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,10.508231412000857
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,20.56667251352806
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,29.05959726535412
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-149.67420899107685
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-94.21175407982163
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-44.500642585263314
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,0.16579819371875804
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,41.33824527620722
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,79.43736528260447
+full,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,115.38463228123086
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-0.5414470262460891
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-0.5041210920395112
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.46458729682130606
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,-0.37524537787392287
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,-0.37524537787392287
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-240.31993834054876
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-159.93010808227422
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,1.6394096751289888
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,80.29828400551197
+balanced,hh,P03,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,232.73169050618137
+balanced,mh,P08,lognorm,Causal inference,0.1,-0.25,-250,-87.61885676467773
+balanced,mh,P08,lognorm,Causal inference,0.1,-0.167,-167,-67.98653678888888
+balanced,mh,P08,lognorm,Causal inference,0.1,-0.083,-83,-34.95445806144898
+balanced,mh,P08,lognorm,Causal inference,0.1,0.0,0,-0.547819998348964
+balanced,mh,P08,lognorm,Causal inference,0.1,0.083,83,31.03576716365042
+balanced,mh,P08,lognorm,Causal inference,0.1,0.167,167,59.333245457383164
+balanced,mh,P08,lognorm,Causal inference,0.1,0.25,250,83.24882109894772
+balanced,mh,P08,lognorm,Causal inference,1.2,-0.25,-250,-208.07013199980685
+balanced,mh,P08,lognorm,Causal inference,1.2,-0.167,-167,-138.02489687651436
+balanced,mh,P08,lognorm,Causal inference,1.2,-0.083,-83,-67.30547355817151
+balanced,mh,P08,lognorm,Causal inference,1.2,0.0,0,-0.24209026977956016
+balanced,mh,P08,lognorm,Causal inference,1.2,0.083,83,61.47878858398859
+balanced,mh,P08,lognorm,Causal inference,1.2,0.167,167,119.9727991729731
+balanced,mh,P08,lognorm,Causal inference,1.2,0.25,250,173.93301302595555
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-56.88991278995659
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-33.89232573711648
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-15.446921885368115
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,0.1084144443044277
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,13.877972495521917
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,25.73111518858584
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,36.23507883643795
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-232.42738789780614
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-154.46708219667659
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-75.52069829638208
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,2.403061133977813
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,75.88387414517861
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,149.20840201070519
+balanced,dt,P02,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,220.18372165210232
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-133.02543253719946
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-83.00366598567199
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-39.14206926416508
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.9300803845772032
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,33.9459050263079
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,66.34362967729778
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,96.64435657068348
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-166.36810159072846
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-106.25567676126518
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-50.4667726047901
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,-0.8674746927114785
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,44.86076146840112
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,89.33772319545041
+balanced,ip,P04,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,130.565444961955
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-33.0459830831571
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-19.886920549693322
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-8.848581300184344
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.5249042276556093
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,7.090632857231993
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,14.045146663303921
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,19.714849458481453
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-236.86917076489195
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-157.88409715135515
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-77.17601984819017
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,2.2617163533341644
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,77.67736901944156
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,153.37727595354266
+balanced,ln2,P07,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,227.5782351417457
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-109.33023202599767
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-67.08315671109067
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-30.72485589901991
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.06337333934736122
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,27.502792615180184
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,53.75759649179146
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,76.92093117996113
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-236.58062731768942
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-157.15673896565835
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-77.78437384269805
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,1.2003929249407852
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,78.20629039059624
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,153.5755261087013
+balanced,ml,P09,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,226.02450465852942
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-58.81894141105948
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-36.09971216817176
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-16.577341946114267
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.486992266417019
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,13.626464475268495
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,26.49879233314467
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,37.81859784505048
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-246.3128043379985
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-164.32597880035854
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-81.7208951349514
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,1.9640464269364832
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,82.85731583479749
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,163.0401111709806
+balanced,mt,P10,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,243.45217416230525
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-140.5535678771509
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-87.9954751158522
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-41.14454249350569
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.33003840154555153
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,36.86698953603806
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,71.78226044222879
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,104.98870026966478
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-228.62495023592717
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-150.35130984115207
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-74.82308566952895
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,-0.3212594610466635
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,70.7380959815086
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,142.33480185976012
+balanced,mh,P08,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,211.83188084084804
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-69.01362779290481
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-41.68879654724284
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-18.992257964585257
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.24720466753469506
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,16.064660229173633
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,31.384938418357102
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,45.13092720962819
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-119.3064290999814
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-73.71366389351103
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-34.36666116908393
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,-0.12873722164941093
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,30.352200823987708
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,59.30200008719688
+balanced,qs,P12,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,85.16215466705191
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-46.22012524143848
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-28.388666972080646
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-12.775780901872924
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.35809084976579086
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,10.482526396410009
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,20.48380522118787
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,29.013634484449156
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-149.57885526232457
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-94.20735172783151
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-44.4708571005053
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,0.3197689244143209
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,41.598673626729976
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,79.64883888168983
+balanced,sx,P13,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,115.57108917042369
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,-0.25,-250,-9.849734219815554
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,-0.167,-167,-5.943528596559111
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,-0.083,-83,-3.1590083053105733
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,0.0,0,-0.5892000720040258
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,0.083,83,1.5272739750008535
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,0.167,167,3.512550228761291
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,0.1,0.25,250,4.952997527721381
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,-0.25,-250,-38.01342617323944
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,-0.167,-167,-22.628386583417758
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,-0.083,-83,-9.760628330892363
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,0.0,0,0.5591917136317237
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,0.083,83,9.549890767170943
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,0.167,167,17.807655724058403
+balanced,oy,P11,fusionOnlyLogNorm,Forced fusion,1.2,0.25,250,24.70636607673249
+balanced,oy,P11,lognorm,Causal inference,0.1,-0.25,-250,-8.455561584493177
+balanced,oy,P11,lognorm,Causal inference,0.1,-0.167,-167,-5.347084224133436
+balanced,oy,P11,lognorm,Causal inference,0.1,-0.083,-83,-2.887768827800674
+balanced,oy,P11,lognorm,Causal inference,0.1,0.0,0,-0.5730281449767838
+balanced,oy,P11,lognorm,Causal inference,0.1,0.083,83,1.4544197046154617
+balanced,oy,P11,lognorm,Causal inference,0.1,0.167,167,3.2828025606687072
+balanced,oy,P11,lognorm,Causal inference,0.1,0.25,250,4.629828691348092
+balanced,oy,P11,lognorm,Causal inference,1.2,-0.25,-250,-33.084421091899245
+balanced,oy,P11,lognorm,Causal inference,1.2,-0.167,-167,-20.107232172182464
+balanced,oy,P11,lognorm,Causal inference,1.2,-0.083,-83,-8.772195309024733
+balanced,oy,P11,lognorm,Causal inference,1.2,0.0,0,0.4306082571561287
+balanced,oy,P11,lognorm,Causal inference,1.2,0.083,83,8.841245482446247
+balanced,oy,P11,lognorm,Causal inference,1.2,0.167,167,16.902449945345065
+balanced,oy,P11,lognorm,Causal inference,1.2,0.25,250,23.56081586747183
+balanced,ip,P04,lognorm,Causal inference,0.1,-0.25,-250,-0.41671471197435306
+balanced,ip,P04,lognorm,Causal inference,0.1,-0.167,-167,-0.3840406027411647
+balanced,ip,P04,lognorm,Causal inference,0.1,-0.083,-83,-0.11394611480269878
+balanced,ip,P04,lognorm,Causal inference,0.1,0.0,0,0.14789180094376686
+balanced,ip,P04,lognorm,Causal inference,0.1,0.083,83,0.4568545013764469
+balanced,ip,P04,lognorm,Causal inference,0.1,0.167,167,0.6808463948992927
+balanced,ip,P04,lognorm,Causal inference,0.1,0.25,250,0.8245589574813472
+balanced,ip,P04,lognorm,Causal inference,1.2,-0.25,-250,-1.2239867483325173
+balanced,ip,P04,lognorm,Causal inference,1.2,-0.167,-167,-1.0477082792210157
+balanced,ip,P04,lognorm,Causal inference,1.2,-0.083,-83,-0.6188403110622964
+balanced,ip,P04,lognorm,Causal inference,1.2,0.0,0,-0.27714856378813213
+balanced,ip,P04,lognorm,Causal inference,1.2,0.083,83,0.2330942904602562
+balanced,ip,P04,lognorm,Causal inference,1.2,0.167,167,0.6734474020611003
+balanced,ip,P04,lognorm,Causal inference,1.2,0.25,250,0.952917990032498
+balanced,qs,P12,lognorm,Causal inference,0.1,-0.25,-250,-6.457229460582303
+balanced,qs,P12,lognorm,Causal inference,0.1,-0.167,-167,-6.164164895095247
+balanced,qs,P12,lognorm,Causal inference,0.1,-0.083,-83,-3.894604778082733
+balanced,qs,P12,lognorm,Causal inference,0.1,0.0,0,-0.8658894731727318
+balanced,qs,P12,lognorm,Causal inference,0.1,0.083,83,2.3792631361747585
+balanced,qs,P12,lognorm,Causal inference,0.1,0.167,167,5.072357720289689
+balanced,qs,P12,lognorm,Causal inference,0.1,0.25,250,6.83715095846904
+balanced,qs,P12,lognorm,Causal inference,1.2,-0.25,-250,-12.86486829742195
+balanced,qs,P12,lognorm,Causal inference,1.2,-0.167,-167,-11.461951360015988
+balanced,qs,P12,lognorm,Causal inference,1.2,-0.083,-83,-7.0390815134902525
+balanced,qs,P12,lognorm,Causal inference,1.2,0.0,0,-0.6837225017112813
+balanced,qs,P12,lognorm,Causal inference,1.2,0.083,83,4.692680064103283
+balanced,qs,P12,lognorm,Causal inference,1.2,0.167,167,9.792162465756316
+balanced,qs,P12,lognorm,Causal inference,1.2,0.25,250,13.691377667930272
+balanced,sx,P13,lognorm,Causal inference,0.1,-0.25,-250,-46.15844745530756
+balanced,sx,P13,lognorm,Causal inference,0.1,-0.167,-167,-28.346070948079173
+balanced,sx,P13,lognorm,Causal inference,0.1,-0.083,-83,-12.775137546701176
+balanced,sx,P13,lognorm,Causal inference,0.1,0.0,0,-0.3655790900994882
+balanced,sx,P13,lognorm,Causal inference,0.1,0.083,83,10.453694707729056
+balanced,sx,P13,lognorm,Causal inference,0.1,0.167,167,20.43979693867948
+balanced,sx,P13,lognorm,Causal inference,0.1,0.25,250,28.956375127211388
+balanced,sx,P13,lognorm,Causal inference,1.2,-0.25,-250,-149.40528671738718
+balanced,sx,P13,lognorm,Causal inference,1.2,-0.167,-167,-94.10465975508964
+balanced,sx,P13,lognorm,Causal inference,1.2,-0.083,-83,-44.423524279457894
+balanced,sx,P13,lognorm,Causal inference,1.2,0.0,0,0.35592668615958
+balanced,sx,P13,lognorm,Causal inference,1.2,0.083,83,41.62366612384494
+balanced,sx,P13,lognorm,Causal inference,1.2,0.167,167,79.60660106940432
+balanced,sx,P13,lognorm,Causal inference,1.2,0.25,250,115.44812890499045

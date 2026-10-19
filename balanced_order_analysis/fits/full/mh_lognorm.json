@@ -1,0 +1,33 @@
+{
+  "dataset": "full",
+  "code": "mh",
+  "participantID": "P08",
+  "model": "lognorm",
+  "modelLabel": "Causal inference",
+  "freeParams": [
+    0.3290859950053634,
+    0.8962090710448571
+  ],
+  "fittedParams": [
+    0.3290859950053634,
+    0.25616696013216766,
+    0.2672757390937085,
+    0.8962090710448571,
+    0.7950511981646547
+  ],
+  "nLL": 1214.9356725742111,
+  "nLL_optimizer": 1215.75843099007,
+  "AIC": 2433.8713451484223,
+  "k": 2,
+  "n_conditions": 609,
+  "n_trials": 2152,
+  "sigmas": {
+    "sigma_a_low": 0.25616696013216766,
+    "sigma_v": 0.2672757390937085,
+    "sigma_a_high": 0.7950511981646547
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 78,
+  "seconds": 103.1
+}

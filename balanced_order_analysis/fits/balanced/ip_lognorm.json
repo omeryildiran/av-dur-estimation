@@ -1,0 +1,33 @@
+{
+  "dataset": "balanced",
+  "code": "ip",
+  "participantID": "P04",
+  "model": "lognorm",
+  "modelLabel": "Causal inference",
+  "freeParams": [
+    0.14951281444719094,
+    0.004241662711457029
+  ],
+  "fittedParams": [
+    0.14951281444719094,
+    0.2751536557724896,
+    0.30363545243418627,
+    0.004241662711457029,
+    0.36879218157725985
+  ],
+  "nLL": 979.0000419625353,
+  "nLL_optimizer": 980.7034071270431,
+  "AIC": 1962.0000839250706,
+  "k": 2,
+  "n_conditions": 411,
+  "n_trials": 1742,
+  "sigmas": {
+    "sigma_a_low": 0.2751536557724896,
+    "sigma_v": 0.30363545243418627,
+    "sigma_a_high": 0.36879218157725985
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 152,
+  "seconds": 122.4
+}

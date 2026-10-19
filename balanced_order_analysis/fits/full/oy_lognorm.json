@@ -1,0 +1,33 @@
+{
+  "dataset": "full",
+  "code": "oy",
+  "participantID": "P11",
+  "model": "lognorm",
+  "modelLabel": "Causal inference",
+  "freeParams": [
+    0.2303338075616367,
+    0.9962487070639089
+  ],
+  "fittedParams": [
+    0.2303338075616367,
+    0.1664710987614825,
+    0.9972884708510001,
+    0.9962487070639089,
+    0.3571849427130406
+  ],
+  "nLL": 1170.268536230095,
+  "nLL_optimizer": 1171.8131613737403,
+  "AIC": 2344.53707246019,
+  "k": 2,
+  "n_conditions": 674,
+  "n_trials": 2171,
+  "sigmas": {
+    "sigma_a_low": 0.1664710987614825,
+    "sigma_v": 0.9972884708510001,
+    "sigma_a_high": 0.3571849427130406
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 78,
+  "seconds": 112.8
+}

@@ -1,0 +1,31 @@
+{
+  "dataset": "balanced",
+  "code": "sx",
+  "participantID": "P13",
+  "model": "fusionOnlyLogNorm",
+  "modelLabel": "Forced fusion",
+  "freeParams": [
+    0.02479620818729277
+  ],
+  "fittedParams": [
+    0.02479620818729277,
+    0.17447016703405704,
+    0.43060209250750653,
+    0.44131866044697843
+  ],
+  "nLL": 665.611179590724,
+  "nLL_optimizer": 665.3116845282626,
+  "AIC": 1333.222359181448,
+  "k": 1,
+  "n_conditions": 333,
+  "n_trials": 1318,
+  "sigmas": {
+    "sigma_a_low": 0.17447016703405704,
+    "sigma_v": 0.43060209250750653,
+    "sigma_a_high": 0.44131866044697843
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 12,
+  "seconds": 3.3
+}

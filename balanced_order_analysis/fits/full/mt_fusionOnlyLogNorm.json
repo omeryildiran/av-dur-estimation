@@ -1,0 +1,31 @@
+{
+  "dataset": "full",
+  "code": "mt",
+  "participantID": "P10",
+  "model": "fusionOnlyLogNorm",
+  "modelLabel": "Forced fusion",
+  "freeParams": [
+    0.15340443848879196
+  ],
+  "fittedParams": [
+    0.15340443848879196,
+    0.16895821684565476,
+    0.358193328333317,
+    2.4748737341529163
+  ],
+  "nLL": 1116.6019018012266,
+  "nLL_optimizer": 1118.0841107639455,
+  "AIC": 2235.2038036024533,
+  "k": 1,
+  "n_conditions": 358,
+  "n_trials": 2156,
+  "sigmas": {
+    "sigma_a_low": 0.16895821684565476,
+    "sigma_v": 0.358193328333317,
+    "sigma_a_high": 2.4748737341529163
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 7,
+  "seconds": 2.4
+}

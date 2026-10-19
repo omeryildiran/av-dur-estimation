@@ -1,0 +1,56 @@
+"""Run one task for one participant (normally started by run_experiment.py).
+
+    python -m avdur.run_task --task crossmodal --pid P14
+    python -m avdur.run_task --task main --pid P14 --block B2 --bias-file data/P14/bias/P14_bias_....json
+    add --simulate to run the simulated observer instead of PsychoPy (no window)
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import experiment_settings as S  # noqa: E402
+from avdur.session import Session  # noqa: E402
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--task", required=True, choices=list(S.TASKS))
+    ap.add_argument("--pid", required=True)
+    ap.add_argument("--block", choices=list(S.TASKS["main"]["blocks"]))
+    ap.add_argument("--bias-file")
+    ap.add_argument("--practice", action="store_true")
+    ap.add_argument("--monitor", default=S.DEFAULT_MONITOR, choices=list(S.MONITOR_PROFILES))
+    ap.add_argument("--simulate", action="store_true", help="simulated observer, no PsychoPy window")
+    ap.add_argument("--seed", type=int)
+    ap.add_argument("--data-root", help="default: data/ (data_simulated/ with --simulate)")
+    args = ap.parse_args(argv)
+
+    bias = json.loads(Path(args.bias_file).read_text()) if args.bias_file else None
+    if args.task == "main" and bias is None:
+        ap.error("--bias-file is required for the main experiment")
+    if args.task == "main" and args.block is None:
+        ap.error("--block is required for the main experiment")
+
+    if args.simulate:
+        from avdur.presenter_sim import SimulatedPresenter
+        presenter = SimulatedPresenter(seed=args.seed or 0)
+    else:
+        from avdur.presenter_psychopy import PsychoPyPresenter
+        presenter = PsychoPyPresenter(args.monitor)
+
+    session = Session(args.task, args.pid, presenter, block=args.block, practice=args.practice, bias=bias,
+                      bias_file=args.bias_file, seed=args.seed, root=Path(args.data_root) if args.data_root else None,
+                      monitor=args.monitor, simulate=args.simulate)
+    return 0 if session.run() else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

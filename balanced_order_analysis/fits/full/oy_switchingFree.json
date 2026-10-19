@@ -1,0 +1,35 @@
+{
+  "dataset": "full",
+  "code": "oy",
+  "participantID": "P11",
+  "model": "switchingFree",
+  "modelLabel": "Probabilistic cue switching",
+  "freeParams": [
+    0.06960603570496951,
+    0.2360679774997897,
+    0.15183321428061874
+  ],
+  "fittedParams": [
+    0.06960603570496951,
+    0.1664710987614825,
+    0.9972884708510001,
+    0.2360679774997897,
+    0.3571849427130406,
+    0.15183321428061874
+  ],
+  "nLL": 1164.082696781238,
+  "nLL_optimizer": 1164.6661624040473,
+  "AIC": 2334.165393562476,
+  "k": 3,
+  "n_conditions": 674,
+  "n_trials": 2171,
+  "sigmas": {
+    "sigma_a_low": 0.1664710987614825,
+    "sigma_v": 0.9972884708510001,
+    "sigma_a_high": 0.3571849427130406
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 122,
+  "seconds": 135.5
+}

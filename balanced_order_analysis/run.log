@@ -1,0 +1,134 @@
+                     rebuilt  shared  match
+participantID order                        
+P01           1.0       1080    1080   True
+              2.0       1075    1075   True
+P02           1.0       1106    1106   True
+              2.0       1120    1120   True
+P03           1.0       1229    1229   True
+              2.0        185     185   True
+P04           1.0       1240    1240   True
+              2.0        916     916   True
+P07           1.0       1215    1215   True
+              2.0        779     779   True
+P08           1.0       1197    1197   True
+              2.0        955     955   True
+P09           1.0       1402    1402   True
+              2.0        540     540   True
+P10           1.0       1100    1100   True
+              2.0       1056    1056   True
+P11           1.0       1088    1088   True
+              2.0       1083    1083   True
+P12           1.0       1297    1297   True
+              2.0        942     942   True
+P13           1.0       1308    1308   True
+              2.0        763     763   True
+Fitting 66 participant x model x dataset combinations on 7 workers ...
+  [1/66] full     ip  Probabilistic cue switching  AIC=   2424.4  (88s, 90s total)
+  [2/66] full     hh  Probabilistic cue switching  AIC=   1262.0  (105s, 107s total)
+  [3/66] full     ln2 Probabilistic cue switching  AIC=   2226.2  (107s, 109s total)
+  [4/66] full     ml  Probabilistic cue switching  AIC=   2264.2  (114s, 115s total)
+  [5/66] full     dt  Probabilistic cue switching  AIC=   2571.4  (124s, 126s total)
+  [6/66] full     as  Probabilistic cue switching  AIC=   2293.7  (131s, 133s total)
+  [7/66] full     mh  Probabilistic cue switching  AIC=   2427.0  (144s, 146s total)
+  [8/66] full     mt  Probabilistic cue switching  AIC=   2233.6  (97s, 187s total)
+  [9/66] balanced hh  Probabilistic cue switching  AIC=    251.1  (45s, 191s total)
+  [10/66] full     qs  Probabilistic cue switching  AIC=   2525.7  (103s, 211s total)
+  [11/66] full     oy  Probabilistic cue switching  AIC=   2334.2  (136s, 242s total)
+  [12/66] balanced as  Probabilistic cue switching  AIC=   2143.6  (117s, 243s total)
+  [13/66] balanced ln2 Probabilistic cue switching  AIC=   1650.6  (61s, 252s total)
+  [14/66] balanced ip  Probabilistic cue switching  AIC=   1958.4  (80s, 267s total)
+  [15/66] full     sx  Probabilistic cue switching  AIC=   2156.8  (161s, 276s total)
+  [16/66] balanced dt  Probabilistic cue switching  AIC=   2420.0  (147s, 280s total)
+  [17/66] balanced ml  Probabilistic cue switching  AIC=    784.3  (46s, 288s total)
+  [18/66] balanced mh  Probabilistic cue switching  AIC=   1908.9  (107s, 318s total)
+  [19/66] balanced qs  Probabilistic cue switching  AIC=   1984.8  (67s, 334s total)
+  [20/66] balanced mt  Probabilistic cue switching  AIC=   2073.0  (94s, 337s total)
+  [21/66] balanced sx  Probabilistic cue switching  AIC=   1325.5  (63s, 339s total)
+  [22/66] full     as  Causal inference             AIC=   2299.7  (73s, 352s total)
+  [23/66] balanced oy  Probabilistic cue switching  AIC=   2171.6  (126s, 377s total)
+  [24/66] full     hh  Causal inference             AIC=   1390.0  (73s, 391s total)
+  [25/66] full     ml  Causal inference             AIC=   2276.6  (70s, 423s total)
+  [26/66] full     ln2 Causal inference             AIC=   2208.8  (90s, 427s total)
+  [27/66] full     mh  Causal inference             AIC=   2433.9  (103s, 443s total)
+  [28/66] full     dt  Causal inference             AIC=   2560.1  (157s, 445s total)
+  [29/66] full     mt  Causal inference             AIC=   2230.5  (80s, 457s total)
+  [30/66] balanced hh  Causal inference             AIC=    283.2  (24s, 481s total)
+  [31/66] full     ip  Causal inference             AIC=   2433.2  (162s, 497s total)
+  [32/66] full     oy  Causal inference             AIC=   2344.5  (113s, 504s total)
+  [33/66] balanced as  Causal inference             AIC=   2152.7  (71s, 513s total)
+  [34/66] balanced dt  Causal inference             AIC=   2408.3  (76s, 521s total)
+  [35/66] full     qs  Causal inference             AIC=   2541.2  (107s, 530s total)
+  [36/66] balanced ln2 Causal inference             AIC=   1634.4  (52s, 548s total)
+  [37/66] full     sx  Causal inference             AIC=   2261.6  (131s, 558s total)
+  [38/66] balanced mt  Causal inference             AIC=   2071.3  (40s, 560s total)
+  [39/66] balanced ml  Causal inference             AIC=    787.3  (49s, 563s total)
+  [40/66] full     as  Forced fusion                AIC=   2297.7  (3s, 564s total)
+  [41/66] full     dt  Forced fusion                AIC=   2562.1  (4s, 567s total)
+  [42/66] full     hh  Forced fusion                AIC=   1387.9  (3s, 567s total)
+  [43/66] full     ln2 Forced fusion                AIC=   2246.0  (4s, 570s total)
+  [44/66] full     ip  Forced fusion                AIC=   2544.8  (4s, 571s total)
+  [45/66] full     mh  Forced fusion                AIC=   2437.9  (5s, 575s total)
+  [46/66] full     ml  Forced fusion                AIC=   2274.0  (4s, 575s total)
+  [47/66] full     mt  Forced fusion                AIC=   2235.2  (2s, 577s total)
+  [48/66] full     oy  Forced fusion                AIC=   2342.5  (5s, 580s total)
+  [49/66] full     qs  Forced fusion                AIC=   2567.9  (4s, 581s total)
+  [50/66] balanced as  Forced fusion                AIC=   2150.0  (4s, 585s total)
+  [51/66] full     sx  Forced fusion                AIC=   2259.2  (5s, 585s total)
+  [52/66] balanced hh  Forced fusion                AIC=    281.1  (1s, 586s total)
+  [53/66] balanced mh  Causal inference             AIC=   1917.7  (84s, 588s total)
+  [54/66] balanced dt  Forced fusion                AIC=   2409.9  (4s, 589s total)
+  [55/66] balanced ip  Forced fusion                AIC=   2032.5  (4s, 590s total)
+  [56/66] balanced ln2 Forced fusion                AIC=   1656.1  (2s, 590s total)
+  [57/66] balanced ml  Forced fusion                AIC=    791.2  (2s, 592s total)
+  [58/66] balanced mt  Forced fusion                AIC=   2078.4  (2s, 593s total)
+  [59/66] balanced mh  Forced fusion                AIC=   1920.7  (4s, 593s total)
+  [60/66] balanced qs  Forced fusion                AIC=   2015.0  (3s, 596s total)
+  [61/66] balanced sx  Forced fusion                AIC=   1333.2  (3s, 596s total)
+  [62/66] balanced oy  Forced fusion                AIC=   2180.0  (5s, 597s total)
+  [63/66] balanced oy  Causal inference             AIC=   2182.7  (71s, 601s total)
+  [64/66] balanced ip  Causal inference             AIC=   1962.0  (122s, 603s total)
+  [65/66] balanced qs  Causal inference             AIC=   2005.8  (66s, 615s total)
+  [66/66] balanced sx  Causal inference             AIC=   1335.4  (70s, 627s total)
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+
+Warning: BADS not available. Using scipy optimization only.
+
+done

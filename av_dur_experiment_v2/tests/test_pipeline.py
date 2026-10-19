@@ -1,0 +1,215 @@
+"""End-to-end checks with simulated participants (no PsychoPy needed).
+
+    python tests/test_pipeline.py              # writes to data_simulated/ and prints a summary
+    python -m pytest tests/test_pipeline.py    # same checks under pytest
+"""
+
+from __future__ import annotations
+
+import shutil
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+import experiment_settings as S  # noqa: E402
+from avdur import bias as bias_mod  # noqa: E402
+from avdur import design, storage  # noqa: E402
+from avdur.audio import AudioGenerator  # noqa: E402
+from avdur.presenter_sim import DEFAULT_OBSERVER, SimulatedPresenter  # noqa: E402
+from avdur.schedule import make_schedule  # noqa: E402
+from avdur.session import Session  # noqa: E402
+from avdur.staircase import Staircase  # noqa: E402
+
+SIM_ROOT = ROOT / "data_simulated"
+FR = S.EXPECTED_FRAME_RATE_HZ
+
+
+def simulate_participant(pid, seed, observer=None, root=SIM_ROOT):
+    obs = dict(DEFAULT_OBSERVER, **(observer or {}))
+    for task in ("unimodal_auditory", "unimodal_visual", "crossmodal"):
+        assert Session(task, pid, SimulatedPresenter(seed, obs), seed=seed, root=root, simulate=True).run()
+    est = bias_mod.estimate_for_participant(pid, root, n_boot=60)
+    bias_path = bias_mod.save(pid, est, confirmed_by="test", root=root)
+    payload = storage.latest_bias(pid, root)[0]
+    for k, b in enumerate(design.block_order(pid)):
+        assert Session("main", pid, SimulatedPresenter(seed + 10 + k, obs), block=b, bias=payload,
+                       bias_file=str(bias_path), seed=seed + 10 + k, root=root, simulate=True).run()
+    return est, obs
+
+
+def _intervals(col):
+    return col.str.split("-", expand=True).astype(float)
+
+
+# ── checks ────────────────────────────────────────────────────────────────────
+
+def check_counts(root, pid):
+    expected = {"unimodal_auditory": 308, "unimodal_visual": 154, "crossmodal": 388}
+    for task, n in expected.items():
+        d = storage.load_trials(task, pid, root)
+        assert len(d) == n, (task, len(d), n)
+    m = storage.load_trials("main", pid, root)
+    per_block = m.groupby("block").size().to_dict()
+    assert per_block == {"B1": 924, "B2": 616, "B3": 616}, per_block
+    assert (m.groupby(["block", "condition"]).size() == 154).all()
+
+
+def check_order_balance(root, pid):
+    for task in ("unimodal_auditory", "unimodal_visual", "crossmodal", "main"):
+        d = storage.load_trials(task, pid, root)
+        stair = d.groupby(["session_file", "condition", "current_stair"]).order.apply(lambda s: abs((s == 1).sum() - (s == 2).sum()))
+        assert stair.max() <= 1, (task, stair.max())
+        cond = d.groupby(["session_file", "condition"]).order.apply(lambda s: abs((s == 1).sum() - (s == 2).sum()))
+        assert cond.max() == 0, (task, cond[cond > 0])
+
+
+def check_crossmodal_blocks(root, pid):
+    d = storage.load_trials("crossmodal", pid, root).sort_values("trial_num")
+    runs = (d.order != d.order.shift()).cumsum()
+    sizes = d.groupby(runs).size()
+    assert sizes.iloc[:-2].eq(S.TASKS["crossmodal"]["order_block_size"]).all()
+    assert d.order.iloc[0] == design.crossmodal_first_order(pid)
+
+
+def check_randomised(root, pid):
+    m = storage.load_trials("main", pid, root)
+    for _, s in m.groupby("session_file"):
+        seq = s.sort_values("trial_num").condition.tolist()
+        periodic = any(all(seq[i] == seq[i + p] for i in range(len(seq) - p)) for p in range(1, 13))
+        assert not periodic
+
+
+def check_main_alignment(root, pid):
+    m = storage.load_trials("main", pid, root)
+    worst = 0.0
+    for k in (1, 2):
+        a, v = _intervals(m[f"audio_interval{k}"]), _intervals(m[f"visual_interval{k}"])
+        centre_shift = (v[0] + v[1]) / 2 - (a[0] + a[1]) / 2
+        worst = max(worst, centre_shift.abs().max())
+        is_std = (m.order == 2) if k == 1 else (m.order == 1)
+        ext = (v[1] - v[0]) - (a[1] - a[0])
+        want = np.round(m.VisualPSE * FR) + np.where(is_std, np.round(m.conflictDur * FR), 0)
+        assert (ext == want).all(), "visual extension != bias (+ conflict for the standard)"
+    assert worst <= 0.5, f"visual flash off-centre by {worst} frames"
+    v1, v2 = _intervals(m.visual_interval1), _intervals(m.visual_interval2)
+    gap = round(S.MIN_VISUAL_GAP_S * FR)
+    assert (v1[0] >= gap).all() and ((v2[0] - v1[1]) >= gap).all()
+    assert ((m.frames_pre + m.frames_dur1 + m.frames_isi + m.frames_dur2 + m.frames_post) - v2[1] >= gap).all()
+    assert ((v1[1] - v1[0]) >= 1).all() and ((v2[1] - v2[0]) >= 1).all()
+    return worst
+
+
+def check_bias(root, pid, est, obs):
+    m = storage.load_trials("main", pid, root)
+    assert m.groupby("audNoise").VisualPSE.nunique().eq(1).all(), "one correction per noise level"
+    for noise, e in est["per_noise"].items():
+        true = obs["true_bias"][float(noise)]
+        assert abs(e["correction_s"] - true) < 0.04, (noise, e["correction_s"], true)
+        applied = m.loc[m.audNoise == float(noise), "VisualPSE"].iloc[0]
+        assert abs(applied - round(e["correction_s"] * FR) / FR) < 1e-9
+    files = {meta["bias_file"] for meta in storage.sessions(pid, "main", root)}
+    assert len(files) == 1, files
+
+
+def check_audio():
+    """Fixed-level mode: equal burst levels across tasks/trials; loudness and SNR as in v1."""
+    sr = S.SAMPLE_RATE
+    rng = np.random.default_rng(3)
+
+    def measure(gen, task, noise, test, reps=100):
+        pad = 2 * len(gen.pad)
+        sched = make_schedule(task, 1, test, 0.0, 0.0, rng, FR)
+
+        def seg(x, i):
+            on, off = sched.interval_frames(i)
+            return x[pad + int(on / FR * sr) + int(0.02 * sr): pad + int(off / FR * sr) - int(0.02 * sr)]
+
+        vals = []
+        for _ in range(reps):
+            x = gen.trial_sound(sched, noise, int(rng.integers(2**31)))
+            t, s = np.sqrt(np.mean(seg(x, 0) ** 2)), np.sqrt(np.mean(seg(x, 1) ** 2))
+            floor = np.sqrt(np.mean(x[pad + int(0.02 * sr): pad + int(sched.pre / FR * sr) - int(0.02 * sr)] ** 2))
+            vals.append((20 * np.log10(t), 20 * np.log10(t / s), 20 * np.log10(t / floor)))
+        v = np.array(vals)
+        return dict(level=v[:, 0].mean(), level_sd=v[:, 0].std(), test_vs_std=v[:, 1].mean(), snr=v[:, 2].mean())
+
+    fixed, v1 = AudioGenerator(level_mode="fixed"), AudioGenerator(level_mode="peak")
+    out = {}
+    # windows of >= 0.26 s, so the RMS estimate itself is precise enough for 0.3 dB comparisons
+    for noise in S.NOISE_LEVELS:
+        for test in (0.3, 0.5, 0.9):
+            m, c = measure(fixed, "main", noise, test), measure(fixed, "crossmodal", noise, test)
+            p, pc = measure(v1, "main", noise, test), measure(v1, "crossmodal", noise, test)
+            assert abs(m["test_vs_std"]) < 0.3, "test and standard bursts must have equal RMS"
+            assert abs(m["level"] - c["level"]) < 0.3, ("cross-modal test level must match main", m["level"], c["level"])
+            assert m["level_sd"] < p["level_sd"] - 0.1, ("per-trial level jitter must drop", m["level_sd"], p["level_sd"])
+            played_v2 = m["level"] + 20 * np.log10(S.FIXED_VOLUME)
+            played_v1 = p["level"] + 20 * np.log10(S.VOLUME)
+            assert abs(played_v2 - played_v1) < 0.8, ("loudness must match v1", played_v2, played_v1)
+            assert abs(m["snr"] - p["snr"]) < 1.0, ("SNR must match v1", m["snr"], p["snr"])
+            out[(noise, test)] = (m, p, c, pc)
+    tests = (0.3, 0.5, 0.9)
+    snr = {n: (np.mean([out[(n, t)][0]["snr"] for t in tests]),
+               np.mean([out[(n, t)][1]["snr"] for t in tests])) for n in S.NOISE_LEVELS}
+    jitter = (np.mean([out[k][0]["level_sd"] for k in out]), np.mean([out[k][1]["level_sd"] for k in out]))
+    xm_gap = (np.mean([out[k][2]["level"] - out[k][0]["level"] for k in out]),
+              np.mean([out[k][3]["level"] - out[k][1]["level"] for k in out]))
+    return snr, jitter, xm_gap
+
+
+def check_staircase_rules():
+    s = Staircase("2D1U", floor=-0.9)
+    levels = []
+    for chose in [False, False, True, True, False, True, True, True, True]:
+        s.update(chose)
+        levels.append(round(s.level, 4))
+    # up 0.16, up 0.16, down (reversal -> step 0.08), up (reversal -> 0.04), down 0.04, down 0.04
+    assert levels == [-0.74, -0.58, -0.58, -0.66, -0.62, -0.62, -0.66, -0.66, -0.7], levels
+    try:
+        Staircase("1U1D", floor=-0.9)
+    except ValueError:
+        return
+    raise AssertionError("v1's diverging '1U1D' rule must be rejected")
+
+
+def run_all(root=SIM_ROOT):
+    if root.exists():
+        shutil.rmtree(root)
+    summary = {}
+    check_staircase_rules()
+    for pid, seed, obs in (("SIM01", 1, None),
+                           ("SIM02", 2, dict(true_bias={0.1: -0.12, 1.2: 0.15}, interval_bias=0.8))):
+        est, o = simulate_participant(pid, seed, obs, root)
+        check_counts(root, pid)
+        check_order_balance(root, pid)
+        check_crossmodal_blocks(root, pid)
+        check_randomised(root, pid)
+        worst = check_main_alignment(root, pid)
+        check_bias(root, pid, est, o)
+        summary[pid] = dict(true_bias=o["true_bias"],
+                            fitted={k: v["correction_s"] for k, v in est["per_noise"].items()},
+                            warnings=est["warnings"], worst_centre_offset_frames=worst)
+    snr = check_audio()
+    return summary, snr
+
+
+def test_pipeline():
+    run_all()
+
+
+if __name__ == "__main__":
+    summary, snr = run_all()
+    print("All checks passed.")
+    for pid, s in summary.items():
+        print(f"{pid}: true bias {s['true_bias']}  fitted {s['fitted']}  "
+              f"max visual-centre offset {s['worst_centre_offset_frames']} frames  warnings: {s['warnings'] or 'none'}")
+    snr, jitter, xm_gap = snr
+    for noise, (v2, v1) in snr.items():
+        print(f"Burst-to-floor SNR at noise {noise}: v2 {v2:.1f} dB, v1 {v1:.1f} dB")
+    print(f"Per-trial burst level SD: v2 {jitter[0]:.2f} dB, v1 {jitter[1]:.2f} dB")
+    print(f"Cross-modal minus main test level: v2 {xm_gap[0]:+.2f} dB, v1 {xm_gap[1]:+.2f} dB")

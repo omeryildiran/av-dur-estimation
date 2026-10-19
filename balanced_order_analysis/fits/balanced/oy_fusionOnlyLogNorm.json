@@ -1,0 +1,31 @@
+{
+  "dataset": "balanced",
+  "code": "oy",
+  "participantID": "P11",
+  "model": "fusionOnlyLogNorm",
+  "modelLabel": "Forced fusion",
+  "freeParams": [
+    0.21637210551903688
+  ],
+  "fittedParams": [
+    0.21637210551903688,
+    0.1664710987614825,
+    0.9972884708510001,
+    0.3571849427130406
+  ],
+  "nLL": 1089.0179491353251,
+  "nLL_optimizer": 1088.931648662373,
+  "AIC": 2180.0358982706503,
+  "k": 1,
+  "n_conditions": 661,
+  "n_trials": 2042,
+  "sigmas": {
+    "sigma_a_low": 0.1664710987614825,
+    "sigma_v": 0.9972884708510001,
+    "sigma_a_high": 0.3571849427130406
+  },
+  "nSimulFit": 1000,
+  "nSimulFinal": 5000,
+  "nEval": 9,
+  "seconds": 5.0
+}
