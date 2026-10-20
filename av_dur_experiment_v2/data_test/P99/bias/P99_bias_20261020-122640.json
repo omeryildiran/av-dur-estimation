@@ -1,0 +1,21 @@
+{
+  "method": "fixed",
+  "n_trials": 0,
+  "source_sessions": [],
+  "converged": true,
+  "at_bound": [],
+  "per_noise": {
+    "0.1": {
+      "correction_s": 0.1
+    },
+    "1.2": {
+      "correction_s": -0.05
+    }
+  },
+  "warnings": [
+    "autotest: fixed corrections (AUTOTEST_BIAS_S), not fitted"
+  ],
+  "participant": "P99",
+  "confirmed_by": "autotest",
+  "confirmed_at": "2026-10-20T12:26:40"
+}
