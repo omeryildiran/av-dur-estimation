@@ -17,6 +17,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import experiment_settings as S  # noqa: E402
+from avdur import design  # noqa: E402
 from avdur.session import Session  # noqa: E402
 
 
@@ -32,6 +33,10 @@ def main(argv=None):
     ap.add_argument("--seed", type=int)
     ap.add_argument("--data-root", help="default: data/ (data_simulated/ with --simulate)")
     args = ap.parse_args(argv)
+    try:
+        args.pid = design.normalize_pid(args.pid)
+    except ValueError as err:
+        ap.error(str(err))
 
     bias = json.loads(Path(args.bias_file).read_text()) if args.bias_file else None
     if args.task == "main" and bias is None:

@@ -26,7 +26,7 @@ class SimulatedPresenter:
 
     def start(self, task, meta):
         self.task = task
-        return S.EXPECTED_FRAME_RATE_HZ
+        return meta["frame_rate_nominal_hz"]
 
     def instructions(self, task, practice):
         pass
@@ -72,7 +72,9 @@ class SimulatedPresenter:
             if v is not None:
                 flips[(i, "on")] = v[0] / sched.frame_rate + self.rng.normal(0, 0.0003)
                 flips[(i, "off")] = v[1] / sched.frame_rate + self.rng.normal(0, 0.0003)
+        rt = float(self.rng.lognormal(np.log(0.55), 0.35))           # from the end of interval 2
+        remaining = (sched.total - sched.second_interval_end()) / sched.frame_rate
         return dict(quit=False, response=response, key="left" if response == 1 else "right",
-                    rt=float(self.rng.lognormal(np.log(0.6), 0.3)), flips=flips,
+                    rt=rt, prompt_shown=rt > remaining, flips=flips,
                     audio_onset_minus_flip0_s=S.AUDIO_ONSET_OFFSET_S if spec.task != "unimodal_visual" else np.nan,
                     flip0_error_s=0.0, n_dropped_frames=0, max_frame_interval_ms=1000 / sched.frame_rate)

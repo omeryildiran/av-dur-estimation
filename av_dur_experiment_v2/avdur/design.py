@@ -35,6 +35,17 @@ class TrialSpec:
         return asdict(self)
 
 
+def normalize_pid(raw):
+    """Canonical participant ID: 'p2', '2', 'P2' and 'P02' all become 'P02'. SIM IDs are for tests."""
+    raw = raw.strip()
+    if raw.upper().startswith("SIM"):
+        return raw.upper()
+    match = re.fullmatch(r"[Pp]?0*(\d+)", raw)
+    if match is None:
+        raise ValueError(f"Participant ID must be P followed by a number (e.g. P14), got {raw!r}")
+    return f"P{int(match.group(1)):02d}"
+
+
 def participant_number(pid):
     match = re.search(r"(\d+)$", pid)
     if match is None:

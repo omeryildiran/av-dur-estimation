@@ -31,10 +31,10 @@ class Session:
         self.task, self.pid, self.presenter = task, pid, presenter
         self.block, self.practice, self.bias, self.bias_file = block, practice, bias, bias_file
         self.seed = seed if seed is not None else int(dt.datetime.now().timestamp() * 1000) % 2**31
-        self.root = root or (storage.SIM_ROOT if simulate else storage.DATA_ROOT)
+        self.root = root or storage.root_for(simulate, monitor)
         self.monitor, self.simulate = monitor, simulate
         self.cfg = S.TASKS[task]
-        self.fr = S.EXPECTED_FRAME_RATE_HZ
+        self.fr = S.MONITOR_PROFILES[monitor]["frame_rate_hz"]     # every duration is computed at this rate
 
     # ── helpers ───────────────────────────────────────────────────────────────
     def correction_s(self, noise):
@@ -57,16 +57,20 @@ class Session:
         rng = np.random.default_rng(self.seed)
         first = design.crossmodal_first_order(self.pid) if self.task == "crossmodal" else 1
         trials = design.build_trials(self.task, rng, self.block, self.practice, first)
-        csv_path, json_path = storage.session_paths(self.pid, self.task, self.block, self.practice, self.root)
         meta = storage.base_metadata(self.pid, self.task, self.block, self.practice, self.seed,
                                      self.monitor, self.simulate)
-        meta.update(n_trials_planned=len(trials), csv=csv_path.name, bias_file=self.bias_file,
+        meta.update(n_trials_planned=len(trials), bias_file=self.bias_file, frame_rate_nominal_hz=self.fr,
+                    testing_only_profile=bool(S.MONITOR_PROFILES[self.monitor].get("testing_only")),
                     corrections_applied_s={str(n): self.correction_s(n)[0] for n in self.cfg["noise_levels"]
                                            if n is not None},
                     staircase_floors={str(n): self.floor(n) for n in self.cfg["noise_levels"]})
-        storage.write_json(json_path, meta)
-
-        meta["frame_rate_measured_hz"] = self.presenter.start(self.task, meta)
+        try:                        # display/audio checks first: no session files for a failed start
+            meta["frame_rate_measured_hz"] = self.presenter.start(self.task, meta)
+        except Exception as err:
+            storage.log_failed_start(self.root, meta, err)
+            raise
+        csv_path, json_path = storage.session_paths(self.pid, self.task, self.block, self.practice, self.root)
+        meta["csv"] = csv_path.name
         storage.write_json(json_path, meta)
         stairs = {(n, c, r): Staircase(r, self.floor(n), **S.STAIRCASE)
                   for n, c in design.conditions(self.task, self.block) for r in self.cfg["staircases"]}
@@ -146,6 +150,7 @@ class Session:
             conflictDur=to_frames(spec.conflict, self.fr) / self.fr if self.task == "main" else 0.0,
             VisualPSE=applied if self.task == "main" else np.nan, VisualPSE_estimate=estimate,
             order=spec.order, order_block=spec.order_block if spec.order_block is not None else "",
+            frame_rate_hz=self.fr,
             preDur=sched.pre / self.fr, isiDur=sched.isi / self.fr, postDur=sched.post / self.fr,
             totalDur=sched.total / self.fr,
             frames_pre=sched.pre, frames_dur1=sched.dur1, frames_isi=sched.isi, frames_dur2=sched.dur2,
@@ -163,7 +168,9 @@ class Session:
             n_dropped_frames=result.get("n_dropped_frames", np.nan),
             max_frame_interval_ms=result.get("max_frame_interval_ms", np.nan),
             responses=result["response"], response_keys=result.get("key", ""),
-            response_rts=round(float(result.get("rt", np.nan)), 4),
+            response_rts=round(float(result.get("rt", np.nan)), 4),     # v2: from the end of interval 2
+            prompt_shown=int(bool(result.get("prompt_shown", True))),
+            answer_allowed_from_s=sched.second_interval_end() / self.fr,
             chose_test=int(chose_test), is_correct=int(is_correct),
             stair_num_reversal=stair.reversals if stair else "", stair_is_reversal=stair.is_reversal if stair else "",
             wall_time=dt.datetime.now().isoformat(timespec="milliseconds"),

@@ -25,6 +25,16 @@ import experiment_settings as S
 ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = ROOT / "data"
 SIM_ROOT = ROOT / "data_simulated"          # simulated runs never mix with real data
+TEST_ROOT = ROOT / "data_test"              # runs with a testing_only monitor profile
+
+
+def root_for(simulate=False, monitor=None):
+    """Data folder for a run: simulated, test-display, or real participant data."""
+    if simulate:
+        return SIM_ROOT
+    if S.MONITOR_PROFILES.get(monitor or S.DEFAULT_MONITOR, {}).get("testing_only"):
+        return TEST_ROOT
+    return DATA_ROOT
 TASK_ORDER = ("unimodal_auditory", "unimodal_visual", "crossmodal", "main")
 
 
@@ -59,13 +69,25 @@ def settings_snapshot():
     return {k: v for k, v in vars(S).items() if k.isupper()}
 
 
-def base_metadata(pid, task, block, practice, seed, monitor, simulate):
+def base_metadata(pid, task, block, practice, seed, monitor, simulate) -> dict:
     return dict(
         participant=pid, task=task, block=block, practice=practice, seed=seed, monitor_profile=monitor,
         simulated=simulate, started=dt.datetime.now().isoformat(timespec="seconds"), completed=False,
         code=code_version(), python=sys.version.split()[0], platform=platform.platform(),
         settings=settings_snapshot(),
     )
+
+
+def log_failed_start(root, meta, error):
+    """One JSON line per session that stopped before its first trial (e.g. failed display check)."""
+    folder = Path(root or DATA_ROOT)
+    folder.mkdir(parents=True, exist_ok=True)
+    keep = ("participant", "task", "block", "practice", "monitor_profile", "started", "frame_rate_nominal_hz",
+            "frame_rate_measured_hz", "irregular_frame_share", "frame_interval_sd_ms", "ptb_libraries_preloaded")
+    entry = {k: meta.get(k) for k in keep}
+    entry["error"] = str(error)
+    with open(folder / "failed_starts.jsonl", "a") as handle:
+        handle.write(json.dumps(entry, default=str) + "\n")
 
 
 def write_json(path, payload):

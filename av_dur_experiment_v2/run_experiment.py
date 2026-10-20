@@ -26,13 +26,14 @@ from avdur import design, storage  # noqa: E402
 
 # ── logic shared by the window and the text menu ──────────────────────────────
 
-def status_text(pid, root=None):
+def status_text(raw_pid, root=None):
     try:
-        design.participant_number(pid)
+        pid = design.normalize_pid(raw_pid)
     except ValueError as err:
         return str(err)
     st = storage.participant_status(pid, root)
-    lines = [("[SIMULATED DATA] " if root == storage.SIM_ROOT else "") + f"Participant {pid}" + (f"   (main block order: {' -> '.join(st['block_order'])})" if st["block_order"] else "")]
+    tag = {storage.SIM_ROOT: "[SIMULATED DATA, data_simulated/] ", storage.TEST_ROOT: "[TEST DISPLAY, data_test/] "}
+    lines = [tag.get(Path(root) if root else None, "") + f"Participant {pid}" + (f"   (main block order: {' -> '.join(st['block_order'])})" if st["block_order"] else "")]
     for i, task in enumerate(storage.TASK_ORDER, 1):
         done = st[task]
         if task == "main":
@@ -60,11 +61,12 @@ def main_bias_file(pid, root=None):
 
 
 def task_command(task, pid, monitor, practice, simulate, block=None, bias_file=None):
-    cmd = [sys.executable, "-m", "avdur.run_task", "--task", task, "--pid", pid, "--monitor", monitor]
+    cmd = [sys.executable, "-m", "avdur.run_task", "--task", task, "--pid", pid, "--monitor", monitor,
+           "--data-root", str(storage.root_for(simulate, monitor))]
     if practice:
         cmd.append("--practice")
     if simulate:
-        cmd += ["--simulate", "--data-root", str(storage.SIM_ROOT)]
+        cmd.append("--simulate")
     if block:
         cmd += ["--block", block]
     if bias_file:
@@ -89,7 +91,8 @@ def run_window():
     entry = ttk.Entry(frm, textvariable=pid, width=14)
     entry.grid(row=0, column=1, sticky="w")
     ttk.Label(frm, text="Monitor profile").grid(row=1, column=0, sticky="w")
-    ttk.OptionMenu(frm, monitor, S.DEFAULT_MONITOR, *S.MONITOR_PROFILES).grid(row=1, column=1, sticky="w")
+    ttk.OptionMenu(frm, monitor, S.DEFAULT_MONITOR, *S.MONITOR_PROFILES,
+                   command=lambda _: refresh()).grid(row=1, column=1, sticky="w")
     ttk.Label(frm, text="Main-experiment block").grid(row=2, column=0, sticky="w")
     ttk.OptionMenu(frm, block, "auto", "auto", *S.TASKS["main"]["blocks"]).grid(row=2, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
@@ -108,7 +111,7 @@ def run_window():
         status.configure(state="disabled")
 
     def data_root():
-        return storage.SIM_ROOT if simulate.get() else storage.DATA_ROOT
+        return storage.root_for(simulate.get(), monitor.get())
 
     def confirm_bias(p):
         existing = main_bias_file(p, data_root())
@@ -130,9 +133,8 @@ def run_window():
         return str(bias_mod.save(p, est, confirmed_by="launcher", root=data_root()))
 
     def run(task):
-        p = pid.get().strip()
         try:
-            design.participant_number(p)
+            p = design.normalize_pid(pid.get())
         except ValueError as err:
             messagebox.showerror("Participant ID", str(err))
             return
@@ -159,8 +161,8 @@ def run_window():
                                    "see the terminal for details.")
 
     def show_bias():
-        p = pid.get().strip()
         try:
+            p = design.normalize_pid(pid.get())
             est = bias_mod.estimate_for_participant(p, data_root())
             messagebox.showinfo("Cross-modal bias (not saved)", bias_mod.summary_text(est))
         except (FileNotFoundError, ValueError) as err:
@@ -180,10 +182,10 @@ def run_window():
 # ── text menu ─────────────────────────────────────────────────────────────────
 
 def run_cli():
-    p = input("Participant ID (e.g. P14): ").strip()
+    p = design.normalize_pid(input("Participant ID (e.g. P14): "))
     mon = input(f"Monitor profile {list(S.MONITOR_PROFILES)} [{S.DEFAULT_MONITOR}]: ").strip() or S.DEFAULT_MONITOR
     sim = input("Simulate (no window, saves to data_simulated/)? [y/N] ").strip().lower() == "y"
-    root = storage.SIM_ROOT if sim else storage.DATA_ROOT
+    root = storage.root_for(sim, mon)
     while True:
         print("\n" + status_text(p, root))
         choice = input("\nRun 1-4 (add 'p' for practice, e.g. '4p'), 'b' bias preview, 'q' quit: ").strip()

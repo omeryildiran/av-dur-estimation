@@ -42,6 +42,13 @@ class Schedule:
         on = self.pre if i == 0 else self.pre + self.dur1 + self.isi
         return on, on + (self.dur1 if i == 0 else self.dur2)
 
+    def second_interval_end(self):
+        """Frame at which both the sound and the flash of interval 2 are over (answers allowed)."""
+        ends = [self.interval_frames(1)[1]] if self.audio_burst[1] else []
+        if self.visual[1] is not None:
+            ends.append(self.visual[1][1])
+        return max(ends)
+
     def seconds(self, frames):
         return frames / self.frame_rate
 
@@ -76,7 +83,8 @@ def make_schedule(task, order, test_s, conflict_s, bias_s, rng, frame_rate):
         raise ValueError(task)
 
     split = [(_split(e) if e is not None else (0, 0)) for e in ext]
-    pre = max(pre, max(split[0][0], 0) + gap)
+    lead = to_frames(S.MIN_LEAD_S, frame_rate)          # preparation time before the first event
+    pre = max(pre, max(split[0][0], 0) + lead)
     isi = max(isi, max(split[0][1], 0) + max(split[1][0], 0) + gap)
     post = max(post, max(split[1][1], 0) + gap)
 

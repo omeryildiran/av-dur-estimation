@@ -104,6 +104,27 @@ def check_main_alignment(root, pid):
     return worst
 
 
+def check_preparation_and_answer_window(root, pid):
+    """No event in the first MIN_LEAD_S of a trial; answers only after interval 2 is fully over."""
+    lead = round(S.MIN_LEAD_S * FR)
+    shortest = np.inf
+    for task in ("unimodal_auditory", "unimodal_visual", "crossmodal", "main"):
+        d = storage.load_trials(task, pid, root)
+        firsts = []
+        for col in ("audio_interval1", "visual_interval1"):
+            s = d[col].fillna("").astype(str)
+            firsts.append(np.where(s != "", pd.to_numeric(s.str.split("-").str[0], errors="coerce"), np.inf))
+        first_event = np.minimum(*firsts)
+        assert (first_event >= lead).all(), (task, first_event.min())
+        shortest = min(shortest, first_event.min() / FR)
+        ends = []
+        for col in ("audio_interval2", "visual_interval2"):
+            s = d[col].fillna("").astype(str)
+            ends.append(np.where(s != "", pd.to_numeric(s.str.split("-").str[1], errors="coerce"), -np.inf))
+        assert np.allclose(d.answer_allowed_from_s, np.maximum(*ends) / FR), task
+    return shortest
+
+
 def check_bias(root, pid, est, obs):
     m = storage.load_trials("main", pid, root)
     assert m.groupby("audNoise").VisualPSE.nunique().eq(1).all(), "one correction per noise level"
@@ -177,6 +198,44 @@ def check_staircase_rules():
     raise AssertionError("v1's diverging '1U1D' rule must be rejected")
 
 
+def check_display_profiles(root):
+    assert storage.root_for(False, "v1_profile") == storage.DATA_ROOT
+    assert storage.root_for(False, "office_test") == storage.TEST_ROOT
+    assert storage.root_for(True, "office_test") == storage.SIM_ROOT
+    assert Session("crossmodal", "SIM75", SimulatedPresenter(5), seed=5, root=root, monitor="office_test",
+                   simulate=True).run()
+    d = storage.load_trials("crossmodal", "SIM75", root)
+    assert (d.frame_rate_hz == 75).all()
+    frames = d.intendedDurVisualStandard * 75
+    assert np.allclose(frames, np.round(frames)), "durations must be whole 75 Hz frames"
+
+
+class FailingPresenter(SimulatedPresenter):
+    def start(self, task, meta):
+        meta["frame_rate_measured_hz"] = 75.0
+        raise RuntimeError("display check failed")
+
+
+def check_failed_start_and_ids(root):
+    import json
+    try:
+        Session("unimodal_auditory", "SIM99", FailingPresenter(0), root=root, simulate=True).run()
+        raise AssertionError("the session should have stopped")
+    except RuntimeError:
+        pass
+    assert not (root / "SIM99").exists(), "a failed start must not create participant files"
+    last = json.loads((root / "failed_starts.jsonl").read_text().strip().splitlines()[-1])
+    assert last["participant"] == "SIM99" and last["frame_rate_measured_hz"] == 75.0
+    assert design.normalize_pid("p2") == design.normalize_pid("2") == design.normalize_pid(" P02 ") == "P02"
+    assert design.normalize_pid("p201") == "P201" and design.normalize_pid("sim01") == "SIM01"
+    for bad in ("", "abc", "P2a"):
+        try:
+            design.normalize_pid(bad)
+            raise AssertionError(bad)
+        except ValueError:
+            pass
+
+
 def run_all(root=SIM_ROOT):
     if root.exists():
         shutil.rmtree(root)
@@ -190,10 +249,13 @@ def run_all(root=SIM_ROOT):
         check_crossmodal_blocks(root, pid)
         check_randomised(root, pid)
         worst = check_main_alignment(root, pid)
+        lead = check_preparation_and_answer_window(root, pid)
         check_bias(root, pid, est, o)
         summary[pid] = dict(true_bias=o["true_bias"],
                             fitted={k: v["correction_s"] for k, v in est["per_noise"].items()},
-                            warnings=est["warnings"], worst_centre_offset_frames=worst)
+                            warnings=est["warnings"], worst_centre_offset_frames=worst, shortest_lead_s=lead)
+    check_display_profiles(root)
+    check_failed_start_and_ids(root)
     snr = check_audio()
     return summary, snr
 
@@ -207,7 +269,8 @@ if __name__ == "__main__":
     print("All checks passed.")
     for pid, s in summary.items():
         print(f"{pid}: true bias {s['true_bias']}  fitted {s['fitted']}  "
-              f"max visual-centre offset {s['worst_centre_offset_frames']} frames  warnings: {s['warnings'] or 'none'}")
+              f"max visual-centre offset {s['worst_centre_offset_frames']} frames  "
+              f"shortest noise before the first event {1000 * s['shortest_lead_s']:.0f} ms  warnings: {s['warnings'] or 'none'}")
     snr, jitter, xm_gap = snr
     for noise, (v2, v1) in snr.items():
         print(f"Burst-to-floor SNR at noise {noise}: v2 {v2:.1f} dB, v1 {v1:.1f} dB")

@@ -7,20 +7,25 @@ changes; README.md explains each one.
 EXPERIMENT_NAME = "av_duration_v2"
 
 # ── Display ───────────────────────────────────────────────────────────────────
-# A profile gives the window size and the physical geometry used to convert degrees to
-# pixels. "v1_profile" is the geometry every v1 script used (MacBook-Air numbers), so on
-# the same lab display it draws the disk at exactly the v1 pixel size (radius 42.7 px).
-# To get a true 3 deg disk on another display, add a profile with measured values.
+# A profile gives the window, the physical geometry used to convert degrees to pixels, and
+# the refresh rate at which every duration is computed (the session checks it at start).
+# "v1_profile" is the lab setup: the geometry every v1 script used (MacBook-Air numbers,
+# disk radius 42.7 px) on the 120 Hz lab display (screen 1). Profiles marked testing_only
+# are for trying the experiment on other machines: they keep the v1 pixel geometry, run at
+# that display's own rate, and save to data_test/ so they never mix with real data.
 MONITOR_PROFILES = {
     "v1_profile": dict(window_px=800, width_cm=25.0, height_cm=20.0, distance_cm=40.0,
-                       screen=1, fullscreen=True),
-    "laptop_test": dict(window_px=800, width_cm=30.5, height_cm=18.0, distance_cm=40.0,
-                        screen=0, fullscreen=False),
+                       screen=1, fullscreen=True, frame_rate_hz=120.0),
+    "office_test": dict(window_px=800, width_cm=25.0, height_cm=20.0, distance_cm=40.0,
+                        screen=0, fullscreen=True, frame_rate_hz=75.0, testing_only=True),   # Mac mini + Dell S2722DZ
+    "laptop_test": dict(window_px=800, width_cm=25.0, height_cm=20.0, distance_cm=40.0,
+                        screen=0, fullscreen=True, frame_rate_hz=60.0, testing_only=True),   # laptop set to 60 Hz
 }
 DEFAULT_MONITOR = "v1_profile"
 
-EXPECTED_FRAME_RATE_HZ = 120.0      # v2: durations are computed at this nominal rate
-FRAME_RATE_TOLERANCE_HZ = 1.0       # v2: the session stops if the measured rate is further off
+EXPECTED_FRAME_RATE_HZ = MONITOR_PROFILES[DEFAULT_MONITOR]["frame_rate_hz"]   # the lab rate (120 Hz)
+FRAME_RATE_TOLERANCE_HZ = 1.0       # v2: measured rate must be within this of the profile's rate
+MAX_IRREGULAR_FRAMES = 0.05         # v2: share of frame intervals more than 1.5 ms off the median
 BACKGROUND_COLOR = "gray"           # v1
 DISK_RADIUS_DEG = 1.5               # v1: 3 deg disk
 DISK_LINE_WIDTH_PX = 1.5            # v1 wrote `lineWidht = 5` (typo), so PsychoPy's default 1.5 px was shown
@@ -51,10 +56,17 @@ STANDARD_DUR_S = 0.5                # v1
 PRE_RANGE_S = (0.20, 0.45)          # v1
 ISI_RANGE_S = (0.40, 0.90)          # v1
 POST_RANGE_S = (0.20, 0.45)         # v1
-MIN_VISUAL_GAP_S = 0.05             # v2: minimum blank before, between and after visual flashes
+MIN_VISUAL_GAP_S = 0.05             # v2: minimum blank between and after visual flashes
 MIN_VISUAL_DUR_S = 0.025            # v2: shortest visual flash allowed after the bias correction
-PRE_TRIAL_WAIT_S = 0.1              # v1
-POST_STIMULUS_WAIT_S = 0.1          # v1
+# v2: the next trial starts right after the response (v1 waited 0.1 s before each trial and
+# 0.1 s after each stimulus). The pre-stimulus noise is the preparation time, so nothing
+# (sound burst or visual flash) may start earlier than MIN_LEAD_S after the noise begins.
+PRE_TRIAL_WAIT_S = 0.0
+MIN_LEAD_S = 0.20                   # = the shortest v1 pre-stimulus noise
+# v2: answers are accepted from the end of the second interval (sound and flash both over);
+# the rest of the noise still plays in full, and the prompt appears only if no answer came
+# before the sound ended. v1 ignored keys until the prompt, shown 0.1 s after the sound.
+# response_rts is therefore measured from the end of the second interval.
 BREAK_EVERY_N_TRIALS = 30           # v1
 BREAK_MIN_WAIT_S = 5.0              # v1
 FEEDBACK_DUR_S = 0.5                # v1 (practice only)
