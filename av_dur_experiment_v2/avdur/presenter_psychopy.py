@@ -7,9 +7,9 @@ intervals are checked for dropped frames, and PTB's estimate of when the sound a
 started is logged against the frame-0 flip. v1 started the sound from inside the frame loop
 without scheduling and logged the loop time instead of the flip time.
 
-v2 pacing: no fixed waits; answers count from the end of the second interval (keys pressed
-earlier are discarded), the remaining noise plays in full, and the prompt appears only if
-no answer came before the sound ended.
+Pacing (as v1, shorter waits): the prompt appears on every trial, POST_STIM_WAIT_S after the
+sound (and the last flash) has ended; keys pressed before it are discarded, and the response
+time is measured from its first flip. Each trial starts PRE_TRIAL_WAIT_S after the answer.
 
 Sound card: chosen explicitly (AUDIO_OUTPUT_DEVICE) and opened before the first trial, so a
 sound problem stops the session before any file is written.
@@ -294,7 +294,7 @@ class PsychoPyPresenter:
             print(f"[autotest] {self.task}: break {k} of {n}", flush=True)
         self._message(f"You can have a break now.\nYou are in block {k} out of {n}.\nPlease wait a few seconds.",
                       color="maroon", wait_keys=False, min_wait=S.BREAK_MIN_WAIT_S)
-        self._message("Now you can press any key to continue!", color="teal")
+        self._message("Now you can press any key to continue!", color="black")
 
     def order_cue(self, order, k, n):   # v1 cross-modal mini-block cue
         av = "A -> V" if order == 1 else "V -> A"
@@ -337,7 +337,7 @@ class PsychoPyPresenter:
             self.disk.draw()
 
     def _auto_answer(self, spec, sched):
-        """Autotest: (key, time after the end of interval 2) from the simulated observer, or None."""
+        """Autotest: (key, time after the prompt appeared) from the simulated observer, or None."""
         if self.auto is None:
             return None
         response = self.auto.run_trial(spec, sched, None)["response"]
@@ -350,17 +350,16 @@ class PsychoPyPresenter:
         if pressed:
             return pressed[0]
         if auto is not None:
-            t = self.kb.clock.getTime()                  # reset on the flip that ended interval 2
+            t = self.kb.clock.getTime()                  # reset on the prompt's first flip
             if t >= auto[1]:
                 return SimpleNamespace(name=auto[0], rt=t)
         return None
 
+    def _frames(self, seconds):
+        return int(round(seconds / self.frame_period))
+
     def run_trial(self, spec, sched, wave):
         win, kb = self.win, self.kb
-        if S.PRE_TRIAL_WAIT_S:
-            win.flip()
-            self.core.wait(S.PRE_TRIAL_WAIT_S)
-
         snd = None
         if wave is not None:
             snd = self.sound.Sound(value=wave, sampleRate=S.SAMPLE_RATE, stereo=True,
@@ -369,14 +368,13 @@ class PsychoPyPresenter:
         for v in sched.visual:
             if v is not None:
                 black[v[0]:v[1]] = True
-        end2 = sched.second_interval_end()          # answers count from this frame's flip
         response_keys = list(S.RESPONSE_KEYS) + [S.QUIT_KEY]
         auto = self._auto_answer(spec, sched)
 
-        # Sync flip, then frame 0 (noise onset) `lead_flips` refreshes later: the sound is
-        # scheduled for that flip, at least the output latency ahead. Predicting from a fresh
-        # flip keeps the error of the assumed frame period from adding up over seconds.
-        for _ in range(S.SYNC_FLIPS):
+        # Pre-trial wait and sync flips (outline/fixation on), then frame 0 (noise onset)
+        # `lead_flips` refreshes later: the sound is scheduled for that flip, at least the output
+        # latency ahead. Predicting from fresh flips keeps the frame-period error from adding up.
+        for _ in range(self._frames(S.PRE_TRIAL_WAIT_S) + S.SYNC_FLIPS):
             self._draw_frame(False)
             win.flip()
         predicted_flip0 = win.getFutureFlipTime() + (self.lead_flips - 1) * self.frame_period
@@ -387,48 +385,44 @@ class PsychoPyPresenter:
             self._draw_frame(False)
             win.flip()
 
+        # Stimulus: answer keys are ignored (only Escape is read) until the prompt appears.
         flips = np.full(sched.total + 1, np.nan)
-        key, stream_done_before_key = None, False
-        kb.clearEvents()
         win.frameIntervals = []
         win.recordFrameIntervals = True
+        quit_ = False
         for n in range(sched.total + 1):
             self._draw_frame(black[n])
-            if n == end2:                            # discard earlier keys, start the RT clock
-                win.callOnFlip(kb.clearEvents)
-                win.callOnFlip(kb.clock.reset)
             flips[n] = win.flip()
-            if n < end2:
-                if kb.getKeys([S.QUIT_KEY], waitRelease=False):
-                    key = "quit"
-                    break
-            elif key is None:
-                key = self._poll_answer(response_keys, auto)
-                if key is not None and key.name == S.QUIT_KEY:
-                    break
+            if kb.getKeys([S.QUIT_KEY], waitRelease=False):
+                quit_ = True
+                break
         win.recordFrameIntervals = False
         intervals = np.asarray(win.frameIntervals[1:], dtype=float)
-        if key == "quit" or (key is not None and key.name == S.QUIT_KEY):
-            if snd is not None:
-                snd.stop()
-            return dict(quit=True)
+        if not quit_:
+            for _ in range(self._frames(S.POST_STIM_WAIT_S)):   # blank pause after the sound has ended
+                self._draw_frame(False)
+                win.flip()
 
-        if key is None:                              # sound over, no answer yet: show the prompt
-            stream_done_before_key = True
+        # Prompt on every trial: keys pressed before it are discarded; RT counts from its first flip.
+        key = SimpleNamespace(name=S.QUIT_KEY) if quit_ else None
+        prompt_onset = np.nan
+        if key is None:
             self.text.text, self.text.color = PROMPT, "white"
+            win.callOnFlip(kb.clearEvents)
+            win.callOnFlip(kb.clock.reset)
+            first = True
             while key is None:
                 self.text.draw()
                 if self.task == "main":
                     self.audio_icon.draw()
-                win.flip()
+                t = win.flip()
+                if first:
+                    prompt_onset, first = t - flips[0], False
                 key = self._poll_answer(response_keys, auto)
-            if key.name == S.QUIT_KEY:
-                if snd is not None:
-                    snd.stop()
-                return dict(quit=True)
-        else:
-            self._draw_frame(False)                  # outline/fixation stays on into the next trial
-            win.flip()
+        if key.name == S.QUIT_KEY:
+            if snd is not None:
+                snd.stop()
+            return dict(quit=True)
         audio = self._audio_check(snd, flips[0] + (flip0_ptb - predicted_flip0))
 
         recorded = {}
@@ -438,7 +432,7 @@ class PsychoPyPresenter:
                 recorded[(i, "off")] = flips[v[1]] - flips[0]
         return dict(
             quit=False, response=S.RESPONSE_KEYS[key.name], key=key.name, rt=key.rt, flips=recorded,
-            prompt_shown=stream_done_before_key, **audio,
+            prompt_shown=True, prompt_onset_s=prompt_onset, **audio,
             flip0_error_s=flips[0] - predicted_flip0,
             n_dropped_frames=int(np.sum(intervals > 1.5 * self.frame_period)) if intervals.size else 0,
             max_frame_interval_ms=float(intervals.max() * 1000) if intervals.size else np.nan,

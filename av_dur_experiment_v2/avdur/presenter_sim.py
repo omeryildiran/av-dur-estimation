@@ -82,10 +82,10 @@ class SimulatedPresenter:
             if v is not None:
                 flips[(i, "on")] = v[0] / sched.frame_rate + self.rng.normal(0, 0.0003)
                 flips[(i, "off")] = v[1] / sched.frame_rate + self.rng.normal(0, 0.0003)
-        rt = float(self.rng.lognormal(np.log(0.55), 0.35))           # from the end of interval 2
-        remaining = (sched.total - sched.second_interval_end()) / sched.frame_rate
+        rt = float(self.rng.lognormal(np.log(0.45), 0.35))           # from the prompt
+        prompt = (sched.total + 1 + round(S.POST_STIM_WAIT_S * sched.frame_rate)) / sched.frame_rate
         sound = {} if spec.task == "unimodal_visual" else dict(
             audio_start_minus_flip0_s=S.AUDIO_ONSET_OFFSET_S + self.rng.normal(0, 0.0002), audio_xruns=0)
         return dict(quit=False, response=response, key="left" if response == 1 else "right",
-                    rt=rt, prompt_shown=rt > remaining, flips=flips, **sound,
+                    rt=rt, prompt_shown=True, prompt_onset_s=prompt, flips=flips, **sound,
                     flip0_error_s=0.0, n_dropped_frames=0, max_frame_interval_ms=1000 / sched.frame_rate)

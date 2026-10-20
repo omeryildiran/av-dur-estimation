@@ -50,7 +50,9 @@ AUDIO_LATENCY_MODE = 3              # v1 set prefs.general (ignored by PsychoPy)
 # the Dell monitor's DisplayPort audio), not the output chosen in System Settings > Sound.
 AUDIO_OUTPUT_DEVICE = None          # None: the Mac's current output (System Settings > Sound);
                                     # or (part of) a device name, e.g. "External Headphones"
-AUDIO_SCHEDULE_MARGIN_S = 0.005     # v2: sound scheduled at least output latency + this before frame 0
+AUDIO_SCHEDULE_MARGIN_S = 0.015     # v2: sound scheduled at least output latency + this before frame 0
+                                    # (5 ms let 23% of sounds start 0.5-3.5 ms late on the lab's Realtek
+                                    # headphones, 10 ms latency, Windows; 2026-10-20)
 SYNC_FLIPS = 2                      # v2: flips before scheduling frame 0. The first flip after a pause can
                                     # return off the refresh (seen on macOS: frame 0 up to 11.8 ms early on
                                     # 6% of trials, always the first trial after a message screen)
@@ -78,17 +80,15 @@ ISI_RANGE_S = (0.40, 0.90)          # v1
 POST_RANGE_S = (0.20, 0.45)         # v1
 MIN_VISUAL_GAP_S = 0.05             # v2: minimum blank between and after visual flashes
 MIN_VISUAL_DUR_S = 0.025            # v2: shortest visual flash allowed after the bias correction
-# v2: the next trial starts right after the response (v1 waited 0.1 s before each trial and
-# 0.1 s after each stimulus). The pre-stimulus noise is the preparation time, so nothing
-# (sound burst or visual flash) may start earlier than MIN_LEAD_S after the noise begins.
-PRE_TRIAL_WAIT_S = 0.0
-MIN_LEAD_S = 0.20                   # = the shortest v1 pre-stimulus noise
-# v2: answers are accepted from the end of the second interval (sound and flash both over);
-# the rest of the noise still plays in full, and the prompt appears only if no answer came
-# before the sound ended. v1 ignored keys until the prompt, shown 0.1 s after the sound.
-# response_rts is therefore measured from the end of the second interval.
+# The prompt appears on every trial, POST_STIM_WAIT_S after the stimulus (sound and flashes)
+# has ended; keys pressed earlier are discarded and response_rts counts from the prompt, as in
+# v1. v1 waited 0.1 s at both points; v2 waits 30 ms (2026-10-20: answering before the prompt,
+# allowed for one day, let answers come before the participant saw the prompt).
+PRE_TRIAL_WAIT_S = 0.03
+POST_STIM_WAIT_S = 0.03
+MIN_LEAD_S = 0.20                   # = the shortest v1 pre-stimulus noise: no event earlier in a trial
 BREAK_EVERY_N_TRIALS = 30           # v1
-BREAK_MIN_WAIT_S = 5.0              # v1
+BREAK_MIN_WAIT_S = 2.5              # v2 (v1: 5 s)
 FEEDBACK_DUR_S = 0.5                # v1 (practice only)
 RESPONSE_KEYS = {"left": 1, "right": 2}   # v1: 1 = first interval longer, 2 = second
 QUIT_KEY = "escape"
@@ -116,9 +116,8 @@ V1_SIGMA_RANGE = {                   # (min, median, max) over the 11 v1 partici
 
 # ── Autotest (automatic answers on the real display and sound card; data_test/ only) ──
 # Answers come from the simulated observer (so staircases move as with a real participant)
-# at a random time after the second interval: some during the remaining noise, some after
-# the prompt. Instruction, break and end screens continue by themselves.
-AUTOTEST_RT_RANGE_S = (0.05, 0.80)
+# at a random time after the prompt. Instruction, break and end screens continue by themselves.
+AUTOTEST_RT_RANGE_S = (0.05, 0.80)     # after the prompt
 AUTOTEST_SCREEN_S = 0.3
 AUTOTEST_QUICK_TRIALS = 30          # "quick" autotest: first trials of each task only
 AUTOTEST_BIAS_S = {0.1: 0.10, 1.2: -0.05}   # main-block corrections when no full cross-modal autotest exists
@@ -127,9 +126,12 @@ AUTOTEST_BIAS_S = {0.1: 0.10, 1.2: -0.05}   # main-block corrections when no ful
 # Rule "xDyU": x "test longer" answers in a row step the test down, y "standard longer"
 # answers in a row step it up. Levels are delta_dur_percents = test/standard - 1.
 # The step halves at the first two reversals, then stays fixed.
-# v2: each task lists its staircases in pairs. In every condition one staircase of each pair
-# starts at the ceiling and the other at the floor; which one is random per condition,
-# balanced over the session's conditions. v1 started every staircase at the floor.
+# v2: every staircase starts on the side opposite the point it converges to, so it crosses
+# the PSE on its way: 2D1U and 3D1U (above 50% "test longer") at the floor, 1D2U and 1D3U
+# at the ceiling; the two cross-modal 1D1U (50%) one at each end, random per condition.
+# Simulated: more trials near the PSE and a more precise PSE than random or same-side starts
+# (unimodal, sigma 0.6: PSE SD 33-38 vs 39-42 ms), sigma slightly less precise. v1 started
+# every staircase at the floor (from 2 June 2025).
 STAIRCASE = dict(init_step=0.16, step_factor=0.5, n_step_changes=2, ceiling=0.9)
 
 TASKS = {

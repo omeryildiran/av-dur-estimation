@@ -122,7 +122,9 @@ def check_preparation_and_answer_window(root, pid):
         for col in ("audio_interval2", "visual_interval2"):
             s = d[col].fillna("").astype(str)
             ends.append(np.where(s != "", pd.to_numeric(s.str.split("-").str[1], errors="coerce"), -np.inf))
-        assert np.allclose(d.answer_allowed_from_s, np.maximum(*ends) / FR), task
+        prompt = (d.totalDur * FR + 1 + round(S.POST_STIM_WAIT_S * FR)) / FR      # after the whole stimulus
+        assert (d.prompt_shown == 1).all() and np.allclose(d.answer_allowed_from_s, prompt), task
+        assert (d.answer_allowed_from_s * FR >= np.maximum(*ends) + 1).all(), task
     return shortest
 
 
@@ -207,8 +209,13 @@ def check_staircase_rules():
                     assert pair == {"floor", "ceiling"}, (task, block, rules[k])
             n_cond = len(design.conditions(task, block))
             for r in rules:
-                n_top = sum(v == "ceiling" for (_, _, rule), v in starts.items() if rule == r)
-                assert abs(n_top - n_cond / 2) <= 0.5, (task, block, r, n_top, n_cond)
+                sides = {v for (_, _, rule), v in starts.items() if rule == r}
+                side = design.staircase_side(r)
+                if side:                                # starts opposite its convergence point
+                    assert sides == {"floor" if side > 0 else "ceiling"}, (task, r, sides)
+                else:                                   # 50% pair: balanced over conditions
+                    n_top = sum(v == "ceiling" for (_, _, rule), v in starts.items() if rule == r)
+                    assert abs(n_top - n_cond / 2) <= 0.5, (task, block, r, n_top, n_cond)
     try:
         Staircase("1U1D", floor=-0.9)
     except ValueError:

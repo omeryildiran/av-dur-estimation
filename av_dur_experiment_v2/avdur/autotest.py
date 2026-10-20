@@ -148,8 +148,10 @@ def session_summary(meta, df):
             problems.append(f"{name}: {xruns} sound buffer underruns (audible glitches)")
     if "wall_time" in df and len(df) > 1:
         pace = pd.to_datetime(df["wall_time"]).diff().dt.total_seconds().median()
-        lines.append(f"    answers after the prompt: {100 * df['prompt_shown'].mean():.0f}%; "
-                     f"median {pace:.2f} s per trial")
+        lines.append(f"    prompt shown on {100 * df['prompt_shown'].mean():.0f}% of trials, median RT "
+                     f"{df['response_rts'].median():.2f} s; median {pace:.2f} s per trial")
+        if not df["prompt_shown"].all():
+            problems.append(f"{name}: answers before the prompt")
     return lines, problems
 
 

@@ -224,9 +224,9 @@ class Session:
             n_dropped_frames=result.get("n_dropped_frames", np.nan),
             max_frame_interval_ms=result.get("max_frame_interval_ms", np.nan),
             responses=result["response"], response_keys=result.get("key", ""),
-            response_rts=round(float(result.get("rt", np.nan)), 4),     # v2: from the end of interval 2
+            response_rts=round(float(result.get("rt", np.nan)), 4),     # from the prompt's first flip (as v1)
             prompt_shown=int(bool(result.get("prompt_shown", True))),
-            answer_allowed_from_s=sched.second_interval_end() / self.fr,
+            answer_allowed_from_s=result.get("prompt_onset_s", np.nan),   # prompt onset, from frame 0
             chose_test=int(chose_test), is_correct=int(is_correct),
             stair_start=stair.start if stair else "",
             stair_num_reversal=stair.reversals if stair else "", stair_is_reversal=stair.is_reversal if stair else "",

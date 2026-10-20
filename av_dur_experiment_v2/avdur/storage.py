@@ -83,8 +83,8 @@ def code_version():
     try:
         info["git_commit"] = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
                                             text=True, timeout=5).stdout.strip() or None
-        dirty = subprocess.run(["git", "status", "--porcelain", "--", "."], cwd=ROOT, capture_output=True,
-                               text=True, timeout=5).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain", "--", "*.py"], cwd=ROOT, capture_output=True,
+                               text=True, timeout=5).stdout.strip()          # source files only, not data
         info["git_uncommitted_changes"] = bool(dirty)
     except Exception:
         info["git_commit"] = None

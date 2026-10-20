@@ -41,8 +41,10 @@ def block_fit(task, csv_path, plot_dir=None):
         noise = None if p.condition == "visual" else float(p.condition)
         d = df[df["cond"] == p.condition]
         easy = d[d["kind"] == "lapse"]["is_correct"]
+        std_ms = 1000 * float(d["standardDur"].iloc[0])
         entry = dict(noise=noise, mu=float(p.mu), sigma=float(p.sigma), lapse=float(p.lapse), n=int(p.n),
-                     pse_ratio=pm.pse_ratio(p.mu, "lognormal"),
+                     pse_ratio=pm.pse_ratio(p.mu, "lognormal"), pse_ms=std_ms * pm.pse_ratio(p.mu, "lognormal"),
+                     standard_ms=std_ms,
                      easy_correct=float(easy.mean()) if len(easy) else float("nan"), easy_n=int(len(easy)),
                      sigma_at_bound=bool(p.sigma >= 2.999), v1_sigma_range=S.V1_SIGMA_RANGE.get((task, noise)))
         if task == "crossmodal":
@@ -62,32 +64,34 @@ def block_fit(task, csv_path, plot_dir=None):
 
 
 def plot(task, df, result, folder, stem):
+    """P(test judged longer) against the test duration (ms), one curve per condition."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
     folder.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(6, 4.5))
-    xs = np.linspace(np.log(0.05), np.log(1.95), 300)
+    fig, ax = plt.subplots(figsize=(6.5, 4.6))
     colors = {None: "tab:green", 0.1: "tab:blue", 1.2: "tab:red"}
+    ms = np.linspace(30, 1000, 400)
     for entry in result["conditions"]:
-        noise = entry["noise"]
-        d = df[df["cond"] == ("visual" if noise is None else noise)]
-        x = np.log(d["testDurS"] / d["standardDur"])
-        bins = np.unique(np.quantile(x, np.linspace(0, 1, 11)))      # about equal trials per point
-        bins[0], bins[-1] = bins[0] - 1e-9, bins[-1] + 1e-9
-        g = pd.DataFrame({"x": x, "y": d["chose_test"]}).groupby(pd.cut(x, bins), observed=True)
-        pts = g.agg(x=("x", "mean"), y=("y", "mean"), n=("y", "size"))
+        noise, std = entry["noise"], entry["standard_ms"]
         c = colors.get(noise, "black")
-        label = (f"{_condition_name(task, noise)}: σ {entry['sigma']:.2f}, PSE ×{entry['pse_ratio']:.2f}, "
-                 f"λ {entry['lapse']:.2f}")
-        ax.scatter(np.exp(pts.x), pts.y, s=12 + pts.n, color=c, alpha=0.6)
-        ax.plot(np.exp(xs), pm.predict(xs, entry["mu"], entry["sigma"], entry["lapse"]), color=c, label=label)
-    ax.axhline(0.5, color="0.8", lw=1)
-    ax.axvline(1.0, color="0.8", lw=1)
-    xlabel = "Auditory test / visual standard duration" if task == "crossmodal" else "Test / standard duration"
-    ax.set(xlabel=xlabel, ylabel="P(test judged longer)", ylim=(-0.03, 1.03),
-           title=f"{LABELS[task]}  ({result['n_trials']} trials)")
+        d = df[df["cond"] == ("visual" if noise is None else noise)]
+        x = 1000 * d["testDurS"]
+        bins = np.unique(np.quantile(x, np.linspace(0, 1, 11)))      # about equal trials per point
+        bins[0], bins[-1] = bins[0] - 1e-6, bins[-1] + 1e-6
+        pts = pd.DataFrame({"x": x, "y": d["chose_test"]}).groupby(pd.cut(x, bins), observed=True).agg(
+            x=("x", "mean"), y=("y", "mean"), n=("y", "size"))
+        ax.scatter(pts.x, pts.y, s=10 + 2 * pts.n, color=c, alpha=0.6)
+        ax.plot(ms, pm.predict(np.log(ms / std), entry["mu"], entry["sigma"], entry["lapse"]), color=c,
+                label=f"{_condition_name(task, noise)}: σ {entry['sigma']:.2f}, PSE {entry['pse_ms']:.0f} ms, "
+                      f"λ {entry['lapse']:.2f}")
+    std = result["conditions"][0]["standard_ms"] if result["conditions"] else 500
+    ax.axhline(0.5, color="0.85", lw=1)
+    ax.axvline(std, color="0.6", lw=1, ls=":")
+    what = "Auditory test" if task == "crossmodal" else "Test"
+    ax.set(xlabel=f"{what} duration (ms)   [standard {std:.0f} ms]", ylabel="P(test judged longer)",
+           xlim=(0, 1000), ylim=(-0.03, 1.03), title=f"{LABELS[task]}  ({result['n_trials']} trials)")
     ax.legend(frameon=False, fontsize=8, loc="upper left")
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
@@ -108,7 +112,7 @@ def summary_text(result):
         bound = " (AT THE FIT BOUND: about chance)" if e["sigma_at_bound"] else ""
         easy = f"{e['easy_correct']:.0%} of {e['easy_n']}" if e["easy_n"] else "none"
         lines.append(f"   {_condition_name(result['task'], e['noise']):9s} σ {e['sigma']:.2f}{bound}, "
-                     f"PSE ×{e['pse_ratio']:.2f}, lapse {e['lapse']:.2f}, easy trials {easy}{extra}{ref}")
+                     f"PSE {e['pse_ms']:.0f} ms, lapse {e['lapse']:.2f}, easy trials {easy}{extra}{ref}")
     lines += [f"   WARNING: {w}" for w in result["warnings"]] or ["   checks passed"]
     if result.get("plot"):
         lines.append(f"   plot: {result['plot']}")

@@ -75,22 +75,41 @@ def conditions(task, block=None):
     return list(itertools.product(cfg["noise_levels"], conflicts))
 
 
+def staircase_side(rule):
+    """+1 if the rule converges above 50% "test longer" (xD1U, x > 1), -1 below (1DyU), 0 at 50%."""
+    n_down, n_up = int(rule[0]), int(rule[2])
+    return (n_down > n_up) - (n_down < n_up)
+
+
 def staircase_starts(task, rng, block=None):
-    """{(noise, conflict, rule): "floor" | "ceiling"}: the staircases are taken in pairs, and in
-    each condition one of each pair starts at each end. Which one starts at the ceiling is
-    random per condition, with each rule at the ceiling in half of the conditions."""
+    """{(noise, conflict, rule): "floor" | "ceiling"}: every staircase starts on the side opposite
+    the point it converges to, so it crosses the PSE on its way (2D1U and 3D1U at the floor,
+    1D2U and 1D3U at the ceiling). The staircases come in pairs; a pair of 50% rules (the two
+    cross-modal 1D1U) starts at opposite ends, which one at the ceiling random per condition and
+    balanced over the session's conditions."""
     rules = S.TASKS[task]["staircases"]
     if len(rules) % 2:
         raise ValueError(f"{task}: staircases must come in pairs, got {rules}")
     conds = conditions(task, block)
     starts = {}
     for k in range(0, len(rules), 2):
+        a, b = rules[k], rules[k + 1]
+        side_a, side_b = staircase_side(a), staircase_side(b)
+        if side_a and side_b:
+            if side_a == side_b:
+                raise ValueError(f"{task}: a pair must converge on opposite sides of 50%, got {a}, {b}")
+            for noise, conflict in conds:
+                starts[(noise, conflict, a)] = "floor" if side_a > 0 else "ceiling"
+                starts[(noise, conflict, b)] = "floor" if side_b > 0 else "ceiling"
+            continue
+        if side_a or side_b:
+            raise ValueError(f"{task}: pair {a}, {b} mixes a 50% rule with another")
         n = len(conds)
         first_on_top = [True] * (n // 2) + [False] * (n // 2) + ([bool(rng.random() < 0.5)] if n % 2 else [])
         rng.shuffle(first_on_top)
         for (noise, conflict), top in zip(conds, first_on_top):
-            starts[(noise, conflict, rules[k])] = "ceiling" if top else "floor"
-            starts[(noise, conflict, rules[k + 1])] = "floor" if top else "ceiling"
+            starts[(noise, conflict, a)] = "ceiling" if top else "floor"
+            starts[(noise, conflict, b)] = "floor" if top else "ceiling"
     return starts
 
 

@@ -29,6 +29,7 @@ The **1-3 in one session** button (`python -m avdur.run_blocks --pid P14`) runs 
 - **Checks (`SCREENING_CHECKS`):**
   - low-noise auditory: σ ≤ 0.6, and easy trials at least 75% correct;
   - visual: σ ≤ 2.0, and easy trials at least 70% correct.
+  - Plots show P(test judged longer) against test duration in ms.
   - These are about 1.5 times beyond v1's worst included participant.
   - High noise and the cross-modal block are reported but not checked. In v1, 2 of 11 participants were at the σ bound (3.0) at high noise.
   - The checks never look at the PSE or the bias.
@@ -52,7 +53,7 @@ The autotest checks that every trial runs fluently on the actual setup. Use it a
   - The full run takes about 2 hours.
   - With **Quick** ticked (`--quick`), it runs only the first 30 trials of each task, about 7 minutes.
 - **One task:** tick **Autotest** and press that task's button.
-- **Answers:** they come from the simulated observer, so the staircases move as they would with a participant. Each answer is given at a random time 0.05–0.8 s after the second interval, so some arrive during the remaining noise and some after the prompt. Message screens continue by themselves.
+- **Answers:** they come from the simulated observer, so the staircases move as they would with a participant. Each answer is given at a random time 0.05–0.8 s after the prompt appears. Message screens continue by themselves.
 - **Main blocks:** they use a bias correction fitted from the autotest's own cross-modal run. In a quick run, which is too short to fit, they use fixed values (`AUTOTEST_BIAS_S`).
 - **Stopping:** press Escape during a trial.
 - **The report** is shown at the end and saved as `data_test/<PID>/<PID>_autotest_report_<date-time>.txt`. For every session it gives:
@@ -105,12 +106,12 @@ The autotest checks that every trial runs fluently on the actual setup. Use it a
 | Order drawn by a coin flip on each trial; make-up sessions unbalanced | Exactly balanced test-first and test-second trials within every staircase and condition ([avdur/design.py](avdur/design.py)). |
 | Two staircases shared by all conditions of a session; conditions in a fixed cycle | Two staircases per condition, as the paper describes; all trials shuffled. |
 | Cross-modal staircase `1U1D` moved away from threshold | Rule names can only express converging staircases; that slot is now a second 1-down-1-up. |
-| From 2 June 2025 every staircase started at the bottom of the range (in the main experiment, at the floor raised by the bias correction). Before that the unimodal and cross-modal staircases started at ±0.65; make-ups started near the middle. | Staircases come in pairs (2D1U/1D2U, 3D1U/1D3U, the two cross-modal 1D1U). In every condition, one of each pair starts at the ceiling and the other at the floor. Which one starts at the top is random per condition and balanced over the session. The start is logged in `stair_start` and in the session metadata. |
+| From 2 June 2025 every staircase started at the bottom of the range (in the main experiment, at the floor raised by the bias correction). Before that the unimodal and cross-modal staircases started at ±0.65; make-ups started near the middle. | Every staircase starts on the side opposite the point it converges to, so it crosses the PSE on its way: 2D1U and 3D1U at the floor, 1D2U and 1D3U at the ceiling. The two cross-modal 1D1U staircases start one at each end, randomly per condition. In simulation this put 75–98% of staircase trials within ±1σ of the PSE (random starts: 56–94%) and made the PSE more precise in the unimodal tasks. The start is logged in `stair_start` and in the session metadata. |
 | Bias correction fitted in a notebook and typed in by hand (dt's low-noise value was wrong; values left over from earlier participants; one make-up with the two noise levels swapped) | Fitted from the participant's own cross-modal data, confirmed in the launcher, saved as a file, logged in every row, and reused for all main blocks. |
 | Fit with lapse ≤ 0.2 and μ bounds that some fits hit | Lognormal fit with lapse ≤ 0.1, multi-start, a bootstrap CI and quality warnings. v1's linear method is reported alongside for comparison. |
-| Sound started from inside the frame loop, not scheduled | Each trial starts with a sync flip. The sound is then scheduled for the frame-0 flip, at least the sound card's output latency + 5 ms ahead, and PTB's estimate of the actual onset is logged against that flip. PsychoPy's flip prediction uses the measured frame period: PsychoPy assumes 60 Hz when its own refresh measurement fails. |
+| Sound started from inside the frame loop, not scheduled | Each trial starts with a sync flip. The sound is then scheduled for the frame-0 flip, at least the sound card's output latency + 15 ms ahead, and PTB's estimate of the actual onset is logged against that flip. PsychoPy's flip prediction uses the measured frame period: PsychoPy assumes 60 Hz when its own refresh measurement fails. |
 | Output device left to PsychoPy (2024.2 takes the first device PortAudio lists) | The output chosen in System Settings, or a named device. It is opened and checked before the first trial, and the device is logged with each session. |
-| 0.1 s wait before every trial and after every stimulus; keys ignored until a prompt appeared | No fixed waits. Answers count from the end of the second interval (sound and flash both over), the rest of the noise still plays in full, and the prompt appears only if no answer came during the sound. At least 200 ms of noise always precedes any sound burst or flash, so participants keep their preparation time. Saves about 0.5 s per trial (about 7 min in a 924-trial block). |
+| 0.1 s wait before every trial and after every stimulus; keys ignored until a prompt appeared; 5 s minimum breaks | Same logic with shorter waits: 30 ms before each trial and 30 ms after the stimulus (sound and flashes) has ended. Then the prompt appears on every trial. Keys pressed before it are discarded, and the response time counts from its first flip. Breaks every 30 trials last at least 2.5 s. At least 200 ms of noise always precedes any sound burst or flash. A day of letting answers come before the prompt (19–20 Oct 2026) was dropped, because participants could answer before seeing the prompt. |
 | Logged loop times, not flip times; unimodal visual timing not logged at all | Actual flip timestamps for every onset and offset in every task, plus dropped frames and the frame-0 flip error. |
 | Peak normalisation gave ±0.75 dB of random level jitter per trial; cross-modal tests 0.4–1.3 dB louder than main-experiment tests | Fixed gains calibrated to v1's average level and SNR (`AUDIO_LEVEL_MODE = "fixed"`; `"peak"` reproduces v1 exactly). |
 | `prefs.general['audioLatencyMode']` (ignored by PsychoPy) | `prefs.hardware['audioLatencyMode']`, set to PsychoPy's default (3), which is what v1 effectively used. |
@@ -150,8 +151,8 @@ data_simulated/ ...                                         same layout, simulat
 
 The analysis reads `data_solid/`. To exclude a session, delete its copy there; the original stays in `data/`.
 
-The column names follow v1 (`testDurS`, `audNoise`, `order`, `responses`, `conflictDur`, `VisualPSE`, `recordedDurVisualTest`, …). One column changed meaning: `response_rts` is measured from the end of the second interval; in v1 it was measured from the prompt. New columns:
-- `prompt_shown` (1 if the answer came only after the sound ended) and `answer_allowed_from_s`;
+The column names follow v1 (`testDurS`, `audNoise`, `order`, `responses`, `conflictDur`, `VisualPSE`, `recordedDurVisualTest`, …). `response_rts` is measured from the prompt's first flip, as in v1. New columns:
+- `prompt_shown` (always 1) and `answer_allowed_from_s` (prompt onset, from the first frame of the trial);
 - the frame schedule (`audio_interval1`, `visual_interval1`, …);
 - intended visual durations;
 - `chose_test` and `stair_start` (`floor` or `ceiling`);
@@ -167,5 +168,6 @@ The notebooks in [analysis/](analysis/) use the repository's `plot_style.py`:
 - `01_unimodal_fits.ipynb`: auditory and visual psychometric functions, σ (and σ/√2 for the models), a free-μ check, and a visual timing check.
 - `02_crossmodal_bias.ipynb`: cross-modal fits, the corrections with CIs and the v1 method, and a check that the main blocks used the confirmed values.
 - `03_main_experiment_check.ipynb`: order balance, timing and centring checks, PSE vs. conflict per noise level, and PSE by presentation order.
+- `04_staircases.ipynb`: staircase progression for each session. It plots test duration against trial number, one line per staircase and one panel per condition, marking answers, reversals, easy trials, the standard and the fitted PSE. A table lists each staircase's start, reversals and mean level after the second reversal.
 
 They read `data_solid/`. Until real data exist, they show the simulated participants written by `tests/test_pipeline.py` to `data_simulated/`. `tests/calibrate_audio_levels.py` reproduces the fixed-level audio constants.

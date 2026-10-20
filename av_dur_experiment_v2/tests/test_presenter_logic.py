@@ -133,11 +133,16 @@ def schedule(task, order=2):
 
 
 def times(task, lead=1):
-    """Flip times of the end of interval 2 and of the last frame: SYNC_FLIPS sync flips, `lead` - 1
-    idle flips, then frame 0, so frame n flips at (n + SYNC_FLIPS + lead) frames."""
+    """Flip times of the end of interval 2 and of the last frame. Before frame 0 come the pre-trial
+    wait and SYNC_FLIPS sync flips, then `lead` - 1 idle flips, so frame n flips at (n + k) frames."""
     sched = schedule(task)
-    k = S.SYNC_FLIPS + lead
+    k = round(S.PRE_TRIAL_WAIT_S / FRAME) + S.SYNC_FLIPS + lead
     return (sched.second_interval_end() + k) * FRAME, (sched.total + k) * FRAME
+
+
+def prompt_time(task, lead=1):
+    """First flip of the prompt: POST_STIM_WAIT_S of blank frames after the last stimulus frame."""
+    return times(task, lead)[1] + (round(S.POST_STIM_WAIT_S / FRAME) + 1) * FRAME
 
 
 def spec(task):
@@ -156,7 +161,8 @@ def check_sound_and_flip_timing():
     for lead in (1, 2, 3):
         r, _, _ = run("main", [(10.0, "left")], lead=lead)
         assert abs(r["flip0_error_s"]) < 1e-9, (lead, r["flip0_error_s"])
-        assert abs(Sound.last.when - (S.SYNC_FLIPS + lead) * FRAME) < 1e-9, "sound scheduled on the frame-0 flip"
+        k = round(S.PRE_TRIAL_WAIT_S / FRAME) + S.SYNC_FLIPS + lead
+        assert abs(Sound.last.when - k * FRAME) < 1e-9, "sound scheduled on the frame-0 flip"
         assert abs(r["audio_start_minus_flip0_s"]) < 1e-9 and r["audio_xruns"] == 0 and Sound.last.stopped
         assert Sound.last.kwargs["speaker"] is None or isinstance(Sound.last.kwargs["speaker"], int)
 
@@ -164,12 +170,11 @@ def check_sound_and_flip_timing():
 def check_autotest():
     for task in ("main", "crossmodal", "unimodal_auditory", "unimodal_visual"):
         end2, stream_end = times(task)
-        for rt in (0.12, stream_end - end2 + 0.2):           # during the noise; after the prompt
+        for rt in (0.0, 0.12, 0.7):                          # automatic answers count from the prompt
             p = presenter(task, [], autotest_seed=3)
             p._auto_answer = lambda spec_, sched_, rt=rt: ("left", rt)
             r, _, _ = run(task, [], p=p)
-            assert r["key"] == "left" and rt <= r["rt"] < rt + FRAME + 1e-9, (task, rt, r["rt"])
-            assert r["prompt_shown"] == (rt > stream_end - end2), (task, rt)
+            assert r["key"] == "left" and rt <= r["rt"] < rt + FRAME + 1e-9 and r["prompt_shown"], (task, rt, r)
         p = presenter(task, [], autotest_seed=3)           # real automatic answers from the observer
         keys = {run(task, [], p=p)[0]["key"] for _ in range(30)}
         assert keys == {"left", "right"}, keys
@@ -242,22 +247,21 @@ def check_refresh():
 def main():
     for task in ("main", "crossmodal", "unimodal_auditory", "unimodal_visual"):
         end2, stream_end = times(task)
-        assert stream_end - end2 > 0.15, "post-stimulus noise must remain after interval 2"
+        prompt = prompt_time(task)
+        assert prompt - stream_end >= S.POST_STIM_WAIT_S, "blank pause between the stimulus and the prompt"
 
-        # key during interval 2 is discarded; the next key (during the post noise) counts
-        r, _, _ = run(task, [(end2 - 0.05, "left"), (end2 + 0.10, "right")])
-        assert not r["quit"] and r["key"] == "right" and not r["prompt_shown"], (task, r)
-        assert abs(r["rt"] - 0.10) < FRAME + 1e-9, (task, r["rt"])
-
-        # no key until after the sound: prompt shown, RT still from the end of interval 2
-        late = stream_end + 0.30
-        r, _, _ = run(task, [(late, "left")])
-        assert r["prompt_shown"] and r["key"] == "left" and abs(r["rt"] - (late - end2)) < FRAME + 1e-9, (task, r)
+        # keys during the stimulus and the pause are discarded; the first key after the prompt counts
+        r, _, _ = run(task, [(end2 - 0.05, "left"), (end2 + 0.10, "left"), (stream_end + 0.01, "left"),
+                             (prompt + 0.25, "right")])
+        assert not r["quit"] and r["key"] == "right" and r["prompt_shown"], (task, r)
+        assert abs(r["rt"] - 0.25) < FRAME + 1e-9, (task, r["rt"])          # RT from the prompt's first flip
+        k = round(S.PRE_TRIAL_WAIT_S / FRAME) + S.SYNC_FLIPS + 1
+        assert abs(r["prompt_onset_s"] - (prompt - k * FRAME)) < 1e-9, (task, r["prompt_onset_s"])
 
         # escape quits, during the stimulus and during the prompt
         r, _, _ = run(task, [(end2 * 0.5, "escape")])
         assert r["quit"], task
-        r, _, _ = run(task, [(stream_end + 0.2, "escape")])
+        r, _, _ = run(task, [(prompt + 0.2, "escape")])
         assert r["quit"], task
     check_refresh()
     check_sound_and_flip_timing()
