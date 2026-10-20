@@ -15,7 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 import experiment_settings as S  # noqa: E402
-from avdur.presenter_psychopy import PsychoPyPresenter  # noqa: E402
+from avdur.design import TrialSpec  # noqa: E402
+from avdur.presenter_psychopy import PsychoPyPresenter, find_output_device, stimulus_geometry  # noqa: E402
 from avdur.schedule import make_schedule  # noqa: E402
 
 FRAME = 1 / S.EXPECTED_FRAME_RATE_HZ
@@ -31,6 +32,9 @@ class Clock:
 
     def reset(self):
         self.last_reset = Time.now
+
+    def getTime(self):
+        return Time.now - self.last_reset
 
 
 class Win:
@@ -82,25 +86,42 @@ class Keyboard:
                 p["used"] = True
 
     def waitKeys(self, keyList=None):
+        if self.wait_answer is None:
+            raise AssertionError("an autotest must not wait for a key")
         return [SimpleNamespace(name=self.wait_answer)]
 
 
 class Sound:
+    """Starts exactly when scheduled (the fake window's PTB clock equals its own)."""
+    last = None
+
     def __init__(self, **kwargs):
-        self.played = self.stopped = False
+        self.kwargs, self.when, self.stopped = kwargs, None, False
+        self.stream = SimpleNamespace(status={"XRuns": 0})
+        Sound.last = self
 
     def play(self, when=None):
-        self.played = True
+        self.when = when
+
+    @property
+    def statusDetailed(self):
+        return {"StartTime": self.when}
 
     def stop(self):
         self.stopped = True
 
 
-def presenter(task, presses, profile="v1_profile", win=None):
+def presenter(task, presses, profile="lab_crt", win=None, autotest_seed=None, lead=1):
     Time.now = 0.0
-    p = PsychoPyPresenter(profile)
-    p.task, p.win, p.kb = task, win or Win(), Keyboard(presses)
-    p.core = SimpleNamespace(wait=lambda s: None)
+    p = PsychoPyPresenter(profile, autotest_seed=autotest_seed)
+    p.task, p.win, p.kb, p.lead_flips = task, win or Win(), Keyboard(presses), lead
+    if p.auto is not None:
+        p.auto.task = task
+        p.kb.wait_answer = None
+    def wait(s):
+        Time.now += s
+
+    p.core = SimpleNamespace(wait=wait, Clock=Clock)
     p.sound = SimpleNamespace(Sound=Sound)
     drawable = SimpleNamespace(draw=lambda: None, fillColor=None, text="", color="")
     p.disk, p.fixation, p.audio_icon, p.text = drawable, drawable, drawable, drawable
@@ -111,16 +132,95 @@ def schedule(task, order=2):
     return make_schedule(task, order, 0.6, 0.083, 0.1, np.random.default_rng(1), S.EXPECTED_FRAME_RATE_HZ)
 
 
-def times(task):
+def times(task, lead=1):
+    """Flip times of the end of interval 2 and of the last frame: a sync flip, `lead` - 1 idle
+    flips, then frame 0, so frame n flips at (n + 1 + lead) frames."""
     sched = schedule(task)
-    end2_time = (sched.second_interval_end() + 1) * FRAME          # flip time of that frame (frame 0 flips at 1 frame)
-    return end2_time, (sched.total + 1) * FRAME
+    return (sched.second_interval_end() + 1 + lead) * FRAME, (sched.total + 1 + lead) * FRAME
 
 
-def run(task, presses):
-    p = presenter(task, presses)
-    end2, stream_end = times(task)
-    return p.run_trial(SimpleNamespace(task=task), schedule(task), np.zeros(10, np.float32)), end2, stream_end
+def spec(task):
+    return TrialSpec(task, None if task == "unimodal_visual" else 0.1, 0.083 if task == "main" else 0.0,
+                     "staircase", "2D1U", None, 2)
+
+
+def run(task, presses, lead=1, p=None):
+    p = p or presenter(task, presses, lead=lead)
+    end2, stream_end = times(task, lead)
+    wave = None if task == "unimodal_visual" else np.zeros(10, np.float32)
+    return p.run_trial(spec(task), schedule(task), wave), end2, stream_end
+
+
+def check_sound_and_flip_timing():
+    for lead in (1, 2, 3):
+        r, _, _ = run("main", [(10.0, "left")], lead=lead)
+        assert abs(r["flip0_error_s"]) < 1e-9, (lead, r["flip0_error_s"])
+        assert abs(Sound.last.when - (1 + lead) * FRAME) < 1e-9, "sound scheduled on the frame-0 flip"
+        assert abs(r["audio_start_minus_flip0_s"]) < 1e-9 and r["audio_xruns"] == 0 and Sound.last.stopped
+        assert Sound.last.kwargs["speaker"] is None or isinstance(Sound.last.kwargs["speaker"], int)
+
+
+def check_autotest():
+    for task in ("main", "crossmodal", "unimodal_auditory", "unimodal_visual"):
+        end2, stream_end = times(task)
+        for rt in (0.12, stream_end - end2 + 0.2):           # during the noise; after the prompt
+            p = presenter(task, [], autotest_seed=3)
+            p._auto_answer = lambda spec_, sched_, rt=rt: ("left", rt)
+            r, _, _ = run(task, [], p=p)
+            assert r["key"] == "left" and rt <= r["rt"] < rt + FRAME + 1e-9, (task, rt, r["rt"])
+            assert r["prompt_shown"] == (rt > stream_end - end2), (task, rt)
+        p = presenter(task, [], autotest_seed=3)           # real automatic answers from the observer
+        keys = {run(task, [], p=p)[0]["key"] for _ in range(30)}
+        assert keys == {"left", "right"}, keys
+        p = presenter(task, [(stream_end * 0.5, "escape")], autotest_seed=3)
+        assert run(task, [], p=p)[0]["quit"], "Escape still stops an autotest"
+    p = presenter("main", [], autotest_seed=3)               # screens continue by themselves
+    p.instructions("main", False)
+    p.rest(1, 10)
+    p.order_cue(1, 0, 4)
+    p.feedback(True)
+    p.finish(True)
+    p = presenter("main", [], profile="office_test", win=Win(frame=1 / 75, every_nth_doubled=10), autotest_seed=3)
+    meta = {}
+    assert abs(p._check_refresh(meta) - 75) < 0.5 and meta["refresh_warning_overridden"]
+
+
+def check_block_screens():
+    """Between blocks: the rest screen lasts until the fit is ready; the experimenter key decides."""
+    p = presenter("main", [])
+    ready_at = 4.0
+    p.wait_screen("rest", lambda: Time.now >= ready_at, min_wait=10.0)
+    assert Time.now >= 10.0, "minimum rest"
+    Time.now = 0.0
+    p.wait_screen("rest", lambda: Time.now >= ready_at, min_wait=1.0)
+    assert ready_at <= Time.now < ready_at + 0.2, "waits for the fit"
+    p.kb.wait_answer = "c"
+    assert p.experimenter_check()
+    p.kb.wait_answer = "escape"
+    assert not p.experimenter_check()
+    p = presenter("main", [], autotest_seed=1)
+    assert p.experimenter_check(), "an autotest continues by itself"
+    p.win, p.measured, p.setup_meta, p.speaker = p.win, 120.0, {"audio_device": "X"}, -1
+    meta = {}
+    assert p.start("crossmodal", meta) == 120.0 and meta["audio_device"] == "X" and p.task == "crossmodal"
+
+
+def check_device_choice_and_geometry():
+    devices = [dict(DeviceName="DELL S2722DZ", DeviceIndex=0.0), dict(DeviceName="Mac mini Speakers", DeviceIndex=1.0),
+               dict(DeviceName="External Headphones", DeviceIndex=3.0), dict(DeviceName="Speakers", DeviceIndex=4.0)]
+    assert find_output_device("headphones", devices)["DeviceIndex"] == 3
+    assert find_output_device("Speakers", devices)["DeviceIndex"] == 4          # exact name wins
+    assert find_output_device("mac mini", devices)["DeviceIndex"] == 1
+    for wanted in ("e", "Scarlett"):
+        try:
+            find_output_device(wanted, devices)
+            raise AssertionError(wanted)
+        except LookupError:
+            pass
+    lab = stimulus_geometry(S.MONITOR_PROFILES["lab_crt"])
+    assert abs(lab["disk_radius_px"] - 42.75) < 0.01 and abs(lab["fixation_height_px"] - 22.34) < 0.01
+    assert abs(lab["disk_diameter_deg"] - 2.96) < 0.01, lab
+    assert "disk_diameter_deg" not in stimulus_geometry(S.MONITOR_PROFILES["office_test"])
 
 
 def check_refresh():
@@ -159,7 +259,11 @@ def main():
         r, _, _ = run(task, [(stream_end + 0.2, "escape")])
         assert r["quit"], task
     check_refresh()
-    print("Presenter response logic and display check: all checks passed.")
+    check_sound_and_flip_timing()
+    check_autotest()
+    check_device_choice_and_geometry()
+    check_block_screens()
+    print("Presenter response logic, sound scheduling, autotest, device choice and display check: all checks passed.")
 
 
 if __name__ == "__main__":

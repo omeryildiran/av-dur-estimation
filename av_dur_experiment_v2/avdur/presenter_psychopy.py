@@ -1,13 +1,21 @@
 """PsychoPy presenter: window, stimuli, frame loop, sound and keyboard.
 
-v2 timing: the sound is scheduled on the trial's first flip (frame 0), every frame is
-flipped explicitly, the returned flip timestamps of each visual onset/offset are logged,
-and frame intervals are checked for dropped frames. v1 started the sound from inside the
-frame loop without scheduling and logged the loop time instead of the flip time.
+v2 timing: every trial starts with a sync flip; the sound is then scheduled for the flip of
+frame 0 (noise onset), far enough ahead for the sound card's output latency. Every frame is
+flipped explicitly, the flip timestamps of each visual onset/offset are logged, frame
+intervals are checked for dropped frames, and PTB's estimate of when the sound actually
+started is logged against the frame-0 flip. v1 started the sound from inside the frame loop
+without scheduling and logged the loop time instead of the flip time.
 
 v2 pacing: no fixed waits; answers count from the end of the second interval (keys pressed
 earlier are discarded), the remaining noise plays in full, and the prompt appears only if
 no answer came before the sound ended.
+
+Sound card: chosen explicitly (AUDIO_OUTPUT_DEVICE) and opened before the first trial, so a
+sound problem stops the session before any file is written.
+
+Autotest: answers come from the simulated observer at a random time after the second
+interval, and message screens continue by themselves. Escape still quits during trials.
 """
 
 from __future__ import annotations
@@ -16,6 +24,8 @@ import ctypes
 import math
 import sys
 from pathlib import Path
+from types import SimpleNamespace
+from typing import NoReturn
 
 import numpy as np
 
@@ -33,10 +43,17 @@ INSTRUCTIONS = {
 PROMPT = "1st Longer (<-) vs 2nd Longer (->)"       # v1
 
 
-def dva_to_px(size_deg, height_cm, distance_cm, window_px):
-    """v1 conversion (dva_to_pix.py), kept so v1_profile reproduces the v1 disk size."""
-    deg_per_px = math.degrees(math.atan2(0.5 * height_cm, distance_cm)) / (0.5 * window_px)
-    return size_deg / deg_per_px
+def stimulus_geometry(profile):
+    """Pixel sizes of the stimuli and, if the picture size and distance are known, their true size."""
+    out = dict(disk_radius_px=S.DISK_RADIUS_PX, fixation_height_px=S.FIXATION_HEIGHT_PX)
+    height, distance = profile.get("picture_height_cm"), profile.get("viewing_distance_cm")
+    if height and distance:
+        cm_per_px = height / profile["window_px"]
+        radius_cm = S.DISK_RADIUS_PX * cm_per_px
+        out.update(disk_diameter_cm=2 * radius_cm, disk_diameter_deg=2 * math.degrees(math.atan2(radius_cm, distance)))
+        if profile.get("picture_width_cm"):
+            out["pixel_aspect_w_over_h"] = profile["picture_width_cm"] / height
+    return out
 
 
 def load_psychtoolbox():
@@ -66,31 +83,84 @@ def load_psychtoolbox():
     return loaded
 
 
+def find_output_device(wanted, devices):
+    """The output device named `wanted`, or the only one whose name contains it (any case)."""
+    exact = [d for d in devices if d["DeviceName"].lower() == str(wanted).lower()]
+    matches = exact or [d for d in devices if str(wanted).lower() in d["DeviceName"].lower()]
+    if len(matches) != 1:
+        what = "No output device matches" if not matches else "More than one output device matches"
+        raise LookupError(f"{what} AUDIO_OUTPUT_DEVICE = {wanted!r}.")
+    return matches[0]
+
+
+def audio_problem_text(err, wanted, devices):
+    names = ", ".join(repr(d["DeviceName"]) for d in devices) or "none"
+    target = repr(wanted) if wanted is not None else "the Mac's current output (System Settings > Sound)"
+    return (f"The sound card could not be started: {err}\n\n"
+            f"Requested output: {target}.\nOutput devices found: {names}.\n\n"
+            "Check that the headphones or audio interface are connected and not in use by another program "
+            "(the line starting with PTB-ERROR above gives PortAudio's reason). Choose another output in "
+            "System Settings > Sound, or set AUDIO_OUTPUT_DEVICE (or the profile's audio_device) in "
+            "experiment_settings.py to part of a device name.")
+
+
 class PsychoPyPresenter:
     needs_audio = True
 
-    def __init__(self, monitor_profile=S.DEFAULT_MONITOR):
+    def __init__(self, monitor_profile=S.DEFAULT_MONITOR, autotest_seed=None):
         self.profile_name = monitor_profile
         self.profile = S.MONITOR_PROFILES[monitor_profile]
         self.fr = self.profile["frame_rate_hz"]
-        self.task = None
+        self.frame_period = 1.0 / self.fr           # replaced by the measured period at start
+        self.task, self.speaker, self.lead_flips = None, None, 1
+        self.win, self.setup_meta, self.measured = None, {}, None
+        self.auto = self.auto_rng = None
+        if autotest_seed is not None:
+            from avdur.presenter_sim import SimulatedPresenter
+            self.auto = SimulatedPresenter(seed=autotest_seed)
+            self.auto_rng = np.random.default_rng(autotest_seed + 1)
 
     # ── setup ─────────────────────────────────────────────────────────────────
     def start(self, task, meta):
+        if self.win is not None:                     # a later block in the same window: reuse the setup
+            return self._next_block(task, meta)
+        before = set(meta)
+        measured = self._start(task, meta)
+        self.measured = measured
+        self.setup_meta = {k: meta[k] for k in set(meta) - before}
+        return measured
+
+    def _next_block(self, task, meta):
+        from avdur.session import NEEDS_AUDIO
+        self.task = task
+        if self.auto is not None:
+            self.auto.task = task
+        if task in NEEDS_AUDIO and self.speaker is None:
+            before = set(meta)
+            self._open_audio(meta)
+            self.setup_meta.update({k: meta[k] for k in set(meta) - before})
+        meta.update(self.setup_meta)
+        meta["same_window_as_previous_block"] = True
+        return self.measured
+
+    def _start(self, task, meta):
         meta["ptb_libraries_preloaded"] = load_psychtoolbox()
         from psychopy import prefs
         prefs.hardware["audioLib"] = ["PTB"]          # needed for sound onset scheduled on a flip
         prefs.hardware["audioLatencyMode"] = S.AUDIO_LATENCY_MODE
         from psychopy import core, monitors, sound, visual
         from psychopy.hardware import keyboard
-        from psychopy.tools.monitorunittools import deg2pix
+        from avdur.session import NEEDS_AUDIO
 
         if str(getattr(sound, "audioLib", "")).lower() != "ptb":
             raise RuntimeError(f"PsychoPy chose the '{getattr(sound, 'audioLib', None)}' audio backend, not PTB.")
         meta["sound_backend"] = "ptb"
         self.core, self.sound, self.task = core, sound, task
+        if self.auto is not None:
+            self.auto.task = task
         p = self.profile
-        mon = monitors.Monitor("avdur_v2", width=p["width_cm"], distance=p["distance_cm"])
+        mon = monitors.Monitor("avdur_v2", width=p.get("picture_width_cm") or p.get("picture_height_cm") or 30.0,
+                               distance=p.get("viewing_distance_cm") or 57.0)
         mon.setSizePix((p["window_px"], p["window_px"]))
         self.win = visual.Window(size=(p["window_px"], p["window_px"]), fullscr=p["fullscreen"], screen=p["screen"],
                                  monitor=mon, units="pix", color=S.BACKGROUND_COLOR, colorSpace="rgb",
@@ -100,14 +170,55 @@ class PsychoPyPresenter:
                                     wrapWidth=0.9 * p["window_px"])
         self.kb = keyboard.Keyboard(backend="ptb")
         measured = self._check_refresh(meta)
+        # PsychoPy predicts flips as last flip + monitorFramePeriod, and assumes 60 Hz when its own
+        # measurement fails ("cannot be measured"); use the period measured above instead.
+        self.frame_period = 1.0 / measured
+        self.win.monitorFramePeriod = self.frame_period
+        self.win.refreshThreshold = 1.2 * self.frame_period
+        if task in NEEDS_AUDIO:
+            self._open_audio(meta)
 
-        radius = dva_to_px(S.DISK_RADIUS_DEG, p["height_cm"], p["distance_cm"], p["window_px"])
-        self.disk = visual.Circle(self.win, radius=radius, fillColor=S.BACKGROUND_COLOR, lineColor="black",
+        self.disk = visual.Circle(self.win, radius=S.DISK_RADIUS_PX, fillColor=S.BACKGROUND_COLOR, lineColor="black",
                                   lineWidth=S.DISK_LINE_WIDTH_PX, units="pix", pos=(0, 0))
-        self.fixation = visual.TextStim(self.win, text="+", color="white", height=deg2pix(1, mon))
+        self.fixation = visual.TextStim(self.win, text="+", color="white", height=S.FIXATION_HEIGHT_PX)
         self.audio_icon = visual.ImageStim(self.win, image=str(ASSETS / "audio_icon.png"), pos=(0, 100), size=(50, 50))
-        meta["disk_radius_px"] = radius
+        meta.update(stimulus_geometry(p))
         return measured
+
+    def _open_audio(self, meta):
+        """Open the chosen output now: a sound problem stops the session before its first trial."""
+        from psychtoolbox import audio
+        wanted = self.profile.get("audio_device", S.AUDIO_OUTPUT_DEVICE)
+        devices = [d for d in audio.get_devices() if d["NrOutputChannels"] > 0]
+        meta.update(audio_output_requested=wanted, audio_devices_found=[d["DeviceName"] for d in devices])
+        try:
+            # -1 = PortAudio's default output, i.e. the one chosen in System Settings > Sound
+            self.speaker = -1 if wanted is None else int(find_output_device(wanted, devices)["DeviceIndex"])
+            silent = self.sound.Sound(value=np.zeros((S.SAMPLE_RATE // 10, 2)), sampleRate=S.SAMPLE_RATE,
+                                      stereo=True, hamming=False, volume=0.0, speaker=self.speaker)
+            status = silent.stream.status
+        except (OSError, LookupError) as err:
+            self._fail(audio_problem_text(err, wanted, devices))
+        index = int(status["OutDeviceIndex"])
+        name = next((d["DeviceName"] for d in devices if int(d["DeviceIndex"]) == index), f"device {index}")
+        rate, latency = float(status["SampleRate"]), float(status["PredictedLatency"])
+        if abs(rate - S.SAMPLE_RATE) > 0.5:
+            self._fail(f"The sound card '{name}' runs at {rate:.0f} Hz, not {S.SAMPLE_RATE} Hz, so every sound "
+                       f"would play at the wrong speed. Set it to {S.SAMPLE_RATE} Hz in Audio MIDI Setup.")
+        self.lead_flips = max(1, math.ceil((latency + S.AUDIO_SCHEDULE_MARGIN_S) / self.frame_period))
+        meta.update(audio_device=name, audio_device_index=index, audio_sample_rate_hz=rate,
+                    audio_output_latency_s=latency, audio_schedule_lead_frames=self.lead_flips)
+        print(f"Sound output: {name} (PTB device {index}), {rate:.0f} Hz, output latency {1000 * latency:.1f} ms; "
+              f"sound scheduled {self.lead_flips} frame(s) ahead.", flush=True)
+        silent.play()                                 # wake the output path before the first trial
+        self.core.wait(0.15)
+        silent.stop()
+
+    def _fail(self, report) -> NoReturn:
+        """Show why the session cannot start, close the window and stop."""
+        self._message(report + "\n\nPress any key to quit.", height=0.6 * S.TEXT_HEIGHT_PX)
+        self.win.close()
+        raise RuntimeError(report)
 
     def _measure_refresh(self, n_frames=180, warmup=30):
         """Median refresh rate from our own flip timestamps, share of irregular intervals, SD (ms).
@@ -146,33 +257,41 @@ class PsychoPyPresenter:
                        "(not ProMotion / variable refresh).\n")
         if rate_ok and self.profile.get("testing_only"):
             self._message(report + "\nTesting profile: press C to continue anyway, Escape to quit.", wait_keys=False)
-            self.kb.clearEvents()
-            if self.kb.waitKeys(keyList=["c", S.QUIT_KEY])[0].name == "c":
+            if self._wait_keys(["c", S.QUIT_KEY]) == "c":
                 meta["refresh_warning_overridden"] = True
                 return rate
-        else:
-            self._message(report + "\nPress any key to quit.")
-        self.win.close()
-        raise RuntimeError(report.strip())
+            self.win.close()
+            raise RuntimeError(report.strip())
+        self._fail(report.strip())
 
     # ── screens ───────────────────────────────────────────────────────────────
-    def _message(self, text, color="white", wait_keys=True, min_wait=0.0):
-        self.text.text, self.text.color = text, color
+    def _wait_keys(self, keys=None):
+        """Name of the key pressed; an autotest continues by itself with the first allowed key."""
+        self.kb.clearEvents()
+        if self.auto is None:
+            return self.kb.waitKeys(keyList=keys)[0].name
+        self.core.wait(S.AUTOTEST_SCREEN_S)
+        return keys[0] if keys else "space"
+
+    def _message(self, text, color="white", wait_keys=True, min_wait=0.0, height=S.TEXT_HEIGHT_PX):
+        self.text.text, self.text.color, self.text.height = text, color, height
         self.text.draw()
         self.win.flip()
+        self.text.height = S.TEXT_HEIGHT_PX
         if min_wait:
-            self.core.wait(min_wait)
+            self.core.wait(min_wait if self.auto is None else min(min_wait, S.AUTOTEST_SCREEN_S))
         if wait_keys:
-            self.kb.clearEvents()
-            self.kb.waitKeys()
+            self._wait_keys()
 
     def instructions(self, task, practice):
-        header = "PRACTICE\n\n" if practice else ""
+        header = ("AUTOTEST: automatic answers\n\n" if self.auto is not None else "") + ("PRACTICE\n\n" if practice else "")
         self._message(f"{header}Welcome to the experiment!\n\n{INSTRUCTIONS[task]}\n\n"
                       "Left arrow = FIRST longer, right arrow = SECOND longer.\n"
                       "You can answer as soon as the second one has ended.\n\nPress any key to start.")
 
     def rest(self, k, n):   # v1 wording and colours
+        if self.auto is not None:
+            print(f"[autotest] {self.task}: break {k} of {n}", flush=True)
         self._message(f"You can have a break now.\nYou are in block {k} out of {n}.\nPlease wait a few seconds.",
                       color="maroon", wait_keys=False, min_wait=S.BREAK_MIN_WAIT_S)
         self._message("Now you can press any key to continue!", color="teal")
@@ -185,6 +304,23 @@ class PsychoPyPresenter:
     def feedback(self, correct):
         self._message("Correct!" if correct else "Incorrect!", color="green" if correct else "red",
                       wait_keys=False, min_wait=S.FEEDBACK_DUR_S)
+
+    def wait_screen(self, text, ready, min_wait=0.0):
+        """Show `text` until ready() is true and at least min_wait s have passed (the fit runs meanwhile)."""
+        if self.auto is not None:
+            min_wait = min(min_wait, S.AUTOTEST_SCREEN_S)
+        self.text.text, self.text.color = text, "white"
+        clock = self.core.Clock()
+        while not (ready() and clock.getTime() >= min_wait):
+            self.text.draw()
+            self.win.flip()
+            self.core.wait(0.1)
+
+    def experimenter_check(self):
+        """'Please wait for the experimenter'; C continues, Escape ends. Returns True to continue."""
+        self._message("Please wait for the experimenter.\n\n(Experimenter: C = continue, Escape = end the session)",
+                      wait_keys=False)
+        return self._wait_keys(["c", S.QUIT_KEY]) == "c"
 
     def finish(self, completed):
         text = ("End of the experiment.\nThank you for your participation.\n\nPress any key to exit."
@@ -200,6 +336,25 @@ class PsychoPyPresenter:
             self.disk.fillColor = "black" if black else S.BACKGROUND_COLOR
             self.disk.draw()
 
+    def _auto_answer(self, spec, sched):
+        """Autotest: (key, time after the end of interval 2) from the simulated observer, or None."""
+        if self.auto is None:
+            return None
+        response = self.auto.run_trial(spec, sched, None)["response"]
+        rt = float(self.auto_rng.uniform(*S.AUTOTEST_RT_RANGE_S))
+        return ("left" if response == 1 else "right"), rt
+
+    def _poll_answer(self, keys, auto):
+        """A pressed answer key (or Escape), or the autotest answer once its time has come."""
+        pressed = self.kb.getKeys(keys, waitRelease=False)
+        if pressed:
+            return pressed[0]
+        if auto is not None:
+            t = self.kb.clock.getTime()                  # reset on the flip that ended interval 2
+            if t >= auto[1]:
+                return SimpleNamespace(name=auto[0], rt=t)
+        return None
+
     def run_trial(self, spec, sched, wave):
         win, kb = self.win, self.kb
         if S.PRE_TRIAL_WAIT_S:
@@ -209,28 +364,35 @@ class PsychoPyPresenter:
         snd = None
         if wave is not None:
             snd = self.sound.Sound(value=wave, sampleRate=S.SAMPLE_RATE, stereo=True,
-                                   hamming=S.HAMMING_WINDOW, volume=playback_volume())
+                                   hamming=S.HAMMING_WINDOW, volume=playback_volume(), speaker=self.speaker)
         black = np.zeros(sched.total + 1, dtype=bool)
         for v in sched.visual:
             if v is not None:
                 black[v[0]:v[1]] = True
         end2 = sched.second_interval_end()          # answers count from this frame's flip
         response_keys = list(S.RESPONSE_KEYS) + [S.QUIT_KEY]
+        auto = self._auto_answer(spec, sched)
+
+        # Sync flip, then frame 0 (noise onset) `lead_flips` refreshes later: the sound is
+        # scheduled for that flip, at least the output latency ahead. Predicting from a fresh
+        # flip keeps the error of the assumed frame period from adding up over seconds.
+        self._draw_frame(False)
+        win.flip()
+        predicted_flip0 = win.getFutureFlipTime() + (self.lead_flips - 1) * self.frame_period
+        flip0_ptb = win.getFutureFlipTime(clock="ptb") + (self.lead_flips - 1) * self.frame_period
+        if snd is not None:
+            snd.play(when=flip0_ptb + S.AUDIO_ONSET_OFFSET_S)
+        for _ in range(self.lead_flips - 1):
+            self._draw_frame(False)
+            win.flip()
 
         flips = np.full(sched.total + 1, np.nan)
-        predicted_flip0 = audio_when = flip_ptb = None
         key, stream_done_before_key = None, False
         kb.clearEvents()
         win.frameIntervals = []
         win.recordFrameIntervals = True
         for n in range(sched.total + 1):
             self._draw_frame(black[n])
-            if n == 0:
-                predicted_flip0 = win.getFutureFlipTime()
-                if snd is not None:
-                    flip_ptb = win.getFutureFlipTime(clock="ptb")
-                    audio_when = flip_ptb + S.AUDIO_ONSET_OFFSET_S
-                    snd.play(when=audio_when)
             if n == end2:                            # discard earlier keys, start the RT clock
                 win.callOnFlip(kb.clearEvents)
                 win.callOnFlip(kb.clock.reset)
@@ -240,11 +402,9 @@ class PsychoPyPresenter:
                     key = "quit"
                     break
             elif key is None:
-                keys = kb.getKeys(response_keys, waitRelease=False)
-                if keys:
-                    key = keys[0]
-                    if key.name == S.QUIT_KEY:
-                        break
+                key = self._poll_answer(response_keys, auto)
+                if key is not None and key.name == S.QUIT_KEY:
+                    break
         win.recordFrameIntervals = False
         intervals = np.asarray(win.frameIntervals[1:], dtype=float)
         if key == "quit" or (key is not None and key.name == S.QUIT_KEY):
@@ -260,27 +420,40 @@ class PsychoPyPresenter:
                 if self.task == "main":
                     self.audio_icon.draw()
                 win.flip()
-                keys = kb.getKeys(response_keys, waitRelease=False)
-                key = keys[0] if keys else None
+                key = self._poll_answer(response_keys, auto)
             if key.name == S.QUIT_KEY:
+                if snd is not None:
+                    snd.stop()
                 return dict(quit=True)
         else:
             self._draw_frame(False)                  # outline/fixation stays on into the next trial
             win.flip()
-        if snd is not None:
-            snd.stop()
+        audio = self._audio_check(snd, flips[0] + (flip0_ptb - predicted_flip0))
 
         recorded = {}
         for i, v in enumerate(sched.visual):
             if v is not None:
                 recorded[(i, "on")] = flips[v[0]] - flips[0]
                 recorded[(i, "off")] = flips[v[1]] - flips[0]
-        frame = 1.0 / self.fr
         return dict(
             quit=False, response=S.RESPONSE_KEYS[key.name], key=key.name, rt=key.rt, flips=recorded,
-            prompt_shown=stream_done_before_key,
-            audio_onset_minus_flip0_s=(audio_when - flip_ptb) if snd is not None else np.nan,
+            prompt_shown=stream_done_before_key, **audio,
             flip0_error_s=flips[0] - predicted_flip0,
-            n_dropped_frames=int(np.sum(intervals > 1.5 * frame)) if intervals.size else 0,
+            n_dropped_frames=int(np.sum(intervals > 1.5 * self.frame_period)) if intervals.size else 0,
             max_frame_interval_ms=float(intervals.max() * 1000) if intervals.size else np.nan,
         )
+
+    @staticmethod
+    def _audio_check(snd, flip0_ptb):
+        """PTB's estimate of when the sound reached the output, relative to the frame-0 flip, and
+        the stream's buffer underruns so far; then stop the sound (it has played in full)."""
+        if snd is None:
+            return {}
+        out = {}
+        try:
+            out["audio_start_minus_flip0_s"] = float(snd.statusDetailed["StartTime"]) - flip0_ptb
+            out["audio_xruns"] = int(snd.stream.status["XRuns"])
+        except (AttributeError, KeyError, TypeError):
+            pass
+        snd.stop()
+        return out

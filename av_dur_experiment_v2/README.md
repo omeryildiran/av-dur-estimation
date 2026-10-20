@@ -19,29 +19,79 @@ Choose the monitor profile, enter the participant ID (`P14`; `p14` or `14` also 
    - Before the first block, the launcher fits the cross-modal bias correction, shows the values and any warnings, and asks you to confirm.
    - Later blocks reuse that same bias file.
 
+### Blocks 1–3 in one session
+
+The **1-3 in one session** button (`python -m avdur.run_blocks --pid P14`) runs the unimodal auditory, unimodal visual and cross-modal blocks one after another in a single window. That is about 31 minutes of trials, or 40 with breaks. With **Practice** ticked, a short practice comes before each block.
+
+- **Saving and resuming:** each block is saved as its own session, exactly as from its own button. Blocks already completed are skipped, so after a stop, press the button again to run the rest.
+- **Live progress:** every 30 trials the terminal shows the trials done and time left, easy-trial accuracy, median RT, dropped frames and every staircase's current level.
+- **Fit after each block:** while the participant rests (at least `BLOCK_REST_MIN_S`, 10 s), the block is fitted in a separate process, so trial timing is unaffected. The terminal then shows σ, PSE and lapse rate per condition next to v1's range of σ, plus the visual correction for the cross-modal block. A plot is saved to `data/<PID>/fits/`, and all plots open at the end.
+- **Checks (`SCREENING_CHECKS`):**
+  - low-noise auditory: σ ≤ 0.6, and easy trials at least 75% correct;
+  - visual: σ ≤ 2.0, and easy trials at least 70% correct.
+  - These are about 1.5 times beyond v1's worst included participant.
+  - High noise and the cross-modal block are reported but not checked. In v1, 2 of 11 participants were at the σ bound (3.0) at high noise.
+  - The checks never look at the PSE or the bias.
+- **If a check fails:** the participant sees "Please wait for the experimenter". **C** continues; **Escape** ends the session. The fit, the warnings and your decision are saved in the block's metadata (`block_fit`, `screening`).
+
+When a session ends complete, its files are copied to `data_solid/` (see [Data layout](#data-layout)).
+
 Other launcher options:
 
 - **Practice** runs a short version of a task (easy trials with feedback). Practice data are saved separately and never analysed.
-- **Simulate** runs a task with a simulated observer and no window, to test the setup on any computer.
+- **Simulate** runs a task with a simulated observer and no window, to test the code on any computer.
+- **Autotest** runs a task on the real display and sound card with automatic answers. Data go to `data_test/`, and a timing report appears at the end. See [Autotest](#autotest).
 - **Text menu:** if Tk is missing, `python run_experiment.py --cli` gives a text menu.
 - **Single task:** one task can be started directly, e.g. `python -m avdur.run_task --task crossmodal --pid P14`.
 
+## Autotest
+
+The autotest checks that every trial runs fluently on the actual setup. Use it after any change to the code, the computer or the sound hardware, and before the first participant of a day (quick version).
+
+- **Whole experiment:** press **Autotest the whole experiment**, or run `python -m avdur.autotest --monitor lab_crt`. It runs the four tasks in order, including all three main blocks, with the ID `P99` unless you enter another.
+  - The full run takes about 2 hours.
+  - With **Quick** ticked (`--quick`), it runs only the first 30 trials of each task, about 7 minutes.
+- **One task:** tick **Autotest** and press that task's button.
+- **Answers:** they come from the simulated observer, so the staircases move as they would with a participant. Each answer is given at a random time 0.05–0.8 s after the second interval, so some arrive during the remaining noise and some after the prompt. Message screens continue by themselves.
+- **Main blocks:** they use a bias correction fitted from the autotest's own cross-modal run. In a quick run, which is too short to fit, they use fixed values (`AUTOTEST_BIAS_S`).
+- **Stopping:** press Escape during a trial.
+- **The report** is shown at the end and saved as `data_test/<PID>/<PID>_autotest_report_<date-time>.txt`. For every session it gives:
+  - trials run, and whether the session completed;
+  - dropped frames and the longest frame;
+  - how far the frame-0 flip fell from its prediction;
+  - each visual flash's recorded length against its intended frames;
+  - the sound onset relative to the frame-0 flip (PTB's estimate);
+  - sound buffer underruns.
+
+  It ends with a list of problems, or "no problems found". `python -m avdur.autotest --report-only --pid P99` reports on earlier autotest sessions.
+
 ## Before the first participant
 
-- **Monitor profile.** Each profile fixes the pixel geometry, the screen and the refresh rate at which every duration is computed:
+- **Monitor profile.** Each profile fixes the screen and the refresh rate at which every duration is computed:
 
   | Profile | Use | Screen | Refresh | Data folder |
   |---|---|---|---|---|
-  | `v1_profile` (default) | real participants on the lab display | 1 | 120 Hz | `data/` |
+  | `lab_crt` (default) | real participants: Sony GDM-5402 CRT at 800 × 800 | 1 | 120 Hz | `data/` |
   | `office_test` | trying it out on the Mac mini with the Dell S2722DZ (max 75 Hz) | 0 | 75 Hz | `data_test/` |
   | `laptop_test` | trying it out on a laptop set to a fixed 60 Hz | 0 | 60 Hz | `data_test/` |
 
-  All three keep v1's pixel geometry: v1 always used MacBook-Air numbers, which give a disk radius of 42.7 px. For a true 3° disk, add a profile with the display's measured size and viewing distance. Test profiles never write to `data/`, and the launcher marks them.
+  Test profiles never write to `data/`, and the launcher marks them.
+- **Stimulus size.** The disk (radius 42.7 px) and the fixation cross (22.3 px) are fixed in pixels, so they are exactly what v1 participants saw. Every v1 script converted degrees with MacBook-Air numbers, whatever the display.
+  - On the lab CRT the 800 × 800 picture is about 29 cm high, and the viewing distance is about 60 cm. The disk is therefore 3.1 cm, or 2.96° wide, which matches the paper's 3°.
+  - Each session logs this (`disk_diameter_deg`) from `picture_height_cm` and `viewing_distance_cm` in the profile.
+  - **Measure the picture width at 800 × 800** and enter it as `picture_width_cm`. The pixels are square only if the width is also about 29 cm. If the picture fills the tube's width (38–40 cm), the disk is an ellipse 1.3–1.4 times wider than tall.
 - **Display check.** At start, the presenter times 180 of its own flips and requires the profile's rate (±1 Hz) with no more than 5% irregular frames. On failure it shows what it measured, e.g. "this display runs at about 75 Hz, choose the 'office_test' profile". A test profile can continue past irregular frames with C; the lab profile cannot. This replaces PsychoPy's `getActualFrameRate`, which returns no value at all ("cannot be measured") when frames are not perfectly regular. v1 silently used whatever rate it measured.
 - **Failed starts.** A session that stops before its first trial (failed display or audio check) creates no files. It adds one line to `failed_starts.jsonl` in the data folder, with the measured refresh numbers.
+- **Sound card.** The experiment plays through the output chosen in System Settings > Sound, unless `AUDIO_OUTPUT_DEVICE` (or a profile's `audio_device`) names a device; part of the name is enough, e.g. `"Headphones"`.
+  - **The PsychoPy bug this replaces.** PsychoPy 2024.2 does not use the selected output when left to itself. It takes the first device in PortAudio's list. On the office Mac that is the Dell monitor's DisplayPort audio, which caused "Failed to start PortAudio audio device".
+  - **Opened at start.** The sound card is opened before the first trial. If it fails, or does not run at 48 kHz, the session stops with the list of available outputs, and no data files are written.
+  - **Logged.** The device, its output latency, and how many frames ahead each sound is scheduled are printed at start and saved with the session.
+  - **In the lab:** check the printed device name the first time.
 - **PsychToolbox.** The presenter needs PTB for both audio and the keyboard. The pip build of psychtoolbox 3.0.19 on macOS expects libusb and PortAudio to be loaded already. Without them it fails to load, PsychoPy falls back silently, and you get the `'KeyboardDevice' object has no attribute '_buffers'` error at exit. The presenter now preloads both libraries from the environment (the `psychopy310` env has them from conda-forge). If they are missing, it stops with an install hint.
 - **Audiovisual sync.** Measure it once with a photodiode on the disk and a microphone at the headphones. Put the audio-minus-video delay in `AUDIO_ONSET_OFFSET_S`.
-- **Tests.** Run `python tests/test_pipeline.py`. It runs two simulated participants through everything and checks the design, the timing, the bias recovery and the audio levels. `python tests/test_presenter_logic.py` checks the response handling of the PsychoPy presenter with fake window and keyboard objects.
+- **Tests.** Two scripts check the code without a display or sound card. Run the [autotest](#autotest) as well, on the real setup.
+  - `python tests/test_pipeline.py` runs two simulated participants through everything. It checks the design, the timing, the bias recovery, the audio levels, which sessions reach `data_solid/`, and the autotest report.
+  - `python tests/test_presenter_logic.py` checks the PsychoPy presenter with fake window, keyboard and sound objects. It covers response handling, sound scheduling, autotest answers and the choice of output device.
 
 ## What changed from v1, and why
 
@@ -51,10 +101,12 @@ Other launcher options:
 | Visual test mis-timed when it came second (code versions of 2–11 June 2025) | Same fix; the logged flip times are checked against the intended durations. |
 | Order drawn by a coin flip on each trial; make-up sessions unbalanced | Exactly balanced test-first and test-second trials within every staircase and condition ([avdur/design.py](avdur/design.py)). |
 | Two staircases shared by all conditions of a session; conditions in a fixed cycle | Two staircases per condition, as the paper describes; all trials shuffled. |
-| Cross-modal staircase `1U1D` moved away from threshold | Rule names can only express converging staircases; that slot is now a 1-down-1-up starting at the top. |
+| Cross-modal staircase `1U1D` moved away from threshold | Rule names can only express converging staircases; that slot is now a second 1-down-1-up. |
+| From 2 June 2025 every staircase started at the bottom of the range (in the main experiment, at the floor raised by the bias correction). Before that the unimodal and cross-modal staircases started at ±0.65; make-ups started near the middle. | Staircases come in pairs (2D1U/1D2U, 3D1U/1D3U, the two cross-modal 1D1U). In every condition, one of each pair starts at the ceiling and the other at the floor. Which one starts at the top is random per condition and balanced over the session. The start is logged in `stair_start` and in the session metadata. |
 | Bias correction fitted in a notebook and typed in by hand (dt's low-noise value was wrong; values left over from earlier participants; one make-up with the two noise levels swapped) | Fitted from the participant's own cross-modal data, confirmed in the launcher, saved as a file, logged in every row, and reused for all main blocks. |
 | Fit with lapse ≤ 0.2 and μ bounds that some fits hit | Lognormal fit with lapse ≤ 0.1, multi-start, a bootstrap CI and quality warnings. v1's linear method is reported alongside for comparison. |
-| Sound started from inside the frame loop, not scheduled | Sound scheduled on the trial's first flip: `play(when=win.getFutureFlipTime(clock='ptb'))`. |
+| Sound started from inside the frame loop, not scheduled | Each trial starts with a sync flip. The sound is then scheduled for the frame-0 flip, at least the sound card's output latency + 5 ms ahead, and PTB's estimate of the actual onset is logged against that flip. PsychoPy's flip prediction uses the measured frame period: PsychoPy assumes 60 Hz when its own refresh measurement fails. |
+| Output device left to PsychoPy (2024.2 takes the first device PortAudio lists) | The output chosen in System Settings, or a named device. It is opened and checked before the first trial, and the device is logged with each session. |
 | 0.1 s wait before every trial and after every stimulus; keys ignored until a prompt appeared | No fixed waits. Answers count from the end of the second interval (sound and flash both over), the rest of the noise still plays in full, and the prompt appears only if no answer came during the sound. At least 200 ms of noise always precedes any sound burst or flash, so participants keep their preparation time. Saves about 0.5 s per trial (about 7 min in a 924-trial block). |
 | Logged loop times, not flip times; unimodal visual timing not logged at all | Actual flip timestamps for every onset and offset in every task, plus dropped frames and the frame-0 flip error. |
 | Peak normalisation gave ±0.75 dB of random level jitter per trial; cross-modal tests 0.4–1.3 dB louder than main-experiment tests | Fixed gains calibrated to v1's average level and SNR (`AUDIO_LEVEL_MODE = "fixed"`; `"peak"` reproduces v1 exactly). |
@@ -86,16 +138,21 @@ data/<PID>/<task>/<same name>.json                          session metadata: se
 data/<PID>/bias/<PID>_bias_<date-time>.json                 confirmed cross-modal corrections (+ v1-method values)
 data/<PID>/practice/...                                     practice runs
 data/failed_starts.jsonl                                    sessions that stopped before the first trial
-data_test/ ...                                              same layout, runs with a test monitor profile
+data_solid/ ...                                             same layout: copies of complete real sessions + bias files
+data_test/ ...                                              same layout, test monitor profiles and autotests
 data_simulated/ ...                                         same layout, simulated observers (tests, Simulate)
 ```
+
+`data/` keeps every real run as recorded. `data_solid/` receives a copy of a session when it ends complete. Practice runs, stopped sessions, test displays, autotests and simulations are never copied. Confirmed bias files are copied too.
+
+The analysis reads `data_solid/`. To exclude a session, delete its copy there; the original stays in `data/`.
 
 The column names follow v1 (`testDurS`, `audNoise`, `order`, `responses`, `conflictDur`, `VisualPSE`, `recordedDurVisualTest`, …). One column changed meaning: `response_rts` is measured from the end of the second interval; in v1 it was measured from the prompt. New columns:
 - `prompt_shown` (1 if the answer came only after the sound ended) and `answer_allowed_from_s`;
 - the frame schedule (`audio_interval1`, `visual_interval1`, …);
 - intended visual durations;
-- `chose_test`;
-- `n_dropped_frames`, `flip0_error_s` and `audio_onset_minus_flip0_s`;
+- `chose_test` and `stair_start` (`floor` or `ceiling`);
+- `n_dropped_frames`, `flip0_error_s`, `audio_start_minus_flip0_s` (PTB's estimate of the sound onset minus the frame-0 flip) and `audio_xruns` (sound buffer underruns);
 - the audio seed and level mode.
 
 An interrupted session keeps its trials; its metadata says `completed: false`, and the analysis uses completed sessions only.
@@ -108,4 +165,4 @@ The notebooks in [analysis/](analysis/) use the repository's `plot_style.py`:
 - `02_crossmodal_bias.ipynb`: cross-modal fits, the corrections with CIs and the v1 method, and a check that the main blocks used the confirmed values.
 - `03_main_experiment_check.ipynb`: order balance, timing and centring checks, PSE vs. conflict per noise level, and PSE by presentation order.
 
-Until real data exist, they show the simulated participants written by `tests/test_pipeline.py` to `data_simulated/`. `tests/calibrate_audio_levels.py` reproduces the fixed-level audio constants.
+They read `data_solid/`. Until real data exist, they show the simulated participants written by `tests/test_pipeline.py` to `data_simulated/`. `tests/calibrate_audio_levels.py` reproduces the fixed-level audio constants.

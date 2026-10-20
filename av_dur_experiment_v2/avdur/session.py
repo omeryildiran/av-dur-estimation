@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import datetime as dt
 import math
+import statistics
+import time
 
 import numpy as np
 
@@ -23,16 +25,22 @@ NEEDS_AUDIO = {"unimodal_auditory", "crossmodal", "main"}
 
 class Session:
     def __init__(self, task, pid, presenter, block=None, practice=False, bias=None, bias_file=None,
-                 seed=None, root=None, monitor=S.DEFAULT_MONITOR, simulate=False):
+                 seed=None, root=None, monitor=S.DEFAULT_MONITOR, simulate=False, autotest=False,
+                 max_trials=None, solid_root=None, close_at_end=True, verbose=False):
         if task == "main" and bias is None:
             raise ValueError("The main experiment needs a confirmed bias file (run the cross-modal task first).")
         if task == "main" and block not in S.TASKS["main"]["blocks"]:
             raise ValueError(f"Main-experiment block must be one of {list(S.TASKS['main']['blocks'])}, got {block!r}")
+        if max_trials and not (simulate or autotest):
+            raise ValueError("A trial limit is for simulated runs and autotests only.")
         self.task, self.pid, self.presenter = task, pid, presenter
         self.block, self.practice, self.bias, self.bias_file = block, practice, bias, bias_file
         self.seed = seed if seed is not None else int(dt.datetime.now().timestamp() * 1000) % 2**31
-        self.root = root or storage.root_for(simulate, monitor)
-        self.monitor, self.simulate = monitor, simulate
+        self.root = root or storage.root_for(simulate, monitor, autotest)
+        self.monitor, self.simulate, self.autotest = monitor, simulate, autotest
+        self.max_trials, self.solid_root = max_trials, solid_root
+        self.close_at_end, self.verbose = close_at_end, verbose     # False: more blocks follow in this window
+        self.meta = self.csv_path = self.json_path = None
         self.cfg = S.TASKS[task]
         self.fr = S.MONITOR_PROFILES[monitor]["frame_rate_hz"]     # every duration is computed at this rate
 
@@ -58,7 +66,10 @@ class Session:
         first = design.crossmodal_first_order(self.pid) if self.task == "crossmodal" else 1
         trials = design.build_trials(self.task, rng, self.block, self.practice, first)
         meta = storage.base_metadata(self.pid, self.task, self.block, self.practice, self.seed,
-                                     self.monitor, self.simulate)
+                                     self.monitor, self.simulate, self.autotest)
+        if self.max_trials and self.max_trials < len(trials):
+            meta.update(trial_limit=self.max_trials, n_trials_full=len(trials))
+            trials = trials[:self.max_trials]
         meta.update(n_trials_planned=len(trials), bias_file=self.bias_file, frame_rate_nominal_hz=self.fr,
                     testing_only_profile=bool(S.MONITOR_PROFILES[self.monitor].get("testing_only")),
                     corrections_applied_s={str(n): self.correction_s(n)[0] for n in self.cfg["noise_levels"]
@@ -70,29 +81,37 @@ class Session:
             storage.log_failed_start(self.root, meta, err)
             raise
         csv_path, json_path = storage.session_paths(self.pid, self.task, self.block, self.practice, self.root)
+        self.meta, self.csv_path, self.json_path = meta, csv_path, json_path
         meta["csv"] = csv_path.name
         storage.write_json(json_path, meta)
-        stairs = {(n, c, r): Staircase(r, self.floor(n), **S.STAIRCASE)
-                  for n, c in design.conditions(self.task, self.block) for r in self.cfg["staircases"]}
+        starts = design.staircase_starts(self.task, rng, self.block)
+        stairs = {key: Staircase(key[2], self.floor(key[0]), start=start, **S.STAIRCASE)
+                  for key, start in starts.items()}
+        meta["staircase_starts"] = {f"{n}/{c}/{r}": start for (n, c, r), start in starts.items()}
+        storage.write_json(json_path, meta)
         audio = AudioGenerator() if (self.task in NEEDS_AUDIO and self.presenter.needs_audio) else None
         writer = storage.TrialWriter(csv_path)
-        n_done, quit_ = 0, False
+        n_done, quit_, rows, t0 = 0, False, [], None
         try:
             self.presenter.instructions(self.task, self.practice)
             prev_block = None
             for i, spec in enumerate(trials):
                 if i and i % S.BREAK_EVERY_N_TRIALS == 0:
+                    if self.verbose:
+                        print(self.progress(rows, len(trials), t0, stairs), flush=True)
                     self.presenter.rest(i // S.BREAK_EVERY_N_TRIALS,
                                         math.ceil(len(trials) / S.BREAK_EVERY_N_TRIALS))
                 if spec.order_block is not None and spec.order_block != prev_block:
                     n_blocks = max(t.order_block for t in trials) + 1
                     self.presenter.order_cue(spec.order, spec.order_block, n_blocks)
                     prev_block = spec.order_block
+                t0 = t0 or time.monotonic()
                 row = self._trial(i, spec, stairs, rng, audio)
                 if row is None:
                     quit_ = True
                     break
                 writer.write(row)
+                rows.append(row)
                 n_done += 1
                 if self.practice:
                     self.presenter.feedback(bool(row["is_correct"]))
@@ -101,8 +120,44 @@ class Session:
             meta.update(n_trials_done=n_done, completed=(n_done == len(trials) and not quit_),
                         quit_by_user=quit_, finished=dt.datetime.now().isoformat(timespec="seconds"))
             storage.write_json(json_path, meta)
-            self.presenter.finish(meta["completed"])
+            self.save_meta()
+            if self.verbose and rows:
+                print(self.progress(rows, len(trials), t0, stairs), flush=True)
+            if self.close_at_end or not meta["completed"]:
+                self.presenter.finish(meta["completed"])
         return meta["completed"]
+
+    def save_meta(self):
+        """Write the session metadata (and refresh the data_solid/ copy of a complete real session)."""
+        storage.write_json(self.json_path, self.meta)
+        if self.solid_root is not False and storage.is_solid(self.meta, self.root):
+            storage.copy_to_solid([self.csv_path, self.json_path], self.pid, self.task, self.solid_root)
+
+    def progress(self, rows, n_total, t0, stairs):
+        """Terminal lines: trials and time, easy-trial accuracy, RT, dropped frames, staircase levels."""
+        n = len(rows)
+        elapsed = time.monotonic() - t0 if t0 else 0.0
+        left = elapsed / n * (n_total - n) if n else float("nan")
+        name = self.task + (f" {self.block}" if self.block else "") + (" practice" if self.practice else "")
+        lines = [f"[{self.pid} {name}] {n}/{n_total} trials, {elapsed / 60:.1f} min, about {left / 60:.0f} min left"]
+        easy = {}
+        for r in rows:
+            if r["kind"] == "lapse":
+                key = "visual" if self.task == "unimodal_visual" else f"noise {r['audNoise']:g}"
+                easy.setdefault(key, []).append(r["is_correct"])
+        rts = [r["response_rts"] for r in rows if r["response_rts"] == r["response_rts"]]
+        dropped = sum(int(r["n_dropped_frames"]) for r in rows if r["n_dropped_frames"] == r["n_dropped_frames"])
+        lines.append("    easy trials correct: " + (", ".join(f"{k} {sum(v)}/{len(v)}" for k, v in easy.items()) or "none yet")
+                     + (f"; median RT {statistics.median(rts):.2f} s" if rts else "") + f"; dropped frames {dropped}")
+        if self.task == "main":
+            levels = [st.level for st in stairs.values()]
+            lines.append(f"    staircase levels: {min(levels):+.2f} to {max(levels):+.2f}")
+        else:
+            by_noise = {}
+            for (noise, _, rule), st in stairs.items():
+                by_noise.setdefault("visual" if noise is None else f"noise {noise:g}", []).append(f"{rule} {st.level:+.2f}")
+            lines.append("    staircases: " + " | ".join(f"{k}: {' '.join(v)}" for k, v in by_noise.items()))
+        return "\n".join(lines)
 
     def _trial(self, i, spec, stairs, rng, audio):
         stair = stairs.get((spec.noise, spec.conflict, spec.staircase)) if spec.kind == "staircase" else None
@@ -163,7 +218,8 @@ class Session:
             audio_seed=seed if wave is not None else "",
             audio_level_mode=audio.mode if audio is not None else "",
             audio_gain_reduction_db=audio.last_gain_reduction_db if audio is not None else np.nan,
-            audio_onset_minus_flip0_s=result.get("audio_onset_minus_flip0_s", np.nan),
+            audio_start_minus_flip0_s=result.get("audio_start_minus_flip0_s", np.nan),
+            audio_xruns=result.get("audio_xruns", np.nan),
             flip0_error_s=result.get("flip0_error_s", np.nan),
             n_dropped_frames=result.get("n_dropped_frames", np.nan),
             max_frame_interval_ms=result.get("max_frame_interval_ms", np.nan),
@@ -172,6 +228,7 @@ class Session:
             prompt_shown=int(bool(result.get("prompt_shown", True))),
             answer_allowed_from_s=sched.second_interval_end() / self.fr,
             chose_test=int(chose_test), is_correct=int(is_correct),
+            stair_start=stair.start if stair else "",
             stair_num_reversal=stair.reversals if stair else "", stair_is_reversal=stair.is_reversal if stair else "",
             wall_time=dt.datetime.now().isoformat(timespec="milliseconds"),
         )

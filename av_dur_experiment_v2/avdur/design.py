@@ -75,6 +75,25 @@ def conditions(task, block=None):
     return list(itertools.product(cfg["noise_levels"], conflicts))
 
 
+def staircase_starts(task, rng, block=None):
+    """{(noise, conflict, rule): "floor" | "ceiling"}: the staircases are taken in pairs, and in
+    each condition one of each pair starts at each end. Which one starts at the ceiling is
+    random per condition, with each rule at the ceiling in half of the conditions."""
+    rules = S.TASKS[task]["staircases"]
+    if len(rules) % 2:
+        raise ValueError(f"{task}: staircases must come in pairs, got {rules}")
+    conds = conditions(task, block)
+    starts = {}
+    for k in range(0, len(rules), 2):
+        n = len(conds)
+        first_on_top = [True] * (n // 2) + [False] * (n // 2) + ([bool(rng.random() < 0.5)] if n % 2 else [])
+        rng.shuffle(first_on_top)
+        for (noise, conflict), top in zip(conds, first_on_top):
+            starts[(noise, conflict, rules[k])] = "ceiling" if top else "floor"
+            starts[(noise, conflict, rules[k + 1])] = "floor" if top else "ceiling"
+    return starts
+
+
 def build_trials(task, rng, block=None, practice=False, first_order=1):
     cfg = S.TASKS[task]
     slots = []

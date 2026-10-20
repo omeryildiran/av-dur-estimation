@@ -7,21 +7,28 @@ Each task runs in its own process (python -m avdur.run_task ...). For the main
 experiment the launcher picks the participant's next counterbalanced block, fits the
 cross-modal bias correction from their cross-modal data, and asks you to confirm it;
 later blocks reuse the bias file of the first block.
+
+Autotest runs a task (or, with its own button, the whole experiment) on the real display
+and sound card with automatic answers, saves to data_test/, and reports the timing.
 """
 
 from __future__ import annotations
 
+import datetime as dt
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 import experiment_settings as S  # noqa: E402
+from avdur import autotest as autotest_mod  # noqa: E402
 from avdur import bias as bias_mod  # noqa: E402
 from avdur import design, storage  # noqa: E402
+from avdur.run_task import EXIT_STOPPED  # noqa: E402
 
 
 # ── logic shared by the window and the text menu ──────────────────────────────
@@ -32,7 +39,8 @@ def status_text(raw_pid, root=None):
     except ValueError as err:
         return str(err)
     st = storage.participant_status(pid, root)
-    tag = {storage.SIM_ROOT: "[SIMULATED DATA, data_simulated/] ", storage.TEST_ROOT: "[TEST DISPLAY, data_test/] "}
+    tag = {storage.SIM_ROOT: "[SIMULATED DATA, data_simulated/] ",
+           storage.TEST_ROOT: "[TEST RUNS: test display or autotest, data_test/] "}
     lines = [tag.get(Path(root) if root else None, "") + f"Participant {pid}" + (f"   (main block order: {' -> '.join(st['block_order'])})" if st["block_order"] else "")]
     for i, task in enumerate(storage.TASK_ORDER, 1):
         done = st[task]
@@ -60,13 +68,27 @@ def main_bias_file(pid, root=None):
     return None
 
 
-def task_command(task, pid, monitor, practice, simulate, block=None, bias_file=None):
+def combined_command(pid, monitor, practice, simulate, autotest=False, quick=False):
+    """Unimodal auditory, unimodal visual and cross-modal blocks in one window (avdur.run_blocks)."""
+    cmd = [sys.executable, "-m", "avdur.run_blocks", "--pid", pid, "--monitor", monitor,
+           "--data-root", str(storage.root_for(simulate, monitor, autotest))]
+    cmd += ["--practice"] * practice + ["--simulate"] * simulate + ["--autotest"] * autotest
+    if autotest and quick:
+        cmd += ["--max-trials", str(S.AUTOTEST_QUICK_TRIALS)]
+    return cmd
+
+
+def task_command(task, pid, monitor, practice, simulate, block=None, bias_file=None, autotest=False, quick=False):
     cmd = [sys.executable, "-m", "avdur.run_task", "--task", task, "--pid", pid, "--monitor", monitor,
-           "--data-root", str(storage.root_for(simulate, monitor))]
+           "--data-root", str(storage.root_for(simulate, monitor, autotest))]
     if practice:
         cmd.append("--practice")
     if simulate:
         cmd.append("--simulate")
+    if autotest:
+        cmd.append("--autotest")
+        if quick:
+            cmd += ["--max-trials", str(S.AUTOTEST_QUICK_TRIALS)]
     if block:
         cmd += ["--block", block]
     if bias_file:
@@ -84,6 +106,7 @@ def run_window():
     root.title("Audiovisual duration experiment v2")
     pid, monitor = tk.StringVar(), tk.StringVar(value=S.DEFAULT_MONITOR)
     block, practice, simulate = tk.StringVar(value="auto"), tk.BooleanVar(), tk.BooleanVar()
+    autotest, quick = tk.BooleanVar(), tk.BooleanVar(value=True)
 
     frm = ttk.Frame(root, padding=16)
     frm.grid(sticky="nsew")
@@ -98,11 +121,14 @@ def run_window():
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
         row=3, column=0, columnspan=2, sticky="w")
     ttk.Checkbutton(frm, text="Simulate (no window; saves to data_simulated/)", variable=simulate,
-                    command=lambda: refresh()).grid(
-        row=4, column=0, columnspan=2, sticky="w")
+                    command=lambda: refresh()).grid(row=4, column=0, columnspan=2, sticky="w")
+    ttk.Checkbutton(frm, text="Autotest: automatic answers on this display and sound card (saves to data_test/)",
+                    variable=autotest, command=lambda: refresh()).grid(row=5, column=0, columnspan=2, sticky="w")
+    ttk.Checkbutton(frm, text=f"Quick autotest: first {S.AUTOTEST_QUICK_TRIALS} trials of each task",
+                    variable=quick).grid(row=6, column=0, columnspan=2, sticky="w", padx=(24, 0))
 
     status = tk.Text(frm, width=92, height=11, font=("Menlo", 11), state="disabled")
-    status.grid(row=11, column=0, columnspan=2, pady=(12, 0))
+    status.grid(row=15, column=0, columnspan=2, pady=(12, 0))
 
     def refresh(*_):
         status.configure(state="normal")
@@ -111,7 +137,16 @@ def run_window():
         status.configure(state="disabled")
 
     def data_root():
-        return storage.root_for(simulate.get(), monitor.get())
+        return storage.root_for(simulate.get(), monitor.get(), autotest.get())
+
+    def show_text(title, text):
+        win = tk.Toplevel(root)
+        win.title(title)
+        box = tk.Text(win, width=120, height=min(40, text.count("\n") + 2), font=("Menlo", 11))
+        box.insert("end", text)
+        box.configure(state="disabled")
+        box.pack(fill="both", expand=True, padx=8, pady=8)
+        ttk.Button(win, text="Close", command=win.destroy).pack(pady=(0, 8))
 
     def confirm_bias(p):
         existing = main_bias_file(p, data_root())
@@ -133,6 +168,10 @@ def run_window():
         return str(bias_mod.save(p, est, confirmed_by="launcher", root=data_root()))
 
     def run(task):
+        if simulate.get() and autotest.get():
+            messagebox.showerror("Simulate or autotest", "Simulate runs without a window, Autotest with the real "
+                                                         "window and sound card. Tick only one.")
+            return
         try:
             p = design.normalize_pid(pid.get())
         except ValueError as err:
@@ -145,20 +184,91 @@ def run_window():
             if b is None:
                 messagebox.showinfo("Main experiment", "All three blocks are done. Choose a block to run another.")
                 return
-            bias_file = confirm_bias(p)
+            bias_file = (str(autotest_mod.bias_file(p, quick.get(), data_root())) if autotest.get()
+                         else confirm_bias(p))
             if bias_file is None:
                 return
-        cmd = task_command(task, p, monitor.get(), practice.get(), simulate.get(), b, bias_file)
+        cmd = task_command(task, p, monitor.get(), practice.get(), simulate.get(), b, bias_file,
+                           autotest.get(), quick.get())
+        since = dt.datetime.now().isoformat(timespec="seconds")
         root.withdraw()
         try:
             code = subprocess.run(cmd, cwd=ROOT).returncode
         finally:
             root.deiconify()
             refresh()
-        if code != 0:
-            messagebox.showwarning("Session not completed",
-                                   "The session stopped before the end. Trials run so far are saved; "
-                                   "see the terminal for details.")
+        if code == EXIT_STOPPED:
+            messagebox.showwarning("Session not completed", "The session was stopped with Escape. "
+                                                            "Trials run so far are saved.")
+        elif code != 0:
+            messagebox.showwarning("Session not completed", "The session stopped with an error; see the terminal. "
+                                                            "Trials run so far are saved.")
+        if autotest.get():
+            show_text("Autotest report", autotest_mod.report(p, since=since))
+
+    def run_combined():
+        if simulate.get() and autotest.get():
+            messagebox.showerror("Simulate or autotest", "Tick only one of Simulate and Autotest.")
+            return
+        try:
+            p = design.normalize_pid(pid.get())
+        except ValueError as err:
+            messagebox.showerror("Participant ID", str(err))
+            return
+        from avdur.run_blocks import blocks_to_run
+        todo = blocks_to_run(p, data_root(), rerun_all=autotest.get())
+        if not todo:
+            messagebox.showinfo("Combined session", "Blocks 1-3 are all done for this participant.")
+            return
+        names = ", ".join(S.TASKS[t]["label"].split(" (")[0] for t in todo)
+        if not messagebox.askokcancel("Combined session", f"Run {names} in one session"
+                                      + (" (each with a practice first)" if practice.get() else "") +
+                                      "?\n\nFits and checks appear in the terminal after each block."):
+            return
+        root.withdraw()
+        try:
+            code = subprocess.run(combined_command(p, monitor.get(), practice.get(), simulate.get(),
+                                                   autotest.get(), quick.get()), cwd=ROOT).returncode
+        finally:
+            root.deiconify()
+            refresh()
+        if code == EXIT_STOPPED:
+            messagebox.showwarning("Session not completed", "The session was stopped (Escape or the experimenter). "
+                                                            "Completed blocks are saved; press the button again to "
+                                                            "run the remaining blocks.")
+        elif code != 0:
+            messagebox.showwarning("Session not completed", "The session stopped with an error; see the terminal.")
+
+    def run_autotest_all():
+        try:
+            p = design.normalize_pid(pid.get().strip() or autotest_mod.DEFAULT_PID)
+        except ValueError as err:
+            messagebox.showerror("Participant ID", str(err))
+            return
+        length = (f"the first {S.AUTOTEST_QUICK_TRIALS} trials of every task (about 7 minutes)" if quick.get()
+                  else "every task in full, all three main blocks (about 2 hours)")
+        if not messagebox.askokcancel("Autotest the whole experiment",
+                                      f"Run {length} with automatic answers as {p} on the '{monitor.get()}' "
+                                      "profile?\n\nData go to data_test/. Press Escape during a trial to stop."):
+            return
+        cmd = [sys.executable, "-m", "avdur.autotest", "--pid", p, "--monitor", monitor.get()]
+        if quick.get():
+            cmd.append("--quick")
+        t0 = time.time()
+        root.withdraw()
+        try:
+            subprocess.run(cmd, cwd=ROOT)
+        finally:
+            root.deiconify()
+            pid.set(p)
+            autotest.set(True)
+            refresh()
+        reports = [r for r in sorted((storage.TEST_ROOT / p).glob(f"{p}_autotest_report_*.txt"))
+                   if r.stat().st_mtime >= t0]
+        if reports:
+            show_text(f"Autotest report: {reports[-1].name}", reports[-1].read_text())
+        else:
+            messagebox.showwarning("Autotest", "The autotest ended without a report; see the terminal.")
 
     def show_bias():
         try:
@@ -170,9 +280,13 @@ def run_window():
 
     for i, task in enumerate(storage.TASK_ORDER):
         ttk.Button(frm, text=f"{i + 1}.  {S.TASKS[task]['label']}", width=48,
-                   command=lambda t=task: run(t)).grid(row=5 + i, column=0, columnspan=2, pady=3)
-    ttk.Button(frm, text="Preview cross-modal bias fit", command=show_bias).grid(row=9, column=0, pady=(8, 0), sticky="w")
-    ttk.Button(frm, text="Quit", command=root.destroy).grid(row=9, column=1, pady=(8, 0), sticky="e")
+                   command=lambda t=task: run(t)).grid(row=7 + i, column=0, columnspan=2, pady=3)
+    ttk.Button(frm, text="1-3 in one session (fits after each block)", width=48, command=run_combined).grid(
+        row=11, column=0, columnspan=2, pady=(10, 3))
+    ttk.Button(frm, text="Autotest the whole experiment", width=48, command=run_autotest_all).grid(
+        row=12, column=0, columnspan=2, pady=3)
+    ttk.Button(frm, text="Preview cross-modal bias fit", command=show_bias).grid(row=13, column=0, pady=(8, 0), sticky="w")
+    ttk.Button(frm, text="Quit", command=root.destroy).grid(row=13, column=1, pady=(8, 0), sticky="e")
     entry.bind("<KeyRelease>", refresh)
     refresh()
     entry.focus()
@@ -188,9 +302,17 @@ def run_cli():
     root = storage.root_for(sim, mon)
     while True:
         print("\n" + status_text(p, root))
-        choice = input("\nRun 1-4 (add 'p' for practice, e.g. '4p'), 'b' bias preview, 'q' quit: ").strip()
+        choice = input("\nRun 1-4 (add 'p' for practice, e.g. '4p'), 'c' blocks 1-3 in one session ('cp' with "
+                       "practice), 'a' autotest everything ('aq' quick), 'b' bias preview, 'q' quit: ").strip()
         if choice == "q":
             return
+        if choice in ("c", "cp"):
+            subprocess.run(combined_command(p, mon, choice == "cp", sim), cwd=ROOT)
+            continue
+        if choice in ("a", "aq"):
+            text, out = autotest_mod.run(p, mon, quick=(choice == "aq"))
+            print("\n" + text + f"\n\nSaved to {out}")
+            continue
         if choice == "b":
             print(bias_mod.summary_text(bias_mod.estimate_for_participant(p, root)))
             continue

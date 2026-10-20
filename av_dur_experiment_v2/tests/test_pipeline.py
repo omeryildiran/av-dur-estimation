@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -191,6 +192,23 @@ def check_staircase_rules():
         levels.append(round(s.level, 4))
     # up 0.16, up 0.16, down (reversal -> step 0.08), up (reversal -> 0.04), down 0.04, down 0.04
     assert levels == [-0.74, -0.58, -0.58, -0.66, -0.62, -0.62, -0.66, -0.66, -0.7], levels
+    top = Staircase("1D2U", floor=-0.9, start="ceiling")
+    assert top.level == 0.9 and round(Staircase("1D1U_b", floor=-0.9).level, 2) == -0.9
+    top.update(True)                                   # 1D: one "test longer" steps down from the ceiling
+    assert round(top.level, 2) == 0.74
+    rng = np.random.default_rng(0)
+    for task in S.TASKS:
+        for block in (S.TASKS["main"]["blocks"] if task == "main" else [None]):
+            starts = design.staircase_starts(task, rng, block)
+            rules = S.TASKS[task]["staircases"]
+            for noise, conflict in design.conditions(task, block):
+                for k in range(0, len(rules), 2):
+                    pair = {starts[(noise, conflict, rules[k])], starts[(noise, conflict, rules[k + 1])]}
+                    assert pair == {"floor", "ceiling"}, (task, block, rules[k])
+            n_cond = len(design.conditions(task, block))
+            for r in rules:
+                n_top = sum(v == "ceiling" for (_, _, rule), v in starts.items() if rule == r)
+                assert abs(n_top - n_cond / 2) <= 0.5, (task, block, r, n_top, n_cond)
     try:
         Staircase("1U1D", floor=-0.9)
     except ValueError:
@@ -198,10 +216,26 @@ def check_staircase_rules():
     raise AssertionError("v1's diverging '1U1D' rule must be rejected")
 
 
+def check_staircase_starts(root, pid):
+    """Every staircase's first trial is at its logged starting end; pairs start at opposite ends."""
+    for task in storage.TASK_ORDER:
+        d = storage.load_trials(task, pid, root)
+        d = d[d.kind == "staircase"].sort_values("trial_num")
+        first = d.groupby(["session_file", "condition", "current_stair"]).first()
+        assert (first.stair_start.isin(["floor", "ceiling"])).all()
+        top = first[first.stair_start == "ceiling"]
+        assert np.allclose(top.delta_dur_percents, S.STAIRCASE["ceiling"]), task
+        bottom = first[first.stair_start == "floor"].delta_dur_percents
+        assert (bottom < -0.5).all(), (task, bottom.max())
+        per_cond = first.groupby(["session_file", "condition"]).stair_start.apply(lambda x: (x == "ceiling").sum())
+        assert (per_cond == len(S.TASKS[task]["staircases"]) // 2).all(), task
+
+
 def check_display_profiles(root):
-    assert storage.root_for(False, "v1_profile") == storage.DATA_ROOT
+    assert storage.root_for(False, "lab_crt") == storage.DATA_ROOT
     assert storage.root_for(False, "office_test") == storage.TEST_ROOT
     assert storage.root_for(True, "office_test") == storage.SIM_ROOT
+    assert storage.root_for(False, "lab_crt", autotest=True) == storage.TEST_ROOT
     assert Session("crossmodal", "SIM75", SimulatedPresenter(5), seed=5, root=root, monitor="office_test",
                    simulate=True).run()
     d = storage.load_trials("crossmodal", "SIM75", root)
@@ -236,6 +270,91 @@ def check_failed_start_and_ids(root):
             pass
 
 
+class QuittingPresenter(SimulatedPresenter):
+    def run_trial(self, spec, sched, wave):
+        self.n = getattr(self, "n", 0) + 1
+        return dict(quit=True) if self.n > 3 else super().run_trial(spec, sched, wave)
+
+
+class DroppingPresenter(SimulatedPresenter):
+    """Every 5th trial drops a frame, which lengthens that trial's last flash by one frame."""
+    def run_trial(self, spec, sched, wave):
+        r = super().run_trial(spec, sched, wave)
+        self.n = getattr(self, "n", 0) + 1
+        if self.n % 5 == 0:
+            r["n_dropped_frames"] = 1
+            last = max(k for k in r["flips"] if k[1] == "off")
+            r["flips"][last] += 1 / sched.frame_rate
+        return r
+
+
+def check_solid(tmp):
+    """Only complete, full sessions of real participants (and their bias files) go to data_solid/."""
+    real, solid = tmp / "data", tmp / "data_solid"
+
+    def run(pid, presenter=None, **kw):
+        return Session("unimodal_visual", pid, presenter or SimulatedPresenter(1), seed=1, root=real,
+                       solid_root=solid, **kw).run()
+
+    assert run("SIM80")                                        # complete, real: copied
+    run("SIM81", practice=True)                                 # practice
+    run("SIM82", autotest=True, max_trials=10)                  # autotest, trial limit
+    run("SIM83", QuittingPresenter(1))                          # stopped early
+    run("SIM84", simulate=True)                                 # simulated
+    run("SIM85", monitor="office_test")                         # test display
+    copied = sorted({f.parent.parent.name for f in solid.glob("*/*/*")})
+    assert copied == ["SIM80"], copied
+    assert len(list((solid / "SIM80" / "unimodal_visual").iterdir())) == 2      # csv + json
+    bias_mod.save("SIM80", bias_mod.fixed({0.1: 0.1, 1.2: -0.05}, "test"), confirmed_by="test", root=real,
+                  solid_root=solid)
+    assert len(list((solid / "SIM80" / "bias").glob("SIM80_bias_*.json"))) == 1
+    assert not storage.is_real_root(storage.SIM_ROOT) and not storage.is_real_root(storage.TEST_ROOT)
+    assert storage.is_real_root(None) and storage.is_real_root(storage.DATA_ROOT)
+    try:
+        Session("unimodal_visual", "SIM86", SimulatedPresenter(1), root=real, max_trials=5)
+        raise AssertionError("a trial limit must be refused for real sessions")
+    except ValueError:
+        pass
+
+
+def check_autotest_report(root):
+    """The autotest report: clean sessions pass; dropped frames and mistimed flashes are reported."""
+    from avdur import autotest
+    for task in ("unimodal_auditory", "unimodal_visual", "crossmodal"):
+        assert Session(task, "SIM70", SimulatedPresenter(7), seed=7, root=root, simulate=True, autotest=True,
+                       max_trials=20).run()
+    text = autotest.report("SIM70", root=root)
+    assert "no problems found" in text and text.count("20/20 trials, completed") == 3, text
+    assert Session("unimodal_visual", "SIM71", DroppingPresenter(7), seed=7, root=root, simulate=True,
+                   autotest=True, max_trials=20).run()
+    text = autotest.report("SIM71", root=root)
+    assert "dropped frames in 4 trials" in text and "4 visual flashes not of their intended length" in text, text
+    return text
+
+
+def check_combined_session(tmp):
+    """Three blocks in one run: fits and decisions saved; a failed check stops when the experimenter ends."""
+    from avdur import run_blocks
+    ok, results = run_blocks.run("P50", SimulatedPresenter(3), tmp, simulate=True, background_fits=False, log=lambda *_: None)
+    assert ok and [r["task"] for r in results] == list(S.COMBINED_SESSION_TASKS)
+    for task in S.COMBINED_SESSION_TASKS:
+        (meta,) = storage.sessions("P50", task, tmp)
+        assert meta["screening"]["decision"] == "no warnings" and Path(meta["block_fit"]["plot"]).exists(), meta
+        assert meta["block_fit"]["conditions"], task
+    xm = storage.sessions("P50", "crossmodal", tmp)[0]["block_fit"]["conditions"]
+    assert all("correction_s" in c for c in xm)
+    assert run_blocks.run("P50", SimulatedPresenter(3), tmp, simulate=True, background_fits=False,
+                          log=lambda *_: None) == (True, []), "completed blocks are skipped"
+
+    sloppy = SimulatedPresenter(4, dict(sigma_a={0.1: 1.5, 1.2: 2.0}, lapse=0.4))
+    sloppy.experimenter_continues = False
+    ok, results = run_blocks.run("P51", sloppy, tmp, simulate=True, background_fits=False, log=lambda *_: None)
+    assert not ok and len(results) == 1 and results[0]["warnings"], results
+    (meta,) = storage.sessions("P51", "unimodal_auditory", tmp)
+    assert meta["completed"] and meta["screening"]["decision"] == "ended by the experimenter"
+    assert not storage.sessions("P51", "unimodal_visual", tmp, completed_only=False), "no block after the end"
+
+
 def run_all(root=SIM_ROOT):
     if root.exists():
         shutil.rmtree(root)
@@ -246,6 +365,7 @@ def run_all(root=SIM_ROOT):
         est, o = simulate_participant(pid, seed, obs, root)
         check_counts(root, pid)
         check_order_balance(root, pid)
+        check_staircase_starts(root, pid)
         check_crossmodal_blocks(root, pid)
         check_randomised(root, pid)
         worst = check_main_alignment(root, pid)
@@ -256,6 +376,10 @@ def run_all(root=SIM_ROOT):
                             warnings=est["warnings"], worst_centre_offset_frames=worst, shortest_lead_s=lead)
     check_display_profiles(root)
     check_failed_start_and_ids(root)
+    with tempfile.TemporaryDirectory() as tmp:          # throwaway participants, kept out of data_simulated/
+        check_solid(Path(tmp))
+        check_autotest_report(Path(tmp))
+        check_combined_session(Path(tmp))
     snr = check_audio()
     return summary, snr
 

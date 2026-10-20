@@ -80,14 +80,24 @@ def estimate_for_participant(pid, root=None, n_boot=None):
     return est
 
 
-def save(pid, est, confirmed_by, root=None):
+def save(pid, est, confirmed_by, root=None, solid_root=None):
+    """Save a confirmed correction; for real participants also copy it to data_solid/."""
     folder = Path(root or storage.DATA_ROOT) / pid / "bias"
     folder.mkdir(parents=True, exist_ok=True)
     payload = dict(est, participant=pid, confirmed_by=confirmed_by,
                    confirmed_at=dt.datetime.now().isoformat(timespec="seconds"))
     path = folder / f"{pid}_bias_{storage.timestamp()}.json"
     storage.write_json(path, payload)
+    if storage.is_real_root(root) and solid_root is not False:
+        storage.copy_to_solid([path], pid, "bias", solid_root)
     return path
+
+
+def fixed(values, note):
+    """A bias payload with given corrections instead of a fit (autotests only)."""
+    return dict(method="fixed", n_trials=0, source_sessions=[], converged=True, at_bound=[],
+                per_noise={str(float(n)): dict(correction_s=float(v)) for n, v in values.items()},
+                warnings=[note])
 
 
 def correction_for(bias, noise):
