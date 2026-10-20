@@ -51,6 +51,9 @@ AUDIO_LATENCY_MODE = 3              # v1 set prefs.general (ignored by PsychoPy)
 AUDIO_OUTPUT_DEVICE = None          # None: the Mac's current output (System Settings > Sound);
                                     # or (part of) a device name, e.g. "External Headphones"
 AUDIO_SCHEDULE_MARGIN_S = 0.005     # v2: sound scheduled at least output latency + this before frame 0
+SYNC_FLIPS = 2                      # v2: flips before scheduling frame 0. The first flip after a pause can
+                                    # return off the refresh (seen on macOS: frame 0 up to 11.8 ms early on
+                                    # 6% of trials, always the first trial after a message screen)
 VOLUME = 0.11                       # v1
 AUDIO_ONSET_OFFSET_S = 0.0          # v2: measured audio-minus-video delay (photodiode + microphone)
 NOISE_LEVELS = (0.1, 1.2)           # v1: background noise relative to the signal peak

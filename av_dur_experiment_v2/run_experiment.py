@@ -127,7 +127,8 @@ def run_window():
     ttk.Checkbutton(frm, text=f"Quick autotest: first {S.AUTOTEST_QUICK_TRIALS} trials of each task",
                     variable=quick).grid(row=6, column=0, columnspan=2, sticky="w", padx=(24, 0))
 
-    status = tk.Text(frm, width=92, height=11, font=("Menlo", 11), state="disabled")
+    mono = ("Menlo", 11) if sys.platform == "darwin" else ("Consolas", 10)
+    status = tk.Text(frm, width=92, height=11, font=mono, state="disabled")
     status.grid(row=15, column=0, columnspan=2, pady=(12, 0))
 
     def refresh(*_):
@@ -142,7 +143,7 @@ def run_window():
     def show_text(title, text):
         win = tk.Toplevel(root)
         win.title(title)
-        box = tk.Text(win, width=120, height=min(40, text.count("\n") + 2), font=("Menlo", 11))
+        box = tk.Text(win, width=120, height=min(40, text.count("\n") + 2), font=mono)
         box.insert("end", text)
         box.configure(state="disabled")
         box.pack(fill="both", expand=True, padx=8, pady=8)

@@ -87,6 +87,9 @@ The autotest checks that every trial runs fluently on the actual setup. Use it a
   - **Opened at start.** The sound card is opened before the first trial. If it fails, or does not run at 48 kHz, the session stops with the list of available outputs, and no data files are written.
   - **Logged.** The device, its output latency, and how many frames ahead each sound is scheduled are printed at start and saved with the session.
   - **In the lab:** check the printed device name the first time.
+  - **On the Windows lab PC:**
+    - In Control Panel > Sound > (headphone output) > Properties, set Advanced > Default Format to 48000 Hz and turn off audio enhancements. With aggressive low latency, PTB uses WASAPI, which needs the device at the experiment's rate; the session stops at start if the rate differs.
+    - The libusb/PortAudio preloading is macOS-only; the Windows psychtoolbox wheel ships its own libraries.
 - **PsychToolbox.** The presenter needs PTB for both audio and the keyboard. The pip build of psychtoolbox 3.0.19 on macOS expects libusb and PortAudio to be loaded already. Without them it fails to load, PsychoPy falls back silently, and you get the `'KeyboardDevice' object has no attribute '_buffers'` error at exit. The presenter now preloads both libraries from the environment (the `psychopy310` env has them from conda-forge). If they are missing, it stops with an install hint.
 - **Audiovisual sync.** Measure it once with a photodiode on the disk and a microphone at the headphones. Put the audio-minus-video delay in `AUDIO_ONSET_OFFSET_S`.
 - **Tests.** Two scripts check the code without a display or sound card. Run the [autotest](#autotest) as well, on the real setup.

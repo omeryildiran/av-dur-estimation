@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import multiprocessing
+import os
 import subprocess
 import sys
 import time
@@ -112,8 +113,12 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
         if executor:
             executor.shutdown(wait=False, cancel_futures=True)
     plots = [r["plot"] for r in results if r.get("plot")]
-    if open_plots and plots and sys.platform == "darwin":
-        subprocess.run(["open", *plots], check=False)
+    if open_plots and plots:
+        for path in plots:
+            if sys.platform == "win32":
+                os.startfile(path)                      # noqa: S606 (Windows: default image viewer)
+            elif sys.platform == "darwin":
+                subprocess.run(["open", path], check=False)
     return True, results
 
 

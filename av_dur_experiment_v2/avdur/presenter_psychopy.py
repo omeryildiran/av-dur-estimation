@@ -376,8 +376,9 @@ class PsychoPyPresenter:
         # Sync flip, then frame 0 (noise onset) `lead_flips` refreshes later: the sound is
         # scheduled for that flip, at least the output latency ahead. Predicting from a fresh
         # flip keeps the error of the assumed frame period from adding up over seconds.
-        self._draw_frame(False)
-        win.flip()
+        for _ in range(S.SYNC_FLIPS):
+            self._draw_frame(False)
+            win.flip()
         predicted_flip0 = win.getFutureFlipTime() + (self.lead_flips - 1) * self.frame_period
         flip0_ptb = win.getFutureFlipTime(clock="ptb") + (self.lead_flips - 1) * self.frame_period
         if snd is not None:

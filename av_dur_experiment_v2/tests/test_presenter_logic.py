@@ -133,10 +133,11 @@ def schedule(task, order=2):
 
 
 def times(task, lead=1):
-    """Flip times of the end of interval 2 and of the last frame: a sync flip, `lead` - 1 idle
-    flips, then frame 0, so frame n flips at (n + 1 + lead) frames."""
+    """Flip times of the end of interval 2 and of the last frame: SYNC_FLIPS sync flips, `lead` - 1
+    idle flips, then frame 0, so frame n flips at (n + SYNC_FLIPS + lead) frames."""
     sched = schedule(task)
-    return (sched.second_interval_end() + 1 + lead) * FRAME, (sched.total + 1 + lead) * FRAME
+    k = S.SYNC_FLIPS + lead
+    return (sched.second_interval_end() + k) * FRAME, (sched.total + k) * FRAME
 
 
 def spec(task):
@@ -155,7 +156,7 @@ def check_sound_and_flip_timing():
     for lead in (1, 2, 3):
         r, _, _ = run("main", [(10.0, "left")], lead=lead)
         assert abs(r["flip0_error_s"]) < 1e-9, (lead, r["flip0_error_s"])
-        assert abs(Sound.last.when - (1 + lead) * FRAME) < 1e-9, "sound scheduled on the frame-0 flip"
+        assert abs(Sound.last.when - (S.SYNC_FLIPS + lead) * FRAME) < 1e-9, "sound scheduled on the frame-0 flip"
         assert abs(r["audio_start_minus_flip0_s"]) < 1e-9 and r["audio_xruns"] == 0 and Sound.last.stopped
         assert Sound.last.kwargs["speaker"] is None or isinstance(Sound.last.kwargs["speaker"], int)
 

@@ -133,11 +133,16 @@ def session_summary(meta, df):
         a = df["audio_start_minus_flip0_s"].dropna()
         xruns = int(df["audio_xruns"].max()) if df["audio_xruns"].notna().any() else 0     # since the stream opened
         clipped = int((df["audio_gain_reduction_db"].fillna(0) > 0).sum())
-        lines.append(f"    sound onset minus frame-0 flip (PTB estimate): median {_ms(a.median())}, "
+        late = (a + df.loc[a.index, "flip0_error_s"]).abs().max()     # sound start vs its scheduled time
+        lines.append(f"    sound start vs its schedule: max {1000 * late:.1f} ms; "
+                     f"sound onset minus frame-0 flip (PTB estimate): median {_ms(a.median())}, "
                      f"range {_ms(a.min())} to {_ms(a.max())}; buffer underruns: {xruns}; "
                      f"level reduced against clipping: {clipped} trials")
+        if late > 0.001:
+            problems.append(f"{name}: sound started up to {1000 * late:.1f} ms off its schedule (sound card latency)")
         if abs(a.median()) > 0.001 or a.abs().max() > half_frame:
-            problems.append(f"{name}: sound onset not aligned with frame 0 (median {_ms(a.median())}, "
+            cause = " because frame 0 flipped off its prediction" if late <= 0.001 else ""
+            problems.append(f"{name}: sound onset not aligned with frame 0{cause} (median {_ms(a.median())}, "
                             f"max {1000 * a.abs().max():.1f} ms)")
         if xruns:
             problems.append(f"{name}: {xruns} sound buffer underruns (audible glitches)")
