@@ -117,3 +117,73 @@ def summary_text(result):
     if result.get("plot"):
         lines.append(f"   plot: {result['plot']}")
     return "\n".join(lines)
+
+
+# ── main-experiment block: PSE against conflict ─────────────────────────────────
+
+def main_block_fit(csv_path, plot_dir=None):
+    """PSE shift per noise level and conflict, the slope of PSE on conflict (the weight given to
+    the visual duration), and a plot. Pooled over presentation orders, lognormal, lapse <= 0.1."""
+    df = pd.read_csv(csv_path)
+    df = df[df["responses"].isin([1, 2]) & (df["kind"] != "practice")].copy()
+    df["conflict_ms"] = (1000 * df["conflict_nominal"]).round().astype(int)
+    result = dict(task="main", csv=str(csv_path), n_trials=int(len(df)), block=str(df["block"].iloc[0]) if len(df) else "",
+                  conditions=[], slopes={}, warnings=[], plot=None)
+    for noise, d in df.groupby("audNoise"):
+        fit = pm.fit(d, "conflict_ms", "lognormal", lapse_max=S.BIAS["lapse_max"])["params"]
+        std_ms = 1000 * float(d["standardDur"].iloc[0])
+        rows = [dict(noise=float(noise), conflict_ms=int(p.condition), pse_shift_ms=std_ms * (np.exp(p.mu) - 1),
+                     sigma=float(p.sigma), n=int(p.n)) for _, p in fit.iterrows()]
+        result["conditions"] += rows
+        if len(rows) > 1:
+            x = np.array([r["conflict_ms"] for r in rows]); y = np.array([r["pse_shift_ms"] for r in rows])
+            result["slopes"][float(noise)] = float(np.polyfit(x, y, 1)[0])
+    if plot_dir is not None and result["conditions"]:
+        result["plot"] = str(plot_main(result, Path(plot_dir), Path(csv_path).stem))
+    return result
+
+
+def plot_main(result, folder, stem):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    folder.mkdir(parents=True, exist_ok=True)
+    t = pd.DataFrame(result["conditions"])
+    fig, ax = plt.subplots(figsize=(6.5, 4.8))
+    lim = max(300, t.conflict_ms.abs().max() + 50)
+    ax.plot([-lim, lim], [-lim, lim], ":", color="0.6", label="visual capture (slope 1)")
+    ax.axhline(0, color="0.85", lw=1)
+    for noise, g in t.groupby("noise"):
+        c = {0.1: "tab:blue", 1.2: "tab:red"}.get(noise, "black")
+        g = g.sort_values("conflict_ms")
+        ax.plot(g.conflict_ms, g.pse_shift_ms, "o-", color=c,
+                label=f"noise {noise:g}: slope {result['slopes'].get(noise, np.nan):.2f}")
+    ax.set(xlabel="Conflict: visual − auditory (ms)", ylabel="PSE shift (ms)", xlim=(-lim, lim),
+           title=f"Main experiment {result['block']}  ({result['n_trials']} trials)")
+    ax.legend(frameon=False, fontsize=9, loc="upper left")
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    fig.tight_layout()
+    path = folder / f"{stem}_fit.png"
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+    return path
+
+
+def main_summary_text(result):
+    lines = [f"── Main experiment {result['block']} fit ({result['n_trials']} trials) ──"]
+    for noise in sorted({c["noise"] for c in result["conditions"]}):
+        cells = [c for c in result["conditions"] if c["noise"] == noise]
+        shifts = ", ".join(f"{c['conflict_ms']:+d}: {c['pse_shift_ms']:+.0f}" for c in sorted(cells, key=lambda c: c["conflict_ms"]))
+        lines.append(f"   noise {noise:g}: PSE shift (ms) by conflict  {shifts};  slope {result['slopes'].get(noise, float('nan')):.2f}")
+    if result.get("plot"):
+        lines.append(f"   plot: {result['plot']}")
+    return "\n".join(lines)
+
+
+def fit_after_session(task, csv_path, plot_dir):
+    """Fit and plot a finished session from its own button; returns the terminal text."""
+    if task == "main":
+        return main_summary_text(main_block_fit(csv_path, plot_dir))
+    return summary_text(block_fit(task, csv_path, plot_dir))

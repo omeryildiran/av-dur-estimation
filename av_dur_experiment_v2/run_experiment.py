@@ -28,6 +28,7 @@ import experiment_settings as S  # noqa: E402
 from avdur import autotest as autotest_mod  # noqa: E402
 from avdur import bias as bias_mod  # noqa: E402
 from avdur import design, storage  # noqa: E402
+from avdur import screens as screens_mod  # noqa: E402
 from avdur.run_task import EXIT_STOPPED  # noqa: E402
 
 
@@ -68,19 +69,22 @@ def main_bias_file(pid, root=None):
     return None
 
 
-def combined_command(pid, monitor, practice, simulate, autotest=False, quick=False):
+def combined_command(pid, monitor, practice, simulate, autotest=False, quick=False, screen=None):
     """Unimodal auditory, unimodal visual and cross-modal blocks in one window (avdur.run_blocks)."""
     cmd = [sys.executable, "-m", "avdur.run_blocks", "--pid", pid, "--monitor", monitor,
            "--data-root", str(storage.root_for(simulate, monitor, autotest))]
+    cmd += ["--screen", str(screen)] if screen is not None else []
     cmd += ["--practice"] * practice + ["--simulate"] * simulate + ["--autotest"] * autotest
     if autotest and quick:
         cmd += ["--max-trials", str(S.AUTOTEST_QUICK_TRIALS)]
     return cmd
 
 
-def task_command(task, pid, monitor, practice, simulate, block=None, bias_file=None, autotest=False, quick=False):
+def task_command(task, pid, monitor, practice, simulate, block=None, bias_file=None, autotest=False, quick=False,
+                 screen=None):
     cmd = [sys.executable, "-m", "avdur.run_task", "--task", task, "--pid", pid, "--monitor", monitor,
            "--data-root", str(storage.root_for(simulate, monitor, autotest))]
+    cmd += ["--screen", str(screen)] if screen is not None else []
     if practice:
         cmd.append("--practice")
     if simulate:
@@ -113,9 +117,55 @@ def run_window():
     ttk.Label(frm, text="Participant ID (e.g. P14)").grid(row=0, column=0, sticky="w")
     entry = ttk.Entry(frm, textvariable=pid, width=14)
     entry.grid(row=0, column=1, sticky="w")
-    ttk.Label(frm, text="Monitor profile").grid(row=1, column=0, sticky="w")
-    ttk.OptionMenu(frm, monitor, S.DEFAULT_MONITOR, *S.MONITOR_PROFILES,
-                   command=lambda _: refresh()).grid(row=1, column=1, sticky="w")
+    ttk.Label(frm, text="Monitor profile / screen").grid(row=1, column=0, sticky="w")
+    display_row = ttk.Frame(frm)
+    display_row.grid(row=1, column=1, sticky="w")
+    ttk.OptionMenu(display_row, monitor, S.DEFAULT_MONITOR, *S.MONITOR_PROFILES,
+                   command=lambda _: refresh()).pack(side="left")
+    found_screens = screens_mod.list_screens()
+    screen_choices = ["auto (by the profile)"] + [screens_mod.describe(sc) for sc in found_screens]
+    screen = tk.StringVar(value=screen_choices[0])
+    ttk.OptionMenu(display_row, screen, screen_choices[0], *screen_choices).pack(side="left", padx=(8, 0))
+
+    def identify_screens():
+        """A big screen number on every screen for 3 s (PsychoPy's numbering)."""
+        for sc in found_screens:
+            tag = tk.Toplevel(root)
+            tag.overrideredirect(True)
+            tag.geometry(f"420x260+{sc['x'] + 60}+{sc['y'] + 60}")
+            tk.Label(tag, text=f"Screen {sc['index']}\n{sc['width']} x {sc['height']}", font=("Arial", 48, "bold"),
+                     bg="yellow").pack(fill="both", expand=True)
+            tag.after(3000, tag.destroy)
+
+    ttk.Button(display_row, text="Identify screens", command=identify_screens).pack(side="left", padx=(8, 0))
+
+    def chosen_screen():
+        return None if screen.get().startswith("auto") else int(screen.get().split()[1].rstrip(":"))
+
+    viewers = {}
+
+    def start_viewer(p, folder_root):
+        """Fit viewer on a screen other than the participant's; False if there is no second screen."""
+        try:
+            shown = chosen_screen()
+            if shown is None:
+                shown = screens_mod.choose(S.MONITOR_PROFILES[monitor.get()], None, found_screens)[0]
+        except Exception:
+            return False
+        others = [sc for sc in found_screens if sc["index"] != shown]
+        if not others:
+            return False
+        folder = Path(folder_root) / p / "fits"
+        old = viewers.get(str(folder))
+        if old is not None and old.poll() is None:              # already open for this participant
+            return True
+        sc = others[0]
+        viewers[str(folder)] = subprocess.Popen(
+            [sys.executable, "-m", "avdur.fit_viewer", "--folder", str(folder), "--title", f"Fits {p}",
+             "--x", str(sc["x"] + 40), "--y", str(sc["y"] + 40),
+             "--width", str(min(900, sc["width"] - 80)), "--height", str(min(720, sc["height"] - 120))], cwd=ROOT)
+        time.sleep(1.0)                                         # let it open before the experiment window
+        return True
     ttk.Label(frm, text="Main-experiment block").grid(row=2, column=0, sticky="w")
     ttk.OptionMenu(frm, block, "auto", "auto", *S.TASKS["main"]["blocks"]).grid(row=2, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
@@ -190,8 +240,10 @@ def run_window():
             if bias_file is None:
                 return
         cmd = task_command(task, p, monitor.get(), practice.get(), simulate.get(), b, bias_file,
-                           autotest.get(), quick.get())
+                           autotest.get(), quick.get(), chosen_screen())
         since = dt.datetime.now().isoformat(timespec="seconds")
+        if not simulate.get():
+            start_viewer(p, data_root())
         root.withdraw()
         try:
             code = subprocess.run(cmd, cwd=ROOT).returncode
@@ -226,10 +278,13 @@ def run_window():
                                       + (" (each with a practice first)" if practice.get() else "") +
                                       "?\n\nFits and checks appear in the terminal after each block."):
             return
+        cmd = combined_command(p, monitor.get(), practice.get(), simulate.get(), autotest.get(), quick.get(),
+                               chosen_screen())
+        if not simulate.get() and start_viewer(p, data_root()):
+            cmd.append("--no-open-plots")
         root.withdraw()
         try:
-            code = subprocess.run(combined_command(p, monitor.get(), practice.get(), simulate.get(),
-                                                   autotest.get(), quick.get()), cwd=ROOT).returncode
+            code = subprocess.run(cmd, cwd=ROOT).returncode
         finally:
             root.deiconify()
             refresh()
@@ -253,9 +308,12 @@ def run_window():
                                       "profile?\n\nData go to data_test/. Press Escape during a trial to stop."):
             return
         cmd = [sys.executable, "-m", "avdur.autotest", "--pid", p, "--monitor", monitor.get()]
+        if chosen_screen() is not None:
+            cmd += ["--screen", str(chosen_screen())]
         if quick.get():
             cmd.append("--quick")
         t0 = time.time()
+        start_viewer(p, storage.TEST_ROOT)
         root.withdraw()
         try:
             subprocess.run(cmd, cwd=ROOT)

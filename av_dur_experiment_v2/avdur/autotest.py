@@ -33,9 +33,11 @@ from avdur.run_task import EXIT_STOPPED  # noqa: E402
 DEFAULT_PID = "P99"
 
 
-def task_command(task, pid, monitor, max_trials=None, block=None, bias_file=None, root=None):
+def task_command(task, pid, monitor, max_trials=None, block=None, bias_file=None, root=None, screen=None):
     cmd = [sys.executable, "-m", "avdur.run_task", "--task", task, "--pid", pid, "--monitor", monitor,
            "--autotest", "--data-root", str(root or storage.TEST_ROOT)]
+    if screen is not None:
+        cmd += ["--screen", str(screen)]
     if max_trials:
         cmd += ["--max-trials", str(max_trials)]
     if block:
@@ -59,7 +61,7 @@ def bias_file(pid, quick=False, root=None):
     return bias_mod.save(pid, est, confirmed_by="autotest", root=root)
 
 
-def run(pid=DEFAULT_PID, monitor=S.DEFAULT_MONITOR, quick=False, root=None):
+def run(pid=DEFAULT_PID, monitor=S.DEFAULT_MONITOR, quick=False, root=None, screen=None):
     """Run every task (all three main blocks) and return (report text, report file)."""
     root = Path(root or storage.TEST_ROOT)
     since = dt.datetime.now().isoformat(timespec="seconds")
@@ -70,7 +72,7 @@ def run(pid=DEFAULT_PID, monitor=S.DEFAULT_MONITOR, quick=False, root=None):
         if task == "main" and path is None:
             path = bias_file(pid, quick, root)
         print(f"[autotest] starting {task}{' ' + block if block else ''}", flush=True)
-        code = subprocess.run(task_command(task, pid, monitor, max_trials, block, path, root), cwd=ROOT).returncode
+        code = subprocess.run(task_command(task, pid, monitor, max_trials, block, path, root, screen), cwd=ROOT).returncode
         if code == EXIT_STOPPED:
             print("[autotest] stopped with Escape.", flush=True)
             break
@@ -198,12 +200,13 @@ def main(argv=None):
     ap.add_argument("--monitor", default=S.DEFAULT_MONITOR, choices=list(S.MONITOR_PROFILES))
     ap.add_argument("--quick", action="store_true", help=f"first {S.AUTOTEST_QUICK_TRIALS} trials of each task only")
     ap.add_argument("--report-only", action="store_true", help="only report on earlier autotest sessions")
+    ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
     args = ap.parse_args(argv)
     pid = design.normalize_pid(args.pid)
     if args.report_only:
         print(report(pid))
         return 0
-    text, out = run(pid, args.monitor, args.quick)
+    text, out = run(pid, args.monitor, args.quick, screen=args.screen)
     print("\n" + text + f"\n\nSaved to {out}")
     return 0 if text.rstrip().endswith("no problems found.") else 1
 

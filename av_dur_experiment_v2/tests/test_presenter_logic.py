@@ -211,6 +211,29 @@ def check_block_screens():
     assert p.start("crossmodal", meta) == 120.0 and meta["audio_device"] == "X" and p.task == "crossmodal"
 
 
+def check_screen_choice():
+    """The participant's screen: the launcher's choice, else the one with the profile's resolution."""
+    from avdur import screens
+    lab = S.MONITOR_PROFILES["lab_crt"]
+    two = [dict(index=0, width=800, height=800, x=0, y=0), dict(index=1, width=1920, height=1080, x=800, y=0)]
+    assert screens.choose(lab, screens=two)[0] == 0, "the 800 x 800 CRT wins over the profile's screen number"
+    assert screens.choose(lab, screens=list(reversed(two)))[0] == 0
+    assert screens.choose(lab, override=1, screens=two)[0] == 1, "the launcher's choice wins"
+    assert screens.choose(lab, screens=[])[0] == lab["screen"], "no screen list: the profile's number"
+    assert screens.choose(S.MONITOR_PROFILES["office_test"], screens=two)[0] == 0
+    for bad in ([dict(index=0, width=2560, height=1440, x=0, y=0), dict(index=1, width=1920, height=1080, x=2560, y=0)],):
+        try:
+            screens.choose(lab, screens=bad)
+            raise AssertionError("no 800 x 800 screen must stop the session")
+        except RuntimeError as err:
+            assert "800 x 800" in str(err) and "screen 1: 1920 x 1080" in str(err)
+    try:
+        screens.choose(lab, override=5, screens=two)
+        raise AssertionError("a screen that does not exist")
+    except ValueError:
+        pass
+
+
 def check_device_choice_and_geometry():
     devices = [dict(DeviceName="DELL S2722DZ", DeviceIndex=0.0), dict(DeviceName="Mac mini Speakers", DeviceIndex=1.0),
                dict(DeviceName="External Headphones", DeviceIndex=3.0), dict(DeviceName="Speakers", DeviceIndex=4.0)]
@@ -268,6 +291,7 @@ def main():
     check_autotest()
     check_device_choice_and_geometry()
     check_block_screens()
+    check_screen_choice()
     print("Presenter response logic, sound scheduling, autotest, device choice and display check: all checks passed.")
 
 

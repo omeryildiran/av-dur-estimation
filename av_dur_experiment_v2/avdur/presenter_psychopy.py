@@ -98,7 +98,7 @@ def audio_problem_text(err, wanted, devices):
     target = repr(wanted) if wanted is not None else "the Mac's current output (System Settings > Sound)"
     return (f"The sound card could not be started: {err}\n\n"
             f"Requested output: {target}.\nOutput devices found: {names}.\n\n"
-            "Check that the headphones or audio interface are connected and not in use by another program "
+            "Check that the speakers or audio interface are connected and not in use by another program "
             "(the line starting with PTB-ERROR above gives PortAudio's reason). Choose another output in "
             "System Settings > Sound, or set AUDIO_OUTPUT_DEVICE (or the profile's audio_device) in "
             "experiment_settings.py to part of a device name.")
@@ -107,13 +107,14 @@ def audio_problem_text(err, wanted, devices):
 class PsychoPyPresenter:
     needs_audio = True
 
-    def __init__(self, monitor_profile=S.DEFAULT_MONITOR, autotest_seed=None):
+    def __init__(self, monitor_profile=S.DEFAULT_MONITOR, autotest_seed=None, screen=None):
         self.profile_name = monitor_profile
         self.profile = S.MONITOR_PROFILES[monitor_profile]
         self.fr = self.profile["frame_rate_hz"]
         self.frame_period = 1.0 / self.fr           # replaced by the measured period at start
         self.task, self.speaker, self.lead_flips = None, None, 1
         self.win, self.setup_meta, self.measured = None, {}, None
+        self.screen_override = screen
         self.auto = self.auto_rng = None
         if autotest_seed is not None:
             from avdur.presenter_sim import SimulatedPresenter
@@ -159,10 +160,16 @@ class PsychoPyPresenter:
         if self.auto is not None:
             self.auto.task = task
         p = self.profile
+        from avdur import screens
+        found = screens.list_screens()
+        screen, how = screens.choose(p, self.screen_override, found)
+        meta.update(screen_index=screen, screen_choice=how, screens_found=[screens.describe(s) for s in found])
+        print(f"Display: screen {screen} ({how}); screens found: "
+              + ("; ".join(screens.describe(s) for s in found) or "unknown"), flush=True)
         mon = monitors.Monitor("avdur_v2", width=p.get("picture_width_cm") or p.get("picture_height_cm") or 30.0,
                                distance=p.get("viewing_distance_cm") or 57.0)
         mon.setSizePix((p["window_px"], p["window_px"]))
-        self.win = visual.Window(size=(p["window_px"], p["window_px"]), fullscr=p["fullscreen"], screen=p["screen"],
+        self.win = visual.Window(size=(p["window_px"], p["window_px"]), fullscr=p["fullscreen"], screen=screen,
                                  monitor=mon, units="pix", color=S.BACKGROUND_COLOR, colorSpace="rgb",
                                  waitBlanking=True, allowGUI=False)
         self.win.mouseVisible = False

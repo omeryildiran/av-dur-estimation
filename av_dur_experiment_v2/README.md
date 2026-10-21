@@ -33,6 +33,7 @@ The **1-3 in one session** button (`python -m avdur.run_blocks --pid P14`) runs 
   - These are about 1.5 times beyond v1's worst included participant.
   - High noise and the cross-modal block are reported but not checked. In v1, 2 of 11 participants were at the σ bound (3.0) at high noise.
   - The checks never look at the PSE or the bias.
+- **Fit viewer:** if the PC has a second screen, the launcher opens a "Fits" window on the screen that isn't the participant's, before the experiment window. It shows each new plot as soon as it is saved: after every block of the combined session, after any single task, and after each main block, where it plots PSE shift against conflict per noise level with the slope. It updates without taking the focus from the experiment window, and the arrow buttons go back to older plots. With a single screen, the plots open at the end instead.
 - **If a check fails:** the participant sees "Please wait for the experimenter". **C** continues; **Escape** ends the session. The fit, the warnings and your decision are saved in the block's metadata (`block_fit`, `screening`).
 
 When a session ends complete, its files are copied to `data_solid/` (see [Data layout](#data-layout)).
@@ -77,22 +78,30 @@ The autotest checks that every trial runs fluently on the actual setup. Use it a
   | `laptop_test` | trying it out on a laptop set to a fixed 60 Hz | 0 | 60 Hz | `data_test/` |
 
   Test profiles never write to `data/`, and the launcher marks them.
+- **Which screen.** The lab PC has two monitors: the CRT for the participant and one for the experimenter.
+  - **How it's found:** PsychoPy's screen numbers need not match Windows' display numbers, so `lab_crt` finds the CRT by its resolution (`screen_px = (800, 800)`) wherever it is in the list. If no screen is at 800 × 800, the session stops at start and lists the screens it found.
+  - **Choosing by hand:** the launcher's Screen menu (next to the profile) overrides this, and so does `--screen N` on the command line. **Identify screens** shows each screen's number on that monitor for 3 s.
+  - **Logged:** the chosen screen and how it was chosen are printed at start and saved with the session (`screen_index`, `screen_choice`, `screens_found`).
 - **Stimulus size.** The disk (radius 42.7 px) and the fixation cross (22.3 px) are fixed in pixels, so they are exactly what v1 participants saw. Every v1 script converted degrees with MacBook-Air numbers, whatever the display.
   - On the lab CRT the 800 × 800 picture is about 29 cm high, and the viewing distance is about 60 cm. The disk is therefore 3.1 cm, or 2.96° wide, which matches the paper's 3°.
   - Each session logs this (`disk_diameter_deg`) from `picture_height_cm` and `viewing_distance_cm` in the profile.
   - **Measure the picture width at 800 × 800** and enter it as `picture_width_cm`. The pixels are square only if the width is also about 29 cm. If the picture fills the tube's width (38–40 cm), the disk is an ellipse 1.3–1.4 times wider than tall.
 - **Display check.** At start, the presenter times 180 of its own flips and requires the profile's rate (±1 Hz) with no more than 5% irregular frames. On failure it shows what it measured, e.g. "this display runs at about 75 Hz, choose the 'office_test' profile". A test profile can continue past irregular frames with C; the lab profile cannot. This replaces PsychoPy's `getActualFrameRate`, which returns no value at all ("cannot be measured") when frames are not perfectly regular. v1 silently used whatever rate it measured.
 - **Failed starts.** A session that stops before its first trial (failed display or audio check) creates no files. It adds one line to `failed_starts.jsonl` in the data folder, with the measured refresh numbers.
-- **Sound card.** The experiment plays through the output chosen in System Settings > Sound, unless `AUDIO_OUTPUT_DEVICE` (or a profile's `audio_device`) names a device; part of the name is enough, e.g. `"Headphones"`.
+- **Sound card.** The experiment plays through the output chosen in System Settings > Sound, unless `AUDIO_OUTPUT_DEVICE` (or a profile's `audio_device`) names a device; part of the name is enough, e.g. `"Speakers (Realtek"`.
   - **The PsychoPy bug this replaces.** PsychoPy 2024.2 does not use the selected output when left to itself. It takes the first device in PortAudio's list. On the office Mac that is the Dell monitor's DisplayPort audio, which caused "Failed to start PortAudio audio device".
   - **Opened at start.** The sound card is opened before the first trial. If it fails, or does not run at 48 kHz, the session stops with the list of available outputs, and no data files are written.
   - **Logged.** The device, its output latency, and how many frames ahead each sound is scheduled are printed at start and saved with the session.
-  - **In the lab:** check the printed device name the first time.
+  - **In the lab:** check the printed device name the first time. The lab autotest of 20 Oct 2026 played through "Headphones (Realtek(R) Audio)". Realtek often gives that name to the front jack whatever is plugged into it, so check that the two speakers are connected to that jack. If not, select the right output or pin it with the profile's `audio_device`.
+- **Speakers and sound level.** The sounds are played through the two loudspeakers, identical in both channels.
+  - Keep the speakers in the v1 positions, symmetric about the screen, so the sound seems to come from the disk.
+  - Mark or tape the speaker volume knob and the Windows/Realtek volume.
+  - Before the first participant, measure at the participant's head position with an A-weighted sound level meter (v1 used a Brüel & Kjær 2240, LAeq). Target the paper's levels: about 70.5 dB SPL during the test and standard intervals, 57.4 dB (low noise) and 67.5 dB (high noise) between them. `FIXED_VOLUME` reproduces v1's digital level, so matching these values means the speaker chain is set as in v1. Recheck now and then.
   - **On the Windows lab PC:**
-    - In Control Panel > Sound > (headphone output) > Properties, set Advanced > Default Format to 48000 Hz and turn off audio enhancements. With aggressive low latency, PTB uses WASAPI, which needs the device at the experiment's rate; the session stops at start if the rate differs.
+    - In Control Panel > Sound > (the output the speakers are plugged into) > Properties, set Advanced > Default Format to 48000 Hz and turn off audio enhancements. With aggressive low latency, PTB uses WASAPI, which needs the device at the experiment's rate; the session stops at start if the rate differs.
     - The libusb/PortAudio preloading is macOS-only; the Windows psychtoolbox wheel ships its own libraries.
 - **PsychToolbox.** The presenter needs PTB for both audio and the keyboard. The pip build of psychtoolbox 3.0.19 on macOS expects libusb and PortAudio to be loaded already. Without them it fails to load, PsychoPy falls back silently, and you get the `'KeyboardDevice' object has no attribute '_buffers'` error at exit. The presenter now preloads both libraries from the environment (the `psychopy310` env has them from conda-forge). If they are missing, it stops with an install hint.
-- **Audiovisual sync.** Measure it once with a photodiode on the disk and a microphone at the headphones. Put the audio-minus-video delay in `AUDIO_ONSET_OFFSET_S`.
+- **Audiovisual sync.** Measure it once with a photodiode on the disk and a microphone at the participant's head position. That includes the sound's travel time from the speakers, about 1.7 ms at 60 cm. Put the audio-minus-video delay in `AUDIO_ONSET_OFFSET_S`.
 - **Tests.** Two scripts check the code without a display or sound card. Run the [autotest](#autotest) as well, on the real setup.
   - `python tests/test_pipeline.py` runs two simulated participants through everything. It checks the design, the timing, the bias recovery, the audio levels, which sessions reach `data_solid/`, and the autotest report.
   - `python tests/test_presenter_logic.py` checks the PsychoPy presenter with fake window, keyboard and sound objects. It covers response handling, sound scheduling, autotest answers and the choice of output device.

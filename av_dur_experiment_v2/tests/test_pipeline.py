@@ -348,6 +348,11 @@ def check_combined_session(tmp):
         (meta,) = storage.sessions("P50", task, tmp)
         assert meta["screening"]["decision"] == "no warnings" and Path(meta["block_fit"]["plot"]).exists(), meta
         assert meta["block_fit"]["conditions"], task
+    from avdur import screening
+    m = storage.sessions("SIM01", "main", SIM_ROOT)[0]
+    r = screening.main_block_fit(m["csv"], tmp / "main_fits")
+    assert set(r["slopes"]) == set(S.NOISE_LEVELS) and Path(r["plot"]).exists(), r
+    assert r["slopes"][1.2] > r["slopes"][0.1], "vision weighs more when audition is noisier (simulated observer)"
     xm = storage.sessions("P50", "crossmodal", tmp)[0]["block_fit"]["conditions"]
     assert all("correction_s" in c for c in xm)
     assert run_blocks.run("P50", SimulatedPresenter(3), tmp, simulate=True, background_fits=False,

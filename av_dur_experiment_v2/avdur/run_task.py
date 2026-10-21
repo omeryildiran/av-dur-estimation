@@ -39,6 +39,7 @@ def main(argv=None):
     ap.add_argument("--autotest", action="store_true",
                     help="automatic answers on the real display and sound card; saves to data_test/")
     ap.add_argument("--max-trials", type=int, help="simulate/autotest only: run just the first N trials")
+    ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
     ap.add_argument("--seed", type=int)
     ap.add_argument("--data-root", help="default: data/ (data_simulated/ with --simulate, data_test/ with --autotest)")
     args = ap.parse_args(argv)
@@ -63,13 +64,20 @@ def main(argv=None):
     else:
         from avdur.presenter_psychopy import PsychoPyPresenter
         auto_seed = (args.seed if args.seed is not None else int(time.time())) % 2**31 if args.autotest else None
-        presenter = PsychoPyPresenter(args.monitor, autotest_seed=auto_seed)
+        presenter = PsychoPyPresenter(args.monitor, autotest_seed=auto_seed, screen=args.screen)
 
     session = Session(args.task, args.pid, presenter, block=args.block, practice=args.practice, bias=bias,
                       bias_file=args.bias_file, seed=args.seed, root=Path(args.data_root) if args.data_root else None,
                       monitor=args.monitor, simulate=args.simulate, autotest=args.autotest,
                       max_trials=args.max_trials)
-    return 0 if session.run() else EXIT_STOPPED
+    completed = session.run()
+    if completed and not args.practice and not args.simulate:      # fit and plot (the window is closed by now)
+        from avdur import screening
+        try:
+            print(screening.fit_after_session(args.task, session.csv_path, session.root / args.pid / "fits"), flush=True)
+        except Exception as err:                                    # the data are saved either way
+            print(f"(fit after the session failed: {err})", flush=True)
+    return 0 if completed else EXIT_STOPPED
 
 
 if __name__ == "__main__":

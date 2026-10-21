@@ -14,12 +14,16 @@ EXPERIMENT_NAME = "av_duration_v2"
 # the true visual angle of the stimuli. Profiles marked testing_only are for trying the
 # experiment on other machines: they run at that display's own rate and save to data_test/,
 # so they never mix with real data. An optional "audio_device" overrides AUDIO_OUTPUT_DEVICE.
+# "screen_px" finds the participant's screen by its resolution (avdur/screens.py), because
+# PsychoPy's screen numbers need not match Windows' display numbers; "screen" is the fallback,
+# and the launcher's Screen menu (--screen) overrides both.
 MONITOR_PROFILES = {
     # Lab: Sony GDM-5402 (21" Trinitron CRT, tube picture about 40 x 31 cm), set to 800 x 800
     # at 120 Hz, which shows a picture about 29 cm high. Paper: about 60 cm away, chin rest.
-    "lab_crt": dict(window_px=800, screen=1, fullscreen=True, frame_rate_hz=120.0,
+    "lab_crt": dict(window_px=800, screen=1, screen_px=(800, 800), fullscreen=True, frame_rate_hz=120.0,
                     picture_height_cm=29.0, picture_width_cm=None,     # width: measure (square pixels if ~29 cm)
                     viewing_distance_cm=60.0),
+                    # audio_device="...",  # pin the output the two speakers are plugged into (see README)
     "office_test": dict(window_px=800, screen=0, fullscreen=True, frame_rate_hz=75.0,
                         testing_only=True),                            # Mac mini + Dell S2722DZ
     "laptop_test": dict(window_px=800, screen=0, fullscreen=True, frame_rate_hz=60.0,
@@ -49,10 +53,10 @@ AUDIO_LATENCY_MODE = 3              # v1 set prefs.general (ignored by PsychoPy)
 # PsychoPy 2024.2 plays through the FIRST output device PortAudio lists (on the office Mac,
 # the Dell monitor's DisplayPort audio), not the output chosen in System Settings > Sound.
 AUDIO_OUTPUT_DEVICE = None          # None: the Mac's current output (System Settings > Sound);
-                                    # or (part of) a device name, e.g. "External Headphones"
+                                    # or (part of) a device name, e.g. "Speakers (Realtek"
 AUDIO_SCHEDULE_MARGIN_S = 0.015     # v2: sound scheduled at least output latency + this before frame 0
-                                    # (5 ms let 23% of sounds start 0.5-3.5 ms late on the lab's Realtek
-                                    # headphones, 10 ms latency, Windows; 2026-10-20)
+                                    # (5 ms let 23% of sounds start 0.5-3.5 ms late on the lab PC's Realtek
+                                    # output, 10 ms latency, Windows; 2026-10-20)
 SYNC_FLIPS = 2                      # v2: flips before scheduling frame 0. The first flip after a pause can
                                     # return off the refresh (seen on macOS: frame 0 up to 11.8 ms early on
                                     # 6% of trials, always the first trial after a message screen)
