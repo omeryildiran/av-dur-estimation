@@ -111,7 +111,7 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
         presenter.finish(True)
     finally:
         if executor:
-            executor.shutdown(wait=False, cancel_futures=True)
+            executor.shutdown(wait=False)       # (cancel_futures needs Python 3.9; the lab PC has 3.8)
     plots = [r["plot"] for r in results if r.get("plot")]
     if open_plots and plots:
         for path in plots:
