@@ -1,0 +1,381 @@
+{
+  "participant": "P102",
+  "task": "unimodal_auditory",
+  "block": null,
+  "practice": false,
+  "seed": 1621913254,
+  "monitor_profile": "lab_crt",
+  "simulated": false,
+  "autotest": false,
+  "started": "2026-10-21T18:54:35",
+  "completed": true,
+  "code": {
+    "source_sha256": "2f3d4f4662543580",
+    "git_commit": "579225ba14105e71834e14f54c110f380e3cda2c",
+    "git_uncommitted_changes": false
+  },
+  "python": "3.8.20",
+  "platform": "Windows-10-10.0.26300-SP0",
+  "settings": {
+    "EXPERIMENT_NAME": "av_duration_v2",
+    "MONITOR_PROFILES": {
+      "lab_crt": {
+        "window_px": 800,
+        "screen": 1,
+        "screen_px": [
+          800,
+          800
+        ],
+        "fullscreen": true,
+        "frame_rate_hz": 120.0,
+        "picture_height_cm": 29.0,
+        "picture_width_cm": null,
+        "viewing_distance_cm": 60.0
+      },
+      "office_test": {
+        "window_px": 800,
+        "screen": 0,
+        "fullscreen": true,
+        "frame_rate_hz": 75.0,
+        "testing_only": true
+      },
+      "laptop_test": {
+        "window_px": 800,
+        "screen": 0,
+        "fullscreen": true,
+        "frame_rate_hz": 60.0,
+        "testing_only": true
+      }
+    },
+    "DEFAULT_MONITOR": "lab_crt",
+    "EXPECTED_FRAME_RATE_HZ": 120.0,
+    "FRAME_RATE_TOLERANCE_HZ": 1.0,
+    "MAX_IRREGULAR_FRAMES": 0.05,
+    "BACKGROUND_COLOR": "gray",
+    "DISK_RADIUS_DEG": 1.5,
+    "DISK_RADIUS_PX": 42.74647995177842,
+    "FIXATION_HEIGHT_PX": 22.342399999999998,
+    "DISK_LINE_WIDTH_PX": 1.5,
+    "TEXT_HEIGHT_PX": 30,
+    "SAMPLE_RATE": 48000,
+    "AUDIO_LATENCY_MODE": 3,
+    "AUDIO_OUTPUT_DEVICE": null,
+    "AUDIO_SCHEDULE_MARGIN_S": 0.015,
+    "SYNC_FLIPS": 2,
+    "VOLUME": 0.11,
+    "AUDIO_ONSET_OFFSET_S": 0.0,
+    "NOISE_LEVELS": [
+      0.1,
+      1.2
+    ],
+    "SIGNAL_BAND_HZ": [
+      150,
+      775
+    ],
+    "BACKGROUND_BAND_HZ": [
+      10,
+      610
+    ],
+    "FILTER_ORDER": 4,
+    "BURST_INTENSITY": 5,
+    "BURST_RISE_S": 0.005,
+    "HAMMING_WINDOW": true,
+    "AUDIO_LEVEL_MODE": "fixed",
+    "FIXED_BACKGROUND_SCALE": 4.7259,
+    "FIXED_OUTPUT_GAIN": {
+      "0.1": 0.21133,
+      "1.2": 0.14382
+    },
+    "FIXED_VOLUME": 0.1653,
+    "STANDARD_DUR_S": 0.5,
+    "PRE_RANGE_S": [
+      0.2,
+      0.45
+    ],
+    "ISI_RANGE_S": [
+      0.4,
+      0.9
+    ],
+    "POST_RANGE_S": [
+      0.2,
+      0.45
+    ],
+    "MIN_VISUAL_GAP_S": 0.05,
+    "MIN_VISUAL_DUR_S": 0.025,
+    "PRE_TRIAL_WAIT_S": 0.03,
+    "POST_STIM_WAIT_S": 0.03,
+    "MIN_LEAD_S": 0.2,
+    "BREAK_EVERY_N_TRIALS": 30,
+    "BREAK_MIN_WAIT_S": 2.5,
+    "FEEDBACK_DUR_S": 0.5,
+    "RESPONSE_KEYS": {
+      "left": 1,
+      "right": 2
+    },
+    "QUIT_KEY": "escape",
+    "PRACTICE_TRIALS": 20,
+    "COMBINED_SESSION_TASKS": [
+      "unimodal_auditory",
+      "unimodal_visual",
+      "crossmodal"
+    ],
+    "BLOCK_REST_MIN_S": 10.0,
+    "SCREENING_CHECKS": {
+      "unimodal_auditory": {
+        "0.1": {
+          "max_sigma": 0.6,
+          "min_easy_correct": 0.75
+        }
+      },
+      "unimodal_visual": {
+        "None": {
+          "max_sigma": 2.0,
+          "min_easy_correct": 0.7
+        }
+      }
+    },
+    "V1_SIGMA_RANGE": {
+      "('unimodal_auditory', 0.1)": [
+        0.23,
+        0.29,
+        0.39
+      ],
+      "('unimodal_auditory', 1.2)": [
+        0.42,
+        1.88,
+        3.0
+      ],
+      "('unimodal_visual', None)": [
+        0.36,
+        0.62,
+        1.72
+      ],
+      "('crossmodal', 0.1)": [
+        0.11,
+        0.39,
+        1.06
+      ],
+      "('crossmodal', 1.2)": [
+        0.3,
+        0.78,
+        1.62
+      ]
+    },
+    "AUTOTEST_RT_RANGE_S": [
+      0.05,
+      0.8
+    ],
+    "AUTOTEST_SCREEN_S": 0.3,
+    "AUTOTEST_QUICK_TRIALS": 30,
+    "AUTOTEST_BIAS_S": {
+      "0.1": 0.1,
+      "1.2": -0.05
+    },
+    "STAIRCASE": {
+      "init_step": 0.16,
+      "step_factor": 0.5,
+      "n_step_changes": 2,
+      "ceiling": 0.9
+    },
+    "TASKS": {
+      "unimodal_auditory": {
+        "label": "Unimodal auditory",
+        "noise_levels": [
+          0.1,
+          1.2
+        ],
+        "conflicts": [
+          0.0
+        ],
+        "staircases": [
+          "2D1U",
+          "1D2U",
+          "3D1U",
+          "1D3U"
+        ],
+        "trials_per_staircase": 35,
+        "floor": -0.9,
+        "lapse_levels": [
+          -0.9,
+          0.9
+        ],
+        "lapse_trials_per_level": 7
+      },
+      "unimodal_visual": {
+        "label": "Unimodal visual",
+        "noise_levels": [
+          null
+        ],
+        "conflicts": [
+          0.0
+        ],
+        "staircases": [
+          "2D1U",
+          "1D2U",
+          "3D1U",
+          "1D3U"
+        ],
+        "trials_per_staircase": 35,
+        "floor": -0.9,
+        "lapse_levels": [
+          -0.8,
+          0.8
+        ],
+        "lapse_trials_per_level": 7
+      },
+      "crossmodal": {
+        "label": "Cross-modal (auditory test vs. visual standard)",
+        "noise_levels": [
+          0.1,
+          1.2
+        ],
+        "conflicts": [
+          0.0
+        ],
+        "staircases": [
+          "1D1U",
+          "1D1U_b",
+          "2D1U",
+          "1D2U"
+        ],
+        "trials_per_staircase": 45,
+        "floor": -0.9,
+        "lapse_levels": [
+          -0.9,
+          0.9
+        ],
+        "lapse_trials_per_level": 7,
+        "order_block_size": 10
+      },
+      "main": {
+        "label": "Main audiovisual experiment",
+        "noise_levels": [
+          0.1,
+          1.2
+        ],
+        "staircases": [
+          "2D1U",
+          "1D2U"
+        ],
+        "trials_per_staircase": 70,
+        "floor": -0.95,
+        "lapse_levels": [
+          "floor",
+          0.9
+        ],
+        "lapse_trials_per_level": 7,
+        "blocks": {
+          "B1": [
+            0.0,
+            -0.167,
+            0.25
+          ],
+          "B2": [
+            -0.083,
+            0.167
+          ],
+          "B3": [
+            -0.25,
+            0.083
+          ]
+        }
+      }
+    },
+    "BLOCK_ORDERS": [
+      [
+        "B1",
+        "B2",
+        "B3"
+      ],
+      [
+        "B1",
+        "B3",
+        "B2"
+      ],
+      [
+        "B2",
+        "B1",
+        "B3"
+      ],
+      [
+        "B2",
+        "B3",
+        "B1"
+      ],
+      [
+        "B3",
+        "B1",
+        "B2"
+      ],
+      [
+        "B3",
+        "B2",
+        "B1"
+      ]
+    ],
+    "BIAS": {
+      "method": "lognormal",
+      "lapse_max": 0.1,
+      "min_trials": 300,
+      "max_abs_correction_s": 0.35,
+      "max_ci_halfwidth_s": 0.06,
+      "n_bootstrap": 200
+    }
+  },
+  "n_trials_planned": 308,
+  "bias_file": null,
+  "frame_rate_nominal_hz": 120.0,
+  "testing_only_profile": false,
+  "corrections_applied_s": {
+    "0.1": 0.0,
+    "1.2": 0.0
+  },
+  "staircase_floors": {
+    "0.1": -0.9,
+    "1.2": -0.9
+  },
+  "ptb_libraries_preloaded": [],
+  "sound_backend": "ptb",
+  "screen_index": 0,
+  "screen_choice": "chosen in the launcher / --screen",
+  "screens_found": [
+    "screen 0: 800 x 800 at (0, 0)",
+    "screen 1: 1280 x 1024 at (800, 0)"
+  ],
+  "frame_rate_measured_hz": 119.91845639229152,
+  "irregular_frame_share": 0.0,
+  "frame_interval_sd_ms": 0.06307523175512596,
+  "audio_output_requested": null,
+  "audio_devices_found": [
+    "Microsoft Sound Mapper - Output",
+    "Headphones (Realtek(R) Audio)",
+    "Speakers (Realtek(R) Audio)",
+    "Headphones (Realtek(R) Audio)",
+    "Speakers (Realtek(R) Audio)",
+    "Headphones (Realtek HD Audio 2nd output)",
+    "Speakers (Realtek HD Audio output)"
+  ],
+  "audio_device": "Headphones (Realtek(R) Audio)",
+  "audio_device_index": 3,
+  "audio_sample_rate_hz": 48000.0,
+  "audio_output_latency_s": 0.010000000009313226,
+  "audio_schedule_lead_frames": 3,
+  "disk_radius_px": 42.74647995177842,
+  "fixation_height_px": 22.342399999999998,
+  "disk_diameter_cm": 3.099119796503935,
+  "disk_diameter_deg": 2.9587837073679433,
+  "csv": "P102_unimodal_auditory_20261021-185440.csv",
+  "staircase_starts": {
+    "0.1/0.0/2D1U": "floor",
+    "0.1/0.0/1D2U": "ceiling",
+    "1.2/0.0/2D1U": "floor",
+    "1.2/0.0/1D2U": "ceiling",
+    "0.1/0.0/3D1U": "floor",
+    "0.1/0.0/1D3U": "ceiling",
+    "1.2/0.0/3D1U": "floor",
+    "1.2/0.0/1D3U": "ceiling"
+  },
+  "n_trials_done": 308,
+  "quit_by_user": false,
+  "finished": "2026-10-21T19:15:12"
+}
