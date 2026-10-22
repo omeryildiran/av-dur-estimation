@@ -62,8 +62,8 @@ def quality_warnings(est):
         if "ci95_s" in e and (e["ci95_s"][1] - e["ci95_s"][0]) / 2 > cfg["max_ci_halfwidth_s"]:
             warnings.append(f"noise {noise}: correction is uncertain (95% CI {e['ci95_s'][0]:+.3f} to "
                             f"{e['ci95_s'][1]:+.3f} s)")
-    if set(est["per_noise"]) != {str(float(n)) for n in S.NOISE_LEVELS}:
-        warnings.append(f"noise levels in the data: {sorted(est['per_noise'])}")
+    if len(est["per_noise"]) != 2:
+        warnings.append(f"noise levels in the data: {sorted(est['per_noise'])} (expected low and high)")
     return warnings
 
 

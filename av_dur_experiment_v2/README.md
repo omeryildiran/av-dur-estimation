@@ -9,7 +9,7 @@ cd av_dur_experiment_v2
 python run_experiment.py            # in the PsychoPy environment (PsychoPy 2024.2, Python 3.10)
 ```
 
-Choose the monitor profile, enter the participant ID (`P14`; `p14` or `14` also become `P14`), and press the task buttons in order:
+Choose the monitor profile and enter the participant ID: their initials (`oy` → `OY`, `ln2` → `LN2`), or `P` + number as before. Initials get the next counterbalancing number (main block order, cross-modal start order) in `participants.json` in the data folder at their first session. Typing an ID only previews the number. Keep in mind that initials identify people more easily than numbers when sharing data. Then press the task buttons in order:
 
 1. **Unimodal auditory** (308 trials)
 2. **Unimodal visual** (154 trials)

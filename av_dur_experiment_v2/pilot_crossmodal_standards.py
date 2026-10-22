@@ -38,12 +38,11 @@ PILOT_ROOT = ROOT / "data_pilot"
 BASE_CROSSMODAL = dict(S.TASKS["crossmodal"])
 
 
-def configure(standard_s, trials_per_staircase, lapse_per_level, noise_levels):
+def configure(standard_s, trials_per_staircase, lapse_per_level):
     """Settings for one block: the cross-modal task with this standard (read at run time everywhere)."""
     S.STANDARD_DUR_S = float(standard_s)
     S.TASKS["crossmodal"] = dict(BASE_CROSSMODAL, staircases=("1D1U", "1D1U_b"),
-                                 trials_per_staircase=trials_per_staircase,
-                                 lapse_trials_per_level=lapse_per_level, noise_levels=tuple(noise_levels))
+                                 trials_per_staircase=trials_per_staircase, lapse_trials_per_level=lapse_per_level)
 
 
 def fit_block(csv_path, standard_s, n_boot, rng):
@@ -118,7 +117,8 @@ def main(argv=None):
     ap.add_argument("--monitor", default=S.DEFAULT_MONITOR, choices=list(S.MONITOR_PROFILES))
     ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
     ap.add_argument("--standards", type=float, nargs="+", default=[0.3, 0.5, 0.8], help="standard durations (s)")
-    ap.add_argument("--noise", type=float, nargs="+", default=list(S.NOISE_LEVELS))
+    ap.add_argument("--noise-high", type=float,
+                    help="high noise level (default: the participant's noise calibration in data/, else 1.2)")
     ap.add_argument("--trials-per-staircase", type=int, default=30)
     ap.add_argument("--easy-per-level", type=int, default=3, help="easy trials per level (2 levels) and condition")
     ap.add_argument("--simulate", action="store_true", help="simulated observer, no window")
@@ -140,15 +140,19 @@ def main(argv=None):
         from avdur.presenter_psychopy import PsychoPyPresenter
         presenter = PsychoPyPresenter(args.monitor, autotest_seed=seed if args.autotest else None, screen=args.screen)
 
+    noise_high = args.noise_high
+    if noise_high is None:
+        payload, _ = storage.latest_noise(pid, storage.DATA_ROOT)
+        noise_high = payload["noise_high"] if payload else S.NOISE_HIGH_DEFAULT
     print(f"[{pid}] cross-modal pilot: standards {', '.join(f'{1000 * s:.0f} ms' for s in standards)} (this order), "
-          f"noise {args.noise}; data in {root}", flush=True)
+          f"noise {S.NOISE_LOW} and {noise_high}; data in {root}", flush=True)
     rows, sessions = [], []
     for k, std in enumerate(standards):
-        configure(std, args.trials_per_staircase, args.easy_per_level, args.noise)
+        configure(std, args.trials_per_staircase, args.easy_per_level)
         last = k == len(standards) - 1
         session = Session("crossmodal", pid, presenter, seed=seed + k, root=root, monitor=args.monitor,
                           simulate=args.simulate, autotest=args.autotest, max_trials=args.max_trials,
-                          solid_root=False, close_at_end=last, verbose=True)
+                          solid_root=False, close_at_end=last, verbose=True, noise_high=noise_high)
         if not session.run():
             print("Stopped before the end; blocks finished so far are saved and fitted below.", flush=True)
             break
@@ -157,7 +161,7 @@ def main(argv=None):
         session.save_meta()
         sessions.append((std, session.csv_path))
         rows += fit_block(session.csv_path, std, args.n_boot, rng)
-        print(summary(pd.DataFrame(rows[-len(args.noise):])), flush=True)
+        print(summary(pd.DataFrame(rows[-2:])), flush=True)
         if not last:
             presenter.wait_screen(f"Part {k + 1} of {len(standards)} is done.\n\nPlease take a short break.",
                                   lambda: True, S.BLOCK_REST_MIN_S)

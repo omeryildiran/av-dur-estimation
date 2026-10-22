@@ -57,6 +57,22 @@ class AudioGenerator:
         env[rise + peak:] = 0.5 * (1 + np.cos(np.pi * np.arange(fall) / fall))
         return self._unit_noise(n, rng) * (env * (S.BURST_INTENSITY - 1) + 1)
 
+    def gain_for(self, noise_level):
+        """Output gain: the calibrated value at a calibrated noise level; for a participant's own
+        level, log-log interpolation along the calibrated points (and the same line beyond them)."""
+        g = self.output_gain
+        if not isinstance(g, dict):
+            return g
+        noise = float(noise_level)
+        if noise in g:
+            return g[noise]
+        pts = sorted(g.items())
+        if len(pts) == 1:
+            return pts[0][1]
+        (x0, y0), (x1, y1) = (pts[0], pts[1]) if noise < pts[1][0] else (pts[-2], pts[-1])
+        slope = (np.log(y1) - np.log(y0)) / (np.log(x1) - np.log(x0))
+        return float(np.exp(np.log(y0) + slope * (np.log(noise) - np.log(x0))))
+
     def trial_parts(self, schedule, noise_level, seed):
         """Waveform for one trial plus intermediate quantities (used by the calibration)."""
         rng = np.random.default_rng(seed)
@@ -82,7 +98,7 @@ class AudioGenerator:
             mix = mix / np.max(np.abs(mix))
         else:                                                           # v2
             background = background * noise_level * self.background_scale
-            gain = self.output_gain[float(noise_level)] if isinstance(self.output_gain, dict) else self.output_gain
+            gain = self.gain_for(noise_level)
             mix = (sosfilt(self._sos_signal, stim) + sosfilt(self._sos_background, background)) * gain
             peak = np.max(np.abs(mix))
             if self.clip_protect and peak > 0.99:                       # clip protection (rare; logged)

@@ -32,7 +32,7 @@ DATA_ROOT = ROOT / "data"
 SOLID_ROOT = ROOT / "data_solid"            # copies of complete real sessions: what the analysis uses
 SIM_ROOT = ROOT / "data_simulated"          # simulated runs never mix with real data
 TEST_ROOT = ROOT / "data_test"              # test-display profiles and autotests
-TASK_ORDER = ("unimodal_auditory", "unimodal_visual", "crossmodal", "main")
+TASK_ORDER = ("noise_calibration", "unimodal_auditory", "unimodal_visual", "crossmodal", "main")
 
 
 def root_for(simulate=False, monitor=None, autotest=False):
@@ -159,7 +159,7 @@ def sessions(pid=None, task=None, root=None, completed_only=True):
     """Metadata of every session (optionally filtered), sorted by start time."""
     out = []
     for meta_path in sorted(Path(root or DATA_ROOT).glob(f"{pid or '*'}/{task or '*'}/*.json")):
-        if meta_path.parent.name in ("bias", "practice"):
+        if meta_path.parent.name in ("bias", "practice", "noise", "fits"):
             continue
         meta = json.loads(meta_path.read_text())
         if completed_only and not meta.get("completed"):
@@ -190,6 +190,12 @@ def latest_bias(pid, root=None):
     return (json.loads(files[-1].read_text()), files[-1]) if files else (None, None)
 
 
+def latest_noise(pid, root=None):
+    """The participant's latest noise calibration (payload, path), or (None, None)."""
+    files = sorted((Path(root or DATA_ROOT) / pid / "noise").glob(f"{pid}_noise_*.json"))
+    return (json.loads(files[-1].read_text()), files[-1]) if files else (None, None)
+
+
 def participant_status(pid, root=None):
     """What this participant has completed, for the launcher."""
     from avdur.design import block_order
@@ -199,11 +205,14 @@ def participant_status(pid, root=None):
         done = sessions(pid, task, root)
         status[task] = [dict(block=m.get("block"), started=m["started"], n_trials=m.get("n_trials_done"))
                         for m in done]
+    noise, noise_path = latest_noise(pid, root)
+    status["noise"] = noise
+    status["noise_file"] = str(noise_path) if noise_path else None
     bias, bias_path = latest_bias(pid, root)
     status["bias"] = bias
     status["bias_file"] = str(bias_path) if bias_path else None
     try:
-        order = block_order(pid)
+        order = block_order(pid, root)
         done_blocks = {s["block"] for s in status["main"]}
         status["block_order"] = order
         status["next_block"] = next((b for b in order if b not in done_blocks), None)

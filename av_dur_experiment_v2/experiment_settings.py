@@ -62,7 +62,23 @@ SYNC_FLIPS = 2                      # v2: flips before scheduling frame 0. The f
                                     # 6% of trials, always the first trial after a message screen)
 VOLUME = 0.11                       # v1
 AUDIO_ONSET_OFFSET_S = 0.0          # v2: measured audio-minus-video delay (photodiode + microphone)
-NOISE_LEVELS = (0.1, 1.2)           # v1: background noise relative to the signal peak
+NOISE_LEVELS = (0.1, 1.2)           # v1: background noise relative to the signal peak (v1 comparisons, tests)
+# v2: the low noise level is fixed; the high level is set for each participant by the
+# auditory noise calibration (avdur/noise_calibration.py) so that their auditory sigma at it
+# is NOISE_CALIBRATION["target_sigma"] (in v1, sigma at 1.2 ranged from 0.42 to chance).
+NOISE_LOW = 0.1
+NOISE_HIGH_DEFAULT = 1.2            # only for simulations, tests and practice before a calibration
+NOISE_CALIBRATION = dict(
+    target_sigma=0.7,               # about the median visual sigma in v1
+    target_correct=0.7071,          # 2-down-1-up on correct answers (2 correct: louder noise; 1 error: softer)
+    trials_per_staircase=60,        # two interleaved staircases (126 trials with the catch trials, ~6 min)
+    start_noise=(0.3, 1.6),         # one starts easy, one hard
+    bounds=(0.1, 2.0),               # above 2.0 the level would often have to be cut to avoid clipping
+    init_step_ln=0.4, step_factor=0.5, n_step_changes=1,   # steps in ln(noise): 0.4, then 0.2
+    # Simulated (true levels 0.3-1.5, shallow and steep sigma-noise slopes): the sigma reached is
+    # within 14% of the target in half of the runs and within 34% in 90% (40 trials: 15% / 49%).
+    catch_trials=6,                 # easy trials at NOISE_LOW (attention check)
+)
 SIGNAL_BAND_HZ = (150, 775)         # v1: unchanged since commit c7ff22e1 (24 Apr 2025), used for all data
 BACKGROUND_BAND_HZ = (10, 610)      # v1: same commit
 FILTER_ORDER = 4                    # v1: Butterworth, causal sosfilt
@@ -106,10 +122,11 @@ PRACTICE_TRIALS = 20                # v2: easy trials with feedback
 # beyond the worst v1 participant (v1 low-noise auditory sigma 0.23-0.39, easy trials 86-100%
 # correct; visual sigma 0.36-1.72, easy 79-100%). High noise is reported, not checked: in v1
 # 2 of 11 participants were at the sigma bound (3.0) there, and easy trials were 57-93% correct.
-COMBINED_SESSION_TASKS = ("unimodal_auditory", "unimodal_visual", "crossmodal")
+COMBINED_SESSION_TASKS = ("noise_calibration", "unimodal_auditory", "unimodal_visual", "crossmodal")
 BLOCK_REST_MIN_S = 10.0              # rest between blocks (the fit runs meanwhile)
 SCREENING_CHECKS = {
-    "unimodal_auditory": {0.1: dict(max_sigma=0.6, min_easy_correct=0.75)},
+    "unimodal_auditory": {0.1: dict(max_sigma=0.6, min_easy_correct=0.75),
+                          "high": dict(max_sigma=1.5)},       # participant's calibrated level (target 0.7)
     "unimodal_visual": {None: dict(max_sigma=2.0, min_easy_correct=0.70)},
 }
 V1_SIGMA_RANGE = {                   # (min, median, max) over the 11 v1 participants, lognormal fit, lapse <= 0.1
@@ -139,6 +156,10 @@ AUTOTEST_BIAS_S = {0.1: 0.10, 1.2: -0.05}   # main-block corrections when no ful
 STAIRCASE = dict(init_step=0.16, step_factor=0.5, n_step_changes=2, ceiling=0.9)
 
 TASKS = {
+    "noise_calibration": dict(
+        label="Auditory noise calibration (sets the high noise level)",
+        noise_levels=(None,), conflicts=(0.0,), staircases=("A", "B"), floor=-0.9,
+    ),
     "unimodal_auditory": dict(
         label="Unimodal auditory",
         noise_levels=NOISE_LEVELS, conflicts=(0.0,),

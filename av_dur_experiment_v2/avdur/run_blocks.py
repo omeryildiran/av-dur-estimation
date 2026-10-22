@@ -59,7 +59,9 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
     if not todo:
         log(f"{pid}: all three blocks are already done.")
         return True, []
-    n_trials = {t: len(design.build_trials(t, np.random.default_rng(0))) for t in todo}
+    cal = S.NOISE_CALIBRATION
+    n_trials = {t: (2 * cal["trials_per_staircase"] + cal["catch_trials"] if t == "noise_calibration"
+                    else len(design.build_trials(t, np.random.default_rng(0)))) for t in todo}
     log(f"[{pid}] combined session: " + ", ".join(f"{screening.LABELS[t]} ({max_trials or n_trials[t]} trials)"
                                                    for t in todo) + (" — with practice" if practice else ""))
     executor = (ProcessPoolExecutor(1, mp_context=multiprocessing.get_context("spawn"))
@@ -70,9 +72,25 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
             last = k == len(todo) - 1
             common = dict(root=root, monitor=monitor, simulate=simulate, autotest=autotest, close_at_end=False,
                           verbose=True)
-            if practice and not Session(task, pid, presenter, practice=True, **common).run():
+            if task == "noise_calibration":
+                from avdur import noise_calibration
+                session = noise_calibration.NoiseCalibration(pid, presenter, max_trials=max_trials, **common)
+                if not session.run():
+                    return False, results
+                result = dict(session.calibration, task=task, conditions=[])
+                log(noise_calibration.summary_text(session.calibration))
+                presenter.wait_screen(f"Part {k + 1} of {len(todo)} is done.\n\nPlease take a short break.",
+                                      lambda: True, 0.0 if last else S.BLOCK_REST_MIN_S)
+                results.append(result)
+                if not _decide(presenter, session, result, log):
+                    presenter.finish(False)
+                    return False, results
+                continue
+            noise, noise_path = storage.latest_noise(pid, root)
+            levels = dict(noise_high=noise["noise_high"] if noise else None, noise_file=str(noise_path) if noise_path else None)
+            if practice and not Session(task, pid, presenter, practice=True, **levels, **common).run():
                 return False, results
-            session = Session(task, pid, presenter, max_trials=max_trials, **common)
+            session = Session(task, pid, presenter, max_trials=max_trials, **levels, **common)
             if not session.run():
                 return False, results
             fit = None
@@ -93,19 +111,7 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
                 result = dict(task=task, warnings=[f"the fit failed: {err}"], conditions=[], plot=None)
                 log(f"── {screening.LABELS[task]}: the fit failed ({err}); the data are saved.")
             results.append(result)
-            continue_ = True
-            if result["warnings"]:
-                log(">> Experimenter: the participant sees 'Please wait for the experimenter'. "
-                    "Press C to continue, Escape to end the session.")
-                continue_ = presenter.experimenter_check()
-                log(">> " + ("continued" if continue_ else "session ended") + " by the experimenter")
-            session.meta["block_fit"] = {k: v for k, v in result.items() if k != "csv"}
-            session.meta["screening"] = dict(
-                warnings=result["warnings"],
-                decision=("no warnings" if not result["warnings"] else
-                          "continued by the experimenter" if continue_ else "ended by the experimenter"))
-            session.save_meta()
-            if not continue_:
+            if not _decide(presenter, session, result, log):
                 presenter.finish(False)
                 return False, results
         presenter.finish(True)
@@ -120,6 +126,23 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
             elif sys.platform == "darwin":
                 subprocess.run(["open", path], check=False)
     return True, results
+
+
+def _decide(presenter, session, result, log):
+    """Experimenter check when a block raised warnings; the fit and the decision go into its metadata."""
+    continue_ = True
+    if result["warnings"]:
+        log(">> Experimenter: the participant sees 'Please wait for the experimenter'. "
+            "Press C to continue, Escape to end the session.")
+        continue_ = presenter.experimenter_check()
+        log(">> " + ("continued" if continue_ else "session ended") + " by the experimenter")
+    session.meta["block_fit"] = {k: v for k, v in result.items() if k not in ("csv", "trace")}
+    session.meta["screening"] = dict(
+        warnings=result["warnings"],
+        decision=("no warnings" if not result["warnings"] else
+                  "continued by the experimenter" if continue_ else "ended by the experimenter"))
+    session.save_meta()
+    return continue_
 
 
 def main(argv=None):

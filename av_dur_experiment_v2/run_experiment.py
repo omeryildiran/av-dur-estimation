@@ -43,7 +43,7 @@ def status_text(raw_pid, root=None):
     tag = {storage.SIM_ROOT: "[SIMULATED DATA, data_simulated/] ",
            storage.TEST_ROOT: "[TEST RUNS: test display or autotest, data_test/] "}
     lines = [tag.get(Path(root) if root else None, "") + f"Participant {pid}" + (f"   (main block order: {' -> '.join(st['block_order'])})" if st["block_order"] else "")]
-    for i, task in enumerate(storage.TASK_ORDER, 1):
+    for i, task in enumerate(storage.TASK_ORDER):
         done = st[task]
         if task == "main":
             blocks = ", ".join(f"{s['block']} ({s['started'][:16].replace('T', ' ')})" for s in done) or "none"
@@ -51,6 +51,10 @@ def status_text(raw_pid, root=None):
         else:
             when = f"done {done[-1]['started'][:16].replace('T', ' ')} ({done[-1]['n_trials']} trials)" if done else "not done"
             lines.append(f"  {i}. {S.TASKS[task]['label']}: {when}")
+        if task == "noise_calibration":
+            nz = st["noise"]
+            lines.append(f"     high noise level: {nz['noise_high']:.3f}  [{Path(st['noise_file']).name}]" if nz
+                         else "     high noise level: not calibrated yet (every task with sound needs it)")
         if task == "crossmodal":
             b = st["bias"]
             if b:
@@ -114,7 +118,7 @@ def run_window():
 
     frm = ttk.Frame(root, padding=16)
     frm.grid(sticky="nsew")
-    ttk.Label(frm, text="Participant ID (e.g. P14)").grid(row=0, column=0, sticky="w")
+    ttk.Label(frm, text="Participant ID (initials, e.g. OY)").grid(row=0, column=0, sticky="w")
     entry = ttk.Entry(frm, textvariable=pid, width=14)
     entry.grid(row=0, column=1, sticky="w")
     ttk.Label(frm, text="Monitor profile / screen").grid(row=1, column=0, sticky="w")
@@ -178,8 +182,8 @@ def run_window():
                     variable=quick).grid(row=6, column=0, columnspan=2, sticky="w", padx=(24, 0))
 
     mono = ("Menlo", 11) if sys.platform == "darwin" else ("Consolas", 10)
-    status = tk.Text(frm, width=92, height=11, font=mono, state="disabled")
-    status.grid(row=15, column=0, columnspan=2, pady=(12, 0))
+    status = tk.Text(frm, width=92, height=13, font=mono, state="disabled")
+    status.grid(row=20, column=0, columnspan=2, pady=(12, 0))
 
     def refresh(*_):
         status.configure(state="normal")
@@ -338,14 +342,15 @@ def run_window():
             messagebox.showerror("Cross-modal bias", str(err))
 
     for i, task in enumerate(storage.TASK_ORDER):
-        ttk.Button(frm, text=f"{i + 1}.  {S.TASKS[task]['label']}", width=48,
+        ttk.Button(frm, text=f"{i}.  {S.TASKS[task]['label']}", width=48,
                    command=lambda t=task: run(t)).grid(row=7 + i, column=0, columnspan=2, pady=3)
-    ttk.Button(frm, text="1-3 in one session (fits after each block)", width=48, command=run_combined).grid(
-        row=11, column=0, columnspan=2, pady=(10, 3))
+    n_tasks = len(storage.TASK_ORDER)
+    ttk.Button(frm, text="0-3 in one session (fits after each block)", width=48, command=run_combined).grid(
+        row=7 + n_tasks, column=0, columnspan=2, pady=(10, 3))
     ttk.Button(frm, text="Autotest the whole experiment", width=48, command=run_autotest_all).grid(
-        row=12, column=0, columnspan=2, pady=3)
-    ttk.Button(frm, text="Preview cross-modal bias fit", command=show_bias).grid(row=13, column=0, pady=(8, 0), sticky="w")
-    ttk.Button(frm, text="Quit", command=root.destroy).grid(row=13, column=1, pady=(8, 0), sticky="e")
+        row=8 + n_tasks, column=0, columnspan=2, pady=3)
+    ttk.Button(frm, text="Preview cross-modal bias fit", command=show_bias).grid(row=9 + n_tasks, column=0, pady=(8, 0), sticky="w")
+    ttk.Button(frm, text="Quit", command=root.destroy).grid(row=9 + n_tasks, column=1, pady=(8, 0), sticky="e")
     entry.bind("<KeyRelease>", refresh)
     refresh()
     entry.focus()
@@ -355,13 +360,13 @@ def run_window():
 # ── text menu ─────────────────────────────────────────────────────────────────
 
 def run_cli():
-    p = design.normalize_pid(input("Participant ID (e.g. P14): "))
+    p = design.normalize_pid(input("Participant ID (initials, e.g. OY): "))
     mon = input(f"Monitor profile {list(S.MONITOR_PROFILES)} [{S.DEFAULT_MONITOR}]: ").strip() or S.DEFAULT_MONITOR
     sim = input("Simulate (no window, saves to data_simulated/)? [y/N] ").strip().lower() == "y"
     root = storage.root_for(sim, mon)
     while True:
         print("\n" + status_text(p, root))
-        choice = input("\nRun 1-4 (add 'p' for practice, e.g. '4p'), 'c' blocks 1-3 in one session ('cp' with "
+        choice = input("\nRun 0-4 (add 'p' for practice, e.g. '4p'), 'c' blocks 0-3 in one session ('cp' with "
                        "practice), 'a' autotest everything ('aq' quick), 'b' bias preview, 'q' quit: ").strip()
         if choice == "q":
             return
@@ -375,9 +380,9 @@ def run_cli():
         if choice == "b":
             print(bias_mod.summary_text(bias_mod.estimate_for_participant(p, root)))
             continue
-        if not choice or choice[0] not in "1234":
+        if not choice or choice[0] not in "01234":
             continue
-        task = storage.TASK_ORDER[int(choice[0]) - 1]
+        task = storage.TASK_ORDER[int(choice[0])]
         b, bias_file = None, None
         if task == "main":
             nxt = storage.participant_status(p, root)["next_block"]

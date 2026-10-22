@@ -53,6 +53,20 @@ class SimulatedPresenter:
     def experimenter_check(self):
         return self.experimenter_continues
 
+    @staticmethod
+    def _by_noise(values, noise):
+        """Value for any noise level: a function of noise, an exact key, or log-log interpolation."""
+        if callable(values):
+            return float(values(noise))
+        if noise in values:
+            return values[noise]
+        pts = sorted(values.items())
+        (x0, y0), (x1, y1) = (pts[0], pts[1]) if noise < pts[1][0] else (pts[-2], pts[-1])
+        if y0 <= 0 or y1 <= 0:                          # signed values (biases): nearest level
+            return min(pts, key=lambda kv: abs(np.log(kv[0] / noise)))[1]
+        slope = (np.log(y1) - np.log(y0)) / (np.log(x1) - np.log(x0))
+        return float(np.exp(np.log(y0) + slope * (np.log(noise) - np.log(x0))))
+
     def _interval_estimate(self, sched, i, noise):
         """Mean and SD of the log-duration percept of interval i."""
         o = self.obs
@@ -61,13 +75,13 @@ class SimulatedPresenter:
         vis = sched.visual[i]
         v_dur = None if vis is None else (vis[1] - vis[0]) / fr
         if v_dur is not None:
-            bias = o["true_bias"].get(noise, 0.0) if noise is not None else 0.0
+            bias = self._by_noise(o["true_bias"], noise) if noise is not None else 0.0
             v_perc = max(v_dur - bias, 0.005)
-        if self.task == "unimodal_auditory" or (self.task == "crossmodal" and sched.audio_burst[i]):
-            return np.log(a_dur), o["sigma_a"][noise]
+        if self.task in ("unimodal_auditory", "noise_calibration") or (self.task == "crossmodal" and sched.audio_burst[i]):
+            return np.log(a_dur), self._by_noise(o["sigma_a"], noise)
         if self.task in ("unimodal_visual", "crossmodal"):
             return np.log(v_perc if self.task == "crossmodal" else v_dur), o["sigma_v"]
-        sa, sv = o["sigma_a"][noise], o["sigma_v"]          # main: forced fusion
+        sa, sv = self._by_noise(o["sigma_a"], noise), o["sigma_v"]          # main: forced fusion
         w = sa**2 / (sa**2 + sv**2)
         return w * np.log(v_perc) + (1 - w) * np.log(a_dur), np.sqrt(w**2 * sv**2 + (1 - w)**2 * sa**2)
 

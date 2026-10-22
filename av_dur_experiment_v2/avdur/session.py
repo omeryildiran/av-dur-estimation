@@ -6,6 +6,7 @@ observer); everything else, including all logging, happens here so both behave t
 
 from __future__ import annotations
 
+import dataclasses
 import datetime as dt
 import math
 import statistics
@@ -20,13 +21,13 @@ from avdur.audio import AudioGenerator
 from avdur.schedule import make_schedule, to_frames
 from avdur.staircase import Staircase
 
-NEEDS_AUDIO = {"unimodal_auditory", "crossmodal", "main"}
+NEEDS_AUDIO = {"noise_calibration", "unimodal_auditory", "crossmodal", "main"}
 
 
 class Session:
     def __init__(self, task, pid, presenter, block=None, practice=False, bias=None, bias_file=None,
                  seed=None, root=None, monitor=S.DEFAULT_MONITOR, simulate=False, autotest=False,
-                 max_trials=None, solid_root=None, close_at_end=True, verbose=False):
+                 max_trials=None, solid_root=None, close_at_end=True, verbose=False, noise_high=None, noise_file=None):
         if task == "main" and bias is None:
             raise ValueError("The main experiment needs a confirmed bias file (run the cross-modal task first).")
         if task == "main" and block not in S.TASKS["main"]["blocks"]:
@@ -41,7 +42,13 @@ class Session:
         self.max_trials, self.solid_root = max_trials, solid_root
         self.close_at_end, self.verbose = close_at_end, verbose     # False: more blocks follow in this window
         self.meta = self.csv_path = self.json_path = None
-        self.cfg = S.TASKS[task]
+        self.cfg = dict(S.TASKS[task])
+        # v2: low noise fixed, high noise = the participant's calibrated level (NOISE_HIGH_DEFAULT without one)
+        self.noise_high = round(float(noise_high if noise_high is not None else S.NOISE_HIGH_DEFAULT), 3)
+        self.noise_file = noise_file
+        if any(n is not None for n in self.cfg["noise_levels"]):
+            self.cfg["noise_levels"] = (S.NOISE_LOW, self.noise_high)
+        self.schedule_task = task
         self.fr = S.MONITOR_PROFILES[monitor]["frame_rate_hz"]     # every duration is computed at this rate
 
     # ── helpers ───────────────────────────────────────────────────────────────
@@ -63,13 +70,15 @@ class Session:
     # ── run ───────────────────────────────────────────────────────────────────
     def run(self):
         rng = np.random.default_rng(self.seed)
-        first = design.crossmodal_first_order(self.pid) if self.task == "crossmodal" else 1
-        trials = design.build_trials(self.task, rng, self.block, self.practice, first)
+        design.participant_number(self.pid, self.root, assign=True)    # initials: number fixed at the first session
+        first = design.crossmodal_first_order(self.pid, self.root) if self.task == "crossmodal" else 1
+        trials = self._build_trials(rng, first)
         meta = storage.base_metadata(self.pid, self.task, self.block, self.practice, self.seed,
                                      self.monitor, self.simulate, self.autotest)
         if self.max_trials and self.max_trials < len(trials):
             meta.update(trial_limit=self.max_trials, n_trials_full=len(trials))
             trials = trials[:self.max_trials]
+        meta.update(noise_levels=[n for n in self.cfg["noise_levels"] if n is not None], noise_file=self.noise_file)
         meta.update(n_trials_planned=len(trials), bias_file=self.bias_file, frame_rate_nominal_hz=self.fr,
                     testing_only_profile=bool(S.MONITOR_PROFILES[self.monitor].get("testing_only")),
                     corrections_applied_s={str(n): self.correction_s(n)[0] for n in self.cfg["noise_levels"]
@@ -84,10 +93,8 @@ class Session:
         self.meta, self.csv_path, self.json_path = meta, csv_path, json_path
         meta["csv"] = csv_path.name
         storage.write_json(json_path, meta)
-        starts = design.staircase_starts(self.task, rng, self.block)
-        stairs = {key: Staircase(key[2], self.floor(key[0]), start=start, **S.STAIRCASE)
-                  for key, start in starts.items()}
-        meta["staircase_starts"] = {f"{n}/{c}/{r}": start for (n, c, r), start in starts.items()}
+        stairs = self._make_stairs(rng)
+        meta["staircase_starts"] = {f"{n}/{c}/{r}": st.start for (n, c, r), st in stairs.items()}
         storage.write_json(json_path, meta)
         audio = AudioGenerator() if (self.task in NEEDS_AUDIO and self.presenter.needs_audio) else None
         writer = storage.TrialWriter(csv_path)
@@ -119,6 +126,8 @@ class Session:
             writer.close()
             meta.update(n_trials_done=n_done, completed=(n_done == len(trials) and not quit_),
                         quit_by_user=quit_, finished=dt.datetime.now().isoformat(timespec="seconds"))
+            if meta["completed"]:
+                self._after_run(meta, rows)
             storage.write_json(json_path, meta)
             self.save_meta()
             if self.verbose and rows:
@@ -126,6 +135,28 @@ class Session:
             if self.close_at_end or not meta["completed"]:
                 self.presenter.finish(meta["completed"])
         return meta["completed"]
+
+    # ── hooks (overridden by the noise calibration) ───────────────────────────
+    def _build_trials(self, rng, first_order):
+        return design.build_trials(self.task, rng, self.block, self.practice, first_order, self.cfg["noise_levels"])
+
+    def _make_stairs(self, rng):
+        starts = design.staircase_starts(self.task, rng, self.block, self.cfg["noise_levels"])
+        return {key: Staircase(key[2], self.floor(key[0]), start=start, **S.STAIRCASE) for key, start in starts.items()}
+
+    def _trial_level(self, spec, stair):
+        if stair is not None:
+            return stair.level
+        return self.floor(spec.noise) if spec.fixed_level == "floor" else float(spec.fixed_level)
+
+    def _trial_noise(self, spec, stair):
+        return spec.noise
+
+    def _update_stair(self, stair, chose_test, is_correct):
+        stair.update(chose_test)
+
+    def _after_run(self, meta, rows):
+        pass
 
     def save_meta(self):
         """Write the session metadata (and refresh the data_solid/ copy of a complete real session)."""
@@ -161,14 +192,12 @@ class Session:
 
     def _trial(self, i, spec, stairs, rng, audio):
         stair = stairs.get((spec.noise, spec.conflict, spec.staircase)) if spec.kind == "staircase" else None
-        if stair is not None:
-            level = stair.level
-        else:
-            level = self.floor(spec.noise) if spec.fixed_level == "floor" else float(spec.fixed_level)
+        level = self._trial_level(spec, stair)
+        spec = dataclasses.replace(spec, noise=self._trial_noise(spec, stair))     # the noise actually played
         test_frames = max(to_frames(S.STANDARD_DUR_S * (1 + level), self.fr), 1)
         test_s = test_frames / self.fr
         applied, estimate = self.correction_s(spec.noise)
-        sched = make_schedule(self.task, spec.order, test_s, spec.conflict, applied, rng, self.fr)
+        sched = make_schedule(self.schedule_task, spec.order, test_s, spec.conflict, applied, rng, self.fr)
         seed = int(rng.integers(2**31))
         wave = audio.trial_sound(sched, spec.noise, seed) if audio is not None else None
 
@@ -179,7 +208,7 @@ class Session:
         standard_s = to_frames(S.STANDARD_DUR_S, self.fr) / self.fr
         is_correct = (test_s > standard_s and chose_test) or (test_s < standard_s and not chose_test)
         if stair is not None:
-            stair.update(chose_test)
+            self._update_stair(stair, chose_test, is_correct)
 
         test_i = 0 if spec.order == 1 else 1
         vis = sched.visual

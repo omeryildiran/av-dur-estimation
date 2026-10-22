@@ -35,6 +35,8 @@ from avdur.audio import playback_volume
 ASSETS = Path(__file__).resolve().parents[1] / "assets"
 
 INSTRUCTIONS = {
+    "noise_calibration": "You will hear two sounds in noise.\nWhich sound was longer?\n\n"
+                         "The noise will get louder and softer during this part.",
     "unimodal_auditory": "You will hear two sounds in noise.\nWhich sound was longer?",
     "unimodal_visual": "You will see two dark disks.\nWhich disk was shown longer?",
     "crossmodal": "Each trial has one sound and one disk.\nWhich one was longer?",
@@ -337,7 +339,7 @@ class PsychoPyPresenter:
 
     # ── trial ─────────────────────────────────────────────────────────────────
     def _draw_frame(self, black):
-        if self.task == "unimodal_auditory":
+        if self.task in ("unimodal_auditory", "noise_calibration"):
             self.fixation.draw()
         else:
             self.disk.fillColor = "black" if black else S.BACKGROUND_COLOR

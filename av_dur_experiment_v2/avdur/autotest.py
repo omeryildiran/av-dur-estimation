@@ -66,7 +66,7 @@ def run(pid=DEFAULT_PID, monitor=S.DEFAULT_MONITOR, quick=False, root=None, scre
     root = Path(root or storage.TEST_ROOT)
     since = dt.datetime.now().isoformat(timespec="seconds")
     max_trials = S.AUTOTEST_QUICK_TRIALS if quick else None
-    plan = [(t, None) for t in storage.TASK_ORDER if t != "main"] + [("main", b) for b in design.block_order(pid)]
+    plan = [(t, None) for t in storage.TASK_ORDER if t != "main"] + [("main", b) for b in design.block_order(pid, root)]
     path = None
     for task, block in plan:
         if task == "main" and path is None:

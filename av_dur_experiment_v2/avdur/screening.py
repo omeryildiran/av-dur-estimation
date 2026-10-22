@@ -16,7 +16,7 @@ import pandas as pd
 import experiment_settings as S
 from avdur import psychometrics as pm
 
-LABELS = {"unimodal_auditory": "Unimodal auditory", "unimodal_visual": "Unimodal visual", "crossmodal": "Cross-modal"}
+LABELS = {"noise_calibration": "Noise calibration", "unimodal_auditory": "Unimodal auditory", "unimodal_visual": "Unimodal visual", "crossmodal": "Cross-modal"}
 
 
 def _condition_name(task, noise):
@@ -49,12 +49,13 @@ def block_fit(task, csv_path, plot_dir=None):
                      sigma_at_bound=bool(p.sigma >= 2.999), v1_sigma_range=S.V1_SIGMA_RANGE.get((task, noise)))
         if task == "crossmodal":
             entry["correction_s"] = S.STANDARD_DUR_S - S.STANDARD_DUR_S * entry["pse_ratio"]
-        check = S.SCREENING_CHECKS.get(task, {}).get(noise)
+        checks = S.SCREENING_CHECKS.get(task, {})
+        check = checks.get(noise) or (checks.get("high") if noise not in (None, S.NOISE_LOW) else None)
         name = _condition_name(task, noise)
         if check:
-            if entry["sigma"] > check["max_sigma"]:
+            if "max_sigma" in check and entry["sigma"] > check["max_sigma"]:
                 result["warnings"].append(f"{LABELS[task]}, {name}: sigma {entry['sigma']:.2f} > {check['max_sigma']}")
-            if entry["easy_n"] and entry["easy_correct"] < check["min_easy_correct"]:
+            if "min_easy_correct" in check and entry["easy_n"] and entry["easy_correct"] < check["min_easy_correct"]:
                 result["warnings"].append(f"{LABELS[task]}, {name}: easy trials {entry['easy_correct']:.0%} correct "
                                           f"< {check['min_easy_correct']:.0%}")
         result["conditions"].append(entry)
@@ -108,6 +109,8 @@ def summary_text(result):
     for e in result["conditions"]:
         v1 = e["v1_sigma_range"]
         ref = f"  [v1 σ {v1[0]:.2f}–{v1[2]:.2f}, median {v1[1]:.2f}]" if v1 else ""
+        if result["task"] == "unimodal_auditory" and e["noise"] not in (None, S.NOISE_LOW):
+            ref = f"  [participant's calibrated level; target σ {S.NOISE_CALIBRATION['target_sigma']}]"
         extra = f", visual correction {e['correction_s']:+.3f} s" if "correction_s" in e else ""
         bound = " (AT THE FIT BOUND: about chance)" if e["sigma_at_bound"] else ""
         easy = f"{e['easy_correct']:.0%} of {e['easy_n']}" if e["easy_n"] else "none"

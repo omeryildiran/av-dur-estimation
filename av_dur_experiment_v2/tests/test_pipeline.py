@@ -199,7 +199,7 @@ def check_staircase_rules():
     top.update(True)                                   # 1D: one "test longer" steps down from the ceiling
     assert round(top.level, 2) == 0.74
     rng = np.random.default_rng(0)
-    for task in S.TASKS:
+    for task in (t for t in S.TASKS if t != "noise_calibration"):      # its staircases move the noise
         for block in (S.TASKS["main"]["blocks"] if task == "main" else [None]):
             starts = design.staircase_starts(task, rng, block)
             rules = S.TASKS[task]["staircases"]
@@ -225,7 +225,7 @@ def check_staircase_rules():
 
 def check_staircase_starts(root, pid):
     """Every staircase's first trial is at its logged starting end; pairs start at opposite ends."""
-    for task in storage.TASK_ORDER:
+    for task in (t for t in storage.TASK_ORDER if t != "noise_calibration"):
         d = storage.load_trials(task, pid, root)
         d = d[d.kind == "staircase"].sort_values("trial_num")
         first = d.groupby(["session_file", "condition", "current_stair"]).first()
@@ -269,7 +269,13 @@ def check_failed_start_and_ids(root):
     assert last["participant"] == "SIM99" and last["frame_rate_measured_hz"] == 75.0
     assert design.normalize_pid("p2") == design.normalize_pid("2") == design.normalize_pid(" P02 ") == "P02"
     assert design.normalize_pid("p201") == "P201" and design.normalize_pid("sim01") == "SIM01"
-    for bad in ("", "abc", "P2a"):
+    assert design.normalize_pid(" oy ") == "OY" and design.normalize_pid("ln2") == "LN2"
+    first = design.participant_number("ZZ", root)                         # preview only: nothing written
+    assert design.participant_number("ZZ", root) == first and not (root / "participants.json").exists()
+    assert design.participant_number("ZZ", root, assign=True) == first
+    assert design.participant_number("YY", root, assign=True) == first + 1 and design.participant_number("ZZ", root) == first
+    assert design.block_order("YY", root) == S.BLOCK_ORDERS[first % len(S.BLOCK_ORDERS)]
+    for bad in ("", "a", "P2a", "toolong", "o y"):
         try:
             design.normalize_pid(bad)
             raise AssertionError(bad)
@@ -342,12 +348,19 @@ def check_autotest_report(root):
 def check_combined_session(tmp):
     """Three blocks in one run: fits and decisions saved; a failed check stops when the experimenter ends."""
     from avdur import run_blocks
-    ok, results = run_blocks.run("P50", SimulatedPresenter(3), tmp, simulate=True, background_fits=False, log=lambda *_: None)
+    listener = dict(sigma_a=lambda n: 0.7 / np.sqrt(2) * (n / 0.8) ** 0.5)     # sigma 0.7 at noise 0.8
+    ok, results = run_blocks.run("P50", SimulatedPresenter(3, listener), tmp, simulate=True, background_fits=False,
+                                 log=lambda *_: None)
     assert ok and [r["task"] for r in results] == list(S.COMBINED_SESSION_TASKS)
+    noise = storage.latest_noise("P50", tmp)[0]["noise_high"]
+    assert 0.45 < 0.7 * (noise / 0.8) ** 0.5 < 1.1, noise            # sigma reached near the 0.7 target
     for task in S.COMBINED_SESSION_TASKS:
         (meta,) = storage.sessions("P50", task, tmp)
         assert meta["screening"]["decision"] == "no warnings" and Path(meta["block_fit"]["plot"]).exists(), meta
-        assert meta["block_fit"]["conditions"], task
+        if task != "noise_calibration":
+            assert meta["block_fit"]["conditions"], task
+        if task in ("unimodal_auditory", "crossmodal"):
+            assert sorted(storage.load_trials(task, "P50", tmp).audNoise.unique()) == [S.NOISE_LOW, noise], task
     from avdur import screening
     m = storage.sessions("SIM01", "main", SIM_ROOT)[0]
     r = screening.main_block_fit(m["csv"], tmp / "main_fits")
@@ -361,10 +374,37 @@ def check_combined_session(tmp):
     sloppy = SimulatedPresenter(4, dict(sigma_a={0.1: 1.5, 1.2: 2.0}, lapse=0.4))
     sloppy.experimenter_continues = False
     ok, results = run_blocks.run("P51", sloppy, tmp, simulate=True, background_fits=False, log=lambda *_: None)
-    assert not ok and len(results) == 1 and results[0]["warnings"], results
-    (meta,) = storage.sessions("P51", "unimodal_auditory", tmp)
+    assert not ok and len(results) == 1 and results[0]["warnings"], results       # stopped after the calibration
+    (meta,) = storage.sessions("P51", "noise_calibration", tmp)
     assert meta["completed"] and meta["screening"]["decision"] == "ended by the experimenter"
-    assert not storage.sessions("P51", "unimodal_visual", tmp, completed_only=False), "no block after the end"
+    assert not storage.sessions("P51", "unimodal_auditory", tmp, completed_only=False), "no block after the end"
+
+
+def check_noise_calibration(tmp):
+    """The calibration finds the level where a listener's sigma is the target; later tasks use it;
+    a real session without a calibration is refused."""
+    from avdur import noise_calibration, run_task
+    found = []
+    for n_star in (0.3, 1.2):
+        listener = dict(sigma_a=lambda n, n_star=n_star: 0.7 / np.sqrt(2) * (n / n_star) ** 0.6)
+        pid = f"SIM6{len(found)}"
+        cal = noise_calibration.NoiseCalibration(pid, SimulatedPresenter(5, listener), seed=5, root=tmp, simulate=True)
+        assert cal.run() and Path(cal.calibration["file"]).exists() and Path(cal.calibration["plot"]).exists()
+        found.append(cal.calibration["noise_high"])
+        sigma = 0.7 * (found[-1] / n_star) ** 0.6
+        assert 0.45 < sigma < 1.1, (n_star, found[-1], sigma)
+        d = pd.read_csv(cal.csv_path)
+        assert len(d) == 2 * S.NOISE_CALIBRATION["trials_per_staircase"] + S.NOISE_CALIBRATION["catch_trials"]
+        assert (d[d.kind == "staircase"].groupby("current_stair").order.apply(lambda o: (o == 1).mean()) == 0.5).all()
+    assert found[0] < found[1], found
+    assert run_task.main(["--task", "unimodal_auditory", "--pid", "SIM60", "--simulate", "--seed", "1",
+                          "--data-root", str(tmp)]) == 0
+    assert set(storage.load_trials("unimodal_auditory", "SIM60", tmp).audNoise) == {S.NOISE_LOW, found[0]}
+    try:
+        run_task.main(["--task", "crossmodal", "--pid", "OYX", "--data-root", str(tmp)])
+        raise AssertionError("a real session without a noise calibration must be refused")
+    except SystemExit as err:
+        assert err.code == 2
 
 
 def run_all(root=SIM_ROOT):
@@ -392,6 +432,7 @@ def run_all(root=SIM_ROOT):
         check_solid(Path(tmp))
         check_autotest_report(Path(tmp))
         check_combined_session(Path(tmp))
+        check_noise_calibration(Path(tmp))
     snr = check_audio()
     return summary, snr
 

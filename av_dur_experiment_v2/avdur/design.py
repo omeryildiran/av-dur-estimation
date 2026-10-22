@@ -10,7 +10,9 @@ The cross-modal task keeps v1's pre-cued order blocks: each block of
 from __future__ import annotations
 
 import itertools
+import json
 import re
+from pathlib import Path
 from dataclasses import dataclass, asdict
 
 import experiment_settings as S
@@ -36,31 +38,51 @@ class TrialSpec:
 
 
 def normalize_pid(raw):
-    """Canonical participant ID: 'p2', '2', 'P2' and 'P02' all become 'P02'. SIM IDs are for tests."""
+    """Canonical participant ID: initials ('oy', 'ln2' -> 'OY', 'LN2') or P + number ('p2', '2' -> 'P02').
+    SIM IDs are for tests."""
     raw = raw.strip()
     if raw.upper().startswith("SIM"):
         return raw.upper()
     match = re.fullmatch(r"[Pp]?0*(\d+)", raw)
-    if match is None:
-        raise ValueError(f"Participant ID must be P followed by a number (e.g. P14), got {raw!r}")
-    return f"P{int(match.group(1)):02d}"
+    if match is not None:
+        return f"P{int(match.group(1)):02d}"
+    if re.fullmatch(r"[A-Za-z]{2,4}\d?", raw):
+        return raw.upper()
+    raise ValueError(f"Participant ID must be initials (e.g. OY, LN2) or P + number (e.g. P14), got {raw!r}")
 
 
-def participant_number(pid):
-    match = re.search(r"(\d+)$", pid)
-    if match is None:
-        raise ValueError(f"Participant ID must end in a number (e.g. P14), got {pid!r}")
-    return int(match.group(1))
+def _registry_path(root):
+    from avdur import storage
+    return Path(root or storage.DATA_ROOT) / "participants.json"
 
 
-def block_order(pid):
+def participant_number(pid, root=None, assign=False):
+    """Counterbalancing number. P14 / SIM01 carry it; initials get the next free number in
+    <data folder>/participants.json at their first session (assign=True). Before that, the
+    number they would get is returned without writing anything."""
+    match = re.fullmatch(r"(?:P|SIM)(\d+)", pid)
+    if match is not None:
+        return int(match.group(1))
+    path = _registry_path(root)
+    registry = json.loads(path.read_text()) if path.exists() else {}
+    if pid in registry:
+        return registry[pid]
+    number = max(registry.values(), default=0) + 1
+    if assign:
+        registry[pid] = number
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(registry, indent=2))
+    return number
+
+
+def block_order(pid, root=None, assign=False):
     """Main-experiment block order for this participant (cycles through all 6 orders)."""
-    return S.BLOCK_ORDERS[(participant_number(pid) - 1) % len(S.BLOCK_ORDERS)]
+    return S.BLOCK_ORDERS[(participant_number(pid, root, assign) - 1) % len(S.BLOCK_ORDERS)]
 
 
-def crossmodal_first_order(pid):
+def crossmodal_first_order(pid, root=None, assign=False):
     """Odd participant numbers start the cross-modal task with A->V, even with V->A."""
-    return 1 if participant_number(pid) % 2 else 2
+    return 1 if participant_number(pid, root, assign) % 2 else 2
 
 
 def _orders(n, extra_first):
@@ -69,10 +91,11 @@ def _orders(n, extra_first):
     return [1] * first + [2] * (n - first)
 
 
-def conditions(task, block=None):
+def conditions(task, block=None, noise_levels=None):
+    """(noise, conflict) pairs; noise_levels overrides the task's (the participant's calibrated high level)."""
     cfg = S.TASKS[task]
     conflicts = cfg["blocks"][block] if task == "main" else cfg["conflicts"]
-    return list(itertools.product(cfg["noise_levels"], conflicts))
+    return list(itertools.product(noise_levels or cfg["noise_levels"], conflicts))
 
 
 def staircase_side(rule):
@@ -81,7 +104,7 @@ def staircase_side(rule):
     return (n_down > n_up) - (n_down < n_up)
 
 
-def staircase_starts(task, rng, block=None):
+def staircase_starts(task, rng, block=None, noise_levels=None):
     """{(noise, conflict, rule): "floor" | "ceiling"}: every staircase starts on the side opposite
     the point it converges to, so it crosses the PSE on its way (2D1U and 3D1U at the floor,
     1D2U and 1D3U at the ceiling). The staircases come in pairs; a pair of 50% rules (the two
@@ -90,7 +113,7 @@ def staircase_starts(task, rng, block=None):
     rules = S.TASKS[task]["staircases"]
     if len(rules) % 2:
         raise ValueError(f"{task}: staircases must come in pairs, got {rules}")
-    conds = conditions(task, block)
+    conds = conditions(task, block, noise_levels)
     starts = {}
     for k in range(0, len(rules), 2):
         a, b = rules[k], rules[k + 1]
@@ -113,17 +136,17 @@ def staircase_starts(task, rng, block=None):
     return starts
 
 
-def build_trials(task, rng, block=None, practice=False, first_order=1):
+def build_trials(task, rng, block=None, practice=False, first_order=1, noise_levels=None):
     cfg = S.TASKS[task]
     slots = []
     if practice:
-        conds = conditions(task, block)
+        conds = conditions(task, block, noise_levels)
         for i in range(S.PRACTICE_TRIALS):
             noise, conflict = conds[i % len(conds)]
             level = cfg["lapse_levels"][i % 2]
             slots.append(TrialSpec(task, noise, conflict, "practice", None, level, 1 + i % 2))
     else:
-        for noise, conflict in conditions(task, block):
+        for noise, conflict in conditions(task, block, noise_levels):
             for k, rule in enumerate(cfg["staircases"]):
                 for order in _orders(cfg["trials_per_staircase"], extra_first=(k % 2 == 0)):
                     slots.append(TrialSpec(task, noise, conflict, "staircase", rule, None, order))
