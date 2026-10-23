@@ -41,6 +41,9 @@ def main(argv=None):
     ap.add_argument("--max-trials", type=int, help="simulate/autotest only: run just the first N trials")
     ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
     ap.add_argument("--noise-high", type=float, help="high noise level (default: the participant's noise calibration)")
+    ap.add_argument("--single-standard", action="store_true",
+                    help="cross-modal: the 500 ms standard only (default: every standard in CROSSMODAL_STANDARDS)")
+    ap.add_argument("--standard", type=float, help="cross-modal: run this one standard (s), e.g. to repeat it")
     ap.add_argument("--seed", type=int)
     ap.add_argument("--data-root", help="default: data/ (data_simulated/ with --simulate, data_test/ with --autotest)")
     args = ap.parse_args(argv)
@@ -79,6 +82,8 @@ def main(argv=None):
         return 0 if completed else EXIT_STOPPED
 
     noise_high, noise_file = resolve_noise(ap, args, root)
+    if args.task == "crossmodal" and not args.practice:
+        return run_crossmodal(args, presenter, root, common, noise_high, noise_file)
     if args.task == "main" and noise_high is not None and str(float(noise_high)) not in bias["per_noise"]:
         ap.error(f"The bias file was measured at noise levels {sorted(bias['per_noise'])}, but this participant's "
                  f"high noise level is {noise_high}. Run the cross-modal task again at the calibrated level.")
@@ -113,3 +118,37 @@ def resolve_noise(ap, args, root):
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def run_crossmodal(args, presenter, root, common, noise_high, noise_file):
+    """The cross-modal task at each remaining standard (one session each, one window, breaks between)."""
+    from avdur import screening, standards
+    if args.standard is not None:
+        std = args.standard
+        todo = [(std, None if abs(std - S.STANDARD_DUR_S) < 1e-9 else dict(S.CROSSMODAL_STANDARDS["extra_design"]),
+                 standards.label(std))]
+    else:
+        todo = standards.remaining(args.pid, root, several=not args.single_standard)
+    if not todo:
+        print(f"{args.pid}: the cross-modal task is done at every standard. Use --standard to repeat one.", flush=True)
+        return 0
+    print(f"[{args.pid}] cross-modal standards: " + ", ".join(f"{1000 * std:.0f} ms" for std, *_ in todo), flush=True)
+    for k, (std, design_override, label) in enumerate(todo):
+        last = k == len(todo) - 1
+        session = Session("crossmodal", args.pid, presenter, block=label, noise_high=noise_high, noise_file=noise_file,
+                          standard_s=std, design=design_override, close_at_end=last, **common)
+        if not session.run():
+            return EXIT_STOPPED
+        if not args.simulate:
+            try:
+                print(screening.fit_after_session("crossmodal", session.csv_path, session.root / args.pid / "fits"),
+                      flush=True)
+            except Exception as err:
+                print(f"(fit after the session failed: {err})", flush=True)
+        if not last:
+            presenter.wait_screen(f"Part {k + 1} of {len(todo)} is done.\n\nPlease take a short break.",
+                                  lambda: True, S.BLOCK_REST_MIN_S)
+    text = standards.report(args.pid, root, n_boot=0 if args.simulate else 200)
+    if text:
+        print(text, flush=True)
+    return 0

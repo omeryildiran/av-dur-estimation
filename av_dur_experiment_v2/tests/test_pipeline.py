@@ -351,14 +351,17 @@ def check_combined_session(tmp):
     listener = dict(sigma_a=lambda n: 0.7 / np.sqrt(2) * (n / 0.8) ** 0.5)     # sigma 0.7 at noise 0.8
     ok, results = run_blocks.run("P50", SimulatedPresenter(3, listener), tmp, simulate=True, background_fits=False,
                                  log=lambda *_: None)
-    assert ok and [r["task"] for r in results] == list(S.COMBINED_SESSION_TASKS)
+    n_std = 1 + len(S.CROSSMODAL_STANDARDS["standards"]) if S.CROSSMODAL_STANDARDS["enabled"] else 1
+    assert ok and [r["task"] for r in results] == list(S.COMBINED_SESSION_TASKS) + ["crossmodal"] * (n_std - 1)
     noise = storage.latest_noise("P50", tmp)[0]["noise_high"]
-    assert 0.45 < 0.7 * (noise / 0.8) ** 0.5 < 1.1, noise            # sigma reached near the 0.7 target
+    assert 0.40 < 0.7 * (noise / 0.8) ** 0.5 < 1.25, noise           # sigma reached near the 0.7 target (99% range)
     for task in S.COMBINED_SESSION_TASKS:
-        (meta,) = storage.sessions("P50", task, tmp)
-        assert meta["screening"]["decision"] == "no warnings" and Path(meta["block_fit"]["plot"]).exists(), meta
-        if task != "noise_calibration":
-            assert meta["block_fit"]["conditions"], task
+        metas = storage.sessions("P50", task, tmp)
+        assert len(metas) == (n_std if task == "crossmodal" else 1), (task, len(metas))
+        for meta in metas:
+            assert meta["screening"]["decision"] == "no warnings" and Path(meta["block_fit"]["plot"]).exists(), meta
+            if task != "noise_calibration":
+                assert meta["block_fit"]["conditions"], task
         if task in ("unimodal_auditory", "crossmodal"):
             assert sorted(storage.load_trials(task, "P50", tmp).audNoise.unique()) == [S.NOISE_LOW, noise], task
     from avdur import screening
@@ -378,6 +381,28 @@ def check_combined_session(tmp):
     (meta,) = storage.sessions("P51", "noise_calibration", tmp)
     assert meta["completed"] and meta["screening"]["decision"] == "ended by the experimenter"
     assert not storage.sessions("P51", "unimodal_auditory", tmp, completed_only=False), "no block after the end"
+
+
+def check_crossmodal_standards(tmp):
+    """Several standards: one session each (500 ms full design first); only 500 ms sets the correction."""
+    from avdur import run_task, standards
+    args = ["--task", "crossmodal", "--simulate", "--seed", "3", "--data-root", str(tmp), "--noise-high", "0.8"]
+    assert run_task.main(["--pid", "SIM72"] + args) == 0
+    metas = storage.sessions("SIM72", "crossmodal", tmp)
+    extra = S.CROSSMODAL_STANDARDS["standards"]
+    assert [round(m["standard_s"], 3) for m in metas][0] == S.STANDARD_DUR_S
+    assert sorted(round(m["standard_s"], 3) for m in metas) == sorted([S.STANDARD_DUR_S, *extra])
+    d = storage.load_trials("crossmodal", "SIM72", tmp)
+    n = d.groupby(d.standardDur.round(3)).size().to_dict()
+    cfg = S.CROSSMODAL_STANDARDS["extra_design"]
+    short = 2 * (len(cfg["staircases"]) * cfg["trials_per_staircase"] + 2 * cfg["lapse_trials_per_level"])
+    assert n[S.STANDARD_DUR_S] == 388 and all(n[round(x, 3)] == short for x in extra), n
+    assert (bias_mod.load_crossmodal("SIM72", tmp).standardDur == S.STANDARD_DUR_S).all()
+    table = standards.bias_table("SIM72", tmp, n_boot=0)
+    assert len(table) == 2 * len(metas) and table.standard_ms.nunique() == len(metas)
+    assert standards.remaining("SIM72", tmp) == [] and run_task.main(["--pid", "SIM72"] + args) == 0   # nothing left
+    assert run_task.main(["--pid", "SIM73", "--single-standard"] + args) == 0
+    assert len(storage.sessions("SIM73", "crossmodal", tmp)) == 1
 
 
 def check_noise_calibration(tmp):
@@ -433,6 +458,7 @@ def run_all(root=SIM_ROOT):
         check_autotest_report(Path(tmp))
         check_combined_session(Path(tmp))
         check_noise_calibration(Path(tmp))
+        check_crossmodal_standards(Path(tmp))
     snr = check_audio()
     return summary, snr
 

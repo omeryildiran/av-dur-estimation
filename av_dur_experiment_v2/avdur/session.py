@@ -27,9 +27,12 @@ NEEDS_AUDIO = {"noise_calibration", "unimodal_auditory", "crossmodal", "main"}
 class Session:
     def __init__(self, task, pid, presenter, block=None, practice=False, bias=None, bias_file=None,
                  seed=None, root=None, monitor=S.DEFAULT_MONITOR, simulate=False, autotest=False,
-                 max_trials=None, solid_root=None, close_at_end=True, verbose=False, noise_high=None, noise_file=None):
+                 max_trials=None, solid_root=None, close_at_end=True, verbose=False, noise_high=None, noise_file=None,
+                 standard_s=None, design=None):
         if task == "main" and bias is None:
             raise ValueError("The main experiment needs a confirmed bias file (run the cross-modal task first).")
+        if standard_s is not None and task != "crossmodal":
+            raise ValueError("Only the cross-modal task can use another standard duration.")
         if task == "main" and block not in S.TASKS["main"]["blocks"]:
             raise ValueError(f"Main-experiment block must be one of {list(S.TASKS['main']['blocks'])}, got {block!r}")
         if max_trials and not (simulate or autotest):
@@ -42,7 +45,9 @@ class Session:
         self.max_trials, self.solid_root = max_trials, solid_root
         self.close_at_end, self.verbose = close_at_end, verbose     # False: more blocks follow in this window
         self.meta = self.csv_path = self.json_path = None
-        self.cfg = dict(S.TASKS[task])
+        self.cfg = dict(S.TASKS[task], **(design or {}))     # design: e.g. a shorter design for extra standards
+        self.standard_s = float(standard_s if standard_s is not None else S.STANDARD_DUR_S)
+        self.design_override = design
         # v2: low noise fixed, high noise = the participant's calibrated level (NOISE_HIGH_DEFAULT without one)
         self.noise_high = round(float(noise_high if noise_high is not None else S.NOISE_HIGH_DEFAULT), 3)
         self.noise_file = noise_file
@@ -64,7 +69,7 @@ class Session:
         floor = self.cfg["floor"]
         if self.task == "main":
             applied, _ = self.correction_s(noise)
-            floor = max(floor, (S.MIN_VISUAL_DUR_S - min(applied, 0.0)) / S.STANDARD_DUR_S - 1)
+            floor = max(floor, (S.MIN_VISUAL_DUR_S - min(applied, 0.0)) / self.standard_s - 1)
         return math.ceil(floor * 100) / 100
 
     # ── run ───────────────────────────────────────────────────────────────────
@@ -78,7 +83,8 @@ class Session:
         if self.max_trials and self.max_trials < len(trials):
             meta.update(trial_limit=self.max_trials, n_trials_full=len(trials))
             trials = trials[:self.max_trials]
-        meta.update(noise_levels=[n for n in self.cfg["noise_levels"] if n is not None], noise_file=self.noise_file)
+        meta.update(noise_levels=[n for n in self.cfg["noise_levels"] if n is not None], noise_file=self.noise_file,
+                    standard_s=self.standard_s, design_override=self.design_override)
         meta.update(n_trials_planned=len(trials), bias_file=self.bias_file, frame_rate_nominal_hz=self.fr,
                     testing_only_profile=bool(S.MONITOR_PROFILES[self.monitor].get("testing_only")),
                     corrections_applied_s={str(n): self.correction_s(n)[0] for n in self.cfg["noise_levels"]
@@ -138,10 +144,11 @@ class Session:
 
     # ── hooks (overridden by the noise calibration) ───────────────────────────
     def _build_trials(self, rng, first_order):
-        return design.build_trials(self.task, rng, self.block, self.practice, first_order, self.cfg["noise_levels"])
+        return design.build_trials(self.task, rng, self.block, self.practice, first_order, self.cfg["noise_levels"],
+                                   self.cfg)
 
     def _make_stairs(self, rng):
-        starts = design.staircase_starts(self.task, rng, self.block, self.cfg["noise_levels"])
+        starts = design.staircase_starts(self.task, rng, self.block, self.cfg["noise_levels"], self.cfg)
         return {key: Staircase(key[2], self.floor(key[0]), start=start, **S.STAIRCASE) for key, start in starts.items()}
 
     def _trial_level(self, spec, stair):
@@ -194,10 +201,11 @@ class Session:
         stair = stairs.get((spec.noise, spec.conflict, spec.staircase)) if spec.kind == "staircase" else None
         level = self._trial_level(spec, stair)
         spec = dataclasses.replace(spec, noise=self._trial_noise(spec, stair))     # the noise actually played
-        test_frames = max(to_frames(S.STANDARD_DUR_S * (1 + level), self.fr), 1)
+        test_frames = max(to_frames(self.standard_s * (1 + level), self.fr), 1)
         test_s = test_frames / self.fr
         applied, estimate = self.correction_s(spec.noise)
-        sched = make_schedule(self.schedule_task, spec.order, test_s, spec.conflict, applied, rng, self.fr)
+        sched = make_schedule(self.schedule_task, spec.order, test_s, spec.conflict, applied, rng, self.fr,
+                              standard_s=self.standard_s)
         seed = int(rng.integers(2**31))
         wave = audio.trial_sound(sched, spec.noise, seed) if audio is not None else None
 
@@ -205,7 +213,7 @@ class Session:
         if result.get("quit"):
             return None
         chose_test = result["response"] == spec.order
-        standard_s = to_frames(S.STANDARD_DUR_S, self.fr) / self.fr
+        standard_s = to_frames(self.standard_s, self.fr) / self.fr
         is_correct = (test_s > standard_s and chose_test) or (test_s < standard_s and not chose_test)
         if stair is not None:
             self._update_stair(stair, chose_test, is_correct)
@@ -254,6 +262,7 @@ class Session:
             max_frame_interval_ms=result.get("max_frame_interval_ms", np.nan),
             responses=result["response"], response_keys=result.get("key", ""),
             response_rts=round(float(result.get("rt", np.nan)), 4),     # from the prompt's first flip (as v1)
+            rt_source=result.get("rt_source", "simulated"),
             prompt_shown=int(bool(result.get("prompt_shown", True))),
             answer_allowed_from_s=result.get("prompt_onset_s", np.nan),   # prompt onset, from frame 0
             chose_test=int(chose_test), is_correct=int(is_correct),

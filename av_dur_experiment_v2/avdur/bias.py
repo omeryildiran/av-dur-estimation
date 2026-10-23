@@ -19,8 +19,12 @@ from avdur import storage
 
 
 def load_crossmodal(pid, root=None):
+    """Cross-modal trials at the experiment's standard (STANDARD_DUR_S): other standards are not used
+    for the main experiment's correction."""
     df = storage.load_trials("crossmodal", pid, root)
-    return df[df["responses"].isin([1, 2])] if len(df) else df
+    if not len(df):
+        return df
+    return df[df["responses"].isin([1, 2]) & np.isclose(df["standardDur"], S.STANDARD_DUR_S, atol=0.005)]
 
 
 def estimate(df, method=None, rng=None, n_boot=None):

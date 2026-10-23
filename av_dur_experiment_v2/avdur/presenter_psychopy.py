@@ -357,7 +357,14 @@ class PsychoPyPresenter:
         """A pressed answer key (or Escape), or the autotest answer once its time has come."""
         pressed = self.kb.getKeys(keys, waitRelease=False)
         if pressed:
-            return pressed[0]
+            key, seen = pressed[0], self.kb.clock.getTime()          # reset on the prompt's first flip
+            # On macOS, PsychoPy's PTB keyboard can time keys on another clock than the one it was
+            # reset with (RTs around -1e6 s). Then use the time the key was first seen (1-frame
+            # resolution). The answer itself is unaffected.
+            rt = getattr(key, "rt", None)
+            if rt is None or not (-0.005 <= rt <= seen + 0.05):
+                return SimpleNamespace(name=key.name, rt=seen, rt_source="first seen (keyboard time invalid)")
+            return key
         if auto is not None:
             t = self.kb.clock.getTime()                  # reset on the prompt's first flip
             if t >= auto[1]:
@@ -440,7 +447,8 @@ class PsychoPyPresenter:
                 recorded[(i, "on")] = flips[v[0]] - flips[0]
                 recorded[(i, "off")] = flips[v[1]] - flips[0]
         return dict(
-            quit=False, response=S.RESPONSE_KEYS[key.name], key=key.name, rt=key.rt, flips=recorded,
+            quit=False, response=S.RESPONSE_KEYS[key.name], key=key.name, rt=key.rt,
+            rt_source=getattr(key, "rt_source", "automatic" if self.auto is not None else "keyboard"), flips=recorded,
             prompt_shown=True, prompt_onset_s=prompt_onset, **audio,
             flip0_error_s=flips[0] - predicted_flip0,
             n_dropped_frames=int(np.sum(intervals > 1.5 * self.frame_period)) if intervals.size else 0,

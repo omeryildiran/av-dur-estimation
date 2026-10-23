@@ -91,9 +91,9 @@ def _orders(n, extra_first):
     return [1] * first + [2] * (n - first)
 
 
-def conditions(task, block=None, noise_levels=None):
+def conditions(task, block=None, noise_levels=None, cfg=None):
     """(noise, conflict) pairs; noise_levels overrides the task's (the participant's calibrated high level)."""
-    cfg = S.TASKS[task]
+    cfg = cfg or S.TASKS[task]
     conflicts = cfg["blocks"][block] if task == "main" else cfg["conflicts"]
     return list(itertools.product(noise_levels or cfg["noise_levels"], conflicts))
 
@@ -104,16 +104,16 @@ def staircase_side(rule):
     return (n_down > n_up) - (n_down < n_up)
 
 
-def staircase_starts(task, rng, block=None, noise_levels=None):
+def staircase_starts(task, rng, block=None, noise_levels=None, cfg=None):
     """{(noise, conflict, rule): "floor" | "ceiling"}: every staircase starts on the side opposite
     the point it converges to, so it crosses the PSE on its way (2D1U and 3D1U at the floor,
     1D2U and 1D3U at the ceiling). The staircases come in pairs; a pair of 50% rules (the two
     cross-modal 1D1U) starts at opposite ends, which one at the ceiling random per condition and
     balanced over the session's conditions."""
-    rules = S.TASKS[task]["staircases"]
+    rules = (cfg or S.TASKS[task])["staircases"]
     if len(rules) % 2:
         raise ValueError(f"{task}: staircases must come in pairs, got {rules}")
-    conds = conditions(task, block, noise_levels)
+    conds = conditions(task, block, noise_levels, cfg)
     starts = {}
     for k in range(0, len(rules), 2):
         a, b = rules[k], rules[k + 1]
@@ -136,17 +136,17 @@ def staircase_starts(task, rng, block=None, noise_levels=None):
     return starts
 
 
-def build_trials(task, rng, block=None, practice=False, first_order=1, noise_levels=None):
-    cfg = S.TASKS[task]
+def build_trials(task, rng, block=None, practice=False, first_order=1, noise_levels=None, cfg=None):
+    cfg = cfg or S.TASKS[task]
     slots = []
     if practice:
-        conds = conditions(task, block, noise_levels)
+        conds = conditions(task, block, noise_levels, cfg)
         for i in range(S.PRACTICE_TRIALS):
             noise, conflict = conds[i % len(conds)]
             level = cfg["lapse_levels"][i % 2]
             slots.append(TrialSpec(task, noise, conflict, "practice", None, level, 1 + i % 2))
     else:
-        for noise, conflict in conditions(task, block, noise_levels):
+        for noise, conflict in conditions(task, block, noise_levels, cfg):
             for k, rule in enumerate(cfg["staircases"]):
                 for order in _orders(cfg["trials_per_staircase"], extra_first=(k % 2 == 0)):
                     slots.append(TrialSpec(task, noise, conflict, "staircase", rule, None, order))

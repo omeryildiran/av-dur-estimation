@@ -33,14 +33,32 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import experiment_settings as S  # noqa: E402
-from avdur import design, screening, storage  # noqa: E402
+from avdur import design, screening, standards, storage  # noqa: E402
 from avdur.run_task import EXIT_STOPPED  # noqa: E402
 from avdur.session import Session  # noqa: E402
 
 
-def blocks_to_run(pid, root, rerun_all=False):
-    done = set() if rerun_all else {t for t in S.COMBINED_SESSION_TASKS if storage.sessions(pid, t, root)}
-    return [t for t in S.COMBINED_SESSION_TASKS if t not in done]
+def blocks_to_run(pid, root, rerun_all=False, several=None):
+    """Tasks of the combined session still to run (cross-modal: until every planned standard is done)."""
+    def done(t):
+        if rerun_all:
+            return False
+        if t == "crossmodal":
+            return not standards.remaining(pid, root, several)
+        return bool(storage.sessions(pid, t, root))
+    return [t for t in S.COMBINED_SESSION_TASKS if not done(t)]
+
+
+def steps_to_run(pid, root, rerun_all=False, several=None):
+    """[(task, standard_s, design, block label)]: the cross-modal task expands to one step per standard."""
+    steps = []
+    for t in blocks_to_run(pid, root, rerun_all, several):
+        if t == "crossmodal":
+            todo = standards.plan(pid, root, several) if rerun_all else standards.remaining(pid, root, several)
+            steps += [(t, std, des, lab) for std, des, lab in todo]
+        else:
+            steps.append((t, None, None, None))
+    return steps
 
 
 def _fit_inline(task, csv_path, plot_dir):
@@ -53,22 +71,29 @@ def _fit_inline(task, csv_path, plot_dir):
 
 
 def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulate=False, autotest=False,
-        max_trials=None, background_fits=True, open_plots=False, log=print):
+        max_trials=None, background_fits=True, open_plots=False, log=print, several=None):
     """Run the remaining blocks; returns (all completed, list of block results)."""
-    todo = blocks_to_run(pid, root, rerun_all=autotest)
-    if not todo:
-        log(f"{pid}: all three blocks are already done.")
+    steps = steps_to_run(pid, root, rerun_all=autotest, several=several)
+    if not steps:
+        log(f"{pid}: all blocks are already done.")
         return True, []
     cal = S.NOISE_CALIBRATION
-    n_trials = {t: (2 * cal["trials_per_staircase"] + cal["catch_trials"] if t == "noise_calibration"
-                    else len(design.build_trials(t, np.random.default_rng(0)))) for t in todo}
-    log(f"[{pid}] combined session: " + ", ".join(f"{screening.LABELS[t]} ({max_trials or n_trials[t]} trials)"
-                                                   for t in todo) + (" — with practice" if practice else ""))
+
+    def n_trials(task, des):
+        if task == "noise_calibration":
+            return 2 * cal["trials_per_staircase"] + cal["catch_trials"]
+        return len(design.build_trials(task, np.random.default_rng(0), cfg=dict(S.TASKS[task], **(des or {}))))
+
+    log(f"[{pid}] combined session: " + ", ".join(
+        f"{screening.LABELS[t]}{' ' + lab if lab else ''} ({max_trials or n_trials(t, des)} trials)"
+        for t, _, des, lab in steps) + (" — with practice" if practice else ""))
+    todo = [t for t, *_ in steps]
     executor = (ProcessPoolExecutor(1, mp_context=multiprocessing.get_context("spawn"))
                 if background_fits else None)
     results, plot_dir = [], Path(root) / pid / "fits"
     try:
-        for k, task in enumerate(todo):
+        practiced = set()
+        for k, (task, standard_s, design_override, label) in enumerate(steps):
             last = k == len(todo) - 1
             common = dict(root=root, monitor=monitor, simulate=simulate, autotest=autotest, close_at_end=False,
                           verbose=True)
@@ -88,9 +113,12 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
                 continue
             noise, noise_path = storage.latest_noise(pid, root)
             levels = dict(noise_high=noise["noise_high"] if noise else None, noise_file=str(noise_path) if noise_path else None)
-            if practice and not Session(task, pid, presenter, practice=True, **levels, **common).run():
-                return False, results
-            session = Session(task, pid, presenter, max_trials=max_trials, **levels, **common)
+            if practice and task not in practiced:
+                practiced.add(task)
+                if not Session(task, pid, presenter, practice=True, **levels, **common).run():
+                    return False, results
+            extra = dict(block=label, standard_s=standard_s, design=design_override) if task == "crossmodal" else {}
+            session = Session(task, pid, presenter, max_trials=max_trials, **extra, **levels, **common)
             if not session.run():
                 return False, results
             fit = None
@@ -114,6 +142,10 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
             if not _decide(presenter, session, result, log):
                 presenter.finish(False)
                 return False, results
+        if any(t == "crossmodal" for t, *_ in steps):
+            text = standards.report(pid, root)
+            if text:
+                log(text)
         presenter.finish(True)
     finally:
         if executor:
@@ -156,6 +188,7 @@ def main(argv=None):
     ap.add_argument("--max-trials", type=int, help="simulate/autotest only: first N trials of each block")
     ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
     ap.add_argument("--no-open-plots", action="store_true", help="do not open the plots at the end (fit viewer in use)")
+    ap.add_argument("--single-standard", action="store_true", help="cross-modal task at the 500 ms standard only")
     ap.add_argument("--seed", type=int)
     ap.add_argument("--data-root")
     args = ap.parse_args(argv)
@@ -177,7 +210,8 @@ def main(argv=None):
         presenter = PsychoPyPresenter(args.monitor, autotest_seed=auto_seed, screen=args.screen)
     ok, _ = run(pid, presenter, root, args.monitor, args.practice, args.simulate, args.autotest, args.max_trials,
                 background_fits=not args.simulate,
-                open_plots=not (args.simulate or args.autotest or args.no_open_plots))
+                open_plots=not (args.simulate or args.autotest or args.no_open_plots),
+                several=False if args.single_standard else None)
     return 0 if ok else EXIT_STOPPED
 
 

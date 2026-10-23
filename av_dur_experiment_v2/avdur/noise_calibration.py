@@ -140,16 +140,19 @@ def estimate(df):
     noise_stairs = float(np.clip(np.exp(np.mean([np.log(v["noise"]) for v in per_stair.values()])), lo, hi))
     a, b = _sigma_fit(stair)
     noise_fit = float(np.clip(np.exp((np.log(C["target_sigma"]) - a) / b), lo, hi))
-    noise_high = round(float(np.clip(np.sqrt(noise_stairs * noise_fit), lo, hi)), 3)
+    fit_valid = b > 0.05                    # a flat sigma(noise) fit says nothing about where the target is reached
+    noise_high = round(float(np.clip(np.sqrt(noise_stairs * noise_fit) if fit_valid else noise_stairs, lo, hi)), 3)
     catch = df[df["kind"] == "lapse"]["is_correct"]
-    if noise_high >= hi - 1e-9:
-        warnings.append(f"at the upper bound ({hi}): this listener is better than sigma {C['target_sigma']} "
-                        f"even at the loudest allowed noise (their high-noise sigma will be below the target)")
-    if noise_high <= lo + 1e-9:
-        warnings.append(f"at the lower bound ({lo}): sigma {C['target_sigma']} is not reached even in the "
-                        "softest noise (poor auditory duration discrimination)")
-    if abs(np.log(noise_fit / noise_stairs)) > np.log(2.0):
-        warnings.append(f"staircases ({noise_stairs:.2f}) and fit ({noise_fit:.2f}) disagree by more than x2")
+    notes = [] if fit_valid else ["the fit found no change of sigma with noise; the staircases alone set the level"]
+    sigma_at_low = float(np.exp(a + b * np.log(lo)))
+    if noise_high >= hi / 1.25:
+        notes.append(f"near the upper limit ({hi}): a good listener; their high-noise sigma will be somewhat "
+                     f"below the target {C['target_sigma']}")
+    if noise_high <= lo * 1.25 or sigma_at_low > 1.5 * C["target_sigma"]:
+        warnings.append(f"near the lower limit ({lo}; fitted sigma there {sigma_at_low:.2f}): sigma "
+                        f"{C['target_sigma']} is not reached even in the softest noise (poor auditory duration discrimination)")
+    if fit_valid and abs(np.log(noise_fit / noise_stairs)) > np.log(2.5):
+        warnings.append(f"staircases ({noise_stairs:.2f}) and fit ({noise_fit:.2f}) disagree by more than x2.5")
     if len(catch) and catch.mean() < 5 / 6:
         warnings.append(f"easy catch trials only {int(catch.sum())}/{len(catch)} correct")
     trace = {name: s["audNoise"].round(4).tolist() for name, s in stair.groupby("current_stair")}
@@ -159,7 +162,8 @@ def estimate(df):
                 sigma_fit=dict(a=a, b=b, sigma_at_low=float(np.exp(a + b * np.log(S.NOISE_LOW))),
                                sigma_at_result=float(np.exp(a + b * np.log(noise_high)))),
                 catch_correct=float(catch.mean()) if len(catch) else float("nan"), n_catch=int(len(catch)),
-                n_trials=int(len(df)), bounds=list(C["bounds"]), warnings=warnings, trace=trace)
+                fit_valid=bool(fit_valid), n_trials=int(len(df)), bounds=list(C["bounds"]), warnings=warnings,
+                notes=notes, trace=trace)
 
 
 def plot(df, result, folder, stem):
@@ -192,7 +196,7 @@ def plot(df, result, folder, stem):
     ax2.axvline(result["noise_high"], color="black", ls="--", lw=1)
     ax2.set(xscale="log", ylim=(0.3, 1.02), xlabel="Noise level",
             ylabel=f"Correct at {result['test_ms'][1]} / {result['test_ms'][0]} vs 500 ms",
-            title=f"σ = {C['target_sigma']} at noise {result['noise_high']:.2f}")
+            title=f"High noise level {result['noise_high']:.2f} (target σ {C['target_sigma']}; fit alone {result['noise_fit']:.2f})")
     ax2.legend(frameon=False)
     for ax in (ax1, ax2):
         for side in ("top", "right"):
@@ -209,7 +213,8 @@ def summary_text(result):
     lines = [f"── Noise calibration: high noise level {result['noise_high']:.3f} "
              f"(target σ {result['target_sigma']}; v1 used {S.NOISE_HIGH_DEFAULT}) ──",
              f"   staircases {st}; fit {result['noise_fit']:.2f}; catch trials {result['catch_correct']:.0%} of "
-             f"{result['n_catch']}; fitted σ at low noise {result['sigma_fit']['sigma_at_low']:.2f}"]
+             f"{result['n_catch']}; fitted σ at the chosen level {result['sigma_fit']['sigma_at_result']:.2f}"]
+    lines += [f"   note: {n}" for n in result.get("notes", [])]
     lines += [f"   WARNING: {w}" for w in result["warnings"]] or ["   checks passed"]
     if result.get("plot"):
         lines.append(f"   plot: {result['plot']}")

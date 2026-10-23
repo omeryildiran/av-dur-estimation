@@ -69,7 +69,8 @@ NOISE_LEVELS = (0.1, 1.2)           # v1: background noise relative to the signa
 NOISE_LOW = 0.1
 NOISE_HIGH_DEFAULT = 1.2            # only for simulations, tests and practice before a calibration
 NOISE_CALIBRATION = dict(
-    target_sigma=0.7,               # about the median visual sigma in v1
+    target_sigma=0.75,              # model simulations: 0.7-0.85 separates fusion, causal inference and
+                                    # cue switching best (switching is best separated near sigma_v, v1 median 0.62)
     target_correct=0.7071,          # 2-down-1-up on correct answers (2 correct: louder noise; 1 error: softer)
     trials_per_staircase=60,        # two interleaved staircases (126 trials with the catch trials, ~6 min)
     start_noise=(0.3, 1.6),         # one starts easy, one hard
@@ -195,6 +196,18 @@ BLOCK_ORDERS = [
     ("B1", "B2", "B3"), ("B1", "B3", "B2"), ("B2", "B1", "B3"),
     ("B2", "B3", "B1"), ("B3", "B1", "B2"), ("B3", "B2", "B1"),
 ]
+
+# ── Cross-modal task at several standards (v2, 2026-10-23) ─────────────────────
+# Is the audiovisual duration bias a constant offset or does it scale with duration? With
+# enabled=True the cross-modal task runs one block per standard: 500 ms first, with the full
+# design (it alone sets the main experiment's correction), then the others with a shorter
+# design, in an order that alternates by participant number. --single-standard (or the
+# launcher checkbox) runs the 500 ms block only.
+CROSSMODAL_STANDARDS = dict(
+    enabled=True,
+    standards=(0.3, 0.8),           # in addition to STANDARD_DUR_S
+    extra_design=dict(staircases=("1D1U", "1D1U_b"), trials_per_staircase=30, lapse_trials_per_level=3),
+)
 
 # ── Cross-modal bias correction (v2: fitted automatically) ────────────────────
 # The correction is the visual duration added to every visual flash in the main

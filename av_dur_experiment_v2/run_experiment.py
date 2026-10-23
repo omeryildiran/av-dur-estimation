@@ -50,6 +50,12 @@ def status_text(raw_pid, root=None):
             lines.append(f"  {i}. {S.TASKS[task]['label']}: blocks done: {blocks};  next: {st['next_block'] or 'all done'}")
         else:
             when = f"done {done[-1]['started'][:16].replace('T', ' ')} ({done[-1]['n_trials']} trials)" if done else "not done"
+            if task == "crossmodal":
+                from avdur import standards
+                got = sorted(standards.done_standards(pid, root))
+                left = [f"{1000 * x:.0f}" for x, *_ in standards.remaining(pid, root)]
+                when = ("standards done: " + (", ".join(f"{1000 * x:.0f} ms" for x in got) or "none")
+                        + (f";  still to run: {', '.join(left)} ms" if left else ";  all standards done"))
             lines.append(f"  {i}. {S.TASKS[task]['label']}: {when}")
         if task == "noise_calibration":
             nz = st["noise"]
@@ -173,7 +179,11 @@ def run_window():
     ttk.Label(frm, text="Main-experiment block").grid(row=2, column=0, sticky="w")
     ttk.OptionMenu(frm, block, "auto", "auto", *S.TASKS["main"]["blocks"]).grid(row=2, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
-        row=3, column=0, columnspan=2, sticky="w")
+        row=3, column=0, sticky="w")
+    several = tk.BooleanVar(value=S.CROSSMODAL_STANDARDS["enabled"])
+    other_ms = "/".join(f"{1000 * x:.0f}" for x in S.CROSSMODAL_STANDARDS["standards"])
+    ttk.Checkbutton(frm, text=f"Cross-modal at several standards (500, then {other_ms} ms)", variable=several,
+                    command=lambda: refresh()).grid(row=3, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Simulate (no window; saves to data_simulated/)", variable=simulate,
                     command=lambda: refresh()).grid(row=4, column=0, columnspan=2, sticky="w")
     ttk.Checkbutton(frm, text="Autotest: automatic answers on this display and sound card (saves to data_test/)",
@@ -245,6 +255,8 @@ def run_window():
                 return
         cmd = task_command(task, p, monitor.get(), practice.get(), simulate.get(), b, bias_file,
                            autotest.get(), quick.get(), chosen_screen())
+        if task == "crossmodal" and not several.get():
+            cmd.append("--single-standard")
         since = dt.datetime.now().isoformat(timespec="seconds")
         if not simulate.get():
             start_viewer(p, data_root())
@@ -284,6 +296,8 @@ def run_window():
             return
         cmd = combined_command(p, monitor.get(), practice.get(), simulate.get(), autotest.get(), quick.get(),
                                chosen_screen())
+        if not several.get():
+            cmd.append("--single-standard")
         if not simulate.get() and start_viewer(p, data_root()):
             cmd.append("--no-open-plots")
         root.withdraw()

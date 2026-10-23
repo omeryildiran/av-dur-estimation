@@ -268,6 +268,11 @@ def check_refresh():
 
 
 def main():
+    p = presenter("main", [(prompt_time("main") + 0.3, "left")])      # macOS PTB keyboard: RT on another clock
+    real_get = p.kb.getKeys
+    p.kb.getKeys = lambda keyList, waitRelease=False: [SimpleNamespace(name=k.name, rt=-1.26e6) for k in real_get(keyList)]
+    r, _, _ = run("main", [], p=p)
+    assert abs(r["rt"] - 0.3) < FRAME + 1e-9 and r["rt_source"].startswith("first seen"), r
     for task in ("main", "crossmodal", "unimodal_auditory", "unimodal_visual"):
         end2, stream_end = times(task)
         prompt = prompt_time(task)

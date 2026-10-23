@@ -56,10 +56,11 @@ class Schedule:
         return asdict(self)
 
 
-def make_schedule(task, order, test_s, conflict_s, bias_s, rng, frame_rate):
-    """Schedule for one trial. order 1 = test in interval 1. bias_s is the visual correction."""
+def make_schedule(task, order, test_s, conflict_s, bias_s, rng, frame_rate, standard_s=None):
+    """Schedule for one trial. order 1 = test in interval 1. bias_s is the visual correction.
+    standard_s: the standard duration (default STANDARD_DUR_S; the cross-modal task can use others)."""
     test = to_frames(test_s, frame_rate)
-    standard = to_frames(S.STANDARD_DUR_S, frame_rate)
+    standard = to_frames(standard_s if standard_s is not None else S.STANDARD_DUR_S, frame_rate)
     dur1, dur2 = (test, standard) if order == 1 else (standard, test)
 
     pre = to_frames(rng.uniform(*S.PRE_RANGE_S), frame_rate)

@@ -11,9 +11,22 @@ python run_experiment.py            # in the PsychoPy environment (PsychoPy 2024
 
 Choose the monitor profile and enter the participant ID: their initials (`oy` → `OY`, `ln2` → `LN2`), or `P` + number as before. Initials get the next counterbalancing number (main block order, cross-modal start order) in `participants.json` in the data folder at their first session. Typing an ID only previews the number. Keep in mind that initials identify people more easily than numbers when sharing data. Then press the task buttons in order:
 
+0. **Auditory noise calibration** (126 trials, about 6 min). It sets the participant's **high noise level**: the level at which their auditory σ is 0.75. In model simulations, 0.7–0.85 best separates fusion, causal inference and cue switching.
+   - **How:** two interleaved 2-down-1-up staircases on the noise level, one starting easy (0.3) and one hard (1.6). The test is fixed at 332 or 752 ms against the 500 ms standard, and 6 easy catch trials check attention.
+   - **Estimate:** the geometric mean of the staircases (second half of each) and a fit of σ against noise.
+   - **Limits:** the level stays between 0.1 and 2.0. Above 2.0 the sound would often have to be turned down to avoid clipping. Good listeners who reach 2.0 get a note; a level near 0.1 gets a warning.
+   - **Saved** as `<PID>/noise/<PID>_noise_<time>.json`. Every later task with sound (unimodal auditory, cross-modal, main) uses it automatically as the high noise. Low noise stays 0.1. A real session without a calibration is refused.
+   - **Accuracy:** in simulation the σ reached is within 14% of the target in half of the runs and within 34% in 90%. In v1, the fixed level of 1.2 gave σ from 0.42 to chance.
+   - **Sound level:** for levels other than 0.1 and 1.2, the output gain is interpolated between the two calibrated gains (log gain against log noise).
+   - **Bias file:** the cross-modal bias file has to be measured at the same level. If the participant is recalibrated, the main experiment asks for the cross-modal task again.
 1. **Unimodal auditory** (308 trials)
 2. **Unimodal visual** (154 trials)
-3. **Cross-modal** (388 trials)
+3. **Cross-modal** (388 trials at the 500 ms standard). By default (`CROSSMODAL_STANDARDS`, launcher checkbox "Cross-modal at several standards"), two more blocks follow at 300 and 800 ms: 132 trials each, with two 1D1U staircases and easy trials per noise level.
+   - **Order:** the order of the extra blocks alternates by participant number.
+   - **Files:** each standard is its own session (`…_crossmodal_S300_…`).
+   - **Main experiment's correction:** it still comes only from the 500 ms block.
+   - **Summary:** after the last standard, the terminal and the Fits window show the bias by standard in ms and as a percentage of the standard. A flat line in ms means a constant offset; a flat line in percent means the bias scales with duration.
+   - **Repeating or skipping:** `--single-standard` runs 500 ms only; `--standard 0.3` repeats one standard. The extra blocks add about 15 minutes.
 4. **Main experiment**: three blocks of 616–924 trials, each about an hour.
    - The launcher picks the participant's next block. Block order is counterbalanced by participant number over all six orders.
    - Before the first block, the launcher fits the cross-modal bias correction, shows the values and any warnings, and asks you to confirm.

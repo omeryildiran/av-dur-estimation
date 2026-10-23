@@ -48,7 +48,7 @@ def block_fit(task, csv_path, plot_dir=None):
                      easy_correct=float(easy.mean()) if len(easy) else float("nan"), easy_n=int(len(easy)),
                      sigma_at_bound=bool(p.sigma >= 2.999), v1_sigma_range=S.V1_SIGMA_RANGE.get((task, noise)))
         if task == "crossmodal":
-            entry["correction_s"] = S.STANDARD_DUR_S - S.STANDARD_DUR_S * entry["pse_ratio"]
+            entry["correction_s"] = std_ms / 1000 * (1 - entry["pse_ratio"])
         checks = S.SCREENING_CHECKS.get(task, {})
         check = checks.get(noise) or (checks.get("high") if noise not in (None, S.NOISE_LOW) else None)
         name = _condition_name(task, noise)
