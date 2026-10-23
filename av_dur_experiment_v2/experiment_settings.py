@@ -72,12 +72,12 @@ NOISE_CALIBRATION = dict(
     target_sigma=0.75,              # model simulations: 0.7-0.85 separates fusion, causal inference and
                                     # cue switching best (switching is best separated near sigma_v, v1 median 0.62)
     target_correct=0.7071,          # 2-down-1-up on correct answers (2 correct: louder noise; 1 error: softer)
-    trials_per_staircase=60,        # two interleaved staircases (126 trials with the catch trials, ~6 min)
+    trials_per_staircase=100,       # two interleaved staircases (206 trials with the catch trials, ~10 min; 60 gave ~6 min)
     start_noise=(0.3, 1.6),         # one starts easy, one hard
     bounds=(0.1, 2.0),               # above 2.0 the level would often have to be cut to avoid clipping
     init_step_ln=0.4, step_factor=0.5, n_step_changes=1,   # steps in ln(noise): 0.4, then 0.2
     # Simulated (true levels 0.3-1.5, shallow and steep sigma-noise slopes): the sigma reached is
-    # within 14% of the target in half of the runs and within 34% in 90% (40 trials: 15% / 49%).
+    # within 14% of the target in half of the runs and within 34% in 90% at 60 trials (40 trials: 15% / 49%).
     catch_trials=6,                 # easy trials at NOISE_LOW (attention check)
 )
 SIGNAL_BAND_HZ = (150, 775)         # v1: unchanged since commit c7ff22e1 (24 Apr 2025), used for all data

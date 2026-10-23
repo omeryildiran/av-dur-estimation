@@ -11,7 +11,7 @@ python run_experiment.py            # in the PsychoPy environment (PsychoPy 2024
 
 Choose the monitor profile and enter the participant ID: their initials (`oy` → `OY`, `ln2` → `LN2`), or `P` + number as before. Initials get the next counterbalancing number (main block order, cross-modal start order) in `participants.json` in the data folder at their first session. Typing an ID only previews the number. Keep in mind that initials identify people more easily than numbers when sharing data. Then press the task buttons in order:
 
-0. **Auditory noise calibration** (126 trials, about 6 min). It sets the participant's **high noise level**: the level at which their auditory σ is 0.75. In model simulations, 0.7–0.85 best separates fusion, causal inference and cue switching.
+0. **Auditory noise calibration** (206 trials, about 10 min). It sets the participant's **high noise level**: the level at which their auditory σ is 0.75. In model simulations, 0.7–0.85 best separates fusion, causal inference and cue switching.
    - **How:** two interleaved 2-down-1-up staircases on the noise level, one starting easy (0.3) and one hard (1.6). The test is fixed at 332 or 752 ms against the 500 ms standard, and 6 easy catch trials check attention.
    - **Estimate:** the geometric mean of the staircases (second half of each) and a fit of σ against noise.
    - **Limits:** the level stays between 0.1 and 2.0. Above 2.0 the sound would often have to be turned down to avoid clipping. Good listeners who reach 2.0 get a note; a level near 0.1 gets a warning.
