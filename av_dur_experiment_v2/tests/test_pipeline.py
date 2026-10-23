@@ -390,7 +390,7 @@ def check_crossmodal_standards(tmp):
     assert run_task.main(["--pid", "SIM72"] + args) == 0
     metas = storage.sessions("SIM72", "crossmodal", tmp)
     extra = S.CROSSMODAL_STANDARDS["standards"]
-    assert [round(m["standard_s"], 3) for m in metas][0] == S.STANDARD_DUR_S
+    assert standards.plan("SIM72", tmp)[0][0] == S.STANDARD_DUR_S          # 500 ms runs first (start times tie here)
     assert sorted(round(m["standard_s"], 3) for m in metas) == sorted([S.STANDARD_DUR_S, *extra])
     d = storage.load_trials("crossmodal", "SIM72", tmp)
     n = d.groupby(d.standardDur.round(3)).size().to_dict()
@@ -419,8 +419,9 @@ def check_noise_calibration(tmp):
         sigma = 0.7 * (found[-1] / n_star) ** 0.6
         assert 0.45 < sigma < 1.1, (n_star, found[-1], sigma)
         d = pd.read_csv(cal.csv_path)
-        assert len(d) == 2 * S.NOISE_CALIBRATION["trials_per_staircase"] + S.NOISE_CALIBRATION["catch_trials"]
-        assert (d[d.kind == "staircase"].groupby("current_stair").order.apply(lambda o: (o == 1).mean()) == 0.5).all()
+        n_st = len(S.TASKS["noise_calibration"]["staircases"])
+        assert len(d) == n_st * S.NOISE_CALIBRATION["trials_per_staircase"] + S.NOISE_CALIBRATION["catch_trials"]
+        assert (d[d.kind == "staircase"].order == 1).mean() == 0.5
     assert found[0] < found[1], found
     assert run_task.main(["--task", "unimodal_auditory", "--pid", "SIM60", "--simulate", "--seed", "1",
                           "--data-root", str(tmp)]) == 0

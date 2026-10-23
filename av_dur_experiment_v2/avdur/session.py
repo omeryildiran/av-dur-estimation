@@ -16,7 +16,7 @@ import numpy as np
 
 import experiment_settings as S
 from avdur import bias as bias_mod
-from avdur import design, storage
+from avdur import design, notify, storage
 from avdur.audio import AudioGenerator
 from avdur.schedule import make_schedule, to_frames
 from avdur.staircase import Staircase
@@ -45,6 +45,7 @@ class Session:
         self.max_trials, self.solid_root = max_trials, solid_root
         self.close_at_end, self.verbose = close_at_end, verbose     # False: more blocks follow in this window
         self.meta = self.csv_path = self.json_path = None
+        self._last_notify = 0.0
         self.cfg = dict(S.TASKS[task], **(design or {}))     # design: e.g. a shorter design for extra standards
         self.standard_s = float(standard_s if standard_s is not None else S.STANDARD_DUR_S)
         self.design_override = design
@@ -94,7 +95,9 @@ class Session:
             meta["frame_rate_measured_hz"] = self.presenter.start(self.task, meta)
         except Exception as err:
             storage.log_failed_start(self.root, meta, err)
+            self._notify(f"⚠ {self._name()}: could not start ({str(err).splitlines()[0][:200]})", wait=True)
             raise
+        self._notify(f"▶ {self._name()} started ({len(trials)} trials)")
         csv_path, json_path = storage.session_paths(self.pid, self.task, self.block, self.practice, self.root)
         self.meta, self.csv_path, self.json_path = meta, csv_path, json_path
         meta["csv"] = csv_path.name
@@ -112,6 +115,8 @@ class Session:
                 if i and i % S.BREAK_EVERY_N_TRIALS == 0:
                     if self.verbose:
                         print(self.progress(rows, len(trials), t0, stairs), flush=True)
+                    if time.monotonic() - self._last_notify > 300:          # Slack: at most every 5 min
+                        self._notify(self.progress(rows, len(trials), t0, stairs))
                     self.presenter.rest(i // S.BREAK_EVERY_N_TRIALS,
                                         math.ceil(len(trials) / S.BREAK_EVERY_N_TRIALS))
                 if spec.order_block is not None and spec.order_block != prev_block:
@@ -138,6 +143,13 @@ class Session:
             self.save_meta()
             if self.verbose and rows:
                 print(self.progress(rows, len(trials), t0, stairs), flush=True)
+            minutes = (time.monotonic() - t0) / 60 if t0 else 0.0
+            if meta["completed"]:
+                self._notify(f"✅ {self._name()} completed ({n_done} trials, {minutes:.0f} min)", wait=True)
+            elif quit_:
+                self._notify(f"⏹ {self._name()} stopped with Escape after {n_done}/{len(trials)} trials", wait=True)
+            else:
+                self._notify(f"❌ {self._name()} ended with an error after {n_done}/{len(trials)} trials", wait=True)
             if self.close_at_end or not meta["completed"]:
                 self.presenter.finish(meta["completed"])
         return meta["completed"]
@@ -164,6 +176,15 @@ class Session:
 
     def _after_run(self, meta, rows):
         pass
+
+    def _name(self):
+        return (f"{self.pid} {self.task}" + (f" {self.block}" if self.block else "")
+                + (" practice" if self.practice else "") + (" (autotest)" if self.autotest else ""))
+
+    def _notify(self, text, wait=False):
+        if not self.simulate:
+            self._last_notify = time.monotonic()
+            notify.send(text, wait=wait)
 
     def save_meta(self):
         """Write the session metadata (and refresh the data_solid/ copy of a complete real session)."""

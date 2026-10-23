@@ -125,6 +125,7 @@ PRACTICE_TRIALS = 20                # v2: easy trials with feedback
 # 2 of 11 participants were at the sigma bound (3.0) there, and easy trials were 57-93% correct.
 COMBINED_SESSION_TASKS = ("noise_calibration", "unimodal_auditory", "unimodal_visual", "crossmodal")
 BLOCK_REST_MIN_S = 10.0              # rest between blocks (the fit runs meanwhile)
+ORDER_GAP_WARNING = 0.25             # warn if % correct with the test first vs second differs more (chance SD ~0.08)
 SCREENING_CHECKS = {
     "unimodal_auditory": {0.1: dict(max_sigma=0.6, min_easy_correct=0.75),
                           "high": dict(max_sigma=1.5)},       # participant's calibrated level (target 0.7)

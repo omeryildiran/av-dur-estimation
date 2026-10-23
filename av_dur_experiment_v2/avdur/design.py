@@ -144,7 +144,8 @@ def build_trials(task, rng, block=None, practice=False, first_order=1, noise_lev
         for i in range(S.PRACTICE_TRIALS):
             noise, conflict = conds[i % len(conds)]
             level = cfg["lapse_levels"][i % 2]
-            slots.append(TrialSpec(task, noise, conflict, "practice", None, level, 1 + i % 2))
+            # level and order cycle independently, so the longer interval is first in half the trials
+            slots.append(TrialSpec(task, noise, conflict, "practice", None, level, 1 + (i // 2) % 2))
     else:
         for noise, conflict in conditions(task, block, noise_levels, cfg):
             for k, rule in enumerate(cfg["staircases"]):

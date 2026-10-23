@@ -58,6 +58,16 @@ def block_fit(task, csv_path, plot_dir=None):
             if "min_easy_correct" in check and entry["easy_n"] and entry["easy_correct"] < check["min_easy_correct"]:
                 result["warnings"].append(f"{LABELS[task]}, {name}: easy trials {entry['easy_correct']:.0%} correct "
                                           f"< {check['min_easy_correct']:.0%}")
+        # Staircases keep both test positions near ~70% correct; a large gap means one of the two sounds
+        # was hardly used (e.g. judging the second sound only: HH at high noise, 38% vs 79%).
+        stair = d[d["kind"] == "staircase"]
+        by_order = stair.groupby("order")["is_correct"].mean()
+        if len(by_order) == 2:
+            entry["correct_test_first"], entry["correct_test_second"] = float(by_order[1]), float(by_order[2])
+            if abs(by_order[1] - by_order[2]) > S.ORDER_GAP_WARNING and by_order.min() < 0.6:
+                result["warnings"].append(
+                    f"{LABELS[task]}, {name}: {by_order[1]:.0%} correct with the test first vs {by_order[2]:.0%} with "
+                    "it second: the participant may be judging only one of the two sounds. Re-instruct: both matter.")
         result["conditions"].append(entry)
     if plot_dir is not None:
         result["plot"] = str(plot(task, df, result, Path(plot_dir), Path(csv_path).stem))

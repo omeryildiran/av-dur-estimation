@@ -33,7 +33,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import experiment_settings as S  # noqa: E402
-from avdur import design, screening, standards, storage  # noqa: E402
+from avdur import design, notify, screening, standards, storage  # noqa: E402
 from avdur.run_task import EXIT_STOPPED  # noqa: E402
 from avdur.session import Session  # noqa: E402
 
@@ -81,11 +81,11 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
 
     def n_trials(task, des):
         if task == "noise_calibration":
-            return 2 * cal["trials_per_staircase"] + cal["catch_trials"]
+            return len(S.TASKS["noise_calibration"]["staircases"]) * cal["trials_per_staircase"] + cal["catch_trials"]
         return len(design.build_trials(task, np.random.default_rng(0), cfg=dict(S.TASKS[task], **(des or {}))))
 
     log(f"[{pid}] combined session: " + ", ".join(
-        f"{screening.LABELS[t]}{' ' + lab if lab else ''} ({max_trials or n_trials(t, des)} trials)"
+        f"{screening.LABELS[t]} ({max_trials or n_trials(t, des)} trials)"
         for t, _, des, lab in steps) + (" — with practice" if practice else ""))
     todo = [t for t, *_ in steps]
     executor = (ProcessPoolExecutor(1, mp_context=multiprocessing.get_context("spawn"))
@@ -104,6 +104,8 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
                     return False, results
                 result = dict(session.calibration, task=task, conditions=[])
                 log(noise_calibration.summary_text(session.calibration))
+                if not simulate:
+                    notify.send(noise_calibration.summary_text(session.calibration))
                 presenter.wait_screen(f"Part {k + 1} of {len(todo)} is done.\n\nPlease take a short break.",
                                       lambda: True, 0.0 if last else S.BLOCK_REST_MIN_S)
                 results.append(result)
@@ -135,6 +137,8 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
             try:
                 result = fit.result()
                 log(screening.summary_text(result))
+                if not simulate:
+                    notify.send(screening.summary_text(result))
             except Exception as err:
                 result = dict(task=task, warnings=[f"the fit failed: {err}"], conditions=[], plot=None)
                 log(f"── {screening.LABELS[task]}: the fit failed ({err}); the data are saved.")
@@ -164,6 +168,8 @@ def _decide(presenter, session, result, log):
     """Experimenter check when a block raised warnings; the fit and the decision go into its metadata."""
     continue_ = True
     if result["warnings"]:
+        if not session.simulate:
+            notify.send(f"⚠ {session.pid}: waiting for the experimenter\n" + "\n".join(result["warnings"]))
         log(">> Experimenter: the participant sees 'Please wait for the experimenter'. "
             "Press C to continue, Escape to end the session.")
         continue_ = presenter.experimenter_check()

@@ -79,6 +79,9 @@ def main(argv=None):
         completed = session.run()
         if completed and session.calibration:
             print(summary_text(session.calibration), flush=True)
+            if not args.simulate:
+                from avdur import notify
+                notify.send(summary_text(session.calibration), wait=True)
         return 0 if completed else EXIT_STOPPED
 
     noise_high, noise_file = resolve_noise(ap, args, root)
@@ -132,7 +135,7 @@ def run_crossmodal(args, presenter, root, common, noise_high, noise_file):
     if not todo:
         print(f"{args.pid}: the cross-modal task is done at every standard. Use --standard to repeat one.", flush=True)
         return 0
-    print(f"[{args.pid}] cross-modal standards: " + ", ".join(f"{1000 * std:.0f} ms" for std, *_ in todo), flush=True)
+    print(f"[{args.pid}] cross-modal: {len(todo)} block(s)", flush=True)
     for k, (std, design_override, label) in enumerate(todo):
         last = k == len(todo) - 1
         session = Session("crossmodal", args.pid, presenter, block=label, noise_high=noise_high, noise_file=noise_file,

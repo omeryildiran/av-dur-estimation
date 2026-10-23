@@ -295,6 +295,7 @@ class PsychoPyPresenter:
     def instructions(self, task, practice):
         header = ("AUTOTEST: automatic answers\n\n" if self.auto is not None else "") + ("PRACTICE\n\n" if practice else "")
         self._message(f"{header}Welcome to the experiment!\n\n{INSTRUCTIONS[task]}\n\n"
+                      "Either one can be the longer one: listen to / watch both carefully.\n"
                       "Left arrow = FIRST longer, right arrow = SECOND longer.\n"
                       "You can answer as soon as the second one has ended.\n\nPress any key to start.")
 

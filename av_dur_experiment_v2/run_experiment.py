@@ -52,10 +52,8 @@ def status_text(raw_pid, root=None):
             when = f"done {done[-1]['started'][:16].replace('T', ' ')} ({done[-1]['n_trials']} trials)" if done else "not done"
             if task == "crossmodal":
                 from avdur import standards
-                got = sorted(standards.done_standards(pid, root))
-                left = [f"{1000 * x:.0f}" for x, *_ in standards.remaining(pid, root)]
-                when = ("standards done: " + (", ".join(f"{1000 * x:.0f} ms" for x in got) or "none")
-                        + (f";  still to run: {', '.join(left)} ms" if left else ";  all standards done"))
+                n_done, n_left = len(standards.done_standards(pid, root)), len(standards.remaining(pid, root))
+                when = f"{n_done} of {n_done + n_left} blocks done"
             lines.append(f"  {i}. {S.TASKS[task]['label']}: {when}")
         if task == "noise_calibration":
             nz = st["noise"]
@@ -181,8 +179,7 @@ def run_window():
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
         row=3, column=0, sticky="w")
     several = tk.BooleanVar(value=S.CROSSMODAL_STANDARDS["enabled"])
-    other_ms = "/".join(f"{1000 * x:.0f}" for x in S.CROSSMODAL_STANDARDS["standards"])
-    ttk.Checkbutton(frm, text=f"Cross-modal at several standards (500, then {other_ms} ms)", variable=several,
+    ttk.Checkbutton(frm, text="Cross-modal: extra blocks", variable=several,
                     command=lambda: refresh()).grid(row=3, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Simulate (no window; saves to data_simulated/)", variable=simulate,
                     command=lambda: refresh()).grid(row=4, column=0, columnspan=2, sticky="w")

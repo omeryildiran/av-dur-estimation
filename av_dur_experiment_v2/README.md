@@ -59,6 +59,18 @@ Other launcher options:
 - **Text menu:** if Tk is missing, `python run_experiment.py --cli` gives a text menu.
 - **Single task:** one task can be started directly, e.g. `python -m avdur.run_task --task crossmodal --pid P14`.
 
+## Slack updates (optional)
+
+Put a Slack incoming-webhook URL in `slack_webhook.txt` (not in git), or set `AVDUR_SLACK_WEBHOOK`, and the experiment posts to that channel:
+- session start;
+- progress at most every 5 minutes, sent at breaks;
+- each block's fit and the calibrated noise level;
+- warnings that wait for the experimenter;
+- the end (completed, stopped, or ended with an error);
+- failed starts.
+
+Messages contain only the participant ID and numbers. They are sent in the background with a 5 s timeout and never stop the experiment. Test with `python -m avdur.notify "hello"`.
+
 ## Autotest
 
 The autotest checks that every trial runs fluently on the actual setup. Use it after any change to the code, the computer or the sound hardware, and before the first participant of a day (quick version).
