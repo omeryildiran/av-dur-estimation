@@ -20,12 +20,28 @@ import os
 import socket
 import sys
 import threading
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WEBHOOK_FILE = ROOT / "slack_webhook.txt"
 TIMEOUT_S = 5.0
+_THREADS = []
+
+
+def _background(fn, *args):
+    t = threading.Thread(target=fn, args=args, daemon=True)
+    t.start()
+    _THREADS.append(t)
+
+
+def flush(timeout=20.0):
+    """Wait (up to `timeout` s in total) for messages still being sent; call before the program exits."""
+    import time
+    end = time.monotonic() + timeout
+    for t in list(_THREADS):
+        t.join(max(0.0, end - time.monotonic()))
 
 
 def _url():
@@ -52,6 +68,66 @@ def _post(url, text):
         return False
 
 
+BOT_FILE = ROOT / "slack_bot.txt"          # line 1: bot token (xoxb-...), line 2: channel ID (C...)
+
+
+def _bot():
+    if not BOT_FILE.exists():
+        return None
+    lines = [x.strip() for x in BOT_FILE.read_text().splitlines() if x.strip()]
+    return (lines[0], lines[1]) if len(lines) >= 2 and lines[0].startswith("xoxb-") else None
+
+
+def _api(method, token, data=None, json_body=None):
+    url = f"https://slack.com/api/{method}"
+    if json_body is not None:
+        req = urllib.request.Request(url, data=json.dumps(json_body).encode(),
+                                     headers={"Authorization": f"Bearer {token}",
+                                              "Content-Type": "application/json; charset=utf-8"})
+    else:
+        req = urllib.request.Request(url, data=urllib.parse.urlencode(data).encode(),
+                                     headers={"Authorization": f"Bearer {token}"})
+    return json.loads(urllib.request.urlopen(req, timeout=TIMEOUT_S * 3).read())
+
+
+def _upload(path, comment):
+    """Slack (bot token, files:write) or ntfy attachment; False if neither is set up or it fails."""
+    try:
+        path = Path(path)
+        data = path.read_bytes()
+        bot = _bot()
+        if bot:
+            token, channel = bot
+            r = _api("files.getUploadURLExternal", token, data={"filename": path.name, "length": len(data)})
+            if not r.get("ok"):
+                return False
+            urllib.request.urlopen(urllib.request.Request(r["upload_url"], data=data), timeout=TIMEOUT_S * 3).read()
+            done = _api("files.completeUploadExternal", token, json_body={
+                "files": [{"id": r["file_id"], "title": path.name}], "channel_id": channel,
+                "initial_comment": comment or path.name})
+            return bool(done.get("ok"))
+        url = _url()
+        if url.startswith("https://ntfy.sh/"):
+            req = urllib.request.Request(url, data=data, method="PUT",
+                                         headers={"Filename": path.name,          # headers: ASCII only
+                                                  "Title": comment.encode("ascii", "ignore").decode().strip(" -")[:200]
+                                                  or path.name})
+            urllib.request.urlopen(req, timeout=TIMEOUT_S * 3).read()
+            return True
+    except Exception:
+        pass
+    return False
+
+
+def send_with_plots(text, plots):
+    """The text (webhook) and then each existing plot (bot upload or ntfy), all in the background."""
+    send(text)
+    plots = [p for p in plots if p and Path(p).exists()]
+    if plots and (_bot() or _url().startswith("https://ntfy.sh/")):
+        first_line = text.splitlines()[0] if text else ""
+        _background(lambda: [_upload(p, first_line) for p in plots])
+
+
 def send(text, wait=False):
     """Post `text` to Slack in the background; wait=True blocks up to the timeout (use at exit)."""
     url = _url()
@@ -60,11 +136,15 @@ def send(text, wait=False):
     text = f"[{socket.gethostname()}] {text}"
     if wait:
         return _post(url, text)
-    threading.Thread(target=_post, args=(url, text), daemon=True).start()
+    _background(_post, url, text)
     return True
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 2 and sys.argv[1] == "--image":            # python -m avdur.notify --image plot.png
+        ok = _upload(sys.argv[2], "test image from the experiment")
+        print("image sent" if ok else f"image upload failed: needs {BOT_FILE.name} (Slack bot) or an ntfy URL")
+        sys.exit(0 if ok else 1)
     if not enabled():
         print(f"No webhook: put the URL in {WEBHOOK_FILE} or set AVDUR_SLACK_WEBHOOK.")
         sys.exit(1)

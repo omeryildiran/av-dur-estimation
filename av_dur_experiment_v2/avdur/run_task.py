@@ -81,7 +81,7 @@ def main(argv=None):
             print(summary_text(session.calibration), flush=True)
             if not args.simulate:
                 from avdur import notify
-                notify.send(summary_text(session.calibration), wait=True)
+                notify.send_with_plots(summary_text(session.calibration), [session.calibration.get("plot")])
         return 0 if completed else EXIT_STOPPED
 
     noise_high, noise_file = resolve_noise(ap, args, root)
@@ -120,7 +120,10 @@ def resolve_noise(ap, args, root):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    code = main()
+    from avdur import notify
+    notify.flush()                  # let Slack messages and plots finish sending (the window is closed)
+    sys.exit(code)
 
 
 def run_crossmodal(args, presenter, root, common, noise_high, noise_file):

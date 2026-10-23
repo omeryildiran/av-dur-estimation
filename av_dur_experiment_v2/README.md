@@ -71,6 +71,12 @@ Put a Slack incoming-webhook URL in `slack_webhook.txt` (not in git), or set `AV
 
 Messages contain only the participant ID and numbers. They are sent in the background with a 5 s timeout and never stop the experiment. Test with `python -m avdur.notify "hello"`.
 
+**Plots.** After each block the psychometric fit and a staircase plot (`*_stairs_fit.png`, also shown in the Fits window) are posted as images. Webhooks can't carry images, so this needs one of:
+- a Slack **bot token**: in the same Slack app, open *OAuth & Permissions*, add the bot scopes `files:write` and `chat:write`, reinstall the app, and invite it to the channel (`/invite @app`). Then write the `xoxb-…` token on line 1 and the channel ID (`C…`, under channel details) on line 2 of `slack_bot.txt`, which is also kept out of git;
+- or an **ntfy** URL in `slack_webhook.txt`, which takes images as they are.
+
+Test with `python -m avdur.notify --image some_plot.png`. Messages still being sent are finished (up to 20 s) after the window has closed.
+
 ## Autotest
 
 The autotest checks that every trial runs fluently on the actual setup. Use it after any change to the code, the computer or the sound hardware, and before the first participant of a day (quick version).

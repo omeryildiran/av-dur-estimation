@@ -71,7 +71,20 @@ def block_fit(task, csv_path, plot_dir=None):
         result["conditions"].append(entry)
     if plot_dir is not None:
         result["plot"] = str(plot(task, df, result, Path(plot_dir), Path(csv_path).stem))
+        result["stair_plot"] = _stair_plot(csv_path, plot_dir)
     return result
+
+
+def _stair_plot(csv_path, plot_dir):
+    """Staircase figure next to the fit (named *_fit.png so the Fits window shows it too)."""
+    try:
+        from avdur import stairplot
+        d = pd.read_csv(csv_path)
+        path = Path(plot_dir) / f"{Path(csv_path).stem}_stairs_fit.png"
+        stairplot.save(d, Path(csv_path).stem, path)
+        return str(path)
+    except Exception:
+        return None
 
 
 def plot(task, df, result, folder, stem):
@@ -153,6 +166,7 @@ def main_block_fit(csv_path, plot_dir=None):
             result["slopes"][float(noise)] = float(np.polyfit(x, y, 1)[0])
     if plot_dir is not None and result["conditions"]:
         result["plot"] = str(plot_main(result, Path(plot_dir), Path(csv_path).stem))
+        result["stair_plot"] = _stair_plot(csv_path, plot_dir)
     return result
 
 
@@ -196,7 +210,10 @@ def main_summary_text(result):
 
 
 def fit_after_session(task, csv_path, plot_dir):
-    """Fit and plot a finished session from its own button; returns the terminal text."""
-    if task == "main":
-        return main_summary_text(main_block_fit(csv_path, plot_dir))
-    return summary_text(block_fit(task, csv_path, plot_dir))
+    """Fit and plot a finished session from its own button; returns the terminal text (and sends it,
+    with the plots, to Slack/ntfy if set up)."""
+    from avdur import notify
+    result = main_block_fit(csv_path, plot_dir) if task == "main" else block_fit(task, csv_path, plot_dir)
+    text = main_summary_text(result) if task == "main" else summary_text(result)
+    notify.send_with_plots(text, [result.get("plot"), result.get("stair_plot")])
+    return text
