@@ -1,0 +1,82 @@
+{
+  "noise_high": 1.832,
+  "target_sigma": 0.75,
+  "target_correct": 0.7071,
+  "delta_ln": 0.40869931262524073,
+  "test_ms": [
+    752,
+    332
+  ],
+  "noise_staircases": 1.677697670914741,
+  "staircases": {
+    "A": {
+      "noise": 1.5054121060705297,
+      "reversals": 0,
+      "last_noise": 2.0
+    },
+    "B": {
+      "noise": 1.8697003057453008,
+      "reversals": 4,
+      "last_noise": 2.0
+    }
+  },
+  "noise_fit": 2.0,
+  "sigma_fit": {
+    "a": -2.396031135560023,
+    "b": 2.7619483048681084,
+    "sigma_at_low": 0.00015756820749715584,
+    "sigma_at_result": 0.48484559438163805
+  },
+  "catch_correct": 1.0,
+  "n_catch": 2,
+  "fit_valid": true,
+  "n_trials": 30,
+  "bounds": [
+    0.1,
+    2.0
+  ],
+  "warnings": [
+    "staircase A: only 0 reversals"
+  ],
+  "notes": [
+    "near the upper limit (2.0): a good listener; their high-noise sigma will be somewhat below the target 0.75"
+  ],
+  "trace": {
+    "A": [
+      0.3,
+      0.3,
+      0.4475,
+      0.4475,
+      0.6677,
+      0.6677,
+      0.996,
+      0.996,
+      1.4859,
+      1.4859,
+      2.0,
+      2.0,
+      2.0
+    ],
+    "B": [
+      1.6,
+      1.0725,
+      1.0725,
+      1.31,
+      1.31,
+      1.6,
+      1.6,
+      1.9542,
+      1.9542,
+      1.6,
+      1.6,
+      1.9542,
+      1.9542,
+      2.0,
+      2.0
+    ]
+  },
+  "participant": "P9992",
+  "session_csv": "P9992_noise_calibration_20261023-145225.csv",
+  "created": "2026-10-23T14:53:49",
+  "plot": "C:\\Users\\Landylab\\Documents\\GitHub\\av-dur-estimation\\av_dur_experiment_v2\\data_test\\P9992\\fits\\P9992_noise_calibration_20261023-145225_fit.png"
+}
