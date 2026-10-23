@@ -105,8 +105,8 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
                 result = dict(session.calibration, task=task, conditions=[])
                 log(noise_calibration.summary_text(session.calibration))
                 if not simulate:
-                    notify.send_with_plots(noise_calibration.summary_text(session.calibration),
-                                           [session.calibration.get("plot")])
+                    notify.block_done(pid, noise_calibration.summary_text(session.calibration),
+                                      [session.calibration.get("plot")])
                 presenter.wait_screen(f"Part {k + 1} of {len(todo)} is done.\n\nPlease take a short break.",
                                       lambda: True, 0.0 if last else S.BLOCK_REST_MIN_S)
                 results.append(result)
@@ -139,7 +139,7 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
                 result = fit.result()
                 log(screening.summary_text(result))
                 if not simulate:
-                    notify.send_with_plots(screening.summary_text(result), [result.get("plot"), result.get("stair_plot")])
+                    notify.block_done(pid, screening.summary_text(result), [result.get("plot"), result.get("stair_plot")])
             except Exception as err:
                 result = dict(task=task, warnings=[f"the fit failed: {err}"], conditions=[], plot=None)
                 log(f"── {screening.LABELS[task]}: the fit failed ({err}); the data are saved.")

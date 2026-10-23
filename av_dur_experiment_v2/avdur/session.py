@@ -97,7 +97,7 @@ class Session:
             storage.log_failed_start(self.root, meta, err)
             self._notify(f"⚠ {self._name()}: could not start ({str(err).splitlines()[0][:200]})", wait=True)
             raise
-        self._notify(f"▶ {self._name()} started ({len(trials)} trials)")
+
         csv_path, json_path = storage.session_paths(self.pid, self.task, self.block, self.practice, self.root)
         self.meta, self.csv_path, self.json_path = meta, csv_path, json_path
         meta["csv"] = csv_path.name
@@ -115,7 +115,7 @@ class Session:
                 if i and i % S.BREAK_EVERY_N_TRIALS == 0:
                     if self.verbose:
                         print(self.progress(rows, len(trials), t0, stairs), flush=True)
-                    if time.monotonic() - self._last_notify > 300:          # Slack: at most every 5 min
+                    if time.monotonic() - self._last_notify > 600:          # Slack: at most every 10 min
                         self._notify(self.progress(rows, len(trials), t0, stairs))
                     self.presenter.rest(i // S.BREAK_EVERY_N_TRIALS,
                                         math.ceil(len(trials) / S.BREAK_EVERY_N_TRIALS))
@@ -143,9 +143,8 @@ class Session:
             self.save_meta()
             if self.verbose and rows:
                 print(self.progress(rows, len(trials), t0, stairs), flush=True)
-            minutes = (time.monotonic() - t0) / 60 if t0 else 0.0
             if meta["completed"]:
-                self._notify(f"✅ {self._name()} completed ({n_done} trials, {minutes:.0f} min)", wait=True)
+                pass                        # the block's fit summary (sent by the runner) says it is done
             elif quit_:
                 self._notify(f"⏹ {self._name()} stopped with Escape after {n_done}/{len(trials)} trials", wait=True)
             else:
@@ -182,7 +181,7 @@ class Session:
                 + (" practice" if self.practice else "") + (" (autotest)" if self.autotest else ""))
 
     def _notify(self, text, wait=False):
-        if not self.simulate:
+        if not self.simulate and not self.practice:
             self._last_notify = time.monotonic()
             notify.send(text, wait=wait)
 

@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -12,6 +13,7 @@ from types import SimpleNamespace
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+os.environ["AVDUR_NO_NOTIFY"] = "1"                # tests never post to Slack/ntfy
 sys.path.insert(0, str(ROOT))
 
 import experiment_settings as S  # noqa: E402

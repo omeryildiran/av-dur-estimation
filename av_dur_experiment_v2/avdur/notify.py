@@ -45,6 +45,8 @@ def flush(timeout=20.0):
 
 
 def _url():
+    if os.environ.get("AVDUR_NO_NOTIFY"):                 # set by the tests
+        return ""
     url = os.environ.get("AVDUR_SLACK_WEBHOOK", "").strip()
     if not url and WEBHOOK_FILE.exists():
         url = WEBHOOK_FILE.read_text().strip()
@@ -72,7 +74,7 @@ BOT_FILE = ROOT / "slack_bot.txt"          # line 1: bot token (xoxb-...), line 
 
 
 def _bot():
-    if not BOT_FILE.exists():
+    if os.environ.get("AVDUR_NO_NOTIFY") or not BOT_FILE.exists():
         return None
     lines = [x.strip() for x in BOT_FILE.read_text().splitlines() if x.strip()]
     return (lines[0], lines[1]) if len(lines) >= 2 and lines[0].startswith("xoxb-") else None
@@ -117,6 +119,12 @@ def _upload(path, comment):
     except Exception:
         pass
     return False
+
+
+def block_done(pid, text, plots):
+    """One message per finished block: its summary (without file paths), then its plots."""
+    text = "\n".join(line for line in text.splitlines() if not line.strip().startswith("plot:"))
+    send_with_plots(f"✅ {pid}  " + text.replace("──", "").strip(), plots)
 
 
 def send_with_plots(text, plots):

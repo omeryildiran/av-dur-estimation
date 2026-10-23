@@ -198,6 +198,12 @@ def plot(df, result, folder, stem):
             ylabel=f"Correct at {result['test_ms'][1]} / {result['test_ms'][0]} vs 500 ms",
             title=f"High noise level {result['noise_high']:.2f} (target σ {C['target_sigma']}; fit alone {result['noise_fit']:.2f})")
     ax2.legend(frameon=False)
+    from matplotlib.ticker import FixedLocator, NullLocator, ScalarFormatter
+    ticks = [0.1, 0.2, 0.3, 0.5, 0.7, 1, 1.5, 2]          # plain numbers on the log axes, not 10^x
+    for axis in (ax1.yaxis, ax2.xaxis):
+        axis.set_major_locator(FixedLocator(ticks))
+        axis.set_major_formatter(ScalarFormatter())
+        axis.set_minor_locator(NullLocator())
     for ax in (ax1, ax2):
         for side in ("top", "right"):
             ax.spines[side].set_visible(False)

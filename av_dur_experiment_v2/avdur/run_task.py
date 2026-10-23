@@ -81,7 +81,7 @@ def main(argv=None):
             print(summary_text(session.calibration), flush=True)
             if not args.simulate:
                 from avdur import notify
-                notify.send_with_plots(summary_text(session.calibration), [session.calibration.get("plot")])
+                notify.block_done(args.pid, summary_text(session.calibration), [session.calibration.get("plot")])
         return 0 if completed else EXIT_STOPPED
 
     noise_high, noise_file = resolve_noise(ap, args, root)

@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import shutil
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -15,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
+os.environ["AVDUR_NO_NOTIFY"] = "1"                # tests never post to Slack/ntfy
 sys.path.insert(0, str(ROOT))
 
 import experiment_settings as S  # noqa: E402

@@ -62,9 +62,12 @@ def block_fit(task, csv_path, plot_dir=None):
         # was hardly used (e.g. judging the second sound only: HH at high noise, 38% vs 79%).
         stair = d[d["kind"] == "staircase"]
         by_order = stair.groupby("order")["is_correct"].mean()
+        n_order = stair.groupby("order").size()
         if len(by_order) == 2:
             entry["correct_test_first"], entry["correct_test_second"] = float(by_order[1]), float(by_order[2])
-            if abs(by_order[1] - by_order[2]) > S.ORDER_GAP_WARNING and by_order.min() < 0.6:
+            chance_sd = np.sqrt(0.7 * 0.3 * (1 / n_order[1] + 1 / n_order[2]))   # gap spread with no real effect
+            if (abs(by_order[1] - by_order[2]) > max(S.ORDER_GAP_WARNING, 3 * chance_sd)
+                    and by_order.min() < 0.6):
                 result["warnings"].append(
                     f"{LABELS[task]}, {name}: {by_order[1]:.0%} correct with the test first vs {by_order[2]:.0%} with "
                     "it second: the participant may be judging only one of the two sounds. Re-instruct: both matter.")
@@ -215,5 +218,5 @@ def fit_after_session(task, csv_path, plot_dir):
     from avdur import notify
     result = main_block_fit(csv_path, plot_dir) if task == "main" else block_fit(task, csv_path, plot_dir)
     text = main_summary_text(result) if task == "main" else summary_text(result)
-    notify.send_with_plots(text, [result.get("plot"), result.get("stair_plot")])
+    notify.block_done(Path(csv_path).name.split("_")[0], text, [result.get("plot"), result.get("stair_plot")])
     return text
