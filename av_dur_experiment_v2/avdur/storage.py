@@ -108,6 +108,7 @@ def base_metadata(pid, task, block, practice, seed, monitor, simulate, autotest=
         simulated=simulate, autotest=autotest, started=dt.datetime.now().isoformat(timespec="seconds"),
         completed=False,
         code=code_version(), python=sys.version.split()[0], platform=platform.platform(),
+        psychopy=getattr(sys.modules.get("psychopy"), "__version__", None),     # None in simulations
         settings=settings_snapshot(),
     )
 

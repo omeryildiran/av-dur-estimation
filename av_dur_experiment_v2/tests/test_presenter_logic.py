@@ -87,7 +87,7 @@ class Keyboard:
             if p["t"] <= Time.now:
                 p["used"] = True
 
-    def waitKeys(self, keyList=None):
+    def waitKeys(self, keyList=None, **kwargs):
         if self.wait_answer is None:
             raise AssertionError("an autotest must not wait for a key")
         return [SimpleNamespace(name=self.wait_answer)]

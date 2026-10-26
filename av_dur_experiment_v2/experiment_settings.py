@@ -110,6 +110,7 @@ POST_STIM_WAIT_S = 0.03
 MIN_LEAD_S = 0.20                   # = the shortest v1 pre-stimulus noise: no event earlier in a trial
 BREAK_EVERY_N_TRIALS = 30           # v1
 BREAK_MIN_WAIT_S = 2.5              # v2 (v1: 5 s)
+ORDER_CUE_MIN_WAIT_S = 1.0          # cross-modal "A -> V / V -> A" cue: keys pressed earlier are ignored (P104 skipped it)
 FEEDBACK_DUR_S = 0.5                # v1 (practice only)
 RESPONSE_KEYS = {"left": 1, "right": 2}   # v1: 1 = first interval longer, 2 = second
 QUIT_KEY = "escape"
@@ -207,7 +208,7 @@ BLOCK_ORDERS = [
 CROSSMODAL_STANDARDS = dict(
     enabled=True,
     standards=(0.3, 0.8),           # in addition to STANDARD_DUR_S
-    extra_design=dict(staircases=("1D1U", "1D1U_b"), trials_per_staircase=30, lapse_trials_per_level=3),
+    extra_design=dict(staircases=("1D1U", "1D1U_b"), trials_per_staircase=40, lapse_trials_per_level=3),   # 30 until P104 (132 trials)
 )
 
 # ── Cross-modal bias correction (v2: fitted automatically) ────────────────────

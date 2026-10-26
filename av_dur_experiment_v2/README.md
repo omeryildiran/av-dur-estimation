@@ -21,7 +21,7 @@ Choose the monitor profile and enter the participant ID: their initials (`oy` �
    - **Bias file:** the cross-modal bias file has to be measured at the same level. If the participant is recalibrated, the main experiment asks for the cross-modal task again.
 1. **Unimodal auditory** (308 trials)
 2. **Unimodal visual** (154 trials)
-3. **Cross-modal** (388 trials at the 500 ms standard). By default (`CROSSMODAL_STANDARDS`, launcher checkbox "Cross-modal at several standards"), two more blocks follow at 300 and 800 ms: 132 trials each, with two 1D1U staircases and easy trials per noise level.
+3. **Cross-modal** (388 trials at the 500 ms standard). By default (`CROSSMODAL_STANDARDS`, launcher checkbox "Cross-modal at several standards"), two more blocks follow at 300 and 800 ms: 172 trials each (132 until P104), with two 1D1U staircases and easy trials per noise level.
    - **Order:** the order of the extra blocks alternates by participant number.
    - **Files:** each standard is its own session (`…_crossmodal_S300_…`).
    - **Main experiment's correction:** it still comes only from the 500 ms block.

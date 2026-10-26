@@ -278,7 +278,10 @@ class PsychoPyPresenter:
         """Name of the key pressed; an autotest continues by itself with the first allowed key."""
         self.kb.clearEvents()
         if self.auto is None:
-            return self.kb.waitKeys(keyList=keys)[0].name
+            try:            # a new press: the release of the last answer key must not count (P104 skipped cues)
+                return self.kb.waitKeys(keyList=keys, waitRelease=False)[0].name
+            except TypeError:                   # older PsychoPy without waitRelease
+                return self.kb.waitKeys(keyList=keys)[0].name
         self.core.wait(S.AUTOTEST_SCREEN_S)
         return keys[0] if keys else "space"
 
@@ -309,7 +312,7 @@ class PsychoPyPresenter:
     def order_cue(self, order, k, n):   # v1 cross-modal mini-block cue
         av = "A -> V" if order == 1 else "V -> A"
         self._message(f"This is going to be block {k + 1} out of {n}.\n\nIn this block the order of modalities is\n\n"
-                      f"{av}\n\nPress any key to continue.")
+                      f"{av}\n\nPress any key to continue.", min_wait=S.ORDER_CUE_MIN_WAIT_S)
 
     def feedback(self, correct):
         self._message("Correct!" if correct else "Incorrect!", color="green" if correct else "red",
