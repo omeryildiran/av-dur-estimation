@@ -103,7 +103,7 @@ STANDARD_DUR_S = 0.5                # v1
 PRE_RANGE_S = (0.20, 0.35)          # noise before interval 1 (at least MIN_LEAD_S before any event)
 ISI_RANGE_S = (0.30, 0.60)          # between the two intervals
 POST_RANGE_S = (0.15, 0.30)         # noise after interval 2 (masks its offset), then the prompt
-MIN_VISUAL_GAP_S = 0.05             # v2: minimum blank between and after visual flashes
+MIN_VISUAL_GAP_S = 0.10             # v2: minimum blank between and after visual flashes (0.05 until 26 Oct 2026)
 MIN_VISUAL_DUR_S = 0.025            # v2: shortest visual flash allowed after the bias correction
 # The prompt appears on every trial, POST_STIM_WAIT_S after the stimulus (sound and flashes)
 # has ended; keys pressed earlier are discarded and response_rts counts from the prompt, as in
