@@ -19,9 +19,10 @@ Choose the monitor profile and enter the participant ID: their initials (`oy` �
    - **Accuracy:** in simulation the σ reached is within 14% of the target in half of the runs and within 34% in 90%. In v1, the fixed level of 1.2 gave σ from 0.42 to chance.
    - **Sound level:** for levels other than 0.1 and 1.2, the output gain is interpolated between the two calibrated gains (log gain against log noise).
    - **Bias file:** the cross-modal bias file has to be measured at the same level. If the participant is recalibrated, the main experiment asks for the cross-modal task again.
-1. **Unimodal auditory** (308 trials)
-2. **Unimodal visual** (154 trials)
-3. **Cross-modal** (388 trials at the 500 ms standard). By default (`CROSSMODAL_STANDARDS`, launcher checkbox "Cross-modal at several standards"), two more blocks follow at 300 and 800 ms: 172 trials each (132 until P104), with two 1D1U staircases and easy trials per noise level.
+1. **Unimodal auditory** (208 trials: per noise level, 90 chosen by QUEST+ and 14 easy; 308 with staircases until 26 Oct 2026)
+2. **Unimodal visual** (84 trials: 70 chosen by QUEST+ and 14 easy; 154 until 26 Oct 2026)
+   - **QUEST+** ([avdur/quest.py](avdur/quest.py)) replaces the four staircases in both unimodal blocks. Before each trial it picks the test duration that tells it most about the participant's PSE and σ, from a grid of possible psychometric functions (lapse estimated too, easy trials included). In simulation (`analysis/quest_unimodal_simulation.py`, 4,500 observers) it measures σ as precisely as the staircases with about 60% of the trials; the PSE is less precise, which matters little in a unimodal comparison (both intervals have the same modality). The data files look the same: `current_stair` is `QUEST`, and `quest_mu`, `quest_sigma`, `quest_lapse` hold its running estimate. The screening fit is unchanged.
+3. **Cross-modal** (388 trials at the 500 ms standard). For the first 3 participants to do them (`CROSSMODAL_STANDARDS["n_participants"]`; P101 and P104 so far), two more blocks follow at 300 and 800 ms: 172 trials each (132 until P104), with two 1D1U staircases and easy trials per noise level. Everyone after that gets the 500 ms block only. A participant who has done one extra block keeps getting the other. The launcher status shows the count ("extra blocks so far: 2 of 3 participants"). The checkbox "Cross-modal: extra blocks" unticked runs 500 ms only; `--all-standards` runs them all whatever the count.
    - **Order:** the order of the extra blocks alternates by participant number.
    - **Files:** each standard is its own session (`…_crossmodal_S300_…`).
    - **Main experiment's correction:** it still comes only from the 500 ms block.
@@ -135,6 +136,7 @@ The autotest checks that every trial runs fluently on the actual setup. Use it a
 - **Audiovisual sync.** Measure it once with a photodiode on the disk and a microphone at the participant's head position. That includes the sound's travel time from the speakers, about 1.7 ms at 60 cm. Put the audio-minus-video delay in `AUDIO_ONSET_OFFSET_S`.
 - **Tests.** Two scripts check the code without a display or sound card. Run the [autotest](#autotest) as well, on the real setup.
   - `python tests/test_pipeline.py` runs two simulated participants through everything. It checks the design, the timing, the bias recovery, the audio levels, which sessions reach `data_solid/`, and the autotest report.
+  - `python tests/test_schedule.py` (a few seconds) checks trial timing for every task: sound and flash durations exact, flashes centred and separated, no gap shortened, the sound as long as the schedule.
   - `python tests/test_presenter_logic.py` checks the PsychoPy presenter with fake window, keyboard and sound objects. It covers response handling, sound scheduling, autotest answers and the choice of output device.
 
 ## What changed from v1, and why
@@ -152,6 +154,7 @@ The autotest checks that every trial runs fluently on the actual setup. Use it a
 | Sound started from inside the frame loop, not scheduled | Each trial starts with a sync flip. The sound is then scheduled for the frame-0 flip, at least the sound card's output latency + 15 ms ahead, and PTB's estimate of the actual onset is logged against that flip. PsychoPy's flip prediction uses the measured frame period: PsychoPy assumes 60 Hz when its own refresh measurement fails. |
 | Output device left to PsychoPy (2024.2 takes the first device PortAudio lists) | The output chosen in System Settings, or a named device. It is opened and checked before the first trial, and the device is logged with each session. |
 | 0.1 s wait before every trial and after every stimulus; keys ignored until a prompt appeared; 5 s minimum breaks | Same logic with shorter waits: 30 ms before each trial and 30 ms after the stimulus (sound and flashes) has ended. Then the prompt appears on every trial. Keys pressed before it are discarded, and the response time counts from its first flip. Breaks every 30 trials last at least 2.5 s. At least 200 ms of noise always precedes any sound burst or flash. A day of letting answers come before the prompt (19–20 Oct 2026) was dropped, because participants could answer before seeing the prompt. |
+| 1.3 s of noise around the two sounds on every trial (pre 0.20–0.45 s, ISI 0.40–0.90 s, post 0.20–0.45 s) | Pre 0.20–0.35 s, ISI 0.30–0.60 s, post 0.15–0.30 s: 0.35 s less per trial, about 12% of every task (26 Oct 2026). The gaps are only noise around the sounds. A bias correction or conflict never shortens a gap or changes a sound or flash; it lengthens a gap when an extended flash needs room. `tests/test_schedule.py` checks this for every task, up to ±450 ms conflicts and ±350 ms corrections. |
 | Logged loop times, not flip times; unimodal visual timing not logged at all | Actual flip timestamps for every onset and offset in every task, plus dropped frames and the frame-0 flip error. |
 | Peak normalisation gave ±0.75 dB of random level jitter per trial; cross-modal tests 0.4–1.3 dB louder than main-experiment tests | Fixed gains calibrated to v1's average level and SNR (`AUDIO_LEVEL_MODE = "fixed"`; `"peak"` reproduces v1 exactly). |
 | `prefs.general['audioLatencyMode']` (ignored by PsychoPy) | `prefs.hardware['audioLatencyMode']`, set to PsychoPy's default (3), which is what v1 effectively used. |
@@ -164,7 +167,6 @@ Kept from v1:
 - noise levels 0.1 and 1.2;
 - signal band-pass 150–775 Hz and background 10–610 Hz;
 - burst intensity 5 with 5 ms ramps;
-- pre-, inter- and post-stimulus durations;
 - staircase steps (0.16, halved at the first two reversals);
 - lapse trials;
 - trial counts;

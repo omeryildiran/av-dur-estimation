@@ -264,7 +264,7 @@ class PsychoPyPresenter:
         else:
             report += ("Frames are irregular: run full screen, close other programs, and use a fixed refresh rate "
                        "(not ProMotion / variable refresh).\n")
-        if rate_ok and self.profile.get("testing_only"):
+        if self.profile.get("testing_only"):     # testing profiles (Macs, laptops): allow any rate, recorded in meta
             self._message(report + "\nTesting profile: press C to continue anyway, Escape to quit.", wait_keys=False)
             if self._wait_keys(["c", S.QUIT_KEY]) == "c":
                 meta["refresh_warning_overridden"] = True

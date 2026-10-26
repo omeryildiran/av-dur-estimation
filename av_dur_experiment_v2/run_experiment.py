@@ -54,6 +54,9 @@ def status_text(raw_pid, root=None):
                 from avdur import standards
                 n_done, n_left = len(standards.done_standards(pid, root)), len(standards.remaining(pid, root))
                 when = f"{n_done} of {n_done + n_left} blocks done"
+                n_extra = S.CROSSMODAL_STANDARDS.get("n_participants")
+                if n_extra:
+                    when += f"   (extra blocks so far: {len(standards.extra_participants(root))} of {n_extra} participants)"
             lines.append(f"  {i}. {S.TASKS[task]['label']}: {when}")
         if task == "noise_calibration":
             nz = st["noise"]
@@ -179,7 +182,9 @@ def run_window():
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
         row=3, column=0, sticky="w")
     several = tk.BooleanVar(value=S.CROSSMODAL_STANDARDS["enabled"])
-    ttk.Checkbutton(frm, text="Cross-modal: extra blocks", variable=several,
+    n_extra = S.CROSSMODAL_STANDARDS.get("n_participants")
+    ttk.Checkbutton(frm, text="Cross-modal: extra blocks" + (f" (first {n_extra} participants)" if n_extra else ""),
+                    variable=several,
                     command=lambda: refresh()).grid(row=3, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Simulate (no window; saves to data_simulated/)", variable=simulate,
                     command=lambda: refresh()).grid(row=4, column=0, columnspan=2, sticky="w")

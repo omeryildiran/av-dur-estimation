@@ -109,8 +109,8 @@ def staircase_starts(task, rng, block=None, noise_levels=None, cfg=None):
     the point it converges to, so it crosses the PSE on its way (2D1U and 3D1U at the floor,
     1D2U and 1D3U at the ceiling). The staircases come in pairs; a pair of 50% rules (the two
     cross-modal 1D1U) starts at opposite ends, which one at the ceiling random per condition and
-    balanced over the session's conditions."""
-    rules = (cfg or S.TASKS[task])["staircases"]
+    balanced over the session's conditions. "QUEST" (QUEST+, avdur.quest) has no start and is skipped."""
+    rules = [r for r in (cfg or S.TASKS[task])["staircases"] if r != "QUEST"]
     if len(rules) % 2:
         raise ValueError(f"{task}: staircases must come in pairs, got {rules}")
     conds = conditions(task, block, noise_levels, cfg)

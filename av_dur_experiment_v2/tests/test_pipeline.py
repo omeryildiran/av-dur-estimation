@@ -51,8 +51,15 @@ def _intervals(col):
 
 # ── checks ────────────────────────────────────────────────────────────────────
 
+def n_trials(task, n_conditions):
+    cfg = S.TASKS[task]
+    return n_conditions * (len(cfg["staircases"]) * cfg["trials_per_staircase"]
+                           + len(cfg["lapse_levels"]) * cfg["lapse_trials_per_level"])
+
+
 def check_counts(root, pid):
-    expected = {"unimodal_auditory": 308, "unimodal_visual": 154, "crossmodal": 388}
+    expected = {"unimodal_auditory": n_trials("unimodal_auditory", 2), "unimodal_visual": n_trials("unimodal_visual", 1),
+                "crossmodal": 388}
     for task, n in expected.items():
         d = storage.load_trials(task, pid, root)
         assert len(d) == n, (task, len(d), n)
@@ -204,7 +211,7 @@ def check_staircase_rules():
     for task in (t for t in S.TASKS if t != "noise_calibration"):      # its staircases move the noise
         for block in (S.TASKS["main"]["blocks"] if task == "main" else [None]):
             starts = design.staircase_starts(task, rng, block)
-            rules = S.TASKS[task]["staircases"]
+            rules = [r for r in S.TASKS[task]["staircases"] if r != "QUEST"]
             for noise, conflict in design.conditions(task, block):
                 for k in range(0, len(rules), 2):
                     pair = {starts[(noise, conflict, rules[k])], starts[(noise, conflict, rules[k + 1])]}
@@ -229,7 +236,9 @@ def check_staircase_starts(root, pid):
     """Every staircase's first trial is at its logged starting end; pairs start at opposite ends."""
     for task in (t for t in storage.TASK_ORDER if t != "noise_calibration"):
         d = storage.load_trials(task, pid, root)
-        d = d[d.kind == "staircase"].sort_values("trial_num")
+        d = d[(d.kind == "staircase") & (d.current_stair != "QUEST")].sort_values("trial_num")
+        if d.empty:                                     # QUEST+ only: check_quest
+            continue
         first = d.groupby(["session_file", "condition", "current_stair"]).first()
         assert (first.stair_start.isin(["floor", "ceiling"])).all()
         top = first[first.stair_start == "ceiling"]
@@ -237,7 +246,27 @@ def check_staircase_starts(root, pid):
         bottom = first[first.stair_start == "floor"].delta_dur_percents
         assert (bottom < -0.5).all(), (task, bottom.max())
         per_cond = first.groupby(["session_file", "condition"]).stair_start.apply(lambda x: (x == "ceiling").sum())
-        assert (per_cond == len(S.TASKS[task]["staircases"]) // 2).all(), task
+        assert (per_cond == len([r for r in S.TASKS[task]["staircases"] if r != "QUEST"]) // 2).all(), task
+
+
+def check_quest(root, pid):
+    """QUEST+ conditions: every test a whole number of frames between the floor and the ceiling,
+    the posterior logged on every trial, and its final sigma close to the screening fit's."""
+    from avdur import screening
+    for task in (t for t in S.TASKS if "QUEST" in S.TASKS[t]["staircases"]):
+        for meta in storage.sessions(pid, task, root):
+            d = pd.read_csv(meta["csv"])
+            q = d[d.current_stair == "QUEST"]
+            assert len(q) == len(d.condition.unique()) * S.TASKS[task]["trials_per_staircase"], task
+            frames = q.testDurS * q.frame_rate_hz
+            assert np.allclose(frames, frames.round()), "QUEST+ test not a whole number of frames"
+            assert q.delta_dur_percents.between(S.TASKS[task]["floor"] - 1e-9, S.STAIRCASE["ceiling"] + 1e-9).all()
+            assert q[["quest_mu", "quest_sigma", "quest_lapse"]].notna().all().all()
+            fit = {e["noise"]: e["sigma"] for e in screening.block_fit(task, meta["csv"], None)["conditions"]}
+            for cond, g in q.groupby("condition"):
+                noise = None if cond.startswith("None") else float(cond.split("/")[0])
+                ratio = g.quest_sigma.iloc[-1] / fit[noise]
+                assert 0.5 < ratio < 2.0, (task, cond, ratio)
 
 
 def check_display_profiles(root):
@@ -446,6 +475,7 @@ def run_all(root=SIM_ROOT):
         check_counts(root, pid)
         check_order_balance(root, pid)
         check_staircase_starts(root, pid)
+        check_quest(root, pid)
         check_crossmodal_blocks(root, pid)
         check_randomised(root, pid)
         worst = check_main_alignment(root, pid)

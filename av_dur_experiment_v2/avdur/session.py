@@ -19,6 +19,7 @@ from avdur import bias as bias_mod
 from avdur import design, notify, storage
 from avdur.audio import AudioGenerator
 from avdur.schedule import make_schedule, to_frames
+from avdur.quest import QuestStair
 from avdur.staircase import Staircase
 
 NEEDS_AUDIO = {"noise_calibration", "unimodal_auditory", "crossmodal", "main"}
@@ -160,7 +161,12 @@ class Session:
 
     def _make_stairs(self, rng):
         starts = design.staircase_starts(self.task, rng, self.block, self.cfg["noise_levels"], self.cfg)
-        return {key: Staircase(key[2], self.floor(key[0]), start=start, **S.STAIRCASE) for key, start in starts.items()}
+        stairs = {key: Staircase(key[2], self.floor(key[0]), start=start, **S.STAIRCASE) for key, start in starts.items()}
+        if "QUEST" in self.cfg["staircases"]:                  # QUEST+ chooses the test level (avdur.quest)
+            for noise, conflict in design.conditions(self.task, self.block, self.cfg["noise_levels"], self.cfg):
+                stairs[(noise, conflict, "QUEST")] = QuestStair(self.floor(noise), S.STAIRCASE["ceiling"],
+                                                                self.standard_s, self.fr)
+        return stairs
 
     def _trial_level(self, spec, stair):
         if stair is not None:
@@ -213,7 +219,12 @@ class Session:
         else:
             by_noise = {}
             for (noise, _, rule), st in stairs.items():
-                by_noise.setdefault("visual" if noise is None else f"noise {noise:g}", []).append(f"{rule} {st.level:+.2f}")
+                if isinstance(st, QuestStair):
+                    mu, sigma, _ = st.estimate()
+                    text = f"QUEST PSE {1000 * self.standard_s * math.exp(mu):.0f} ms, sigma {sigma:.2f}"
+                else:
+                    text = f"{rule} {st.level:+.2f}"
+                by_noise.setdefault("visual" if noise is None else f"noise {noise:g}", []).append(text)
             lines.append("    staircases: " + " | ".join(f"{k}: {' '.join(v)}" for k, v in by_noise.items()))
         return "\n".join(lines)
 
@@ -235,8 +246,11 @@ class Session:
         chose_test = result["response"] == spec.order
         standard_s = to_frames(self.standard_s, self.fr) / self.fr
         is_correct = (test_s > standard_s and chose_test) or (test_s < standard_s and not chose_test)
+        quest = stairs.get((spec.noise, spec.conflict, "QUEST"))
         if stair is not None:
             self._update_stair(stair, chose_test, is_correct)
+        elif spec.kind == "lapse" and (spec.noise, spec.conflict, "QUEST") in stairs:     # easy trials inform
+            stairs[(spec.noise, spec.conflict, "QUEST")].observe(test_s / standard_s - 1, chose_test)  # its lapse
 
         test_i = 0 if spec.order == 1 else 1
         vis = sched.visual
@@ -288,6 +302,15 @@ class Session:
             chose_test=int(chose_test), is_correct=int(is_correct),
             stair_start=stair.start if stair else "",
             stair_num_reversal=stair.reversals if stair else "", stair_is_reversal=stair.is_reversal if stair else "",
+            **quest_cols(quest),
             wall_time=dt.datetime.now().isoformat(timespec="milliseconds"),
         )
         return row
+
+
+def quest_cols(quest):
+    """QUEST+ posterior means after this trial (empty when the condition has no QUEST+)."""
+    if quest is None:
+        return dict(quest_mu="", quest_sigma="", quest_lapse="")
+    mu, sigma, lapse = quest.estimate()
+    return dict(quest_mu=round(mu, 4), quest_sigma=round(sigma, 4), quest_lapse=round(lapse, 4))

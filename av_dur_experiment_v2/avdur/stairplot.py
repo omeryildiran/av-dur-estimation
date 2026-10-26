@@ -8,7 +8,7 @@ import numpy as np
 from avdur import psychometrics as pm
 
 STAIR_COLORS = {'2D1U': 'tab:red', '1D2U': 'tab:blue', '3D1U': 'tab:orange', '1D3U': 'tab:cyan',
-                '1D1U': 'tab:purple', '1D1U_b': 'tab:pink'}
+                '1D1U': 'tab:purple', '1D1U_b': 'tab:pink', 'QUEST': 'tab:green'}
 TRUE = ['1', 'True', 'true', True, 1]
 
 
@@ -43,7 +43,8 @@ def plot_staircases(d, title='', show_fit=True):
         for stair, s in c[c.kind == 'staircase'].groupby('current_stair'):
             col = STAIR_COLORS.get(stair, 'black')
             start = s.stair_start.iloc[0] if 'stair_start' in s else ''
-            ax.plot(s.trial_num, s.test_ms, '-', color=col, lw=1, alpha=0.7, label=f'{stair} (from {start})')
+            ax.plot(s.trial_num, s.test_ms, '-', color=col, lw=1, alpha=0.7,
+                    label='QUEST+' if stair == 'QUEST' else f'{stair} (from {start})')
             yes = s.chose_test == 1
             ax.scatter(s.trial_num[yes], s.test_ms[yes], s=22, color=col, zorder=3)
             ax.scatter(s.trial_num[~yes], s.test_ms[~yes], s=22, facecolors='white', edgecolors=col, zorder=3)

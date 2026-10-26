@@ -42,7 +42,9 @@ def main(argv=None):
     ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
     ap.add_argument("--noise-high", type=float, help="high noise level (default: the participant's noise calibration)")
     ap.add_argument("--single-standard", action="store_true",
-                    help="cross-modal: the 500 ms standard only (default: every standard in CROSSMODAL_STANDARDS)")
+                    help="cross-modal: the 500 ms standard only (default: the extra standards for the first "
+                         "CROSSMODAL_STANDARDS['n_participants'] participants)")
+    ap.add_argument("--all-standards", action="store_true", help="cross-modal: every standard, whatever the count")
     ap.add_argument("--standard", type=float, help="cross-modal: run this one standard (s), e.g. to repeat it")
     ap.add_argument("--seed", type=int)
     ap.add_argument("--data-root", help="default: data/ (data_simulated/ with --simulate, data_test/ with --autotest)")
@@ -127,7 +129,8 @@ def run_crossmodal(args, presenter, root, common, noise_high, noise_file):
         todo = [(std, None if abs(std - S.STANDARD_DUR_S) < 1e-9 else dict(S.CROSSMODAL_STANDARDS["extra_design"]),
                  standards.label(std))]
     else:
-        todo = standards.remaining(args.pid, root, several=not args.single_standard)
+        todo = standards.remaining(args.pid, root, several=False if args.single_standard else
+                                   (True if args.all_standards else None))
     if not todo:
         print(f"{args.pid}: the cross-modal task is done at every standard. Use --standard to repeat one.", flush=True)
         return 0

@@ -196,6 +196,7 @@ def main(argv=None):
     ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
     ap.add_argument("--no-open-plots", action="store_true", help="do not open the plots at the end (fit viewer in use)")
     ap.add_argument("--single-standard", action="store_true", help="cross-modal task at the 500 ms standard only")
+    ap.add_argument("--all-standards", action="store_true", help="cross-modal task at every standard, whatever the count")
     ap.add_argument("--seed", type=int)
     ap.add_argument("--data-root")
     args = ap.parse_args(argv)
@@ -218,7 +219,7 @@ def main(argv=None):
     ok, _ = run(pid, presenter, root, args.monitor, args.practice, args.simulate, args.autotest, args.max_trials,
                 background_fits=not args.simulate,
                 open_plots=not (args.simulate or args.autotest or args.no_open_plots),
-                several=False if args.single_standard else None)
+                several=False if args.single_standard else (True if args.all_standards else None))
     return 0 if ok else EXIT_STOPPED
 
 

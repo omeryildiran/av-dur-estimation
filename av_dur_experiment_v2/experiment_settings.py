@@ -27,7 +27,7 @@ MONITOR_PROFILES = {
     "office_test": dict(window_px=800, screen=0, fullscreen=True, frame_rate_hz=75.0,
                         testing_only=True),                            # Mac mini + Dell S2722DZ
     "laptop_test": dict(window_px=800, screen=0, fullscreen=True, frame_rate_hz=60.0,
-                        testing_only=True),                            # laptop set to 60 Hz
+                        testing_only=True),                            # MacBook Air M3 13" (fixed 60 Hz panel)
 }
 DEFAULT_MONITOR = "lab_crt"
 
@@ -69,7 +69,7 @@ NOISE_LEVELS = (0.1, 1.2)           # v1: background noise relative to the signa
 NOISE_LOW = 0.1
 NOISE_HIGH_DEFAULT = 1.2            # only for simulations, tests and practice before a calibration
 NOISE_CALIBRATION = dict(
-    target_sigma=0.75,              # model simulations: 0.7-0.85 separates fusion, causal inference and
+    target_sigma=0.75,              # (0.85 briefly on 26 Oct 2026, not used for any participant.) Model simulations: 0.7-0.85 separates fusion, causal inference and
                                     # cue switching best (switching is best separated near sigma_v, v1 median 0.62)
     target_correct=0.7071,          # 2-down-1-up on correct answers (2 correct: louder noise; 1 error: softer)
     trials_per_staircase=100,       # two interleaved staircases (206 trials with the catch trials, ~10 min; 60 gave ~6 min)
@@ -96,9 +96,13 @@ FIXED_VOLUME = 0.1653               # played level equals v1's (v1: -11.6 dBFS b
 
 # ── Trial timing ──────────────────────────────────────────────────────────────
 STANDARD_DUR_S = 0.5                # v1
-PRE_RANGE_S = (0.20, 0.45)          # v1
-ISI_RANGE_S = (0.40, 0.90)          # v1
-POST_RANGE_S = (0.20, 0.45)         # v1
+# v2 (26 Oct 2026): gaps shortened from v1's 0.20-0.45 / 0.40-0.90 / 0.20-0.45 s, 0.35 s less per
+# trial (about 12%). They only add noise around the sounds: make_schedule never shortens a gap
+# and never changes a sound or a flash; it lengthens pre / ISI / post when an extended flash
+# (bias correction, conflict) needs room (tests/test_schedule.py checks this for every task).
+PRE_RANGE_S = (0.20, 0.35)          # noise before interval 1 (at least MIN_LEAD_S before any event)
+ISI_RANGE_S = (0.30, 0.60)          # between the two intervals
+POST_RANGE_S = (0.15, 0.30)         # noise after interval 2 (masks its offset), then the prompt
 MIN_VISUAL_GAP_S = 0.05             # v2: minimum blank between and after visual flashes
 MIN_VISUAL_DUR_S = 0.025            # v2: shortest visual flash allowed after the bias correction
 # The prompt appears on every trial, POST_STIM_WAIT_S after the stimulus (sound and flashes)
@@ -158,6 +162,14 @@ AUTOTEST_BIAS_S = {0.1: 0.10, 1.2: -0.05}   # main-block corrections when no ful
 # every staircase at the floor (from 2 June 2025).
 STAIRCASE = dict(init_step=0.16, step_factor=0.5, n_step_changes=2, ceiling=0.9)
 
+# QUEST+ (avdur/quest.py): a task whose staircases are ("QUEST",) gets one QUEST+ per condition
+# instead (trials_per_staircase trials, order balanced, plus the easy trials, which also inform
+# its lapse). It targets mu and sigma, with the lapse as a nuisance parameter. Grids as in the
+# simulations (analysis/quest_unimodal_simulation.py); candidate tests are whole frames between
+# the task's floor and STAIRCASE["ceiling"], n_levels of them evenly spaced in log duration.
+QUEST = dict(target="mu_sigma", mu_range=(-1.0, 1.0), n_mu=81, sigma_range=(0.05, 2.5), n_sigma=25,
+             lapse_max=0.1, n_lapse=5, n_levels=60)
+
 TASKS = {
     "noise_calibration": dict(
         label="Auditory noise calibration (sets the high noise level)",
@@ -166,13 +178,16 @@ TASKS = {
     "unimodal_auditory": dict(
         label="Unimodal auditory",
         noise_levels=NOISE_LEVELS, conflicts=(0.0,),
-        staircases=("2D1U", "1D2U", "3D1U", "1D3U"), trials_per_staircase=35,   # v1: 308 trials
+        # QUEST+ since 27 Oct 2026 (before: 2D1U, 1D2U, 3D1U, 1D3U x 35 = 308 trials, as v1): 90 + 14 easy
+        # per noise level; in simulation sigma as precise as the staircases' 154 (PSE error about +40%)
+        staircases=("QUEST",), trials_per_staircase=90,
         floor=-0.9, lapse_levels=(-0.9, 0.9), lapse_trials_per_level=7,
     ),
     "unimodal_visual": dict(
         label="Unimodal visual",
         noise_levels=(None,), conflicts=(0.0,),
-        staircases=("2D1U", "1D2U", "3D1U", "1D3U"), trials_per_staircase=35,   # v1: 154 trials
+        # QUEST+ since 27 Oct 2026 (before: 4 staircases x 35 = 154 trials, as v1): 70 + 14 easy
+        staircases=("QUEST",), trials_per_staircase=70,
         floor=-0.9, lapse_levels=(-0.8, 0.8), lapse_trials_per_level=7,
     ),
     "crossmodal": dict(
@@ -204,9 +219,13 @@ BLOCK_ORDERS = [
 # enabled=True the cross-modal task runs one block per standard: 500 ms first, with the full
 # design (it alone sets the main experiment's correction), then the others with a shorter
 # design, in an order that alternates by participant number. --single-standard (or the
-# launcher checkbox) runs the 500 ms block only.
+# launcher checkbox) runs the 500 ms block only; --all-standards runs them all.
+# n_participants: only the first n participants to complete an extra standard get them (a
+# participant who has one keeps getting the rest); None: everyone. The bias grew with the
+# standard in P101 and P104 (26 Oct 2026), so 3 participants are enough to describe it.
 CROSSMODAL_STANDARDS = dict(
     enabled=True,
+    n_participants=3,
     standards=(0.3, 0.8),           # in addition to STANDARD_DUR_S
     extra_design=dict(staircases=("1D1U", "1D1U_b"), trials_per_staircase=40, lapse_trials_per_level=3),   # 30 until P104 (132 trials)
 )

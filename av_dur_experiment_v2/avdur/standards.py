@@ -22,9 +22,28 @@ def label(standard_s):
     return f"S{round(1000 * standard_s)}"
 
 
+def extra_participants(root=None):
+    """Participants with a completed cross-modal session at an extra standard (not STANDARD_DUR_S)."""
+    return sorted({m["participant"] for m in storage.sessions(None, "crossmodal", root)
+                   if abs(float(m.get("standard_s", S.STANDARD_DUR_S)) - S.STANDARD_DUR_S) > 1e-9})
+
+
+def wants_extra(pid, root=None):
+    """Default for this participant: the extra standards while fewer than CFG["n_participants"]
+    participants have done one (a participant who has one keeps getting the rest)."""
+    if not CFG["enabled"]:
+        return False
+    n = CFG.get("n_participants")
+    if n is None:
+        return True
+    have = extra_participants(root)
+    return pid in have or len(have) < n
+
+
 def plan(pid, root=None, several=None):
-    """[(standard_s, design override or None, block label)] in running order for this participant."""
-    several = CFG["enabled"] if several is None else several
+    """[(standard_s, design override or None, block label)] in running order for this participant.
+    several: True all standards, False 500 ms only, None the default (wants_extra)."""
+    several = wants_extra(pid, root) if several is None else several
     if not several:
         return [(S.STANDARD_DUR_S, None, None)]
     extra = list(CFG["standards"])

@@ -110,20 +110,28 @@ class NoiseCalibration(Session):
         self.calibration = result
 
 
+def p_correct(sigma, delta, lapse):
+    """2IFC correct with lapses (a lapse is a guess), as in the block fits."""
+    return lapse / 2 + (1 - lapse) * norm.cdf(delta / sigma)
+
+
 def _sigma_fit(d):
-    """sigma(noise) = exp(a + b ln noise), lapse 0.02, fitted to correct/incorrect at +/-DELTA."""
+    """sigma(noise) = exp(a + b ln noise) and a lapse rate (0 to the block fits' lapse_max), fitted to
+    correct/incorrect on the staircase and catch trials. Before P101's second session (26 Oct 2026) the
+    lapse was fixed at 0.02, so careless errors counted as noise and set the level too low."""
     ln_n = np.log(d["audNoise"].to_numpy(float))
+    delta = np.abs(np.log(d["testDurS"].to_numpy(float) / d["standardDur"].to_numpy(float)))
     y = d["is_correct"].to_numpy(float)
 
     def nll(p):
-        sigma = np.exp(p[0] + p[1] * ln_n)
-        pc = np.clip(0.01 + 0.98 * norm.cdf(DELTA / sigma), 1e-6, 1 - 1e-6)
+        pc = np.clip(p_correct(np.exp(p[0] + p[1] * ln_n), delta, p[2]), 1e-6, 1 - 1e-6)
         return -np.sum(y * np.log(pc) + (1 - y) * np.log(1 - pc))
 
-    best = min((minimize(nll, x0, method="L-BFGS-B", bounds=[(-4.0, 3.0), (0.01, 3.0)])
-                for x0 in ([-1.0, 0.5], [-0.5, 1.0], [-1.5, 0.2], [0.0, 0.1])), key=lambda r: r.fun)
-    a, b = best.x
-    return float(a), float(b)
+    best = min((minimize(nll, x0, method="L-BFGS-B", bounds=[(-4.0, 3.0), (0.01, 3.0), (0.0, S.BIAS["lapse_max"])])
+                for x0 in ([-1.0, 0.5, 0.02], [-0.5, 1.0, 0.05], [-1.5, 0.2, 0.02], [0.0, 0.1, 0.08])),
+               key=lambda r: r.fun)
+    a, b, lapse = best.x
+    return float(a), float(b), float(lapse)
 
 
 def estimate(df):
@@ -138,9 +146,15 @@ def estimate(df):
         if rev.sum() < 3:
             warnings.append(f"staircase {name}: only {int(rev.sum())} reversals")
     noise_stairs = float(np.clip(np.exp(np.mean([np.log(v["noise"]) for v in per_stair.values()])), lo, hi))
-    a, b = _sigma_fit(stair)
+    a, b, lapse = _sigma_fit(df[df["kind"].isin(["staircase", "lapse"])])
     noise_fit = float(np.clip(np.exp((np.log(C["target_sigma"]) - a) / b), lo, hi))
     fit_valid = b > 0.05                    # a flat sigma(noise) fit says nothing about where the target is reached
+    # The staircases converge where target_correct is reached *with* lapses, i.e. at a lapse-free sigma
+    # below the target: move their level to where the fitted sigma reaches the target.
+    pc_free = min((C["target_correct"] - lapse / 2) / (1 - lapse), 0.999)
+    sigma_stairs = DELTA / norm.ppf(pc_free)
+    if fit_valid:
+        noise_stairs = float(np.clip(noise_stairs * (C["target_sigma"] / sigma_stairs) ** (1 / b), lo, hi))
     noise_high = round(float(np.clip(np.sqrt(noise_stairs * noise_fit) if fit_valid else noise_stairs, lo, hi)), 3)
     catch = df[df["kind"] == "lapse"]["is_correct"]
     notes = [] if fit_valid else ["the fit found no change of sigma with noise; the staircases alone set the level"]
@@ -159,7 +173,7 @@ def estimate(df):
     return dict(noise_high=noise_high, target_sigma=C["target_sigma"], target_correct=C["target_correct"],
                 delta_ln=DELTA, test_ms=[round(500 * np.exp(DELTA)), round(500 * np.exp(-DELTA))],
                 noise_staircases=noise_stairs, staircases=per_stair, noise_fit=noise_fit,
-                sigma_fit=dict(a=a, b=b, sigma_at_low=float(np.exp(a + b * np.log(S.NOISE_LOW))),
+                sigma_fit=dict(a=a, b=b, lapse=lapse, sigma_at_low=float(np.exp(a + b * np.log(S.NOISE_LOW))),
                                sigma_at_result=float(np.exp(a + b * np.log(noise_high)))),
                 catch_correct=float(catch.mean()) if len(catch) else float("nan"), n_catch=int(len(catch)),
                 fit_valid=bool(fit_valid), n_trials=int(len(df)), bounds=list(C["bounds"]), warnings=warnings,
@@ -191,7 +205,8 @@ def plot(df, result, folder, stem):
     ax2.scatter(np.exp(g["ln"]), g["y"], s=10 + 4 * g["k"], color="tab:blue", alpha=0.7)
     xs = np.exp(np.linspace(np.log(C["bounds"][0]), np.log(C["bounds"][1]), 200))
     sig = np.exp(result["sigma_fit"]["a"] + result["sigma_fit"]["b"] * np.log(xs))
-    ax2.plot(xs, 0.01 + 0.98 * norm.cdf(DELTA / sig), color="tab:blue", label="fit")
+    ax2.plot(xs, p_correct(sig, DELTA, result["sigma_fit"].get("lapse", 0.02)), color="tab:blue",
+             label=f"fit (lapse {result['sigma_fit'].get('lapse', 0.02):.2f})")
     ax2.axhline(C["target_correct"], color="0.7", ls=":", lw=1)
     ax2.axvline(result["noise_high"], color="black", ls="--", lw=1)
     ax2.set(xscale="log", ylim=(0.3, 1.02), xlabel="Noise level",
@@ -219,7 +234,8 @@ def summary_text(result):
     lines = [f"── Noise calibration: high noise level {result['noise_high']:.3f} "
              f"(target σ {result['target_sigma']}; v1 used {S.NOISE_HIGH_DEFAULT}) ──",
              f"   staircases {st}; fit {result['noise_fit']:.2f}; catch trials {result['catch_correct']:.0%} of "
-             f"{result['n_catch']}; fitted σ at the chosen level {result['sigma_fit']['sigma_at_result']:.2f}"]
+             f"{result['n_catch']}; fitted σ at the chosen level {result['sigma_fit']['sigma_at_result']:.2f}, "
+             f"lapse {result['sigma_fit'].get('lapse', 0.02):.2f}"]
     lines += [f"   note: {n}" for n in result.get("notes", [])]
     lines += [f"   WARNING: {w}" for w in result["warnings"]] or ["   checks passed"]
     if result.get("plot"):
