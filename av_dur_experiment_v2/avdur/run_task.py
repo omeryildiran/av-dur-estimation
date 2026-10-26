@@ -119,13 +119,6 @@ def resolve_noise(ap, args, root):
              "(or give --noise-high).")
 
 
-if __name__ == "__main__":
-    code = main()
-    from avdur import notify
-    notify.flush()                  # let Slack messages and plots finish sending (the window is closed)
-    sys.exit(code)
-
-
 def run_crossmodal(args, presenter, root, common, noise_high, noise_file):
     """The cross-modal task at each remaining standard (one session each, one window, breaks between)."""
     from avdur import screening, standards
@@ -158,3 +151,10 @@ def run_crossmodal(args, presenter, root, common, noise_high, noise_file):
     if text:
         print(text, flush=True)
     return 0
+
+
+if __name__ == "__main__":
+    code = main()
+    from avdur import notify
+    notify.flush()                  # let Slack messages and plots finish sending (the window is closed)
+    sys.exit(code)

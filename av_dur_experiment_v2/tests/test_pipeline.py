@@ -462,8 +462,21 @@ def run_all(root=SIM_ROOT):
         check_combined_session(Path(tmp))
         check_noise_calibration(Path(tmp))
         check_crossmodal_standards(Path(tmp))
+        check_entry_points(Path(tmp))
     snr = check_audio()
     return summary, snr
+
+
+def check_entry_points(root):
+    """Start each task file the way the launcher does (python -m ...), not by calling main()."""
+    import subprocess
+    for args in (["avdur.run_task", "--task", "crossmodal", "--noise-high", "1.0"],
+                 ["avdur.run_task", "--task", "unimodal_visual"],
+                 ["avdur.run_blocks"]):
+        r = subprocess.run([sys.executable, "-m", *args, "--pid", "SIM80", "--simulate", "--max-trials", "2",
+                            "--data-root", str(root)], cwd=ROOT, capture_output=True, text=True, timeout=300,
+                           env=dict(os.environ, AVDUR_NO_NOTIFY="1"))
+        assert r.returncode == 0, f"{' '.join(args)} failed:\n{r.stderr[-2000:]}"
 
 
 def test_pipeline():
