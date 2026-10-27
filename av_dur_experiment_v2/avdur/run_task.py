@@ -122,23 +122,23 @@ def resolve_noise(ap, args, root):
 
 
 def run_crossmodal(args, presenter, root, common, noise_high, noise_file):
-    """The cross-modal task at each remaining standard (one session each, one window, breaks between)."""
+    """The cross-modal task: every remaining standard interleaved in one session (avdur.standards)."""
     from avdur import screening, standards
     if args.standard is not None:
         std = args.standard
-        todo = [(std, None if abs(std - S.STANDARD_DUR_S) < 1e-9 else dict(S.CROSSMODAL_STANDARDS["extra_design"]),
-                 standards.label(std))]
+        todo = [(std, standards.design_for(std), standards.label(std), [])]
     else:
         todo = standards.remaining(args.pid, root, several=False if args.single_standard else
                                    (True if args.all_standards else None))
     if not todo:
         print(f"{args.pid}: the cross-modal task is done at every standard. Use --standard to repeat one.", flush=True)
         return 0
-    print(f"[{args.pid}] cross-modal: {len(todo)} block(s)", flush=True)
-    for k, (std, design_override, label) in enumerate(todo):
+    for k, (std, design_override, label, more) in enumerate(todo):
         last = k == len(todo) - 1
+        print(f"[{args.pid}] cross-modal, standard(s): " + ", ".join(f"{1000 * v:.0f} ms" for v in [std] + [m for m, _ in more]),
+              flush=True)
         session = Session("crossmodal", args.pid, presenter, block=label, noise_high=noise_high, noise_file=noise_file,
-                          standard_s=std, design=design_override, close_at_end=last, **common)
+                          standard_s=std, design=design_override, more_standards=more, close_at_end=last, **common)
         if not session.run():
             return EXIT_STOPPED
         if not args.simulate:

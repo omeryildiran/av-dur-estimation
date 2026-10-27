@@ -52,8 +52,8 @@ def status_text(raw_pid, root=None):
             when = f"done {done[-1]['started'][:16].replace('T', ' ')} ({done[-1]['n_trials']} trials)" if done else "not done"
             if task == "crossmodal":
                 from avdur import standards
-                n_done, n_left = len(standards.done_standards(pid, root)), len(standards.remaining(pid, root))
-                when = f"{n_done} of {n_done + n_left} blocks done"
+                n_done, n_left = len(standards.done_standards(pid, root)), len(standards.remaining_standards(pid, root))
+                when = f"{n_done} of {n_done + n_left} standards done (interleaved in one session)"
                 n_extra = S.CROSSMODAL_STANDARDS.get("n_participants")
                 if n_extra:
                     when += f"   (extra blocks so far: {len(standards.extra_participants(root))} of {n_extra} participants)"

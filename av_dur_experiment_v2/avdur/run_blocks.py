@@ -50,14 +50,15 @@ def blocks_to_run(pid, root, rerun_all=False, several=None):
 
 
 def steps_to_run(pid, root, rerun_all=False, several=None):
-    """[(task, standard_s, design, block label)]: the cross-modal task expands to one step per standard."""
+    """[(task, standard_s, design, block label, interleaved standards)]; the cross-modal step runs every
+    remaining standard interleaved in one session (avdur.standards)."""
     steps = []
     for t in blocks_to_run(pid, root, rerun_all, several):
         if t == "crossmodal":
             todo = standards.plan(pid, root, several) if rerun_all else standards.remaining(pid, root, several)
-            steps += [(t, std, des, lab) for std, des, lab in todo]
+            steps += [(t, std, des, lab, more) for std, des, lab, more in todo]
         else:
-            steps.append((t, None, None, None))
+            steps.append((t, None, None, None, []))
     return steps
 
 
@@ -79,21 +80,22 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
         return True, []
     cal = S.NOISE_CALIBRATION
 
-    def n_trials(task, des):
+    def n_trials(task, des, more=()):
         if task == "noise_calibration":
             return len(S.TASKS["noise_calibration"]["staircases"]) * cal["trials_per_staircase"] + cal["catch_trials"]
-        return len(design.build_trials(task, np.random.default_rng(0), cfg=dict(S.TASKS[task], **(des or {}))))
+        return sum(len(design.build_trials(task, np.random.default_rng(0), cfg=dict(S.TASKS[task], **(d or {}))))
+                   for d in [des] + [d for _, d in more])
 
     log(f"[{pid}] combined session: " + ", ".join(
-        f"{screening.LABELS[t]} ({max_trials or n_trials(t, des)} trials)"
-        for t, _, des, lab in steps) + (" — with practice" if practice else ""))
+        f"{screening.LABELS[t]}{' ' + lab if lab else ''} ({max_trials or n_trials(t, des, more)} trials)"
+        for t, _, des, lab, more in steps) + (" — with practice" if practice else ""))
     todo = [t for t, *_ in steps]
     executor = (ProcessPoolExecutor(1, mp_context=multiprocessing.get_context("spawn"))
                 if background_fits else None)
     results, plot_dir = [], Path(root) / pid / "fits"
     try:
         practiced = set()
-        for k, (task, standard_s, design_override, label) in enumerate(steps):
+        for k, (task, standard_s, design_override, label, more) in enumerate(steps):
             last = k == len(todo) - 1
             common = dict(root=root, monitor=monitor, simulate=simulate, autotest=autotest, close_at_end=False,
                           verbose=True)
@@ -120,7 +122,8 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
                 practiced.add(task)
                 if not Session(task, pid, presenter, practice=True, **levels, **common).run():
                     return False, results
-            extra = dict(block=label, standard_s=standard_s, design=design_override) if task == "crossmodal" else {}
+            extra = (dict(block=label, standard_s=standard_s, design=design_override, more_standards=more)
+                     if task == "crossmodal" else {})
             session = Session(task, pid, presenter, max_trials=max_trials, **extra, **levels, **common)
             if not session.run():
                 return False, results

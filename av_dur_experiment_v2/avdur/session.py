@@ -29,10 +29,10 @@ class Session:
     def __init__(self, task, pid, presenter, block=None, practice=False, bias=None, bias_file=None,
                  seed=None, root=None, monitor=S.DEFAULT_MONITOR, simulate=False, autotest=False,
                  max_trials=None, solid_root=None, close_at_end=True, verbose=False, noise_high=None, noise_file=None,
-                 standard_s=None, design=None):
+                 standard_s=None, design=None, more_standards=None):
         if task == "main" and bias is None:
             raise ValueError("The main experiment needs a confirmed bias file (run the cross-modal task first).")
-        if standard_s is not None and task != "crossmodal":
+        if (standard_s is not None or more_standards) and task != "crossmodal":
             raise ValueError("Only the cross-modal task can use another standard duration.")
         if task == "main" and block not in S.TASKS["main"]["blocks"]:
             raise ValueError(f"Main-experiment block must be one of {list(S.TASKS['main']['blocks'])}, got {block!r}")
@@ -47,18 +47,32 @@ class Session:
         self.close_at_end, self.verbose = close_at_end, verbose     # False: more blocks follow in this window
         self.meta = self.csv_path = self.json_path = None
         self._last_notify = 0.0
-        self.cfg = dict(S.TASKS[task], **(design or {}))     # design: e.g. a shorter design for extra standards
-        self.standard_s = float(standard_s if standard_s is not None else S.STANDARD_DUR_S)
-        self.design_override = design
         # v2: low noise fixed, high noise = the participant's calibrated level (NOISE_HIGH_DEFAULT without one)
         self.noise_high = round(float(noise_high if noise_high is not None else S.NOISE_HIGH_DEFAULT), 3)
         self.noise_file = noise_file
-        if any(n is not None for n in self.cfg["noise_levels"]):
-            self.cfg["noise_levels"] = (S.NOISE_LOW, self.noise_high)
+        self.cfg = self._task_cfg(design)                   # design: e.g. a shorter design for extra standards
+        self.standard_s = float(standard_s if standard_s is not None else S.STANDARD_DUR_S)
+        self.design_override = design
+        # [(standard_s, cfg)]: more than one = the cross-modal task with its standards interleaved in one session
+        self.more_standards = [(float(std), des) for std, des in (more_standards or ())]
+        self.standards = [(self.standard_s, self.cfg)] + [(std, self._task_cfg(des)) for std, des in self.more_standards]
         self.schedule_task = task
         self.fr = S.MONITOR_PROFILES[monitor]["frame_rate_hz"]     # every duration is computed at this rate
 
     # ── helpers ───────────────────────────────────────────────────────────────
+    def _task_cfg(self, design):
+        cfg = dict(S.TASKS[self.task], **(design or {}))
+        if any(n is not None for n in cfg["noise_levels"]):
+            cfg["noise_levels"] = (S.NOISE_LOW, self.noise_high)
+        return cfg
+
+    def _std(self, spec):
+        """The trial's standard duration (s)."""
+        return self.standard_s if spec.standard is None else spec.standard
+
+    def _key(self, spec, rule):
+        return (spec.noise, spec.conflict, rule, self._std(spec))
+
     def correction_s(self, noise):
         """Visual correction actually applied (whole frames), and the unrounded estimate."""
         if self.task != "main":
@@ -86,7 +100,9 @@ class Session:
             meta.update(trial_limit=self.max_trials, n_trials_full=len(trials))
             trials = trials[:self.max_trials]
         meta.update(noise_levels=[n for n in self.cfg["noise_levels"] if n is not None], noise_file=self.noise_file,
-                    standard_s=self.standard_s, design_override=self.design_override)
+                    standard_s=self.standard_s, design_override=self.design_override,
+                    standards_s=[std for std, _ in self.standards],
+                    more_standards=[[std, des] for std, des in self.more_standards])
         meta.update(n_trials_planned=len(trials), bias_file=self.bias_file, frame_rate_nominal_hz=self.fr,
                     testing_only_profile=bool(S.MONITOR_PROFILES[self.monitor].get("testing_only")),
                     corrections_applied_s={str(n): self.correction_s(n)[0] for n in self.cfg["noise_levels"]
@@ -104,7 +120,9 @@ class Session:
         meta["csv"] = csv_path.name
         storage.write_json(json_path, meta)
         stairs = self._make_stairs(rng)
-        meta["staircase_starts"] = {f"{n}/{c}/{r}": st.start for (n, c, r), st in stairs.items()}
+        several = len(self.standards) > 1
+        meta["staircase_starts"] = {f"{n}/{c}/{r}" + (f"/S{round(1000 * std)}" if several else ""): st.start
+                                    for (n, c, r, std), st in stairs.items()}
         storage.write_json(json_path, meta)
         audio = AudioGenerator() if (self.task in NEEDS_AUDIO and self.presenter.needs_audio) else None
         writer = storage.TrialWriter(csv_path)
@@ -157,15 +175,20 @@ class Session:
     # ── hooks (overridden by the noise calibration) ───────────────────────────
     def _build_trials(self, rng, first_order):
         return design.build_trials(self.task, rng, self.block, self.practice, first_order, self.cfg["noise_levels"],
-                                   self.cfg)
+                                   self.cfg, standards=self.standards if len(self.standards) > 1 else None)
 
     def _make_stairs(self, rng):
-        starts = design.staircase_starts(self.task, rng, self.block, self.cfg["noise_levels"], self.cfg)
-        stairs = {key: Staircase(key[2], self.floor(key[0]), start=start, **S.STAIRCASE) for key, start in starts.items()}
-        if "QUEST" in self.cfg["staircases"]:                  # QUEST+ chooses the test level (avdur.quest)
-            for noise, conflict in design.conditions(self.task, self.block, self.cfg["noise_levels"], self.cfg):
-                stairs[(noise, conflict, "QUEST")] = QuestStair(self.floor(noise), S.STAIRCASE["ceiling"],
-                                                                self.standard_s, self.fr)
+        """{(noise, conflict, rule, standard_s): staircase}."""
+        several, stairs = len(self.standards) > 1, {}
+        for std, cfg in self.standards:
+            key_std = std if several else self.standard_s
+            starts = design.staircase_starts(self.task, rng, self.block, cfg["noise_levels"], cfg)
+            stairs.update({key + (key_std,): Staircase(key[2], self.floor(key[0]), start=start, **S.STAIRCASE)
+                           for key, start in starts.items()})
+            if "QUEST" in cfg["staircases"]:                   # QUEST+ chooses the test level (avdur.quest)
+                for noise, conflict in design.conditions(self.task, self.block, cfg["noise_levels"], cfg):
+                    stairs[(noise, conflict, "QUEST", key_std)] = QuestStair(self.floor(noise), S.STAIRCASE["ceiling"],
+                                                                             std, self.fr)
         return stairs
 
     def _trial_level(self, spec, stair):
@@ -218,25 +241,30 @@ class Session:
             lines.append(f"    staircase levels: {min(levels):+.2f} to {max(levels):+.2f}")
         else:
             by_noise = {}
-            for (noise, _, rule), st in stairs.items():
+            for (noise, _, rule, std), st in stairs.items():
                 if isinstance(st, QuestStair):
                     mu, sigma, _ = st.estimate()
-                    text = f"QUEST PSE {1000 * self.standard_s * math.exp(mu):.0f} ms, sigma {sigma:.2f}"
+                    text = f"QUEST PSE {1000 * std * math.exp(mu):.0f} ms, sigma {sigma:.2f}"
                 else:
                     text = f"{rule} {st.level:+.2f}"
-                by_noise.setdefault("visual" if noise is None else f"noise {noise:g}", []).append(text)
+                name = "visual" if noise is None else f"noise {noise:g}"
+                if len(self.standards) > 1:
+                    name = f"S{round(1000 * std)} {name}"
+                by_noise.setdefault(name, []).append(text)
             lines.append("    staircases: " + " | ".join(f"{k}: {' '.join(v)}" for k, v in by_noise.items()))
         return "\n".join(lines)
 
     def _trial(self, i, spec, stairs, rng, audio):
-        stair = stairs.get((spec.noise, spec.conflict, spec.staircase)) if spec.kind == "staircase" else None
+        stair = stairs.get(self._key(spec, spec.staircase)) if spec.kind == "staircase" else None
+        quest_key = self._key(spec, "QUEST")
         level = self._trial_level(spec, stair)
         spec = dataclasses.replace(spec, noise=self._trial_noise(spec, stair))     # the noise actually played
-        test_frames = max(to_frames(self.standard_s * (1 + level), self.fr), 1)
+        std = self._std(spec)
+        test_frames = max(to_frames(std * (1 + level), self.fr), 1)
         test_s = test_frames / self.fr
         applied, estimate = self.correction_s(spec.noise)
         sched = make_schedule(self.schedule_task, spec.order, test_s, spec.conflict, applied, rng, self.fr,
-                              standard_s=self.standard_s)
+                              standard_s=std)
         seed = int(rng.integers(2**31))
         wave = audio.trial_sound(sched, spec.noise, seed) if audio is not None else None
 
@@ -244,13 +272,13 @@ class Session:
         if result.get("quit"):
             return None
         chose_test = result["response"] == spec.order
-        standard_s = to_frames(self.standard_s, self.fr) / self.fr
+        standard_s = to_frames(std, self.fr) / self.fr
         is_correct = (test_s > standard_s and chose_test) or (test_s < standard_s and not chose_test)
-        quest = stairs.get((spec.noise, spec.conflict, "QUEST"))
+        quest = stairs.get(quest_key)
         if stair is not None:
             self._update_stair(stair, chose_test, is_correct)
-        elif spec.kind == "lapse" and (spec.noise, spec.conflict, "QUEST") in stairs:     # easy trials inform
-            stairs[(spec.noise, spec.conflict, "QUEST")].observe(test_s / standard_s - 1, chose_test)  # its lapse
+        elif spec.kind == "lapse" and quest is not None:                                  # easy trials inform
+            quest.observe(test_s / standard_s - 1, chose_test)                            # its lapse
 
         test_i = 0 if spec.order == 1 else 1
         vis = sched.visual

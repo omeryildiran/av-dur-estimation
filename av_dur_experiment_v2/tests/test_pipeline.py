@@ -382,13 +382,12 @@ def check_combined_session(tmp):
     listener = dict(sigma_a=lambda n: 0.7 / np.sqrt(2) * (n / 0.8) ** 0.5)     # sigma 0.7 at noise 0.8
     ok, results = run_blocks.run("P50", SimulatedPresenter(3, listener), tmp, simulate=True, background_fits=False,
                                  log=lambda *_: None)
-    n_std = 1 + len(S.CROSSMODAL_STANDARDS["standards"]) if S.CROSSMODAL_STANDARDS["enabled"] else 1
-    assert ok and [r["task"] for r in results] == list(S.COMBINED_SESSION_TASKS) + ["crossmodal"] * (n_std - 1)
+    assert ok and [r["task"] for r in results] == list(S.COMBINED_SESSION_TASKS)     # standards: one session
     noise = storage.latest_noise("P50", tmp)[0]["noise_high"]
     assert 0.40 < 0.7 * (noise / 0.8) ** 0.5 < 1.25, noise           # sigma reached near the 0.7 target (99% range)
     for task in S.COMBINED_SESSION_TASKS:
         metas = storage.sessions("P50", task, tmp)
-        assert len(metas) == (n_std if task == "crossmodal" else 1), (task, len(metas))
+        assert len(metas) == 1, (task, len(metas))
         for meta in metas:
             assert meta["screening"]["decision"] == "no warnings" and Path(meta["block_fit"]["plot"]).exists(), meta
             if task != "noise_calibration":
@@ -415,25 +414,37 @@ def check_combined_session(tmp):
 
 
 def check_crossmodal_standards(tmp):
-    """Several standards: one session each (500 ms full design first); only 500 ms sets the correction."""
+    """Several standards: interleaved in one session (500 ms full design, the others shorter); only
+    500 ms sets the correction; 500 ms alone runs as before; standards done earlier are not repeated."""
     from avdur import run_task, standards
     args = ["--task", "crossmodal", "--simulate", "--seed", "3", "--data-root", str(tmp), "--noise-high", "0.8"]
-    assert run_task.main(["--pid", "SIM72"] + args) == 0
-    metas = storage.sessions("SIM72", "crossmodal", tmp)
+    assert run_task.main(["--pid", "SIM72", "--all-standards"] + args) == 0
+    (meta,) = storage.sessions("SIM72", "crossmodal", tmp)
     extra = S.CROSSMODAL_STANDARDS["standards"]
-    assert standards.plan("SIM72", tmp)[0][0] == S.STANDARD_DUR_S          # 500 ms runs first (start times tie here)
-    assert sorted(round(m["standard_s"], 3) for m in metas) == sorted([S.STANDARD_DUR_S, *extra])
-    d = storage.load_trials("crossmodal", "SIM72", tmp)
+    every = sorted([S.STANDARD_DUR_S, *extra])
+    assert sorted(meta["standards_s"]) == every and meta["block"] == "-".join(standards.label(v) for v in every)
+    d = storage.load_trials("crossmodal", "SIM72", tmp).sort_values("trial_num")
     n = d.groupby(d.standardDur.round(3)).size().to_dict()
     cfg = S.CROSSMODAL_STANDARDS["extra_design"]
     short = 2 * (len(cfg["staircases"]) * cfg["trials_per_staircase"] + 2 * cfg["lapse_trials_per_level"])
     assert n[S.STANDARD_DUR_S] == 388 and all(n[round(x, 3)] == short for x in extra), n
+    assert d.head(len(d) // 3).standardDur.round(3).nunique() == len(every), "standards are interleaved"
+    sizes = d.groupby((d.order != d.order.shift()).cumsum()).size()
+    assert sizes.iloc[:-2].eq(S.TASKS["crossmodal"]["order_block_size"]).all(), "order blocks span the standards"
+    for std, g in d[d.kind == "staircase"].groupby(d.standardDur.round(3)):     # each standard's own staircases
+        assert g.testDurS.median() / std < 1.5 and g.testDurS.max() <= std * (1 + S.STAIRCASE["ceiling"]) + 0.01, std
     assert (bias_mod.load_crossmodal("SIM72", tmp).standardDur == S.STANDARD_DUR_S).all()
     table = standards.bias_table("SIM72", tmp, n_boot=0)
-    assert len(table) == 2 * len(metas) and table.standard_ms.nunique() == len(metas)
-    assert standards.remaining("SIM72", tmp) == [] and run_task.main(["--pid", "SIM72"] + args) == 0   # nothing left
-    assert run_task.main(["--pid", "SIM73", "--single-standard"] + args) == 0
-    assert len(storage.sessions("SIM73", "crossmodal", tmp)) == 1
+    assert len(table) == 2 * len(every) and table.standard_ms.nunique() == len(every)
+    assert standards.remaining("SIM72", tmp, several=True) == []
+    assert run_task.main(["--pid", "SIM72", "--all-standards"] + args) == 0          # nothing left
+    assert len(storage.sessions("SIM72", "crossmodal", tmp)) == 1
+    assert run_task.main(["--pid", "SIM73", "--single-standard"] + args) == 0       # 500 ms only: as before
+    (m3,) = storage.sessions("SIM73", "crossmodal", tmp)
+    assert m3["standards_s"] == [S.STANDARD_DUR_S] and not m3["block"] and m3["n_trials_done"] == 388
+    assert run_task.main(["--pid", "SIM73", "--all-standards"] + args) == 0         # later: only the others, together
+    (m4,) = [m for m in storage.sessions("SIM73", "crossmodal", tmp) if m["block"]]
+    assert sorted(m4["standards_s"]) == sorted(extra) and m4["n_trials_done"] == len(extra) * short
 
 
 def check_noise_calibration(tmp):

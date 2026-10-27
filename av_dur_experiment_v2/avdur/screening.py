@@ -19,8 +19,10 @@ from avdur import psychometrics as pm
 LABELS = {"noise_calibration": "Noise calibration", "unimodal_auditory": "Unimodal auditory", "unimodal_visual": "Unimodal visual", "crossmodal": "Cross-modal"}
 
 
-def _condition_name(task, noise):
-    return "visual" if noise is None else f"noise {noise:g}"
+def _condition_name(task, noise, standard_ms=None):
+    """standard_ms: given when a session interleaves several standards (cross-modal)."""
+    name = "visual" if noise is None else f"noise {noise:g}"
+    return name if standard_ms is None else f"S{standard_ms:.0f} {name}"
 
 
 def block_fit(task, csv_path, plot_dir=None):
@@ -31,6 +33,9 @@ def block_fit(task, csv_path, plot_dir=None):
     df = df[df["responses"].isin([1, 2])].copy()
     df["cond"] = df["audNoise"] if task != "unimodal_visual" else "visual"
     df = df[df["kind"] != "practice"]
+    several = df["standardDur"].round(3).nunique() > 1             # cross-modal standards interleaved
+    if several:
+        df["cond"] = (1000 * df["standardDur"]).round().astype(int).astype(str) + "|" + df["audNoise"].astype(str)
     result = dict(task=task, csv=str(csv_path), n_trials=int(len(df)), conditions=[], warnings=[], plot=None)
     if df.empty:
         result["warnings"].append("no answered trials")
@@ -38,20 +43,20 @@ def block_fit(task, csv_path, plot_dir=None):
     fit = pm.fit(df, "cond", "lognormal", lapse_max=S.BIAS["lapse_max"])
     result["at_bound"] = list(fit["at_bound"])
     for _, p in fit["params"].iterrows():
-        noise = None if p.condition == "visual" else float(p.condition)
+        noise = None if p.condition == "visual" else float(str(p.condition).split("|")[-1])
         d = df[df["cond"] == p.condition]
         easy = d[d["kind"] == "lapse"]["is_correct"]
         std_ms = 1000 * float(d["standardDur"].iloc[0])
         entry = dict(noise=noise, mu=float(p.mu), sigma=float(p.sigma), lapse=float(p.lapse), n=int(p.n),
                      pse_ratio=pm.pse_ratio(p.mu, "lognormal"), pse_ms=std_ms * pm.pse_ratio(p.mu, "lognormal"),
-                     standard_ms=std_ms,
+                     standard_ms=std_ms, several_standards=several,
                      easy_correct=float(easy.mean()) if len(easy) else float("nan"), easy_n=int(len(easy)),
                      sigma_at_bound=bool(p.sigma >= 2.999), v1_sigma_range=S.V1_SIGMA_RANGE.get((task, noise)))
         if task == "crossmodal":
             entry["correction_s"] = std_ms / 1000 * (1 - entry["pse_ratio"])
         checks = S.SCREENING_CHECKS.get(task, {})
         check = checks.get(noise) or (checks.get("high") if noise not in (None, S.NOISE_LOW) else None)
-        name = _condition_name(task, noise)
+        name = _condition_name(task, noise, std_ms if several else None)
         if check:
             if "max_sigma" in check and entry["sigma"] > check["max_sigma"]:
                 result["warnings"].append(f"{LABELS[task]}, {name}: sigma {entry['sigma']:.2f} > {check['max_sigma']}")
@@ -98,27 +103,33 @@ def plot(task, df, result, folder, stem):
 
     folder.mkdir(parents=True, exist_ok=True)
     fig, ax = plt.subplots(figsize=(6.5, 4.6))
-    colors = {None: "tab:green", 0.1: "tab:blue", 1.2: "tab:red"}
-    ms = np.linspace(30, 1000, 400)
+    stds = sorted({e["standard_ms"] for e in result["conditions"]})
+    x_max = max([1000.0] + [2 * v for v in stds])                    # 800 ms standard: tests up to about 1500 ms
+    ms = np.linspace(30, x_max, 400)
+    styles = dict(zip(stds, ("-", "--", ":", "-.")))
     for entry in result["conditions"]:
         noise, std = entry["noise"], entry["standard_ms"]
-        c = colors.get(noise, "black")
-        d = df[df["cond"] == ("visual" if noise is None else noise)]
+        c = "tab:green" if noise is None else ("tab:blue" if noise == S.NOISE_LOW else "tab:red")
+        key = ("visual" if noise is None else noise) if not entry.get("several_standards") else f"{std:.0f}|{noise}"
+        d = df[df["cond"] == key]
         x = 1000 * d["testDurS"]
         bins = np.unique(np.quantile(x, np.linspace(0, 1, 11)))      # about equal trials per point
         bins[0], bins[-1] = bins[0] - 1e-6, bins[-1] + 1e-6
         pts = pd.DataFrame({"x": x, "y": d["chose_test"]}).groupby(pd.cut(x, bins), observed=True).agg(
             x=("x", "mean"), y=("y", "mean"), n=("y", "size"))
         ax.scatter(pts.x, pts.y, s=10 + 2 * pts.n, color=c, alpha=0.6)
-        ax.plot(ms, pm.predict(np.log(ms / std), entry["mu"], entry["sigma"], entry["lapse"]), color=c,
-                label=f"{_condition_name(task, noise)}: σ {entry['sigma']:.2f}, PSE {entry['pse_ms']:.0f} ms, "
-                      f"λ {entry['lapse']:.2f}")
-    std = result["conditions"][0]["standard_ms"] if result["conditions"] else 500
+        several = len(stds) > 1
+        ax.plot(ms, pm.predict(np.log(ms / std), entry["mu"], entry["sigma"], entry["lapse"]), color=c, ls=styles[std],
+                label=f"{_condition_name(task, noise, std if several else None)}: σ {entry['sigma']:.2f}, "
+                      f"PSE {entry['pse_ms']:.0f} ms, λ {entry['lapse']:.2f}")
+    stds = stds or [500]
     ax.axhline(0.5, color="0.85", lw=1)
-    ax.axvline(std, color="0.6", lw=1, ls=":")
+    for std in stds:
+        ax.axvline(std, color="0.6", lw=1, ls=":")
     what = "Auditory test" if task == "crossmodal" else "Test"
-    ax.set(xlabel=f"{what} duration (ms)   [standard {std:.0f} ms]", ylabel="P(test judged longer)",
-           xlim=(0, 1000), ylim=(-0.03, 1.03), title=f"{LABELS[task]}  ({result['n_trials']} trials)")
+    ax.set(xlabel=f"{what} duration (ms)   [standard {', '.join(f'{v:.0f}' for v in stds)} ms]",
+           ylabel="P(test judged longer)",
+           xlim=(0, x_max), ylim=(-0.03, 1.03), title=f"{LABELS[task]}  ({result['n_trials']} trials)")
     ax.legend(frameon=False, fontsize=8, loc="upper left")
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
@@ -140,7 +151,8 @@ def summary_text(result):
         extra = f", visual correction {e['correction_s']:+.3f} s" if "correction_s" in e else ""
         bound = " (AT THE FIT BOUND: about chance)" if e["sigma_at_bound"] else ""
         easy = f"{e['easy_correct']:.0%} of {e['easy_n']}" if e["easy_n"] else "none"
-        lines.append(f"   {_condition_name(result['task'], e['noise']):9s} σ {e['sigma']:.2f}{bound}, "
+        name = _condition_name(result["task"], e["noise"], e["standard_ms"] if e.get("several_standards") else None)
+        lines.append(f"   {name:9s} σ {e['sigma']:.2f}{bound}, "
                      f"PSE {e['pse_ms']:.0f} ms, lapse {e['lapse']:.2f}, easy trials {easy}{extra}{ref}")
     lines += [f"   WARNING: {w}" for w in result["warnings"]] or ["   checks passed"]
     if result.get("plot"):

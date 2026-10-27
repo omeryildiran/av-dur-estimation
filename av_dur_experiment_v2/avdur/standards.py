@@ -2,7 +2,9 @@
 
 The 500 ms standard (STANDARD_DUR_S) keeps the full cross-modal design and alone sets the main
 experiment's correction (bias.load_crossmodal). The other standards (CROSSMODAL_STANDARDS) use a
-shorter design; each standard is its own session, labelled S300 / S500 / S800.
+shorter design. All of a participant's standards run interleaved in one session (block label
+e.g. S300-S500-S800); with the 500 ms standard only, the session is as before (no block label).
+Until 27 Oct 2026 each standard was its own session (S300 / S500 / S800: P101, P104).
 """
 
 from __future__ import annotations
@@ -13,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 import experiment_settings as S
-from avdur import design, psychometrics as pm, storage
+from avdur import psychometrics as pm, storage
 
 CFG = S.CROSSMODAL_STANDARDS
 
@@ -22,10 +24,15 @@ def label(standard_s):
     return f"S{round(1000 * standard_s)}"
 
 
+def session_standards(meta):
+    """Standards (s) of one cross-modal session (interleaved sessions have several)."""
+    return [float(v) for v in meta.get("standards_s") or [meta.get("standard_s", S.STANDARD_DUR_S)]]
+
+
 def extra_participants(root=None):
     """Participants with a completed cross-modal session at an extra standard (not STANDARD_DUR_S)."""
     return sorted({m["participant"] for m in storage.sessions(None, "crossmodal", root)
-                   if abs(float(m.get("standard_s", S.STANDARD_DUR_S)) - S.STANDARD_DUR_S) > 1e-9})
+                   if any(abs(v - S.STANDARD_DUR_S) > 1e-9 for v in session_standards(m))})
 
 
 def wants_extra(pid, root=None):
@@ -40,26 +47,45 @@ def wants_extra(pid, root=None):
     return pid in have or len(have) < n
 
 
-def plan(pid, root=None, several=None):
-    """[(standard_s, design override or None, block label)] in running order for this participant.
-    several: True all standards, False 500 ms only, None the default (wants_extra)."""
+def design_for(standard_s):
+    """None (the full design) for STANDARD_DUR_S, the shorter extra design for the others."""
+    return None if abs(standard_s - S.STANDARD_DUR_S) < 1e-9 else dict(CFG["extra_design"])
+
+
+def session_plan(stds):
+    """One session for these standards: (standard_s, design, block label, [(standard_s, design)] interleaved).
+    500 ms (when included) is the session's own standard; a single standard runs alone."""
+    stds = sorted(stds, key=lambda v: (abs(v - S.STANDARD_DUR_S) > 1e-9, v))
+    lab = "-".join(label(v) for v in sorted(stds)) if len(stds) > 1 or abs(stds[0] - S.STANDARD_DUR_S) > 1e-9 else None
+    return (stds[0], design_for(stds[0]), lab, [(v, design_for(v)) for v in stds[1:]])
+
+
+def planned_standards(pid, root=None, several=None):
+    """Standards (s) for this participant. several: True all standards, False 500 ms only, None the
+    default (wants_extra)."""
     several = wants_extra(pid, root) if several is None else several
-    if not several:
-        return [(S.STANDARD_DUR_S, None, None)]
-    extra = list(CFG["standards"])
-    if design.participant_number(pid, root) % 2 == 0:
-        extra = extra[::-1]
-    return [(S.STANDARD_DUR_S, None, label(S.STANDARD_DUR_S))] + [(s, dict(CFG["extra_design"]), label(s)) for s in extra]
+    return [S.STANDARD_DUR_S] + (list(CFG["standards"]) if several else [])
+
+
+def plan(pid, root=None, several=None):
+    """[one session plan] (see session_plan): every planned standard interleaved in one session."""
+    return [session_plan(planned_standards(pid, root, several))]
 
 
 def done_standards(pid, root=None):
     """Standards (s) of this participant's completed cross-modal sessions (older sessions: 500 ms)."""
-    return {round(float(m.get("standard_s", S.STANDARD_DUR_S)), 4) for m in storage.sessions(pid, "crossmodal", root)}
+    return {round(v, 4) for m in storage.sessions(pid, "crossmodal", root) for v in session_standards(m)}
+
+
+def remaining_standards(pid, root=None, several=None):
+    done = done_standards(pid, root)
+    return [v for v in planned_standards(pid, root, several) if round(v, 4) not in done]
 
 
 def remaining(pid, root=None, several=None):
-    done = done_standards(pid, root)
-    return [p for p in plan(pid, root, several) if round(p[0], 4) not in done]
+    """[one session plan] for the standards not done yet, or []."""
+    todo = remaining_standards(pid, root, several)
+    return [session_plan(todo)] if todo else []
 
 
 def bias_table(pid, root=None, n_boot=200, rng=None):

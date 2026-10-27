@@ -66,7 +66,7 @@ class NoiseCalibration(Session):
             st = Staircase("2D1U", floor=-np.log(hi), ceiling=-np.log(lo), init_step=C["init_step_ln"],
                            step_factor=C["step_factor"], n_step_changes=C["n_step_changes"])
             st.level, st.start = float(-np.log(start)), f"noise {start:g}"
-            stairs[(None, 0.0, name)] = st
+            stairs[(None, 0.0, name, self.standard_s)] = st
         return stairs
 
     def _trial_level(self, spec, stair):
@@ -84,7 +84,7 @@ class NoiseCalibration(Session):
         elapsed = time.monotonic() - t0 if t0 else 0.0
         catch = [r["is_correct"] for r in rows if r["kind"] == "lapse"]
         noise = "  ".join(f"{name}: noise {np.exp(-st.level):.2f} ({st.reversals} reversals)"
-                          for (_, _, name), st in stairs.items())
+                          for (_, _, name, _), st in stairs.items())
         return (f"[{self.pid} noise calibration] {n}/{n_total} trials, {elapsed / 60:.1f} min | {noise} | "
                 f"catch trials {sum(catch)}/{len(catch)}")
 

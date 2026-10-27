@@ -12,10 +12,11 @@ STAIR_COLORS = {'2D1U': 'tab:red', '1D2U': 'tab:blue', '3D1U': 'tab:orange', '1D
 TRUE = ['1', 'True', 'true', True, 1]
 
 
-def condition_label(task, noise, conflict):
+def condition_label(task, noise, conflict, standard_ms=None):
+    """standard_ms: given when the session interleaves several standards (cross-modal)."""
     if task == 'unimodal_visual':
         return 'visual'
-    label = f'noise {noise:g}'
+    label = (f'standard {standard_ms:.0f} ms, ' if standard_ms is not None else '') + f'noise {noise:g}'
     return label + (f', conflict {1000 * conflict:+.0f} ms' if task == 'main' else '')
 
 
@@ -27,8 +28,15 @@ def plot_staircases(d, title='', show_fit=True):
     d = d.sort_values('trial_num').copy()
     d['test_ms'] = 1000 * d.testDurS
     d['noise'] = d.audNoise.fillna(-1)
-    keys = list(d.groupby(['noise', 'conflict_nominal']).groups)
-    n_cols = len(sorted({k[1] for k in keys})) if task == 'main' else len(keys)
+    d['std_ms'] = (1000 * d.standardDur).round()
+    several = d.std_ms.nunique() > 1                        # cross-modal standards interleaved: one row per standard
+    keys = sorted(d.groupby(['std_ms', 'noise', 'conflict_nominal']).groups)
+    if task == 'main':
+        n_cols = len({k[2] for k in keys})
+    elif several:
+        n_cols = len({k[1] for k in keys})
+    else:
+        n_cols = len(keys)
     n_rows = len(keys) // n_cols
     width = 11 if n_cols == 1 else (8 if n_cols == 2 else 5.5)
     import matplotlib
@@ -37,9 +45,10 @@ def plot_staircases(d, title='', show_fit=True):
     from matplotlib.lines import Line2D
 
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(min(width * n_cols, 26), 5 * n_rows), squeeze=False,
-                             sharey=True, sharex=True)
-    for ax, (noise, conflict) in zip(axes.flat, sorted(keys)):
-        c = d[(d.noise == noise) & (d.conflict_nominal == conflict)]
+                             sharey=not several, sharex=True)
+    for ax, (std_ms, noise, conflict) in zip(axes.flat, keys):
+        c = d[(d.std_ms == std_ms) & (d.noise == noise) & (d.conflict_nominal == conflict)]
+        name = condition_label(task, None if noise < 0 else noise, conflict, std_ms if several else None)
         for stair, s in c[c.kind == 'staircase'].groupby('current_stair'):
             col = STAIR_COLORS.get(stair, 'black')
             start = s.stair_start.iloc[0] if 'stair_start' in s else ''
@@ -57,15 +66,19 @@ def plot_staircases(d, title='', show_fit=True):
         if show_fit and c.responses.isin([1, 2]).sum() > 20:
             p = pm.fit(c.assign(cnd='x'), 'cnd', 'lognormal', lapse_max=0.1)['params'].iloc[0]
             ax.axhline(std * np.exp(p.mu), color='black', ls='--', lw=1)
-            ax.set_title(f'{condition_label(task, None if noise < 0 else noise, conflict)}\n'
-                         f'PSE {std * np.exp(p.mu):.0f} ms, σ {p.sigma:.2f}', fontsize=11)
+            ax.set_title(f'{name}\nPSE {std * np.exp(p.mu):.0f} ms, σ {p.sigma:.2f}', fontsize=11)
         else:
-            ax.set_title(condition_label(task, None if noise < 0 else noise, conflict), fontsize=11)
+            ax.set_title(name, fontsize=11)
     for ax in axes[-1]:
         ax.set_xlabel('Trial number in the session')
     for ax in axes[:, 0]:
         ax.set_ylabel('Test duration (ms)')
-    handles, labels = axes.flat[0].get_legend_handles_labels()
+    handles, labels = [], []
+    for ax in axes.flat:                                 # every rule once (panels can have different rules)
+        for h, lab in zip(*ax.get_legend_handles_labels()):
+            if lab not in labels:
+                handles.append(h)
+                labels.append(lab)
     handles += [Line2D([], [], marker='o', color='0.3', ls=''), Line2D([], [], marker='o', mfc='white', color='0.3', ls=''),
                 Line2D([], [], marker='o', mfc='none', mec='black', ms=9, ls=''),
                 Line2D([], [], color='0.4', ls=':'), Line2D([], [], color='black', ls='--')]

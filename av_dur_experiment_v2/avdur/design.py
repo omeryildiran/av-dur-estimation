@@ -4,7 +4,8 @@ Every staircase and every set of lapse trials gets as many test-first as test-se
 trials (an odd count is alternated between staircases, so each condition is balanced).
 The whole list is then shuffled, so conditions and staircases are randomly interleaved.
 The cross-modal task keeps v1's pre-cued order blocks: each block of
-`order_block_size` trials has one order, and blocks alternate.
+`order_block_size` trials has one order, and blocks alternate. It can interleave several
+standard durations in one session (`standards`), each with its own design.
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ class TrialSpec:
     fixed_level: float | None      # level for lapse/practice trials ("floor" resolved later)
     order: int                     # 1 = test first, 2 = test second
     order_block: int | None = None # cross-modal mini-block index
+    standard: float | None = None  # standard duration (s); None: the session's (cross-modal can interleave several)
 
     @property
     def condition(self):
@@ -136,7 +138,20 @@ def staircase_starts(task, rng, block=None, noise_levels=None, cfg=None):
     return starts
 
 
-def build_trials(task, rng, block=None, practice=False, first_order=1, noise_levels=None, cfg=None):
+def _staircase_slots(task, cfg, block, noise_levels, standard=None):
+    slots = []
+    for noise, conflict in conditions(task, block, noise_levels, cfg):
+        for k, rule in enumerate(cfg["staircases"]):
+            for order in _orders(cfg["trials_per_staircase"], extra_first=(k % 2 == 0)):
+                slots.append(TrialSpec(task, noise, conflict, "staircase", rule, None, order, standard=standard))
+        for k, level in enumerate(cfg["lapse_levels"]):
+            for order in _orders(cfg["lapse_trials_per_level"], extra_first=(k % 2 == 0)):
+                slots.append(TrialSpec(task, noise, conflict, "lapse", None, level, order, standard=standard))
+    return slots
+
+
+def build_trials(task, rng, block=None, practice=False, first_order=1, noise_levels=None, cfg=None, standards=None):
+    """standards: [(standard_s, cfg)] to interleave in one session (cross-modal), each with its own design."""
     cfg = cfg or S.TASKS[task]
     slots = []
     if practice:
@@ -146,14 +161,11 @@ def build_trials(task, rng, block=None, practice=False, first_order=1, noise_lev
             level = cfg["lapse_levels"][i % 2]
             # level and order cycle independently, so the longer interval is first in half the trials
             slots.append(TrialSpec(task, noise, conflict, "practice", None, level, 1 + (i // 2) % 2))
+    elif standards:
+        for standard, c in standards:
+            slots += _staircase_slots(task, c, block, noise_levels, standard)
     else:
-        for noise, conflict in conditions(task, block, noise_levels, cfg):
-            for k, rule in enumerate(cfg["staircases"]):
-                for order in _orders(cfg["trials_per_staircase"], extra_first=(k % 2 == 0)):
-                    slots.append(TrialSpec(task, noise, conflict, "staircase", rule, None, order))
-            for k, level in enumerate(cfg["lapse_levels"]):
-                for order in _orders(cfg["lapse_trials_per_level"], extra_first=(k % 2 == 0)):
-                    slots.append(TrialSpec(task, noise, conflict, "lapse", None, level, order))
+        slots = _staircase_slots(task, cfg, block, noise_levels)
 
     rng.shuffle(slots)
     if task != "crossmodal":
