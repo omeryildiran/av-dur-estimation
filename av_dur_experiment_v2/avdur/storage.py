@@ -32,7 +32,7 @@ DATA_ROOT = ROOT / "data"
 SOLID_ROOT = ROOT / "data_solid"            # copies of complete real sessions: what the analysis uses
 SIM_ROOT = ROOT / "data_simulated"          # simulated runs never mix with real data
 TEST_ROOT = ROOT / "data_test"              # test-display profiles and autotests
-TASK_ORDER = ("noise_calibration", "unimodal_auditory", "unimodal_visual", "crossmodal", "main")
+TASK_ORDER = ("noise_calibration", "unimodal_auditory", "unimodal_visual", "main")   # cross-modal dropped 28 Oct 2026
 
 
 def root_for(simulate=False, monitor=None, autotest=False):

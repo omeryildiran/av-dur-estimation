@@ -4,9 +4,9 @@
     python run_experiment.py --cli    # text menu (if Tk is unavailable)
 
 Each task runs in its own process (python -m avdur.run_task ...). For the main
-experiment the launcher picks the participant's next counterbalanced block, fits the
-cross-modal bias correction from their cross-modal data, and asks you to confirm it;
-later blocks reuse the bias file of the first block.
+experiment the launcher picks the participant's next part (part 2 continues part 1's
+staircases). Since 28 Oct 2026 there is no cross-modal task and no bias correction: the
+audiovisual bias is modelled in the analysis.
 
 Autotest runs a task (or, with its own button, the whole experiment) on the real display
 and sound card with automatic answers, saves to data_test/, and reports the timing.
@@ -15,7 +15,6 @@ and sound card with automatic answers, saves to data_test/, and reports the timi
 from __future__ import annotations
 
 import datetime as dt
-import json
 import subprocess
 import sys
 import time
@@ -26,7 +25,6 @@ sys.path.insert(0, str(ROOT))
 
 import experiment_settings as S  # noqa: E402
 from avdur import autotest as autotest_mod  # noqa: E402
-from avdur import bias as bias_mod  # noqa: E402
 from avdur import design, storage  # noqa: E402
 from avdur import screens as screens_mod  # noqa: E402
 from avdur.run_task import EXIT_STOPPED  # noqa: E402
@@ -42,46 +40,24 @@ def status_text(raw_pid, root=None):
     st = storage.participant_status(pid, root)
     tag = {storage.SIM_ROOT: "[SIMULATED DATA, data_simulated/] ",
            storage.TEST_ROOT: "[TEST RUNS: test display or autotest, data_test/] "}
-    lines = [tag.get(Path(root) if root else None, "") + f"Participant {pid}" + (f"   (main block order: {' -> '.join(st['block_order'])})" if st["block_order"] else "")]
+    lines = [tag.get(Path(root) if root else None, "") + f"Participant {pid}"]
     for i, task in enumerate(storage.TASK_ORDER):
         done = st[task]
         if task == "main":
             blocks = ", ".join(f"{s['block']} ({s['started'][:16].replace('T', ' ')})" for s in done) or "none"
-            lines.append(f"  {i}. {S.TASKS[task]['label']}: blocks done: {blocks};  next: {st['next_block'] or 'all done'}")
+            lines.append(f"  {i}. {S.TASKS[task]['label']}: parts done: {blocks};  next: {st['next_block'] or 'all done'}")
         else:
             when = f"done {done[-1]['started'][:16].replace('T', ' ')} ({done[-1]['n_trials']} trials)" if done else "not done"
-            if task == "crossmodal":
-                from avdur import standards
-                n_done, n_left = len(standards.done_standards(pid, root)), len(standards.remaining_standards(pid, root))
-                when = f"{n_done} of {n_done + n_left} standards done (interleaved in one session)"
-                n_extra = S.CROSSMODAL_STANDARDS.get("n_participants")
-                if n_extra:
-                    when += f"   (extra blocks so far: {len(standards.extra_participants(root))} of {n_extra} participants)"
             lines.append(f"  {i}. {S.TASKS[task]['label']}: {when}")
         if task == "noise_calibration":
             nz = st["noise"]
             lines.append(f"     high noise level: {nz['noise_high']:.3f}  [{Path(st['noise_file']).name}]" if nz
                          else "     high noise level: not calibrated yet (every task with sound needs it)")
-        if task == "crossmodal":
-            b = st["bias"]
-            if b:
-                vals = ", ".join(f"{float(v['correction_s']):+.3f} s (noise {n})" for n, v in sorted(b["per_noise"].items()))
-                lines.append(f"     bias correction: {vals}  [{Path(st['bias_file']).name}]")
-            else:
-                lines.append("     bias correction: not fitted yet (fitted when the main experiment starts)")
     return "\n".join(lines)
 
 
-def main_bias_file(pid, root=None):
-    """Bias file already used by this participant's main blocks, if any (keeps blocks consistent)."""
-    for meta in storage.sessions(pid, "main", root, completed_only=False):
-        if meta.get("bias_file") and not meta.get("practice"):
-            return meta["bias_file"]
-    return None
-
-
 def combined_command(pid, monitor, practice, simulate, autotest=False, quick=False, screen=None):
-    """Unimodal auditory, unimodal visual and cross-modal blocks in one window (avdur.run_blocks)."""
+    """Noise calibration, unimodal auditory and unimodal visual blocks in one window (avdur.run_blocks)."""
     cmd = [sys.executable, "-m", "avdur.run_blocks", "--pid", pid, "--monitor", monitor,
            "--data-root", str(storage.root_for(simulate, monitor, autotest))]
     cmd += ["--screen", str(screen)] if screen is not None else []
@@ -177,15 +153,10 @@ def run_window():
              "--width", str(min(900, sc["width"] - 80)), "--height", str(min(720, sc["height"] - 120))], cwd=ROOT)
         time.sleep(1.0)                                         # let it open before the experiment window
         return True
-    ttk.Label(frm, text="Main-experiment block").grid(row=2, column=0, sticky="w")
+    ttk.Label(frm, text="Main-experiment part").grid(row=2, column=0, sticky="w")
     ttk.OptionMenu(frm, block, "auto", "auto", *S.TASKS["main"]["blocks"]).grid(row=2, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
         row=3, column=0, sticky="w")
-    several = tk.BooleanVar(value=S.CROSSMODAL_STANDARDS["enabled"])
-    n_extra = S.CROSSMODAL_STANDARDS.get("n_participants")
-    ttk.Checkbutton(frm, text="Cross-modal: extra blocks" + (f" (first {n_extra} participants)" if n_extra else ""),
-                    variable=several,
-                    command=lambda: refresh()).grid(row=3, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Simulate (no window; saves to data_simulated/)", variable=simulate,
                     command=lambda: refresh()).grid(row=4, column=0, columnspan=2, sticky="w")
     ttk.Checkbutton(frm, text="Autotest: automatic answers on this display and sound card (saves to data_test/)",
@@ -215,25 +186,6 @@ def run_window():
         box.pack(fill="both", expand=True, padx=8, pady=8)
         ttk.Button(win, text="Close", command=win.destroy).pack(pady=(0, 8))
 
-    def confirm_bias(p):
-        existing = main_bias_file(p, data_root())
-        if existing:
-            payload = json.loads(Path(existing).read_text())
-            text = bias_mod.summary_text(payload)
-            return existing if messagebox.askyesno(
-                "Bias correction", f"This participant's earlier main blocks used:\n\n{text}\n\n"
-                                   "Use the same correction for this block?") else None
-        try:
-            est = bias_mod.estimate_for_participant(p, data_root())
-        except FileNotFoundError as err:
-            messagebox.showerror("No cross-modal data", str(err))
-            return None
-        ask = messagebox.askyesno if not est["warnings"] else messagebox.askokcancel
-        if not ask("Confirm bias correction", bias_mod.summary_text(est) +
-                   "\n\nUse these corrections for the main experiment?"):
-            return None
-        return str(bias_mod.save(p, est, confirmed_by="launcher", root=data_root()))
-
     def run(task):
         if simulate.get() and autotest.get():
             messagebox.showerror("Simulate or autotest", "Simulate runs without a window, Autotest with the real "
@@ -244,21 +196,15 @@ def run_window():
         except ValueError as err:
             messagebox.showerror("Participant ID", str(err))
             return
-        b, bias_file = None, None
+        b = None
         if task == "main":
             st = storage.participant_status(p, data_root())
             b = st["next_block"] if block.get() == "auto" else block.get()
             if b is None:
-                messagebox.showinfo("Main experiment", "All three blocks are done. Choose a block to run another.")
+                messagebox.showinfo("Main experiment", "Both parts are done. Choose a part to run it again.")
                 return
-            bias_file = (str(autotest_mod.bias_file(p, quick.get(), data_root())) if autotest.get()
-                         else confirm_bias(p))
-            if bias_file is None:
-                return
-        cmd = task_command(task, p, monitor.get(), practice.get(), simulate.get(), b, bias_file,
+        cmd = task_command(task, p, monitor.get(), practice.get(), simulate.get(), b, None,
                            autotest.get(), quick.get(), chosen_screen())
-        if task == "crossmodal" and not several.get():
-            cmd.append("--single-standard")
         since = dt.datetime.now().isoformat(timespec="seconds")
         if not simulate.get():
             start_viewer(p, data_root())
@@ -289,7 +235,7 @@ def run_window():
         from avdur.run_blocks import blocks_to_run
         todo = blocks_to_run(p, data_root(), rerun_all=autotest.get())
         if not todo:
-            messagebox.showinfo("Combined session", "Blocks 1-3 are all done for this participant.")
+            messagebox.showinfo("Combined session", "Blocks 0-2 are all done for this participant.")
             return
         names = ", ".join(S.TASKS[t]["label"].split(" (")[0] for t in todo)
         if not messagebox.askokcancel("Combined session", f"Run {names} in one session"
@@ -298,8 +244,6 @@ def run_window():
             return
         cmd = combined_command(p, monitor.get(), practice.get(), simulate.get(), autotest.get(), quick.get(),
                                chosen_screen())
-        if not several.get():
-            cmd.append("--single-standard")
         if not simulate.get() and start_viewer(p, data_root()):
             cmd.append("--no-open-plots")
         root.withdraw()
@@ -322,7 +266,7 @@ def run_window():
             messagebox.showerror("Participant ID", str(err))
             return
         length = (f"the first {S.AUTOTEST_QUICK_TRIALS} trials of every task (about 7 minutes)" if quick.get()
-                  else "every task in full, all three main blocks (about 2 hours)")
+                  else "every task in full, both main parts (about 2 hours)")
         if not messagebox.askokcancel("Autotest the whole experiment",
                                       f"Run {length} with automatic answers as {p} on the '{monitor.get()}' "
                                       "profile?\n\nData go to data_test/. Press Escape during a trial to stop."):
@@ -349,23 +293,14 @@ def run_window():
         else:
             messagebox.showwarning("Autotest", "The autotest ended without a report; see the terminal.")
 
-    def show_bias():
-        try:
-            p = design.normalize_pid(pid.get())
-            est = bias_mod.estimate_for_participant(p, data_root())
-            messagebox.showinfo("Cross-modal bias (not saved)", bias_mod.summary_text(est))
-        except (FileNotFoundError, ValueError) as err:
-            messagebox.showerror("Cross-modal bias", str(err))
-
     for i, task in enumerate(storage.TASK_ORDER):
         ttk.Button(frm, text=f"{i}.  {S.TASKS[task]['label']}", width=48,
                    command=lambda t=task: run(t)).grid(row=7 + i, column=0, columnspan=2, pady=3)
     n_tasks = len(storage.TASK_ORDER)
-    ttk.Button(frm, text="0-3 in one session (fits after each block)", width=48, command=run_combined).grid(
+    ttk.Button(frm, text="0-2 in one session (fits after each block)", width=48, command=run_combined).grid(
         row=7 + n_tasks, column=0, columnspan=2, pady=(10, 3))
     ttk.Button(frm, text="Autotest the whole experiment", width=48, command=run_autotest_all).grid(
         row=8 + n_tasks, column=0, columnspan=2, pady=3)
-    ttk.Button(frm, text="Preview cross-modal bias fit", command=show_bias).grid(row=9 + n_tasks, column=0, pady=(8, 0), sticky="w")
     ttk.Button(frm, text="Quit", command=root.destroy).grid(row=9 + n_tasks, column=1, pady=(8, 0), sticky="e")
     entry.bind("<KeyRelease>", refresh)
     refresh()
@@ -382,8 +317,8 @@ def run_cli():
     root = storage.root_for(sim, mon)
     while True:
         print("\n" + status_text(p, root))
-        choice = input("\nRun 0-4 (add 'p' for practice, e.g. '4p'), 'c' blocks 0-3 in one session ('cp' with "
-                       "practice), 'a' autotest everything ('aq' quick), 'b' bias preview, 'q' quit: ").strip()
+        choice = input("\nRun 0-3 (add 'p' for practice, e.g. '3p'), 'c' blocks 0-2 in one session ('cp' with "
+                       "practice), 'a' autotest everything ('aq' quick), 'q' quit: ").strip()
         if choice == "q":
             return
         if choice in ("c", "cp"):
@@ -393,24 +328,14 @@ def run_cli():
             text, out = autotest_mod.run(p, mon, quick=(choice == "aq"))
             print("\n" + text + f"\n\nSaved to {out}")
             continue
-        if choice == "b":
-            print(bias_mod.summary_text(bias_mod.estimate_for_participant(p, root)))
-            continue
-        if not choice or choice[0] not in "01234":
+        if not choice or choice[0] not in "0123":
             continue
         task = storage.TASK_ORDER[int(choice[0])]
-        b, bias_file = None, None
+        b = None
         if task == "main":
             nxt = storage.participant_status(p, root)["next_block"]
-            b = input(f"Block [{nxt}]: ").strip() or nxt
-            bias_file = main_bias_file(p, root)
-            if bias_file is None:
-                est = bias_mod.estimate_for_participant(p, root)
-                print(bias_mod.summary_text(est))
-                if input("Use these corrections? [y/N] ").strip().lower() != "y":
-                    continue
-                bias_file = str(bias_mod.save(p, est, confirmed_by="cli", root=root))
-        subprocess.run(task_command(task, p, mon, "p" in choice, sim, b, bias_file), cwd=ROOT)
+            b = input(f"Part [{nxt}]: ").strip() or nxt
+        subprocess.run(task_command(task, p, mon, "p" in choice, sim, b), cwd=ROOT)
 
 
 if __name__ == "__main__":

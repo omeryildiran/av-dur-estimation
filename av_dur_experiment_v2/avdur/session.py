@@ -11,8 +11,10 @@ import datetime as dt
 import math
 import statistics
 import time
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 import experiment_settings as S
 from avdur import bias as bias_mod
@@ -30,8 +32,6 @@ class Session:
                  seed=None, root=None, monitor=S.DEFAULT_MONITOR, simulate=False, autotest=False,
                  max_trials=None, solid_root=None, close_at_end=True, verbose=False, noise_high=None, noise_file=None,
                  standard_s=None, design=None, more_standards=None):
-        if task == "main" and bias is None:
-            raise ValueError("The main experiment needs a confirmed bias file (run the cross-modal task first).")
         if (standard_s is not None or more_standards) and task != "crossmodal":
             raise ValueError("Only the cross-modal task can use another standard duration.")
         if task == "main" and block not in S.TASKS["main"]["blocks"]:
@@ -58,6 +58,8 @@ class Session:
         self.standards = [(self.standard_s, self.cfg)] + [(std, self._task_cfg(des)) for std, des in self.more_standards]
         self.schedule_task = task
         self.fr = S.MONITOR_PROFILES[monitor]["frame_rate_hz"]     # every duration is computed at this rate
+        if task == "main" and not practice and not max_trials:
+            self.earlier_parts()                            # fail before any window opens
 
     # ── helpers ───────────────────────────────────────────────────────────────
     def _task_cfg(self, design):
@@ -74,8 +76,9 @@ class Session:
         return (spec.noise, spec.conflict, rule, self._std(spec))
 
     def correction_s(self, noise):
-        """Visual correction actually applied (whole frames), and the unrounded estimate."""
-        if self.task != "main":
+        """Visual correction actually applied (whole frames), and the unrounded estimate. From 28 Oct 2026 the
+        main experiment runs without one (bias None: the bias is modelled); older bias files still work."""
+        if self.task != "main" or self.bias is None:
             return 0.0, float("nan")
         est = bias_mod.correction_for(self.bias, noise)
         return to_frames(est, self.fr) / self.fr, est
@@ -123,6 +126,8 @@ class Session:
         several = len(self.standards) > 1
         meta["staircase_starts"] = {f"{n}/{c}/{r}" + (f"/S{round(1000 * std)}" if several else ""): st.start
                                     for (n, c, r, std), st in stairs.items()}
+        if getattr(self, "continued_from", None):
+            meta["staircases_continue"] = self.continued_from
         storage.write_json(json_path, meta)
         audio = AudioGenerator() if (self.task in NEEDS_AUDIO and self.presenter.needs_audio) else None
         writer = storage.TrialWriter(csv_path)
@@ -189,7 +194,38 @@ class Session:
                 for noise, conflict in design.conditions(self.task, self.block, cfg["noise_levels"], cfg):
                     stairs[(noise, conflict, "QUEST", key_std)] = QuestStair(self.floor(noise), S.STAIRCASE["ceiling"],
                                                                              std, self.fr)
+        if self.task == "main" and not self.practice and not self.max_trials:
+            self._continue_stairs(stairs)
         return stairs
+
+    def earlier_parts(self):
+        """Completed earlier parts of the main experiment (session metadata); an error if one is missing."""
+        parts = list(S.TASKS["main"]["blocks"])
+        earlier = parts[:parts.index(self.block)]
+        metas = [m for m in storage.sessions(self.pid, "main", self.root)
+                 if m.get("block") in earlier and not m.get("practice") and not m.get("trial_limit")]
+        missing = [b for b in earlier if b not in {m["block"] for m in metas}]
+        if missing:
+            raise ValueError(f"{self.pid}: run main-experiment {', '.join(missing)} before {self.block} "
+                             "(its staircases continue the earlier parts').")
+        return metas
+
+    def _continue_stairs(self, stairs):
+        """Main experiment in parts: replay the answers of the participant's completed earlier parts (in the
+        order they were given), so this part's staircases go on where they stopped."""
+        metas = self.earlier_parts()
+        keys = {(round(k[0], 4), round(k[1], 4), k[2]): k for k in stairs}
+        replayed = []
+        for meta in metas:
+            if [n for n in meta.get("noise_levels", []) if n is not None] != [n for n in self.cfg["noise_levels"] if n is not None]:
+                raise ValueError(f"{self.pid}: {meta['block']} ran at noise levels {meta.get('noise_levels')}, this part "
+                                 f"would run at {list(self.cfg['noise_levels'])}; the staircases cannot continue.")
+            d = pd.read_csv(meta["csv"])
+            d = d[d["kind"] == "staircase"].sort_values("trial_num")
+            for n, c, r, y in zip(d["audNoise"], d["conflict_nominal"], d["current_stair"], d["chose_test"]):
+                stairs[keys[(round(float(n), 4), round(float(c), 4), r)]].update(bool(y))
+            replayed.append(Path(meta["csv"]).name)
+        self.continued_from = replayed
 
     def _trial_level(self, spec, stair):
         if stair is not None:

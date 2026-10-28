@@ -128,7 +128,7 @@ PRACTICE_TRIALS = 20                # v2: easy trials with feedback
 # beyond the worst v1 participant (v1 low-noise auditory sigma 0.23-0.39, easy trials 86-100%
 # correct; visual sigma 0.36-1.72, easy 79-100%). High noise is reported, not checked: in v1
 # 2 of 11 participants were at the sigma bound (3.0) there, and easy trials were 57-93% correct.
-COMBINED_SESSION_TASKS = ("noise_calibration", "unimodal_auditory", "unimodal_visual", "crossmodal")
+COMBINED_SESSION_TASKS = ("noise_calibration", "unimodal_auditory", "unimodal_visual")   # cross-modal dropped 28 Oct 2026
 BLOCK_REST_MIN_S = 10.0              # rest between blocks (the fit runs meanwhile)
 ORDER_GAP_WARNING = 0.25             # warn if % correct with the test first vs second differs more (chance SD ~0.08)
 SCREENING_CHECKS = {
@@ -167,6 +167,12 @@ STAIRCASE = dict(init_step=0.16, step_factor=0.5, n_step_changes=2, ceiling=0.9)
 # its lapse). It targets mu and sigma, with the lapse as a nuisance parameter. Grids as in the
 # simulations (analysis/quest_unimodal_simulation.py); candidate tests are whole frames between
 # the task's floor and STAIRCASE["ceiling"], n_levels of them evenly spaced in log duration.
+# Easy (lapse) trials, from 28 Oct 2026: per session and noise level, max(minimum, share x the adaptive
+# trials at that noise level), half at each end (lapse_levels), spread evenly over the conditions at
+# that noise level, order balanced. The fits share one lapse rate over conditions, so the count is per
+# noise level, not per condition (before: lapse_trials_per_level per level and condition).
+EASY_TRIALS = dict(share=0.10, minimum=20)
+
 QUEST = dict(target="mu_sigma", mu_range=(-1.0, 1.0), n_mu=81, sigma_range=(0.05, 2.5), n_sigma=25,
              lapse_max=0.1, n_lapse=5, n_levels=60)
 
@@ -179,16 +185,18 @@ TASKS = {
         label="Unimodal auditory",
         noise_levels=NOISE_LEVELS, conflicts=(0.0,),
         # QUEST+ since 27 Oct 2026 (before: 2D1U, 1D2U, 3D1U, 1D3U x 35 = 308 trials, as v1): 90 + 14 easy
-        # per noise level; in simulation sigma as precise as the staircases' 154 (PSE error about +40%)
-        staircases=("QUEST",), trials_per_staircase=90,
-        floor=-0.9, lapse_levels=(-0.9, 0.9), lapse_trials_per_level=7,
+        # per noise level; in simulation sigma as precise as the staircases' 154 (PSE error about +40%).
+        # 100 + 20 easy per noise level from 28 Oct 2026
+        staircases=("QUEST",), trials_per_staircase=100,
+        floor=-0.9, lapse_levels=(-0.9, 0.9),
     ),
     "unimodal_visual": dict(
         label="Unimodal visual",
         noise_levels=(None,), conflicts=(0.0,),
-        # QUEST+ since 27 Oct 2026 (before: 4 staircases x 35 = 154 trials, as v1): 70 + 14 easy
-        staircases=("QUEST",), trials_per_staircase=70,
-        floor=-0.9, lapse_levels=(-0.8, 0.8), lapse_trials_per_level=7,
+        # QUEST+ since 27 Oct 2026 (before: 4 staircases x 35 = 154 trials, as v1): 70 + 14 easy.
+        # 100 from 28 Oct 2026: the joint fit takes sigma_V from this block (overnight_sims report)
+        staircases=("QUEST",), trials_per_staircase=100,
+        floor=-0.9, lapse_levels=(-0.8, 0.8),
     ),
     "crossmodal": dict(
         label="Cross-modal (auditory test vs. visual standard)",
@@ -196,23 +204,24 @@ TASKS = {
         # v1 used 1D1U, 1U1D, 2D1U, 1D2U; its 1U1D rule moved away from threshold.
         # v2 replaces it with a second 1D1U (pairs: the two 1D1U, then 2D1U/1D2U).
         staircases=("1D1U", "1D1U_b", "2D1U", "1D2U"), trials_per_staircase=45,  # v1: 388 trials
-        floor=-0.9, lapse_levels=(-0.9, 0.9), lapse_trials_per_level=7,
+        floor=-0.9, lapse_levels=(-0.9, 0.9),
         order_block_size=10,          # v1: order alternates in pre-cued mini-blocks
     ),
     "main": dict(
         label="Main audiovisual experiment",
         noise_levels=NOISE_LEVELS,
-        staircases=("2D1U", "1D2U"), trials_per_staircase=70,   # v2: per condition, as the paper describes
-        floor=-0.95, lapse_levels=("floor", 0.9), lapse_trials_per_level=7,
-        blocks={"B1": (0.0, -0.167, 0.25), "B2": (-0.083, 0.167), "B3": (-0.25, 0.083)},
+        # From 28 Oct 2026 (overnight_sims report): 9 conflicts -450 ... +450 ms (whole frames at 120 Hz),
+        # all interleaved, in two parts of 16 trials per staircase each (32 per staircase, 64 per
+        # condition); part 2 continues part 1's staircases. No bias correction: the bias is modelled.
+        # Before: 7 conflicts -250 ... +250 ms in blocks B1-B3, 70 trials per staircase, corrected visual.
+        staircases=("2D1U", "1D2U"), trials_per_staircase=16,
+        floor=-0.95, lapse_levels=("floor", 0.9),
+        blocks={part: (0.0, -0.1167, 0.1167, -0.225, 0.225, -0.3333, 0.3333, -0.45, 0.45) for part in ("part1", "part2")},
     ),
 }
 
 # v2: main-experiment block order, assigned by the participant number (P01 -> first row, ...)
-BLOCK_ORDERS = [
-    ("B1", "B2", "B3"), ("B1", "B3", "B2"), ("B2", "B1", "B3"),
-    ("B2", "B3", "B1"), ("B3", "B1", "B2"), ("B3", "B2", "B1"),
-]
+BLOCK_ORDERS = [("part1", "part2")]   # from 28 Oct 2026 (before: the 6 orders of B1-B3)
 
 # ── Cross-modal task at several standards (v2, 2026-10-23) ─────────────────────
 # Is the audiovisual duration bias a constant offset or does it scale with duration? With
@@ -223,8 +232,10 @@ BLOCK_ORDERS = [
 # n_participants: only the first n participants to complete an extra standard get them (a
 # participant who has one keeps getting the rest); None: everyone. The bias grew with the
 # standard in P101 and P104 (26 Oct 2026), so 3 participants are enough to describe it.
+# Dropped 28 Oct 2026 with the whole cross-modal task (decided with the PI): the bias is modelled in
+# the main experiment instead (ln v_hat = ln v - c - d ln(v / 0.5)).
 CROSSMODAL_STANDARDS = dict(
-    enabled=True,
+    enabled=False,
     n_participants=3,
     standards=(0.3, 0.8),           # in addition to STANDARD_DUR_S
     extra_design=dict(staircases=("1D1U", "1D1U_b"), trials_per_staircase=40, lapse_trials_per_level=3),   # 30 until P104 (132 trials)

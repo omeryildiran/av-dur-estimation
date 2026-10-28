@@ -1,7 +1,7 @@
 """Autotest: run the whole experiment with automatic answers on the real display and sound
 card, then report how every trial ran.
 
-    python -m avdur.autotest --monitor lab_crt            # every task in full, 3 main blocks (about 2 h)
+    python -m avdur.autotest --monitor lab_crt            # every task in full, both main parts
     python -m avdur.autotest --monitor lab_crt --quick    # first 30 trials of each task (about 7 min)
     python -m avdur.autotest --report-only --pid P99      # report on this ID's earlier autotest sessions
 
@@ -62,15 +62,13 @@ def bias_file(pid, quick=False, root=None):
 
 
 def run(pid=DEFAULT_PID, monitor=S.DEFAULT_MONITOR, quick=False, root=None, screen=None):
-    """Run every task (all three main blocks) and return (report text, report file)."""
+    """Run every task (both main parts) and return (report text, report file)."""
     root = Path(root or storage.TEST_ROOT)
     since = dt.datetime.now().isoformat(timespec="seconds")
     max_trials = S.AUTOTEST_QUICK_TRIALS if quick else None
     plan = [(t, None) for t in storage.TASK_ORDER if t != "main"] + [("main", b) for b in design.block_order(pid, root)]
-    path = None
+    path = None                                     # no bias correction since 28 Oct 2026 (modelled)
     for task, block in plan:
-        if task == "main" and path is None:
-            path = bias_file(pid, quick, root)
         print(f"[autotest] starting {task}{' ' + block if block else ''}", flush=True)
         code = subprocess.run(task_command(task, pid, monitor, max_trials, block, path, root, screen), cwd=ROOT).returncode
         if code == EXIT_STOPPED:

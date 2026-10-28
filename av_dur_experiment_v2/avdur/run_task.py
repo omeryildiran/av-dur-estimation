@@ -1,7 +1,7 @@
 """Run one task for one participant (normally started by run_experiment.py).
 
     python -m avdur.run_task --task crossmodal --pid P14
-    python -m avdur.run_task --task main --pid P14 --block B2 --bias-file data/P14/bias/P14_bias_....json
+    python -m avdur.run_task --task main --pid P14 --block part1      # then part2 (continues the staircases)
     add --simulate to run the simulated observer instead of PsychoPy (no window)
     add --autotest for automatic answers on the real display and sound card (saves to data_test/)
 
@@ -32,7 +32,7 @@ def main(argv=None):
     ap.add_argument("--task", required=True, choices=list(S.TASKS))
     ap.add_argument("--pid", required=True)
     ap.add_argument("--block", choices=list(S.TASKS["main"]["blocks"]))
-    ap.add_argument("--bias-file")
+    ap.add_argument("--bias-file", help="main: a visual correction (before 28 Oct 2026; now the bias is modelled)")
     ap.add_argument("--practice", action="store_true")
     ap.add_argument("--monitor", default=S.DEFAULT_MONITOR, choices=list(S.MONITOR_PROFILES))
     ap.add_argument("--simulate", action="store_true", help="simulated observer, no PsychoPy window")
@@ -59,8 +59,6 @@ def main(argv=None):
         ap.error("--max-trials is for --simulate or --autotest runs only")
 
     bias = json.loads(Path(args.bias_file).read_text()) if args.bias_file else None
-    if args.task == "main" and bias is None:
-        ap.error("--bias-file is required for the main experiment")
     if args.task == "main" and args.block is None:
         ap.error("--block is required for the main experiment")
 
@@ -89,11 +87,14 @@ def main(argv=None):
     noise_high, noise_file = resolve_noise(ap, args, root)
     if args.task == "crossmodal" and not args.practice:
         return run_crossmodal(args, presenter, root, common, noise_high, noise_file)
-    if args.task == "main" and noise_high is not None and str(float(noise_high)) not in bias["per_noise"]:
+    if args.task == "main" and bias is not None and noise_high is not None and str(float(noise_high)) not in bias["per_noise"]:
         ap.error(f"The bias file was measured at noise levels {sorted(bias['per_noise'])}, but this participant's "
                  f"high noise level is {noise_high}. Run the cross-modal task again at the calibrated level.")
-    session = Session(args.task, args.pid, presenter, block=args.block, practice=args.practice, bias=bias,
-                      bias_file=args.bias_file, noise_high=noise_high, noise_file=noise_file, **common)
+    try:
+        session = Session(args.task, args.pid, presenter, block=args.block, practice=args.practice, bias=bias,
+                          bias_file=args.bias_file, noise_high=noise_high, noise_file=noise_file, **common)
+    except ValueError as err:                                       # e.g. main part2 before part1
+        ap.error(str(err))
     completed = session.run()
     if completed and not args.practice and not args.simulate:      # fit and plot (the window is closed by now)
         from avdur import screening

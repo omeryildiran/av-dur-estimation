@@ -34,15 +34,12 @@ FR = S.EXPECTED_FRAME_RATE_HZ
 
 def simulate_participant(pid, seed, observer=None, root=SIM_ROOT):
     obs = dict(DEFAULT_OBSERVER, **(observer or {}))
-    for task in ("unimodal_auditory", "unimodal_visual", "crossmodal"):
+    for task in ("unimodal_auditory", "unimodal_visual"):
         assert Session(task, pid, SimulatedPresenter(seed, obs), seed=seed, root=root, simulate=True).run()
-    est = bias_mod.estimate_for_participant(pid, root, n_boot=60)
-    bias_path = bias_mod.save(pid, est, confirmed_by="test", root=root)
-    payload = storage.latest_bias(pid, root)[0]
-    for k, b in enumerate(design.block_order(pid)):
-        assert Session("main", pid, SimulatedPresenter(seed + 10 + k, obs), block=b, bias=payload,
-                       bias_file=str(bias_path), seed=seed + 10 + k, root=root, simulate=True).run()
-    return est, obs
+    for k, b in enumerate(design.block_order(pid)):             # main parts: no bias correction (modelled)
+        assert Session("main", pid, SimulatedPresenter(seed + 10 + k, obs), block=b, seed=seed + 10 + k, root=root,
+                       simulate=True).run()
+    return obs
 
 
 def _intervals(col):
@@ -51,39 +48,41 @@ def _intervals(col):
 
 # ── checks ────────────────────────────────────────────────────────────────────
 
-def n_trials(task, n_conditions):
+def n_trials(task, n_noise, n_conflicts=1):
+    """Adaptive trials plus the easy trials (EASY_TRIALS: per noise level, at least 20)."""
     cfg = S.TASKS[task]
-    return n_conditions * (len(cfg["staircases"]) * cfg["trials_per_staircase"]
-                           + len(cfg["lapse_levels"]) * cfg["lapse_trials_per_level"])
+    adaptive = n_conflicts * len(cfg["staircases"]) * cfg["trials_per_staircase"]
+    return n_noise * (adaptive + design.n_easy(adaptive))
 
 
 def check_counts(root, pid):
-    expected = {"unimodal_auditory": n_trials("unimodal_auditory", 2), "unimodal_visual": n_trials("unimodal_visual", 1),
-                "crossmodal": 388}
+    expected = {"unimodal_auditory": n_trials("unimodal_auditory", 2), "unimodal_visual": n_trials("unimodal_visual", 1)}
+    assert expected == {"unimodal_auditory": 240, "unimodal_visual": 120}, expected
     for task, n in expected.items():
         d = storage.load_trials(task, pid, root)
         assert len(d) == n, (task, len(d), n)
+        easy = d[d.kind == "lapse"].groupby(d.audNoise.fillna(-1)).size()
+        assert (easy == S.EASY_TRIALS["minimum"]).all(), (task, easy)
     m = storage.load_trials("main", pid, root)
     per_block = m.groupby("block").size().to_dict()
-    assert per_block == {"B1": 924, "B2": 616, "B3": 616}, per_block
-    assert (m.groupby(["block", "condition"]).size() == 154).all()
+    assert per_block == {"part1": 636, "part2": 636} == {b: n_trials("main", 2, 9) for b in per_block}, per_block
+    stair = m[m.kind == "staircase"].groupby(["block", "condition"]).size()
+    assert len(stair) == 2 * 18 and (stair == 32).all()
+    easy = m[m.kind == "lapse"].groupby(["block", "condition"]).size()
+    assert easy.between(3, 4).all() and (m[m.kind == "lapse"].groupby(["block", "audNoise"]).size() == 30).all()
 
 
 def check_order_balance(root, pid):
-    for task in ("unimodal_auditory", "unimodal_visual", "crossmodal", "main"):
+    for task in ("unimodal_auditory", "unimodal_visual", "main"):
         d = storage.load_trials(task, pid, root)
-        stair = d.groupby(["session_file", "condition", "current_stair"]).order.apply(lambda s: abs((s == 1).sum() - (s == 2).sum()))
+        imbalance = lambda s: abs((s == 1).sum() - (s == 2).sum())  # noqa: E731
+        stair = d.groupby(["session_file", "condition", "current_stair"]).order.apply(imbalance)
         assert stair.max() <= 1, (task, stair.max())
-        cond = d.groupby(["session_file", "condition"]).order.apply(lambda s: abs((s == 1).sum() - (s == 2).sum()))
+        cond = d[d.kind == "staircase"].groupby(["session_file", "condition"]).order.apply(imbalance)
         assert cond.max() == 0, (task, cond[cond > 0])
-
-
-def check_crossmodal_blocks(root, pid):
-    d = storage.load_trials("crossmodal", pid, root).sort_values("trial_num")
-    runs = (d.order != d.order.shift()).cumsum()
-    sizes = d.groupby(runs).size()
-    assert sizes.iloc[:-2].eq(S.TASKS["crossmodal"]["order_block_size"]).all()
-    assert d.order.iloc[0] == design.crossmodal_first_order(pid)
+        easy = d[d.kind == "lapse"]
+        assert easy.groupby(["session_file", "audNoise", "delta_dur_percents"], dropna=False).order.apply(imbalance).max() <= 1, task
+        assert easy.groupby(["session_file", "condition"]).order.apply(imbalance).max() <= 1, task
 
 
 def check_randomised(root, pid):
@@ -118,7 +117,7 @@ def check_preparation_and_answer_window(root, pid):
     """No event in the first MIN_LEAD_S of a trial; answers only after interval 2 is fully over."""
     lead = round(S.MIN_LEAD_S * FR)
     shortest = np.inf
-    for task in ("unimodal_auditory", "unimodal_visual", "crossmodal", "main"):
+    for task in ("unimodal_auditory", "unimodal_visual", "main"):
         d = storage.load_trials(task, pid, root)
         firsts = []
         for col in ("audio_interval1", "visual_interval1"):
@@ -137,16 +136,24 @@ def check_preparation_and_answer_window(root, pid):
     return shortest
 
 
-def check_bias(root, pid, est, obs):
+def check_parts(root, pid):
+    """Main experiment: no visual correction; part 2 continues every staircase exactly where part 1 stopped."""
     m = storage.load_trials("main", pid, root)
-    assert m.groupby("audNoise").VisualPSE.nunique().eq(1).all(), "one correction per noise level"
-    for noise, e in est["per_noise"].items():
-        true = obs["true_bias"][float(noise)]
-        assert abs(e["correction_s"] - true) < 0.04, (noise, e["correction_s"], true)
-        applied = m.loc[m.audNoise == float(noise), "VisualPSE"].iloc[0]
-        assert abs(applied - round(e["correction_s"] * FR) / FR) < 1e-9
-    files = {meta["bias_file"] for meta in storage.sessions(pid, "main", root)}
-    assert len(files) == 1, files
+    assert (m.VisualPSE == 0).all() and not any(meta.get("bias_file") for meta in storage.sessions(pid, "main", root))
+    p1, p2 = (storage.sessions(pid, "main", root)[k] for k in (0, 1))
+    assert (p1["block"], p2["block"]) == ("part1", "part2") and p2["staircases_continue"] == [Path(p1["csv"]).name]
+    a, b = (pd.read_csv(x["csv"]).query("kind == 'staircase'").sort_values("trial_num") for x in (p1, p2))
+    for (noise, conflict, rule), g in a.groupby(["audNoise", "conflict_nominal", "current_stair"]):
+        st = Staircase(rule, S.TASKS["main"]["floor"], start=g.stair_start.iloc[0], **S.STAIRCASE)
+        for y in g.chose_test:
+            st.update(bool(y))
+        nxt = b[(b.audNoise == noise) & (b.conflict_nominal == conflict) & (b.current_stair == rule)].delta_dur_percents
+        assert abs(st.level - nxt.iloc[0]) < 1e-6, (noise, conflict, rule, st.level, nxt.iloc[0])
+    try:
+        Session("main", "SIM98", SimulatedPresenter(0), block="part2", root=root, simulate=True)
+        raise AssertionError("part2 before part1 must be refused")
+    except ValueError:
+        pass
 
 
 def check_audio():
@@ -236,7 +243,7 @@ def check_staircase_starts(root, pid):
     """Every staircase's first trial is at its logged starting end; pairs start at opposite ends."""
     for task in (t for t in storage.TASK_ORDER if t != "noise_calibration"):
         d = storage.load_trials(task, pid, root)
-        d = d[(d.kind == "staircase") & (d.current_stair != "QUEST")].sort_values("trial_num")
+        d = d[(d.kind == "staircase") & (d.current_stair != "QUEST") & (d.block != "part2")].sort_values("trial_num")
         if d.empty:                                     # QUEST+ only: check_quest
             continue
         first = d.groupby(["session_file", "condition", "current_stair"]).first()
@@ -274,9 +281,9 @@ def check_display_profiles(root):
     assert storage.root_for(False, "office_test") == storage.TEST_ROOT
     assert storage.root_for(True, "office_test") == storage.SIM_ROOT
     assert storage.root_for(False, "lab_crt", autotest=True) == storage.TEST_ROOT
-    assert Session("crossmodal", "SIM75", SimulatedPresenter(5), seed=5, root=root, monitor="office_test",
+    assert Session("unimodal_visual", "SIM75", SimulatedPresenter(5), seed=5, root=root, monitor="office_test",
                    simulate=True).run()
-    d = storage.load_trials("crossmodal", "SIM75", root)
+    d = storage.load_trials("unimodal_visual", "SIM75", root)
     assert (d.frame_rate_hz == 75).all()
     frames = d.intendedDurVisualStandard * 75
     assert np.allclose(frames, np.round(frames)), "durations must be whole 75 Hz frames"
@@ -364,9 +371,9 @@ def check_solid(tmp):
 def check_autotest_report(root):
     """The autotest report: clean sessions pass; dropped frames and mistimed flashes are reported."""
     from avdur import autotest
-    for task in ("unimodal_auditory", "unimodal_visual", "crossmodal"):
-        assert Session(task, "SIM70", SimulatedPresenter(7), seed=7, root=root, simulate=True, autotest=True,
-                       max_trials=20).run()
+    for task, block in (("unimodal_auditory", None), ("unimodal_visual", None), ("main", "part1")):
+        assert Session(task, "SIM70", SimulatedPresenter(7), block=block, seed=7, root=root, simulate=True,
+                       autotest=True, max_trials=20).run()
     text = autotest.report("SIM70", root=root)
     assert "no problems found" in text and text.count("20/20 trials, completed") == 3, text
     assert Session("unimodal_visual", "SIM71", DroppingPresenter(7), seed=7, root=root, simulate=True,
@@ -392,15 +399,13 @@ def check_combined_session(tmp):
             assert meta["screening"]["decision"] == "no warnings" and Path(meta["block_fit"]["plot"]).exists(), meta
             if task != "noise_calibration":
                 assert meta["block_fit"]["conditions"], task
-        if task in ("unimodal_auditory", "crossmodal"):
+        if task == "unimodal_auditory":
             assert sorted(storage.load_trials(task, "P50", tmp).audNoise.unique()) == [S.NOISE_LOW, noise], task
     from avdur import screening
     m = storage.sessions("SIM01", "main", SIM_ROOT)[0]
     r = screening.main_block_fit(m["csv"], tmp / "main_fits")
     assert set(r["slopes"]) == set(S.NOISE_LEVELS) and Path(r["plot"]).exists(), r
     assert r["slopes"][1.2] > r["slopes"][0.1], "vision weighs more when audition is noisier (simulated observer)"
-    xm = storage.sessions("P50", "crossmodal", tmp)[0]["block_fit"]["conditions"]
-    assert all("correction_s" in c for c in xm)
     assert run_blocks.run("P50", SimulatedPresenter(3), tmp, simulate=True, background_fits=False,
                           log=lambda *_: None) == (True, []), "completed blocks are skipped"
 
@@ -411,40 +416,6 @@ def check_combined_session(tmp):
     (meta,) = storage.sessions("P51", "noise_calibration", tmp)
     assert meta["completed"] and meta["screening"]["decision"] == "ended by the experimenter"
     assert not storage.sessions("P51", "unimodal_auditory", tmp, completed_only=False), "no block after the end"
-
-
-def check_crossmodal_standards(tmp):
-    """Several standards: interleaved in one session (500 ms full design, the others shorter); only
-    500 ms sets the correction; 500 ms alone runs as before; standards done earlier are not repeated."""
-    from avdur import run_task, standards
-    args = ["--task", "crossmodal", "--simulate", "--seed", "3", "--data-root", str(tmp), "--noise-high", "0.8"]
-    assert run_task.main(["--pid", "SIM72", "--all-standards"] + args) == 0
-    (meta,) = storage.sessions("SIM72", "crossmodal", tmp)
-    extra = S.CROSSMODAL_STANDARDS["standards"]
-    every = sorted([S.STANDARD_DUR_S, *extra])
-    assert sorted(meta["standards_s"]) == every and meta["block"] == "-".join(standards.label(v) for v in every)
-    d = storage.load_trials("crossmodal", "SIM72", tmp).sort_values("trial_num")
-    n = d.groupby(d.standardDur.round(3)).size().to_dict()
-    cfg = S.CROSSMODAL_STANDARDS["extra_design"]
-    short = 2 * (len(cfg["staircases"]) * cfg["trials_per_staircase"] + 2 * cfg["lapse_trials_per_level"])
-    assert n[S.STANDARD_DUR_S] == 388 and all(n[round(x, 3)] == short for x in extra), n
-    assert d.head(len(d) // 3).standardDur.round(3).nunique() == len(every), "standards are interleaved"
-    sizes = d.groupby((d.order != d.order.shift()).cumsum()).size()
-    assert sizes.iloc[:-2].eq(S.TASKS["crossmodal"]["order_block_size"]).all(), "order blocks span the standards"
-    for std, g in d[d.kind == "staircase"].groupby(d.standardDur.round(3)):     # each standard's own staircases
-        assert g.testDurS.median() / std < 1.5 and g.testDurS.max() <= std * (1 + S.STAIRCASE["ceiling"]) + 0.01, std
-    assert (bias_mod.load_crossmodal("SIM72", tmp).standardDur == S.STANDARD_DUR_S).all()
-    table = standards.bias_table("SIM72", tmp, n_boot=0)
-    assert len(table) == 2 * len(every) and table.standard_ms.nunique() == len(every)
-    assert standards.remaining("SIM72", tmp, several=True) == []
-    assert run_task.main(["--pid", "SIM72", "--all-standards"] + args) == 0          # nothing left
-    assert len(storage.sessions("SIM72", "crossmodal", tmp)) == 1
-    assert run_task.main(["--pid", "SIM73", "--single-standard"] + args) == 0       # 500 ms only: as before
-    (m3,) = storage.sessions("SIM73", "crossmodal", tmp)
-    assert m3["standards_s"] == [S.STANDARD_DUR_S] and not m3["block"] and m3["n_trials_done"] == 388
-    assert run_task.main(["--pid", "SIM73", "--all-standards"] + args) == 0         # later: only the others, together
-    (m4,) = [m for m in storage.sessions("SIM73", "crossmodal", tmp) if m["block"]]
-    assert sorted(m4["standards_s"]) == sorted(extra) and m4["n_trials_done"] == len(extra) * short
 
 
 def check_noise_calibration(tmp):
@@ -469,7 +440,7 @@ def check_noise_calibration(tmp):
                           "--data-root", str(tmp)]) == 0
     assert set(storage.load_trials("unimodal_auditory", "SIM60", tmp).audNoise) == {S.NOISE_LOW, found[0]}
     try:
-        run_task.main(["--task", "crossmodal", "--pid", "OYX", "--data-root", str(tmp)])
+        run_task.main(["--task", "unimodal_auditory", "--pid", "OYX", "--data-root", str(tmp)])
         raise AssertionError("a real session without a noise calibration must be refused")
     except SystemExit as err:
         assert err.code == 2
@@ -482,19 +453,16 @@ def run_all(root=SIM_ROOT):
     check_staircase_rules()
     for pid, seed, obs in (("SIM01", 1, None),
                            ("SIM02", 2, dict(true_bias={0.1: -0.12, 1.2: 0.15}, interval_bias=0.8))):
-        est, o = simulate_participant(pid, seed, obs, root)
+        simulate_participant(pid, seed, obs, root)
         check_counts(root, pid)
         check_order_balance(root, pid)
         check_staircase_starts(root, pid)
         check_quest(root, pid)
-        check_crossmodal_blocks(root, pid)
         check_randomised(root, pid)
         worst = check_main_alignment(root, pid)
         lead = check_preparation_and_answer_window(root, pid)
-        check_bias(root, pid, est, o)
-        summary[pid] = dict(true_bias=o["true_bias"],
-                            fitted={k: v["correction_s"] for k, v in est["per_noise"].items()},
-                            warnings=est["warnings"], worst_centre_offset_frames=worst, shortest_lead_s=lead)
+        check_parts(root, pid)
+        summary[pid] = dict(worst_centre_offset_frames=worst, shortest_lead_s=lead)
     check_display_profiles(root)
     check_failed_start_and_ids(root)
     with tempfile.TemporaryDirectory() as tmp:          # throwaway participants, kept out of data_simulated/
@@ -502,7 +470,6 @@ def run_all(root=SIM_ROOT):
         check_autotest_report(Path(tmp))
         check_combined_session(Path(tmp))
         check_noise_calibration(Path(tmp))
-        check_crossmodal_standards(Path(tmp))
         check_entry_points(Path(tmp))
     snr = check_audio()
     return summary, snr
@@ -511,7 +478,7 @@ def run_all(root=SIM_ROOT):
 def check_entry_points(root):
     """Start each task file the way the launcher does (python -m ...), not by calling main()."""
     import subprocess
-    for args in (["avdur.run_task", "--task", "crossmodal", "--noise-high", "1.0"],
+    for args in (["avdur.run_task", "--task", "main", "--block", "part1", "--noise-high", "1.0"],
                  ["avdur.run_task", "--task", "unimodal_visual"],
                  ["avdur.run_blocks"]):
         r = subprocess.run([sys.executable, "-m", *args, "--pid", "SIM80", "--simulate", "--max-trials", "2",
@@ -528,9 +495,8 @@ if __name__ == "__main__":
     summary, snr = run_all()
     print("All checks passed.")
     for pid, s in summary.items():
-        print(f"{pid}: true bias {s['true_bias']}  fitted {s['fitted']}  "
-              f"max visual-centre offset {s['worst_centre_offset_frames']} frames  "
-              f"shortest noise before the first event {1000 * s['shortest_lead_s']:.0f} ms  warnings: {s['warnings'] or 'none'}")
+        print(f"{pid}: max visual-centre offset {s['worst_centre_offset_frames']} frames  "
+              f"shortest noise before the first event {1000 * s['shortest_lead_s']:.0f} ms")
     snr, jitter, xm_gap = snr
     for noise, (v2, v1) in snr.items():
         print(f"Burst-to-floor SNR at noise {noise}: v2 {v2:.1f} dB, v1 {v1:.1f} dB")

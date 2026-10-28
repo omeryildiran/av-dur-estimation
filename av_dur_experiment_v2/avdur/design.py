@@ -11,6 +11,7 @@ standard durations in one session (`standards`), each with its own design.
 from __future__ import annotations
 
 import itertools
+import math
 import json
 import re
 from pathlib import Path
@@ -138,14 +139,26 @@ def staircase_starts(task, rng, block=None, noise_levels=None, cfg=None):
     return starts
 
 
+def n_easy(n_adaptive):
+    """Easy trials for one noise level of a session: max(minimum, share x adaptive trials), even (half per end)."""
+    n = max(S.EASY_TRIALS["minimum"], math.ceil(S.EASY_TRIALS["share"] * n_adaptive))
+    return n + n % 2
+
+
 def _staircase_slots(task, cfg, block, noise_levels, standard=None):
     slots = []
+    by_noise = {}
     for noise, conflict in conditions(task, block, noise_levels, cfg):
+        by_noise.setdefault(noise, []).append(conflict)
         for k, rule in enumerate(cfg["staircases"]):
             for order in _orders(cfg["trials_per_staircase"], extra_first=(k % 2 == 0)):
                 slots.append(TrialSpec(task, noise, conflict, "staircase", rule, None, order, standard=standard))
+    # easy trials per noise level (EASY_TRIALS), each end's dealt over the conditions in turn
+    for noise, conflicts in by_noise.items():
+        per_end = n_easy(len(conflicts) * len(cfg["staircases"]) * cfg["trials_per_staircase"]) // 2
         for k, level in enumerate(cfg["lapse_levels"]):
-            for order in _orders(cfg["lapse_trials_per_level"], extra_first=(k % 2 == 0)):
+            for i in range(per_end):                     # orders alternate, so each condition's are near balanced
+                conflict, order = conflicts[(i + k * per_end) % len(conflicts)], 1 + (i + k) % 2
                 slots.append(TrialSpec(task, noise, conflict, "lapse", None, level, order, standard=standard))
     return slots
 
