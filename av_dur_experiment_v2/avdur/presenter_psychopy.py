@@ -85,6 +85,31 @@ def load_psychtoolbox():
     return loaded
 
 
+def pace_flips(win, rate_hz):
+    """Make win.flip() return on a fixed schedule of 1/rate_hz, for profiles with pace_flips.
+
+    On the MacBook Air (x86 PsychoPy under Rosetta, macOS 27) flips do not wait for the
+    refresh: they returned about 4 and 13 ms apart in turn (display check 90 Hz, 80% of
+    frames irregular), so every duration counted in flips came out too short. Each flip is
+    held until its slot on the schedule; paced, they came 16.67 ms apart (SD 0.5-0.9 ms;
+    2026-10-26). They are still not locked to the refresh, so an onset can show up to one
+    refresh after its flip: testing only.
+    """
+    from psychopy import core, logging
+    period, plain_flip, due = 1.0 / rate_hz, win.flip, None
+
+    def flip(*args, **kwargs):
+        nonlocal due
+        if due is not None:
+            core.wait(max(0.0, due - logging.defaultClock.getTime()), hogCPUperiod=0.005)
+        t = plain_flip(*args, **kwargs)    # the time win.flip() returns (logging.defaultClock)
+        # more than a period late (after a message screen or a pause): restart the schedule here
+        due = due + period if due is not None and t < due + period else t + period
+        return t
+
+    win.flip = flip
+
+
 def find_output_device(wanted, devices):
     """The output device named `wanted`, or the only one whose name contains it (any case)."""
     exact = [d for d in devices if d["DeviceName"].lower() == str(wanted).lower()]
@@ -112,6 +137,9 @@ class PsychoPyPresenter:
     def __init__(self, monitor_profile=S.DEFAULT_MONITOR, autotest_seed=None, screen=None):
         self.profile_name = monitor_profile
         self.profile = S.MONITOR_PROFILES[monitor_profile]
+        if self.profile.get("pace_flips") and not self.profile.get("testing_only"):
+            raise ValueError(f"Monitor profile '{monitor_profile}': pace_flips is for testing profiles only "
+                             "(paced flips are not locked to the refresh).")
         self.fr = self.profile["frame_rate_hz"]
         self.frame_period = 1.0 / self.fr           # replaced by the measured period at start
         self.task, self.speaker, self.lead_flips = None, None, 1
@@ -175,6 +203,9 @@ class PsychoPyPresenter:
                                  monitor=mon, units="pix", color=S.BACKGROUND_COLOR, colorSpace="rgb",
                                  waitBlanking=True, allowGUI=False)
         self.win.mouseVisible = False
+        if p.get("pace_flips"):
+            pace_flips(self.win, self.fr)
+            meta["flips_paced_hz"] = self.fr
         self.text = visual.TextStim(self.win, text="", color="white", height=S.TEXT_HEIGHT_PX,
                                     wrapWidth=0.9 * p["window_px"])
         self.kb = keyboard.Keyboard(backend="ptb")

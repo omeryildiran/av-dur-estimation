@@ -1,0 +1,43 @@
+{
+  "method": "lognormal",
+  "per_noise": {
+    "0.1": {
+      "correction_s": -0.095,
+      "pse_auditory_s": 0.595,
+      "mu": 0.17399185566681177,
+      "sigma": 0.2907299838314521,
+      "lapse": 0.09948791086260218,
+      "n_trials": 194.0,
+      "ci95_s": [
+        -0.134,
+        -0.0582
+      ]
+    },
+    "1.2": {
+      "correction_s": 0.1319,
+      "pse_auditory_s": 0.3681,
+      "mu": -0.3062686916227058,
+      "sigma": 0.4494006817575607,
+      "lapse": 0.09948791086260218,
+      "n_trials": 194.0,
+      "ci95_s": [
+        0.0965,
+        0.1928
+      ]
+    }
+  },
+  "at_bound": [],
+  "converged": true,
+  "n_trials": 388,
+  "warnings": [],
+  "comparison_linear_v1": {
+    "0.1": -0.1001,
+    "1.2": 0.1238
+  },
+  "source_sessions": [
+    "SIM02_crossmodal_20261026-220657.csv"
+  ],
+  "participant": "SIM02",
+  "confirmed_by": "test",
+  "confirmed_at": "2026-10-26T22:07:39"
+}

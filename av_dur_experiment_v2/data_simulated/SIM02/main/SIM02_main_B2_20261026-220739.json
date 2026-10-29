@@ -1,0 +1,426 @@
+{
+  "participant": "SIM02",
+  "task": "main",
+  "block": "B2",
+  "practice": false,
+  "seed": 14,
+  "monitor_profile": "lab_crt",
+  "simulated": true,
+  "autotest": false,
+  "started": "2026-10-26T22:07:39",
+  "completed": true,
+  "code": {
+    "source_sha256": "01c73ca0180da086",
+    "git_commit": "adb2071684d2239e212681e8709a5298698fda4f",
+    "git_uncommitted_changes": true
+  },
+  "python": "3.10.22",
+  "platform": "macOS-27.0-x86_64-i386-64bit",
+  "psychopy": null,
+  "settings": {
+    "EXPERIMENT_NAME": "av_duration_v2",
+    "MONITOR_PROFILES": {
+      "lab_crt": {
+        "window_px": 800,
+        "screen": 1,
+        "screen_px": [
+          800,
+          800
+        ],
+        "fullscreen": true,
+        "frame_rate_hz": 120.0,
+        "picture_height_cm": 29.0,
+        "picture_width_cm": null,
+        "viewing_distance_cm": 60.0
+      },
+      "office_test": {
+        "window_px": 800,
+        "screen": 0,
+        "fullscreen": true,
+        "frame_rate_hz": 75.0,
+        "testing_only": true
+      },
+      "laptop_test": {
+        "window_px": 800,
+        "screen": 0,
+        "fullscreen": true,
+        "frame_rate_hz": 60.0,
+        "testing_only": true,
+        "pace_flips": true
+      }
+    },
+    "DEFAULT_MONITOR": "lab_crt",
+    "EXPECTED_FRAME_RATE_HZ": 120.0,
+    "FRAME_RATE_TOLERANCE_HZ": 1.0,
+    "MAX_IRREGULAR_FRAMES": 0.05,
+    "BACKGROUND_COLOR": "gray",
+    "DISK_RADIUS_DEG": 1.5,
+    "DISK_RADIUS_PX": 42.74647995177842,
+    "FIXATION_HEIGHT_PX": 22.342399999999998,
+    "DISK_LINE_WIDTH_PX": 1.5,
+    "TEXT_HEIGHT_PX": 30,
+    "SAMPLE_RATE": 48000,
+    "AUDIO_LATENCY_MODE": 3,
+    "AUDIO_OUTPUT_DEVICE": null,
+    "AUDIO_SCHEDULE_MARGIN_S": 0.015,
+    "SYNC_FLIPS": 2,
+    "VOLUME": 0.11,
+    "AUDIO_ONSET_OFFSET_S": 0.0,
+    "NOISE_LEVELS": [
+      0.1,
+      1.2
+    ],
+    "NOISE_LOW": 0.1,
+    "NOISE_HIGH_DEFAULT": 1.2,
+    "NOISE_CALIBRATION": {
+      "target_sigma": 0.75,
+      "target_correct": 0.7071,
+      "trials_per_staircase": 100,
+      "start_noise": [
+        0.3,
+        1.6
+      ],
+      "bounds": [
+        0.1,
+        2.0
+      ],
+      "init_step_ln": 0.4,
+      "step_factor": 0.5,
+      "n_step_changes": 1,
+      "catch_trials": 6
+    },
+    "SIGNAL_BAND_HZ": [
+      150,
+      775
+    ],
+    "BACKGROUND_BAND_HZ": [
+      10,
+      610
+    ],
+    "FILTER_ORDER": 4,
+    "BURST_INTENSITY": 5,
+    "BURST_RISE_S": 0.005,
+    "HAMMING_WINDOW": true,
+    "AUDIO_LEVEL_MODE": "fixed",
+    "FIXED_BACKGROUND_SCALE": 4.7259,
+    "FIXED_OUTPUT_GAIN": {
+      "0.1": 0.21133,
+      "1.2": 0.14382
+    },
+    "FIXED_VOLUME": 0.1653,
+    "STANDARD_DUR_S": 0.5,
+    "PRE_RANGE_S": [
+      0.2,
+      0.35
+    ],
+    "ISI_RANGE_S": [
+      0.3,
+      0.6
+    ],
+    "POST_RANGE_S": [
+      0.15,
+      0.3
+    ],
+    "MIN_VISUAL_GAP_S": 0.1,
+    "MIN_VISUAL_DUR_S": 0.025,
+    "PRE_TRIAL_WAIT_S": 0.03,
+    "POST_STIM_WAIT_S": 0.03,
+    "MIN_LEAD_S": 0.2,
+    "BREAK_EVERY_N_TRIALS": 30,
+    "BREAK_MIN_WAIT_S": 2.5,
+    "ORDER_CUE_MIN_WAIT_S": 1.0,
+    "FEEDBACK_DUR_S": 0.5,
+    "RESPONSE_KEYS": {
+      "left": 1,
+      "right": 2
+    },
+    "QUIT_KEY": "escape",
+    "PRACTICE_TRIALS": 20,
+    "COMBINED_SESSION_TASKS": [
+      "noise_calibration",
+      "unimodal_auditory",
+      "unimodal_visual",
+      "crossmodal"
+    ],
+    "BLOCK_REST_MIN_S": 10.0,
+    "ORDER_GAP_WARNING": 0.25,
+    "SCREENING_CHECKS": {
+      "unimodal_auditory": {
+        "0.1": {
+          "max_sigma": 0.6,
+          "min_easy_correct": 0.75
+        },
+        "high": {
+          "max_sigma": 1.5
+        }
+      },
+      "unimodal_visual": {
+        "None": {
+          "max_sigma": 2.0,
+          "min_easy_correct": 0.7
+        }
+      }
+    },
+    "V1_SIGMA_RANGE": {
+      "('unimodal_auditory', 0.1)": [
+        0.23,
+        0.29,
+        0.39
+      ],
+      "('unimodal_auditory', 1.2)": [
+        0.42,
+        1.88,
+        3.0
+      ],
+      "('unimodal_visual', None)": [
+        0.36,
+        0.62,
+        1.72
+      ],
+      "('crossmodal', 0.1)": [
+        0.11,
+        0.39,
+        1.06
+      ],
+      "('crossmodal', 1.2)": [
+        0.3,
+        0.78,
+        1.62
+      ]
+    },
+    "AUTOTEST_RT_RANGE_S": [
+      0.05,
+      0.8
+    ],
+    "AUTOTEST_SCREEN_S": 0.3,
+    "AUTOTEST_QUICK_TRIALS": 30,
+    "AUTOTEST_BIAS_S": {
+      "0.1": 0.1,
+      "1.2": -0.05
+    },
+    "STAIRCASE": {
+      "init_step": 0.16,
+      "step_factor": 0.5,
+      "n_step_changes": 2,
+      "ceiling": 0.9
+    },
+    "QUEST": {
+      "target": "mu_sigma",
+      "mu_range": [
+        -1.0,
+        1.0
+      ],
+      "n_mu": 81,
+      "sigma_range": [
+        0.05,
+        2.5
+      ],
+      "n_sigma": 25,
+      "lapse_max": 0.1,
+      "n_lapse": 5,
+      "n_levels": 60
+    },
+    "TASKS": {
+      "noise_calibration": {
+        "label": "Auditory noise calibration (sets the high noise level)",
+        "noise_levels": [
+          null
+        ],
+        "conflicts": [
+          0.0
+        ],
+        "staircases": [
+          "A",
+          "B"
+        ],
+        "floor": -0.9
+      },
+      "unimodal_auditory": {
+        "label": "Unimodal auditory",
+        "noise_levels": [
+          0.1,
+          1.2
+        ],
+        "conflicts": [
+          0.0
+        ],
+        "staircases": [
+          "QUEST"
+        ],
+        "trials_per_staircase": 90,
+        "floor": -0.9,
+        "lapse_levels": [
+          -0.9,
+          0.9
+        ],
+        "lapse_trials_per_level": 7
+      },
+      "unimodal_visual": {
+        "label": "Unimodal visual",
+        "noise_levels": [
+          null
+        ],
+        "conflicts": [
+          0.0
+        ],
+        "staircases": [
+          "QUEST"
+        ],
+        "trials_per_staircase": 70,
+        "floor": -0.9,
+        "lapse_levels": [
+          -0.8,
+          0.8
+        ],
+        "lapse_trials_per_level": 7
+      },
+      "crossmodal": {
+        "label": "Cross-modal (auditory test vs. visual standard)",
+        "noise_levels": [
+          0.1,
+          1.2
+        ],
+        "conflicts": [
+          0.0
+        ],
+        "staircases": [
+          "1D1U",
+          "1D1U_b",
+          "2D1U",
+          "1D2U"
+        ],
+        "trials_per_staircase": 45,
+        "floor": -0.9,
+        "lapse_levels": [
+          -0.9,
+          0.9
+        ],
+        "lapse_trials_per_level": 7,
+        "order_block_size": 10
+      },
+      "main": {
+        "label": "Main audiovisual experiment",
+        "noise_levels": [
+          0.1,
+          1.2
+        ],
+        "staircases": [
+          "2D1U",
+          "1D2U"
+        ],
+        "trials_per_staircase": 70,
+        "floor": -0.95,
+        "lapse_levels": [
+          "floor",
+          0.9
+        ],
+        "lapse_trials_per_level": 7,
+        "blocks": {
+          "B1": [
+            0.0,
+            -0.167,
+            0.25
+          ],
+          "B2": [
+            -0.083,
+            0.167
+          ],
+          "B3": [
+            -0.25,
+            0.083
+          ]
+        }
+      }
+    },
+    "BLOCK_ORDERS": [
+      [
+        "B1",
+        "B2",
+        "B3"
+      ],
+      [
+        "B1",
+        "B3",
+        "B2"
+      ],
+      [
+        "B2",
+        "B1",
+        "B3"
+      ],
+      [
+        "B2",
+        "B3",
+        "B1"
+      ],
+      [
+        "B3",
+        "B1",
+        "B2"
+      ],
+      [
+        "B3",
+        "B2",
+        "B1"
+      ]
+    ],
+    "CROSSMODAL_STANDARDS": {
+      "enabled": true,
+      "n_participants": 3,
+      "standards": [
+        0.3,
+        0.8
+      ],
+      "extra_design": {
+        "staircases": [
+          "1D1U",
+          "1D1U_b"
+        ],
+        "trials_per_staircase": 40,
+        "lapse_trials_per_level": 3
+      }
+    },
+    "BIAS": {
+      "method": "lognormal",
+      "lapse_max": 0.1,
+      "min_trials": 300,
+      "max_abs_correction_s": 0.35,
+      "max_ci_halfwidth_s": 0.06,
+      "n_bootstrap": 200
+    }
+  },
+  "noise_levels": [
+    0.1,
+    1.2
+  ],
+  "noise_file": null,
+  "standard_s": 0.5,
+  "design_override": null,
+  "n_trials_planned": 616,
+  "bias_file": "/Users/omer/Library/CloudStorage/GoogleDrive-omerulfaruk97@gmail.com/My Drive/MyReposDrive/obsidian_Notes/Landy Omer Re 1/av-dur-estimation/av_dur_experiment_v2/data_simulated/SIM02/bias/SIM02_bias_20261026-220739.json",
+  "frame_rate_nominal_hz": 120.0,
+  "testing_only_profile": false,
+  "corrections_applied_s": {
+    "0.1": -0.09166666666666666,
+    "1.2": 0.13333333333333333
+  },
+  "staircase_floors": {
+    "0.1": -0.76,
+    "1.2": -0.95
+  },
+  "frame_rate_measured_hz": 120.0,
+  "csv": "SIM02_main_B2_20261026-220739.csv",
+  "staircase_starts": {
+    "0.1/-0.083/2D1U": "floor",
+    "0.1/-0.083/1D2U": "ceiling",
+    "0.1/0.167/2D1U": "floor",
+    "0.1/0.167/1D2U": "ceiling",
+    "1.2/-0.083/2D1U": "floor",
+    "1.2/-0.083/1D2U": "ceiling",
+    "1.2/0.167/2D1U": "floor",
+    "1.2/0.167/1D2U": "ceiling"
+  },
+  "n_trials_done": 616,
+  "quit_by_user": false,
+  "finished": "2026-10-26T22:07:39"
+}

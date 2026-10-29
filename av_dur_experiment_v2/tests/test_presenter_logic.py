@@ -269,6 +269,20 @@ def check_refresh():
     assert abs(p._check_refresh(meta) - 75) < 0.5 and meta["refresh_warning_overridden"]
 
 
+def check_pacing():
+    """pace_flips (software-paced flips) only on testing profiles, never on the lab profile."""
+    assert not S.MONITOR_PROFILES["lab_crt"].get("pace_flips")
+    assert all(p.get("testing_only") for p in S.MONITOR_PROFILES.values() if p.get("pace_flips"))
+    S.MONITOR_PROFILES["lab_crt_paced"] = dict(S.MONITOR_PROFILES["lab_crt"], pace_flips=True)
+    try:
+        PsychoPyPresenter("lab_crt_paced")
+        raise AssertionError("pace_flips on a non-testing profile must be refused")
+    except ValueError as err:
+        assert "testing profiles only" in str(err), err
+    finally:
+        del S.MONITOR_PROFILES["lab_crt_paced"]
+
+
 def main():
     p = presenter("main", [(prompt_time("main") + 0.3, "left")])      # macOS PTB keyboard: RT on another clock
     real_get = p.kb.getKeys
@@ -294,6 +308,7 @@ def main():
         r, _, _ = run(task, [(prompt + 0.2, "escape")])
         assert r["quit"], task
     check_refresh()
+    check_pacing()
     check_sound_and_flip_timing()
     check_autotest()
     check_device_choice_and_geometry()
