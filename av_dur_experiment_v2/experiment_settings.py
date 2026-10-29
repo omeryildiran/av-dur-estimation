@@ -27,7 +27,8 @@ MONITOR_PROFILES = {
     "office_test": dict(window_px=800, screen=0, fullscreen=True, frame_rate_hz=75.0,
                         testing_only=True),                            # Mac mini + Dell S2722DZ
     "laptop_test": dict(window_px=800, screen=0, fullscreen=True, frame_rate_hz=60.0,
-                        testing_only=True),                            # MacBook Air M3 13" (fixed 60 Hz panel)
+                        testing_only=True,                             # MacBook Air M3 13" (fixed 60 Hz panel)
+                        pace_flips=True),   # its flips don't wait for the refresh (presenter_psychopy.pace_flips)
 }
 DEFAULT_MONITOR = "lab_crt"
 
