@@ -73,8 +73,12 @@ NOISE_CALIBRATION = dict(
                                     # cue switching best (switching is best separated near sigma_v, v1 median 0.62)
     target_correct=0.7071,          # 2-down-1-up on correct answers (2 correct: louder noise; 1 error: softer)
     trials_per_staircase=100,       # two interleaved staircases (206 trials with the catch trials, ~10 min; 60 gave ~6 min)
-    start_noise=(0.3, 1.6),         # one starts easy, one hard
-    bounds=(0.1, 2.0),               # above 2.0 the level would often have to be cut to avoid clipping
+    start_noise=(0.5, 0.5),         # (0.3 and 1.6 until 28 Oct 2026)
+    bounds=(0.1, 1.2),              # cap at v1's level (2.0 until 28 Oct 2026). In loud noise most listeners
+                                    # are near chance with the test first but stay sharp with it second; the
+                                    # pooled % correct then barely changes between 1 and 2, so the staircases
+                                    # drifted to 1.7-1.8 (P103, P105) where the unimodal sigma was 1.6-2.3
+                                    # (analysis/noise_calibration_order_check.py)
     init_step_ln=0.4, step_factor=0.5, n_step_changes=1,   # steps in ln(noise): 0.4, then 0.2
     # Simulated (true levels 0.3-1.5, shallow and steep sigma-noise slopes): the sigma reached is
     # within 14% of the target in half of the runs and within 34% in 90% at 60 trials (40 trials: 15% / 49%).

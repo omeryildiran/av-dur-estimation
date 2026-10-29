@@ -49,6 +49,12 @@ def status_text(raw_pid, root=None):
         else:
             when = f"done {done[-1]['started'][:16].replace('T', ' ')} ({done[-1]['n_trials']} trials)" if done else "not done"
             lines.append(f"  {i}. {S.TASKS[task]['label']}: {when}")
+        if task == "unimodal_visual":
+            xm = storage.sessions(pid, "crossmodal", root)
+            if xm:
+                from avdur import standards
+                stds = ", ".join(f"{1000 * v:.0f}" for v in sorted(standards.done_standards(pid, root)))
+                lines.append(f"     (optional cross-modal: done at {stds} ms)")
         if task == "noise_calibration":
             nz = st["noise"]
             lines.append(f"     high noise level: {nz['noise_high']:.3f}  [{Path(st['noise_file']).name}]" if nz
@@ -157,6 +163,9 @@ def run_window():
     ttk.OptionMenu(frm, block, "auto", "auto", *S.TASKS["main"]["blocks"]).grid(row=2, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
         row=3, column=0, sticky="w")
+    several = tk.BooleanVar(value=False)
+    ttk.Checkbutton(frm, text="Cross-modal: also the 300 and 800 ms standards", variable=several).grid(
+        row=3, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Simulate (no window; saves to data_simulated/)", variable=simulate,
                     command=lambda: refresh()).grid(row=4, column=0, columnspan=2, sticky="w")
     ttk.Checkbutton(frm, text="Autotest: automatic answers on this display and sound card (saves to data_test/)",
@@ -205,6 +214,8 @@ def run_window():
                 return
         cmd = task_command(task, p, monitor.get(), practice.get(), simulate.get(), b, None,
                            autotest.get(), quick.get(), chosen_screen())
+        if task == "crossmodal":            # optional since 28 Oct 2026; 500 ms alone, or with 300 and 800 ms
+            cmd.append("--all-standards" if several.get() else "--single-standard")
         since = dt.datetime.now().isoformat(timespec="seconds")
         if not simulate.get():
             start_viewer(p, data_root())
@@ -301,7 +312,9 @@ def run_window():
         row=7 + n_tasks, column=0, columnspan=2, pady=(10, 3))
     ttk.Button(frm, text="Autotest the whole experiment", width=48, command=run_autotest_all).grid(
         row=8 + n_tasks, column=0, columnspan=2, pady=3)
-    ttk.Button(frm, text="Quit", command=root.destroy).grid(row=9 + n_tasks, column=1, pady=(8, 0), sticky="e")
+    ttk.Button(frm, text="Optional: cross-modal (500 ms; tick above for 300/800 ms too)", width=48,
+               command=lambda: run("crossmodal")).grid(row=9 + n_tasks, column=0, columnspan=2, pady=(10, 3))
+    ttk.Button(frm, text="Quit", command=root.destroy).grid(row=10 + n_tasks, column=1, pady=(8, 0), sticky="e")
     entry.bind("<KeyRelease>", refresh)
     refresh()
     entry.focus()
@@ -318,11 +331,15 @@ def run_cli():
     while True:
         print("\n" + status_text(p, root))
         choice = input("\nRun 0-3 (add 'p' for practice, e.g. '3p'), 'c' blocks 0-2 in one session ('cp' with "
-                       "practice), 'a' autotest everything ('aq' quick), 'q' quit: ").strip()
+                       "practice), 'a' autotest everything ('aq' quick), 'x' cross-modal 500 ms ('xx' with 300/800 ms), 'q' quit: ").strip()
         if choice == "q":
             return
         if choice in ("c", "cp"):
             subprocess.run(combined_command(p, mon, choice == "cp", sim), cwd=ROOT)
+            continue
+        if choice in ("x", "xx"):
+            cmd = task_command("crossmodal", p, mon, False, sim)
+            subprocess.run(cmd + ["--all-standards" if choice == "xx" else "--single-standard"], cwd=ROOT)
             continue
         if choice in ("a", "aq"):
             text, out = autotest_mod.run(p, mon, quick=(choice == "aq"))

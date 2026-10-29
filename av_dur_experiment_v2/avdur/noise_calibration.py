@@ -4,9 +4,11 @@ Unimodal auditory trials (500 ms standard) with the test fixed at exp(+/-delta) 
 where delta = z(target_correct) x target_sigma: a listener whose auditory sigma equals
 target_sigma answers target_correct of these trials correctly. Two interleaved 2-down-1-up
 staircases on ln(noise) (2 correct in a row: louder noise; 1 error: softer) converge on the
-noise level where that is so, i.e. where the participant's sigma = target_sigma. One starts
-easy, one hard; order and test direction are balanced. A few easy catch trials at low noise
-check attention.
+noise level where that is so, i.e. where the participant's sigma = target_sigma. Both start at
+0.5, the level is capped at 1.2 (v1's level); order and test direction are balanced. A few easy
+catch trials at low noise check attention. % correct with the test first vs second near the
+result is reported: in loud noise most listeners are near chance with the test first but sharp
+with it second, which the pooled % correct hides.
 
 Estimate: the geometric mean of (1) the staircases (mean ln noise over the second half of each,
 averaged) and (2) a fit of sigma(noise) = exp(a + b ln noise) to every staircase trial, solved
@@ -160,8 +162,8 @@ def estimate(df):
     notes = [] if fit_valid else ["the fit found no change of sigma with noise; the staircases alone set the level"]
     sigma_at_low = float(np.exp(a + b * np.log(lo)))
     if noise_high >= hi / 1.25:
-        notes.append(f"near the upper limit ({hi}): a good listener; their high-noise sigma will be somewhat "
-                     f"below the target {C['target_sigma']}")
+        notes.append(f"at or near the cap ({hi}): still above the target % correct there, so the high-noise sigma "
+                     f"will likely be below the target {C['target_sigma']}")
     if noise_high <= lo * 1.25 or sigma_at_low > 1.5 * C["target_sigma"]:
         warnings.append(f"near the lower limit ({lo}; fitted sigma there {sigma_at_low:.2f}): sigma "
                         f"{C['target_sigma']} is not reached even in the softest noise (poor auditory duration discrimination)")
@@ -169,6 +171,12 @@ def estimate(df):
         warnings.append(f"staircases ({noise_stairs:.2f}) and fit ({noise_fit:.2f}) disagree by more than x2.5")
     if len(catch) and catch.mean() < 5 / 6:
         warnings.append(f"easy catch trials only {int(catch.sum())}/{len(catch)} correct")
+    near = stair[np.abs(np.log(stair["audNoise"].to_numpy(float) / noise_high)) < 0.35]   # within x1.4 of the result
+    by_order = {("test_first", "test_second")[int(o) - 1]: float(v) for o, v in near.groupby("order")["is_correct"].mean().items()}
+    first, second = by_order.get("test_first", np.nan), by_order.get("test_second", np.nan)
+    if second - first > S.ORDER_GAP_WARNING and first < 0.6:
+        warnings.append(f"near the chosen level {first:.0%} correct with the test first vs {second:.0%} "
+                        "with it second: the unimodal sigma (pooled over orders) will likely be above the target")
     trace = {name: s["audNoise"].round(4).tolist() for name, s in stair.groupby("current_stair")}
     return dict(noise_high=noise_high, target_sigma=C["target_sigma"], target_correct=C["target_correct"],
                 delta_ln=DELTA, test_ms=[round(500 * np.exp(DELTA)), round(500 * np.exp(-DELTA))],
@@ -176,6 +184,7 @@ def estimate(df):
                 sigma_fit=dict(a=a, b=b, lapse=lapse, sigma_at_low=float(np.exp(a + b * np.log(S.NOISE_LOW))),
                                sigma_at_result=float(np.exp(a + b * np.log(noise_high)))),
                 catch_correct=float(catch.mean()) if len(catch) else float("nan"), n_catch=int(len(catch)),
+                correct_by_order_near_result=by_order, n_near_result=int(len(near)),
                 fit_valid=bool(fit_valid), n_trials=int(len(df)), bounds=list(C["bounds"]), warnings=warnings,
                 notes=notes, trace=trace)
 
@@ -236,6 +245,11 @@ def summary_text(result):
              f"   staircases {st}; fit {result['noise_fit']:.2f}; catch trials {result['catch_correct']:.0%} of "
              f"{result['n_catch']}; fitted σ at the chosen level {result['sigma_fit']['sigma_at_result']:.2f}, "
              f"lapse {result['sigma_fit'].get('lapse', 0.02):.2f}"]
+    by_order = result.get("correct_by_order_near_result", {})
+    if len(by_order) == 2:
+        lines.append(f"   near the chosen level: {by_order['test_first']:.0%} correct with the test first, "
+                     f"{by_order['test_second']:.0%} with it "
+                     f"second ({result['n_near_result']} trials)")
     lines += [f"   note: {n}" for n in result.get("notes", [])]
     lines += [f"   WARNING: {w}" for w in result["warnings"]] or ["   checks passed"]
     if result.get("plot"):

@@ -145,7 +145,14 @@ def n_easy(n_adaptive):
     return n + n % 2
 
 
-def _staircase_slots(task, cfg, block, noise_levels, standard=None):
+def _adaptive_per_noise(task, cfg, block, noise_levels):
+    return {n: len(cfg["staircases"]) * cfg["trials_per_staircase"] * sum(1 for nn, _ in conditions(task, block, noise_levels, cfg) if nn == n)
+            for n in dict.fromkeys(nn for nn, _ in conditions(task, block, noise_levels, cfg))}
+
+
+def _staircase_slots(task, cfg, block, noise_levels, standard=None, easy_per_end=None):
+    """easy_per_end: {noise: easy trials at each end} instead of EASY_TRIALS for this design alone (several
+    standards interleaved in one session share the session's easy trials)."""
     slots = []
     by_noise = {}
     for noise, conflict in conditions(task, block, noise_levels, cfg):
@@ -155,7 +162,8 @@ def _staircase_slots(task, cfg, block, noise_levels, standard=None):
                 slots.append(TrialSpec(task, noise, conflict, "staircase", rule, None, order, standard=standard))
     # easy trials per noise level (EASY_TRIALS), each end's dealt over the conditions in turn
     for noise, conflicts in by_noise.items():
-        per_end = n_easy(len(conflicts) * len(cfg["staircases"]) * cfg["trials_per_staircase"]) // 2
+        per_end = (easy_per_end[noise] if easy_per_end is not None
+                   else n_easy(len(conflicts) * len(cfg["staircases"]) * cfg["trials_per_staircase"]) // 2)
         for k, level in enumerate(cfg["lapse_levels"]):
             for i in range(per_end):                     # orders alternate, so each condition's are near balanced
                 conflict, order = conflicts[(i + k * per_end) % len(conflicts)], 1 + (i + k) % 2
@@ -175,8 +183,12 @@ def build_trials(task, rng, block=None, practice=False, first_order=1, noise_lev
             # level and order cycle independently, so the longer interval is first in half the trials
             slots.append(TrialSpec(task, noise, conflict, "practice", None, level, 1 + (i // 2) % 2))
     elif standards:
-        for standard, c in standards:
-            slots += _staircase_slots(task, c, block, noise_levels, standard)
+        # EASY_TRIALS per noise level for the whole session, shared over the standards by their adaptive trials
+        adaptive = [_adaptive_per_noise(task, c, block, noise_levels) for _, c in standards]
+        for (standard, c), ad in zip(standards, adaptive):
+            share = {n: round(n_easy(sum(a[n] for a in adaptive)) / 2 * ad[n] / sum(a[n] for a in adaptive))
+                     for n in ad}
+            slots += _staircase_slots(task, c, block, noise_levels, standard, easy_per_end=share)
     else:
         slots = _staircase_slots(task, cfg, block, noise_levels)
 
