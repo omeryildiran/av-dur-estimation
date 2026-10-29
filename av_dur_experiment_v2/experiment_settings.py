@@ -190,16 +190,19 @@ TASKS = {
         noise_levels=NOISE_LEVELS, conflicts=(0.0,),
         # QUEST+ since 27 Oct 2026 (before: 2D1U, 1D2U, 3D1U, 1D3U x 35 = 308 trials, as v1): 90 + 14 easy
         # per noise level; in simulation sigma as precise as the staircases' 154 (PSE error about +40%).
-        # 100 + 20 easy per noise level from 28 Oct 2026
-        staircases=("QUEST",), trials_per_staircase=100,
+        # 100 + 20 easy per noise level from 28 Oct 2026; 150 + 20 from 29 Oct 2026 (340 trials, ~17 min):
+        # log sigma error about 0.20 instead of 0.23 (quest_simulation_results/unimodal_summary.csv), since
+        # the joint fit takes sigma_A from this block (overnight_sims/report/bias_report.pdf)
+        staircases=("QUEST",), trials_per_staircase=150,
         floor=-0.9, lapse_levels=(-0.9, 0.9),
     ),
     "unimodal_visual": dict(
         label="Unimodal visual",
         noise_levels=(None,), conflicts=(0.0,),
         # QUEST+ since 27 Oct 2026 (before: 4 staircases x 35 = 154 trials, as v1): 70 + 14 easy.
-        # 100 from 28 Oct 2026: the joint fit takes sigma_V from this block (overnight_sims report)
-        staircases=("QUEST",), trials_per_staircase=100,
+        # 100 from 28 Oct 2026: the joint fit takes sigma_V from this block (overnight_sims report);
+        # 150 + 20 easy from 29 Oct 2026 (170 trials, ~8 min), as the auditory block
+        staircases=("QUEST",), trials_per_staircase=150,
         floor=-0.9, lapse_levels=(-0.8, 0.8),
     ),
     "crossmodal": dict(

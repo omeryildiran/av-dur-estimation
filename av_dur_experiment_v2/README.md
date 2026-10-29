@@ -19,8 +19,8 @@ Choose the monitor profile and enter the participant ID: their initials (`oy` �
    - **Accuracy:** in simulation the σ reached is within 14% of the target in half of the runs and within 34% in 90%. In v1, the fixed level of 1.2 gave σ from 0.42 to chance.
    - **Sound level:** for levels other than 0.1 and 1.2, the output gain is interpolated between the two calibrated gains (log gain against log noise).
    - **Bias file:** the cross-modal bias file has to be measured at the same level. If the participant is recalibrated, the main experiment asks for the cross-modal task again.
-1. **Unimodal auditory** (208 trials: per noise level, 90 chosen by QUEST+ and 14 easy; 308 with staircases until 26 Oct 2026)
-2. **Unimodal visual** (84 trials: 70 chosen by QUEST+ and 14 easy; 154 until 26 Oct 2026)
+1. **Unimodal auditory** (340 trials, about 17 min: per noise level, 150 chosen by QUEST+ and 20 easy; 240 until 28 Oct 2026, 308 with staircases until 26 Oct 2026)
+2. **Unimodal visual** (170 trials, about 8 min: 150 chosen by QUEST+ and 20 easy; 120 until 28 Oct 2026, 154 until 26 Oct 2026)
    - **QUEST+** ([avdur/quest.py](avdur/quest.py)) replaces the four staircases in both unimodal blocks. Before each trial it picks the test duration that tells it most about the participant's PSE and σ, from a grid of possible psychometric functions (lapse estimated too, easy trials included). In simulation (`analysis/quest_unimodal_simulation.py`, 4,500 observers) it measures σ as precisely as the staircases with about 60% of the trials; the PSE is less precise, which matters little in a unimodal comparison (both intervals have the same modality). The data files look the same: `current_stair` is `QUEST`, and `quest_mu`, `quest_sigma`, `quest_lapse` hold its running estimate. The screening fit is unchanged.
 3. **Cross-modal** (388 trials at the 500 ms standard). For the first 3 participants to do them (`CROSSMODAL_STANDARDS["n_participants"]`; P101 and P104 so far), two more blocks follow at 300 and 800 ms: 172 trials each (132 until P104), with two 1D1U staircases and easy trials per noise level. Everyone after that gets the 500 ms block only. A participant who has done one extra block keeps getting the other. The launcher status shows the count ("extra blocks so far: 2 of 3 participants"). The checkbox "Cross-modal: extra blocks" unticked runs 500 ms only; `--all-standards` runs them all whatever the count.
    - **Order:** the order of the extra blocks alternates by participant number.
@@ -35,7 +35,7 @@ Choose the monitor profile and enter the participant ID: their initials (`oy` �
 
 ### Blocks 1–3 in one session
 
-The **1-3 in one session** button (`python -m avdur.run_blocks --pid P14`) runs the unimodal auditory, unimodal visual and cross-modal blocks one after another in a single window. That is about 31 minutes of trials, or 40 with breaks. With **Practice** ticked, a short practice comes before each block.
+The **1-3 in one session** button (`python -m avdur.run_blocks --pid P14`) runs the unimodal auditory, unimodal visual and cross-modal blocks one after another in a single window. The two unimodal blocks are about 25 minutes of trials (about 45 with the optional cross-modal block), plus breaks. With **Practice** ticked, a short practice comes before each block.
 
 - **Saving and resuming:** each block is saved as its own session, exactly as from its own button. Blocks already completed are skipped, so after a stop, press the button again to run the rest.
 - **Live progress:** every 30 trials the terminal shows the trials done and time left, easy-trial accuracy, median RT, dropped frames and every staircase's current level.
