@@ -19,6 +19,9 @@ Parameters (as monteCarloClass with sharedLambda, freeP_c False):
 Audiovisual bias (optional, bias=(c_low, c_high, d)): the visual measurement's mean is
 (1 - d) ln v + d ln 0.5 - c[noise] instead of ln v, in both intervals (ln v_hat = ln v - c - d ln(v / 0.5)).
 c > 0: vision seems shorter; d > 0: the bias grows with duration.
+
+v1 data (Data(..., vis_offset={noise_idx: k})): every visual flash lasted k s longer than nominal (the
+cross-modal correction), so the visual durations are the nominal ones + k; the auditory ones are nominal.
 """
 
 import numpy as np
@@ -119,8 +122,9 @@ def p_longer(model, p, noise_idx, std_a, std_v, tests, bias=None):
 class Data:
     """Aggregated trials: per noise level the union of tests; per condition the indices into it, n and k."""
 
-    def __init__(self, noise_idx, conflict, test, chose, std=0.5):
+    def __init__(self, noise_idx, conflict, test, chose, std=0.5, vis_offset=None):
         self.std = std
+        self.vis_offset = dict(vis_offset or {})
         test = np.round(np.asarray(test, float), 5)
         self.tests, self.cells = {}, []
         for ni in np.unique(noise_idx):
@@ -138,12 +142,14 @@ def nll(model, p, data, bias=None):
     tot = 0.0
     for ni, tests in data.tests.items():
         lam, sa, sv, pc = unpack(model, p, ni)
+        off = getattr(data, "vis_offset", {}).get(ni, 0.0)
         lt = np.log(tests)[:, None]
-        Et, Wt = estimates(model, lt, vis(lt, bias, ni), sa, sv, pc)
+        lvt = np.log(np.maximum(tests + off, 0.01))[:, None] if off else lt
+        Et, Wt = estimates(model, lt, vis(lvt, bias, ni), sa, sv, pc)
         for cni, c, idx, n, k in data.cells:
             if cni != ni:
                 continue
-            es, cw = _cdf(*estimates(model, np.log(data.std), vis(np.log(data.std + c), bias, ni), sa, sv, pc))
+            es, cw = _cdf(*estimates(model, np.log(data.std), vis(np.log(data.std + c + off), bias, ni), sa, sv, pc))
             pr = (1 - lam) * (np.interp(Et[idx], es, cw, left=0.0, right=1.0) @ Wt) + lam / 2
             pr = np.clip(pr, 1e-9, 1 - 1e-9)
             tot -= np.sum(k * np.log(pr) + (n - k) * np.log1p(-pr))

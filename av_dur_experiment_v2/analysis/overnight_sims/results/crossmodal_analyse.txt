@@ -1,0 +1,92 @@
+191 simulated participants: {'ci': 64, 'fusion': 63, 'switch': 64}
+
+== bias drawn ==
+           c1      c2       d
+count  191.00  191.00  191.00
+mean     0.24    0.14    0.25
+std      0.23    0.26    0.19
+min     -0.34   -0.42   -0.21
+25%      0.06   -0.04    0.12
+50%      0.24    0.12    0.24
+75%      0.40    0.32    0.40
+max      0.98    0.94    0.70
+
+== cross-modal estimates vs truth (transfer 'same'); coverage of +-1.96 x 1.2 SE ==
+              r   rmse   bias  sd_true      n  coverage
+xm500 c1  0.965  0.065  0.004    0.233  191.0     0.963
+xm500 c2  0.928  0.103 -0.010    0.261  191.0     0.969
+xm3 c1    0.980  0.047  0.004    0.233  191.0     0.974
+xm3 c2    0.969  0.066 -0.001    0.261  191.0     0.984
+xm3 d     0.853  0.110 -0.009    0.189  191.0     0.979
+
+== model recovery (AIC), % right; diff = paired difference from 'ignore' (95% CI) ==
+             all    ci  fusion  switch  diff    lo   hi
+variant                                                
+ignore      88.5  85.9    79.4   100.0   NaN   NaN  NaN
+dfree       82.2  89.1    61.9    95.3  -6.3 -11.7 -0.9
+xm500|same  89.5  87.5    82.5    98.4   1.0  -1.5  3.6
+xm3|same    88.5  92.2    74.6    98.4   0.0  -4.4  4.4
+xm3p|same   84.8  90.6    65.1    98.4  -3.7  -8.8  1.5
+xm500|none  91.1  89.1    84.1   100.0   2.6   0.3  4.9
+xm3|none    86.4  84.4    74.6   100.0  -2.1  -6.7  2.5
+xm3p|none   85.9  87.5    69.8   100.0  -2.6  -7.5  2.3
+oracle      88.5  90.6    76.2    98.4   0.0  -4.6  4.6
+
+== p_c, CI participants (CI fit) ==
+                r   rmse   bias  sd_true     n
+ignore      0.692  0.184 -0.008    0.224  64.0
+dfree       0.701  0.186  0.019    0.224  64.0
+xm500|same  0.777  0.158  0.044    0.224  64.0
+xm3|same    0.816  0.135  0.000    0.224  64.0
+xm3p|same   0.808  0.137  0.002    0.224  64.0
+xm500|none  0.711  0.177  0.026    0.224  64.0
+xm3|none    0.669  0.193 -0.027    0.224  64.0
+xm3p|none   0.714  0.176 -0.014    0.224  64.0
+oracle      0.797  0.142 -0.002    0.224  64.0
+   paired change in |error| vs ignore (mean, 95% CI): dfree +0.012 (-0.009, +0.032); xm500|same -0.007 (-0.027, +0.014); xm3|same -0.029 (-0.051, -0.006); xm3p|same -0.026 (-0.048, -0.003); xm500|none +0.001 (-0.016, +0.018); xm3|none +0.009 (-0.012, +0.031); xm3p|none -0.002 (-0.020, +0.017); oracle -0.024 (-0.046, -0.002)
+
+== p_switch, switching participants (switching fit, both noise levels) ==
+                r   rmse   bias  sd_true      n
+ignore      0.945  0.077 -0.018    0.218  128.0
+dfree       0.941  0.077  0.001    0.218  128.0
+xm500|same  0.948  0.073 -0.016    0.218  128.0
+xm3|same    0.955  0.067 -0.002    0.218  128.0
+xm3p|same   0.954  0.067 -0.001    0.218  128.0
+xm500|none  0.947  0.076 -0.018    0.218  128.0
+xm3|none    0.948  0.074 -0.004    0.218  128.0
+xm3p|none   0.950  0.072 -0.004    0.218  128.0
+oracle      0.956  0.066 -0.003    0.218  128.0
+
+== model recovery by true d and by true c ==
+variant  ignore  xm3|same  oracle   n
+d_bin                                
+< 0.1      78.0      73.0    76.0  45
+0.1-0.3    93.0      92.0    89.0  75
+0.3-0.5    91.0      95.0    96.0  55
+> 0.5      88.0      94.0    94.0  16
+variant  ignore  xm3|same  oracle   n
+c_bin                                
+< 0.1      84.0      84.0    87.0  63
+0.1-0.3    90.0      90.0    89.0  62
+0.3-0.5    92.0      92.0    90.0  49
+> 0.5      88.0      88.0    88.0  17
+
+== mean p_c error by true d (CI participants) ==
+variant  ignore  xm3|same  oracle
+d_bin                            
+< 0.1     0.038     0.057   0.047
+0.1-0.3  -0.026    -0.013  -0.014
+0.3-0.5  -0.040    -0.033  -0.037
+> 0.5     0.076     0.005   0.030
+
+== AIC gain of the generating model with the true bias over ignoring it ==
+        count  mean  std   min  50%   90%   max
+gen                                            
+ci       64.0   2.1  6.8 -20.1  0.8   6.9  36.0
+fusion   63.0   2.6  9.6 -23.8  0.5  13.3  32.6
+switch   64.0   2.0  3.4  -4.2  1.1   6.5  12.8
+   share with a gain > 2: 0.38; > 10: 0.08
+
+== v1 real data (11 participants): c fixed at the cross-modal value (xc), and with d free (xc_d) ==
+-- sigma_A free: same winning model as without bias: xc 7/11, xc_d 6/11; summed AIC change xc -10, xc_d -70; largest p_c change xc 0.05, xc_d 0.11
+-- sigma_A tied: same winning model as without bias: xc 11/11, xc_d 6/11; summed AIC change xc -10, xc_d -15; largest p_c change xc 0.07, xc_d 0.12

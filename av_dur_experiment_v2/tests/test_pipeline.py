@@ -57,7 +57,7 @@ def n_trials(task, n_noise, n_conflicts=1):
 
 def check_counts(root, pid):
     expected = {"unimodal_auditory": n_trials("unimodal_auditory", 2), "unimodal_visual": n_trials("unimodal_visual", 1)}
-    assert expected == {"unimodal_auditory": 240, "unimodal_visual": 120}, expected
+    assert expected == {"unimodal_auditory": 340, "unimodal_visual": 170}, expected
     for task, n in expected.items():
         d = storage.load_trials(task, pid, root)
         assert len(d) == n, (task, len(d), n)
@@ -65,11 +65,11 @@ def check_counts(root, pid):
         assert (easy == S.EASY_TRIALS["minimum"]).all(), (task, easy)
     m = storage.load_trials("main", pid, root)
     per_block = m.groupby("block").size().to_dict()
-    assert per_block == {"part1": 636, "part2": 636} == {b: n_trials("main", 2, 9) for b in per_block}, per_block
+    assert per_block == {"part1": 992, "part2": 992} == {b: n_trials("main", 2, 9) for b in per_block}, per_block
     stair = m[m.kind == "staircase"].groupby(["block", "condition"]).size()
-    assert len(stair) == 2 * 18 and (stair == 32).all()
+    assert len(stair) == 2 * 18 and (stair == 50).all()
     easy = m[m.kind == "lapse"].groupby(["block", "condition"]).size()
-    assert easy.between(3, 4).all() and (m[m.kind == "lapse"].groupby(["block", "audNoise"]).size() == 30).all()
+    assert easy.between(5, 6).all() and (m[m.kind == "lapse"].groupby(["block", "audNoise"]).size() == 46).all()
 
 
 def check_order_balance(root, pid):

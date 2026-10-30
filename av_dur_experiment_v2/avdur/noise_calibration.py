@@ -2,9 +2,12 @@
 
 Unimodal auditory trials (500 ms standard) with the test fixed at exp(+/-delta) x the standard,
 where delta = z(target_correct) x target_sigma: a listener whose auditory sigma equals
-target_sigma answers target_correct of these trials correctly. Two interleaved 2-down-1-up
-staircases on ln(noise) (2 correct in a row: louder noise; 1 error: softer) converge on the
-noise level where that is so, i.e. where the participant's sigma = target_sigma. Both start at
+target_sigma answers target_correct of these trials correctly. Two interleaved staircases on
+ln(noise) (NOISE_CALIBRATION["rules"]): a 2-down-1-up (2 correct in a row: louder noise; 1 error:
+softer) converges on the noise level where that is so, i.e. where the participant's sigma =
+target_sigma; from 30 Oct 2026 the other is 3-down-1-up (79.4% correct, a lower noise level), so the
+sigma(noise) fit sees two performance levels. Each staircase's level is moved to the target with the
+fitted sigma(noise) slope. Both start at
 0.5, the level is capped at 1.2 (v1's level); order and test direction are balanced. A few easy
 catch trials at low noise check attention. % correct with the test first vs second near the
 result is reported: in loud noise most listeners are near chance with the test first but sharp
@@ -65,7 +68,7 @@ class NoiseCalibration(Session):
         stairs = {}
         for name, start in zip(self.cfg["staircases"], C["start_noise"]):
             # level = -ln(noise): the staircase's "down" (2 correct) makes the noise louder
-            st = Staircase("2D1U", floor=-np.log(hi), ceiling=-np.log(lo), init_step=C["init_step_ln"],
+            st = Staircase(C["rules"][len(stairs)], floor=-np.log(hi), ceiling=-np.log(lo), init_step=C["init_step_ln"],
                            step_factor=C["step_factor"], n_step_changes=C["n_step_changes"])
             st.level, st.start = float(-np.log(start)), f"noise {start:g}"
             stairs[(None, 0.0, name, self.standard_s)] = st
@@ -147,16 +150,26 @@ def estimate(df):
                                last_noise=float(np.exp(ln_n[-1])))
         if rev.sum() < 3:
             warnings.append(f"staircase {name}: only {int(rev.sum())} reversals")
-    noise_stairs = float(np.clip(np.exp(np.mean([np.log(v["noise"]) for v in per_stair.values()])), lo, hi))
     a, b, lapse = _sigma_fit(df[df["kind"].isin(["staircase", "lapse"])])
     noise_fit = float(np.clip(np.exp((np.log(C["target_sigma"]) - a) / b), lo, hi))
     fit_valid = b > 0.05                    # a flat sigma(noise) fit says nothing about where the target is reached
-    # The staircases converge where target_correct is reached *with* lapses, i.e. at a lapse-free sigma
-    # below the target: move their level to where the fitted sigma reaches the target.
-    pc_free = min((C["target_correct"] - lapse / 2) / (1 - lapse), 0.999)
-    sigma_stairs = DELTA / norm.ppf(pc_free)
-    if fit_valid:
-        noise_stairs = float(np.clip(noise_stairs * (C["target_sigma"] / sigma_stairs) ** (1 / b), lo, hi))
+    # Each staircase converges where its % correct (2D1U 70.7%, 3D1U 79.4%) is reached *with* lapses, i.e. at
+    # some lapse-free sigma: move its level to where the fitted sigma reaches the target. Without a valid fit
+    # only the staircases that converge at target_correct are used, as they are.
+    rule = dict(zip(S.TASKS["noise_calibration"]["staircases"], C["rules"]))
+    ln_target = []
+    for name, v in per_stair.items():
+        pc = 0.5 ** (1 / int(rule[name][0]))
+        v["converges_at"] = round(pc, 4)
+        if fit_valid:
+            pc_free = min((pc - lapse / 2) / (1 - lapse), 0.999)
+            v["noise_at_target"] = float(v["noise"] * (C["target_sigma"] / (DELTA / norm.ppf(pc_free))) ** (1 / b))
+            ln_target.append(np.log(v["noise_at_target"]))
+        elif abs(pc - C["target_correct"]) < 0.01:
+            ln_target.append(np.log(v["noise"]))
+    if not ln_target:                       # no valid fit and no staircase at target_correct: their mean
+        ln_target = [np.log(v["noise"]) for v in per_stair.values()]
+    noise_stairs = float(np.clip(np.exp(np.mean(ln_target)), lo, hi))
     noise_high = round(float(np.clip(np.sqrt(noise_stairs * noise_fit) if fit_valid else noise_stairs, lo, hi)), 3)
     catch = df[df["kind"] == "lapse"]["is_correct"]
     notes = [] if fit_valid else ["the fit found no change of sigma with noise; the staircases alone set the level"]

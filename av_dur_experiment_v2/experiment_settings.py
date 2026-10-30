@@ -73,7 +73,9 @@ NOISE_CALIBRATION = dict(
     target_sigma=0.75,              # (0.85 briefly on 26 Oct 2026, not used for any participant.) Model simulations: 0.7-0.85 separates fusion, causal inference and
                                     # cue switching best (switching is best separated near sigma_v, v1 median 0.62)
     target_correct=0.7071,          # 2-down-1-up on correct answers (2 correct: louder noise; 1 error: softer)
-    trials_per_staircase=100,       # two interleaved staircases (206 trials with the catch trials, ~10 min; 60 gave ~6 min)
+    rules=("2D1U", "3D1U"),         # staircases A, B on correct answers. 3D1U (79.4% correct, lower noise) from 30 Oct
+                                    # 2026, so the sigma(noise) fit sees two performance levels (both 2D1U before)
+    trials_per_staircase=100,       # two interleaved staircases (216 trials with the catch trials, ~12 min; 60 gave ~6 min)
     start_noise=(0.5, 0.5),         # (0.3 and 1.6 until 28 Oct 2026)
     bounds=(0.1, 1.2),              # cap at v1's level (2.0 until 28 Oct 2026). In loud noise most listeners
                                     # are near chance with the test first but stay sharp with it second; the
@@ -83,7 +85,9 @@ NOISE_CALIBRATION = dict(
     init_step_ln=0.4, step_factor=0.5, n_step_changes=1,   # steps in ln(noise): 0.4, then 0.2
     # Simulated (true levels 0.3-1.5, shallow and steep sigma-noise slopes): the sigma reached is
     # within 14% of the target in half of the runs and within 34% in 90% at 60 trials (40 trials: 15% / 49%).
-    catch_trials=6,                 # easy trials at NOISE_LOW (attention check)
+    catch_trials=16,                # easy trials at NOISE_LOW: attention check, and they pin the fit's lapse rate; 4 per
+                                    # test (50 / 950 ms) x order (6 until 30 Oct 2026; without them P105's lapse went to
+                                    # 0.1 and the level up 13%)
 )
 SIGNAL_BAND_HZ = (150, 775)         # v1: unchanged since commit c7ff22e1 (24 Apr 2025), used for all data
 BACKGROUND_BAND_HZ = (10, 610)      # v1: same commit
@@ -219,10 +223,11 @@ TASKS = {
         label="Main audiovisual experiment",
         noise_levels=NOISE_LEVELS,
         # From 28 Oct 2026 (overnight_sims report): 9 conflicts -450 ... +450 ms (whole frames at 120 Hz),
-        # all interleaved, in two parts of 16 trials per staircase each (32 per staircase, 64 per
-        # condition); part 2 continues part 1's staircases. No bias correction: the bias is modelled.
+        # all interleaved, in two parts; part 2 continues part 1's staircases. No bias correction: the bias
+        # is modelled. From 29 Oct 2026, 25 trials per staircase per part (50 per staircase, 100 per condition,
+        # plus 46 easy per noise level and part: 992 trials per part, ~50-60 min); 16 until then (636 per part).
         # Before: 7 conflicts -250 ... +250 ms in blocks B1-B3, 70 trials per staircase, corrected visual.
-        staircases=("2D1U", "1D2U"), trials_per_staircase=16,
+        staircases=("2D1U", "1D2U"), trials_per_staircase=25,
         floor=-0.95, lapse_levels=("floor", 0.9),
         blocks={part: (0.0, -0.1167, 0.1167, -0.225, 0.225, -0.3333, 0.3333, -0.45, 0.45) for part in ("part1", "part2")},
     ),

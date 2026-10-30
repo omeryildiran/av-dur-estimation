@@ -11,14 +11,15 @@ python run_experiment.py            # in the PsychoPy environment (PsychoPy 2024
 
 Choose the monitor profile and enter the participant ID: their initials (`oy` → `OY`, `ln2` → `LN2`), or `P` + number as before. Initials get the next counterbalancing number (main block order, cross-modal start order) in `participants.json` in the data folder at their first session. Typing an ID only previews the number. Keep in mind that initials identify people more easily than numbers when sharing data. Then press the task buttons in order:
 
-0. **Auditory noise calibration** (206 trials, about 10 min). It sets the participant's **high noise level**: the level at which their auditory σ is 0.75. In model simulations, 0.7–0.85 best separates fusion, causal inference and cue switching.
-   - **How:** two interleaved 2-down-1-up staircases on the noise level, one starting easy (0.3) and one hard (1.6). The test is fixed at 332 or 752 ms against the 500 ms standard, and 6 easy catch trials check attention.
+0. **Auditory noise calibration** (216 trials, about 12 min). It sets the participant's **high noise level**: the level at which their auditory σ is 0.75. In model simulations, 0.7–0.85 best separates fusion, causal inference and cue switching.
+   - **How:** two interleaved staircases on the noise level, both starting at 0.5 (0.3 and 1.6 until 28 Oct 2026): a 2-down-1-up, which converges at 70.7% correct (the target), and from 30 Oct 2026 a 3-down-1-up, which converges at 79.4% at a softer noise (both 2-down-1-up before). Each staircase's level is moved to the target with the fitted σ(noise) slope, so the fit sees two performance levels. The test is fixed at 332 or 752 ms against the 500 ms standard.
+   - **Catch trials:** 16 easy trials at low noise, 4 for each test (50 or 950 ms) and order (6 until 30 Oct 2026). They check attention (a warning when 3 or more are wrong), and they tell the fit how often the participant lapses, which the level is corrected for.
    - **Estimate:** the geometric mean of the staircases (second half of each) and a fit of σ against noise.
-   - **Limits:** the level stays between 0.1 and 2.0. Above 2.0 the sound would often have to be turned down to avoid clipping. Good listeners who reach 2.0 get a note; a level near 0.1 gets a warning.
+   - **Limits:** the level stays between 0.1 and 1.2, v1's level (2.0 until 28 Oct 2026). In loud noise most listeners fail only when the test comes first, so % correct barely changes above 1, and the staircases drifted to 1.7–1.8 for P103 and P105. Good listeners who reach the cap get a note; a level near 0.1 gets a warning.
    - **Saved** as `<PID>/noise/<PID>_noise_<time>.json`. Every later task with sound (unimodal auditory, cross-modal, main) uses it automatically as the high noise. Low noise stays 0.1. A real session without a calibration is refused.
    - **Accuracy:** in simulation the σ reached is within 14% of the target in half of the runs and within 34% in 90%. In v1, the fixed level of 1.2 gave σ from 0.42 to chance.
    - **Sound level:** for levels other than 0.1 and 1.2, the output gain is interpolated between the two calibrated gains (log gain against log noise).
-   - **Bias file:** the cross-modal bias file has to be measured at the same level. If the participant is recalibrated, the main experiment asks for the cross-modal task again.
+   - **Bias file:** only the main experiment's old bias correction (before 28 Oct 2026) used one, and it had to be measured at the same level. The main experiment now runs without one.
 1. **Unimodal auditory** (340 trials, about 17 min: per noise level, 150 chosen by QUEST+ and 20 easy; 240 until 28 Oct 2026, 308 with staircases until 26 Oct 2026)
 2. **Unimodal visual** (170 trials, about 8 min: 150 chosen by QUEST+ and 20 easy; 120 until 28 Oct 2026, 154 until 26 Oct 2026)
    - **QUEST+** ([avdur/quest.py](avdur/quest.py)) replaces the four staircases in both unimodal blocks. Before each trial it picks the test duration that tells it most about the participant's PSE and σ, from a grid of possible psychometric functions (lapse estimated too, easy trials included). In simulation (`analysis/quest_unimodal_simulation.py`, 4,500 observers) it measures σ as precisely as the staircases with about 60% of the trials; the PSE is less precise, which matters little in a unimodal comparison (both intervals have the same modality). The data files look the same: `current_stair` is `QUEST`, and `quest_mu`, `quest_sigma`, `quest_lapse` hold its running estimate. The screening fit is unchanged.
@@ -28,10 +29,10 @@ Choose the monitor profile and enter the participant ID: their initials (`oy` �
    - **Main experiment's correction:** it still comes only from the 500 ms block.
    - **Summary:** after the last standard, the terminal and the Fits window show the bias by standard in ms and as a percentage of the standard. A flat line in ms means a constant offset; a flat line in percent means the bias scales with duration.
    - **Repeating or skipping:** `--single-standard` runs 500 ms only; `--standard 0.3` repeats one standard. The extra blocks add about 15 minutes.
-4. **Main experiment**: three blocks of 616–924 trials, each about an hour.
-   - The launcher picks the participant's next block. Block order is counterbalanced by participant number over all six orders.
-   - Before the first block, the launcher fits the cross-modal bias correction, shows the values and any warnings, and asks you to confirm.
-   - Later blocks reuse that same bias file.
+4. **Main experiment**: two parts of 992 trials, each about 50–60 minutes (636 per part until 29 Oct 2026; three blocks with a bias correction until 28 Oct 2026).
+   - **Design:** 9 conflicts (−450 … +450 ms, whole frames) × 2 noise levels, all interleaved. Each condition has a 2D1U and a 1D2U staircase, 25 trials each per part, so 100 staircase trials per condition over both parts. Each part adds 46 easy trials per noise level.
+   - **Order:** the launcher runs part 1, then part 2. Part 2 continues part 1's staircases, so part 1 must be complete first.
+   - **No bias correction:** the visual flashes have their nominal durations. The audiovisual bias is modelled in the analysis.
 
 ### Blocks 1–3 in one session
 

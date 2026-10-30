@@ -1,0 +1,117 @@
+P01 sigma_A free: 268 s (1/22)
+P02 sigma_A free: 322 s (2/22)
+P03 sigma_A free: 360 s (3/22)
+P04 sigma_A free: 395 s (4/22)
+P07 sigma_A free: 468 s (5/22)
+P08 sigma_A free: 497 s (6/22)
+P09 sigma_A free: 645 s (7/22)
+P10 sigma_A free: 396 s (8/22)
+P13 sigma_A free: 285 s (9/22)
+P11 sigma_A free: 407 s (10/22)
+P12 sigma_A free: 404 s (11/22)
+P02 sigma_A tied: 320 s (12/22)
+P01 sigma_A tied: 403 s (13/22)
+P03 sigma_A tied: 366 s (14/22)
+P04 sigma_A tied: 405 s (15/22)
+P07 sigma_A tied: 466 s (16/22)
+P08 sigma_A tied: 478 s (17/22)
+P10 sigma_A tied: 416 s (18/22)
+P11 sigma_A tied: 390 s (19/22)
+P13 sigma_A tied: 243 s (20/22)
+P09 sigma_A tied: 572 s (21/22)
+P12 sigma_A tied: 355 s (22/22)
+11 participants, about 2061 trials each
+
+== per participant: cross-modal c (SE) vs c from the main data (c and d free, AIC-best model) ==
+-- sigma_A free
+pid  model xmodal c low  main c low xmodal c high  main c high  main d
+P01 fusion  0.31 (0.05)       -0.11    0.36 (0.1)        -0.80    0.80
+P02     ci -0.02 (0.12)       -0.54  -0.25 (0.14)         0.11    0.01
+P03 fusion  0.29 (0.04)       -0.04  -0.08 (0.23)         0.50    0.60
+P04 switch  0.17 (0.02)        0.24   0.46 (0.13)         0.46    0.80
+P07     ci  0.84 (0.05)        0.38    0.8 (0.17)         0.79    0.59
+P08 switch  0.27 (0.06)        0.30    0.01 (0.1)         0.31    0.67
+P09 switch  0.32 (0.06)       -0.13   0.07 (0.05)        -0.27    0.80
+P10     ci  0.31 (0.04)        0.49   0.05 (0.29)         0.31    0.80
+P13 switch -0.17 (0.04)       -0.80  -0.18 (0.14)        -0.79   -0.59
+P11 switch  0.45 (0.09)        0.31   0.52 (0.17)        -0.09    0.54
+P12     ci  0.14 (0.03)        0.39   0.15 (0.09)         0.61    0.80
+-- sigma_A tied
+pid  model xmodal c low  main c low xmodal c high  main c high  main d
+P02     ci -0.02 (0.12)       -0.76  -0.25 (0.14)         0.73   -0.12
+P01 fusion  0.31 (0.05)       -0.30    0.36 (0.1)         0.80    0.01
+P03 fusion  0.29 (0.04)       -0.12  -0.08 (0.23)         0.72    0.38
+P04     ci  0.17 (0.02)        0.64   0.46 (0.13)         0.80    0.62
+P07 fusion  0.84 (0.05)        0.73    0.8 (0.17)         0.80   -0.80
+P08     ci  0.27 (0.06)        0.66    0.01 (0.1)         0.80    0.66
+P10 fusion  0.31 (0.04)        0.20   0.05 (0.29)         0.04   -0.15
+P11 fusion  0.45 (0.09)       -0.09   0.52 (0.17)        -0.42    0.57
+P13 switch -0.17 (0.04)       -0.80  -0.18 (0.14)         0.25   -0.55
+P09     ci  0.32 (0.06)       -0.80   0.07 (0.05)         0.30    0.47
+P12     ci  0.14 (0.03)        0.40   0.15 (0.09)         0.73    0.79
+
+== agreement of c, main vs cross-modal (22 values: 11 participants x 2 noise levels) ==
+sigma_A free  ci      r = +0.17  RMSE 0.57  (cross-modal SD 0.28, mean SE 0.10)
+sigma_A free  fusion  r = +0.04  RMSE 0.72  (cross-modal SD 0.28, mean SE 0.10)
+sigma_A free  switch  r = +0.65  RMSE 0.39  (cross-modal SD 0.28, mean SE 0.10)
+sigma_A tied  ci      r = -0.01  RMSE 0.55  (cross-modal SD 0.28, mean SE 0.10)
+sigma_A tied  fusion  r = +0.22  RMSE 0.60  (cross-modal SD 0.28, mean SE 0.10)
+sigma_A tied  switch  r = -0.23  RMSE 0.68  (cross-modal SD 0.28, mean SE 0.10)
+sigma_A free  AIC-best r = +0.41  RMSE 0.45
+sigma_A tied  AIC-best r = +0.15  RMSE 0.58
+
+== AIC: winning model and its AIC gain from the bias terms (negative = better with them) ==
+-- sigma_A free
+    best (no bias) best (d) best (c, d)  dAIC d  dAIC c,d
+pid                                                      
+P01         fusion   fusion      fusion   -16.0     -12.0
+P02             ci       ci          ci     1.9       4.7
+P03         fusion   fusion      fusion    -1.0       3.0
+P04             ci   switch      switch     1.6     -15.2
+P07         fusion   fusion          ci     0.6       1.4
+P08         switch       ci      switch    -0.5     -29.9
+P09         switch   switch      switch     1.0     -28.2
+P10         fusion   fusion          ci    -2.8      -9.1
+P11         fusion   switch      switch    -5.0      -1.4
+P12             ci   switch          ci     0.1      -3.4
+P13         switch   switch      switch     2.0      -4.3
+-- sigma_A tied
+    best (no bias) best (d) best (c, d)  dAIC d  dAIC c,d
+pid                                                      
+P01         fusion   fusion      fusion     2.0       6.0
+P02             ci       ci          ci     1.6      -0.4
+P03         fusion   fusion      fusion     0.2       4.2
+P04             ci       ci          ci     2.1      -7.8
+P07             ci   fusion      fusion    -0.4       3.6
+P08         switch   switch          ci     0.0     -13.2
+P09         fusion       ci          ci     0.5       4.7
+P10         fusion   fusion      fusion     1.9       5.9
+P11         fusion   fusion      fusion     0.1       4.1
+P12         switch   switch          ci     0.2      -2.4
+P13         switch       ci      switch     1.2      -2.2
+
+== p_c (CI fit) without and with the bias terms ==
+variant           nobias     d  bias
+scenario     pid                    
+sigma_A free P01    1.00  1.00  1.00
+             P02    0.96  0.96  0.95
+             P03    1.00  0.99  1.00
+             P04    0.00  0.00  0.66
+             P07    0.78  1.00  0.76
+             P08    0.53  0.64  0.86
+             P09    1.00  1.00  1.00
+             P10    1.00  1.00  0.99
+             P11    0.99  1.00  1.00
+             P12    0.30  0.37  0.63
+             P13    1.00  1.00  1.00
+sigma_A tied P01    0.99  0.94  0.90
+             P02    0.82  0.81  0.83
+             P03    1.00  1.00  1.00
+             P04    0.00  0.00  0.64
+             P07    0.75  0.88  0.80
+             P08    0.80  0.82  0.84
+             P09    0.97  1.00  0.92
+             P10    1.00  1.00  1.00
+             P11    1.00  1.00  0.99
+             P12    0.26  0.29  0.65
+             P13    1.00  1.00  1.00

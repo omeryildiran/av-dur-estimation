@@ -62,14 +62,16 @@ EXTRA = {"nobias": [], "d": ["d"], "bias": ["c1", "c2", "d"]}
 SA2_INDEX = {"ci": 4, "fusion": 3, "switch": 4}         # sigma_A at high noise in the full parameter list
 
 
-def make_nll(model, data, sv_eff, variant, sa_prior=None):
-    """sa_prior: (sigma_A low, sigma_A high, log sd) from the unimodal auditory block, or None (sigma_A free)."""
+def make_nll(model, data, sv_eff, variant, sa_prior=None, fixed_c=None):
+    """sa_prior: (sigma_A low, sigma_A high, log sd) from the unimodal auditory block, or None (sigma_A free).
+    fixed_c: (c_low, c_high) used when c is not fitted (v1_bias_fits.py: the cross-modal values), else 0."""
     names = FREE[model] + EXTRA[variant]
+    fc = fixed_c or (0.0, 0.0)
 
     def f(x):
         nm = dict(zip(names, np.asarray(x, float).ravel()))
         d = nm.get("d", 0.0)
-        bias = (nm.get("c1", 0.0), nm.get("c2", 0.0), d) if variant != "nobias" else None
+        bias = (nm.get("c1", fc[0]), nm.get("c2", fc[1]), d) if variant != "nobias" or fixed_c else None
         out = M.nll(model, full_params(model, nm, sv_eff * (1 - d)), data, bias)
         if sa_prior is not None:
             out += 0.5 * sum((np.log(nm[k] / v) / sa_prior[2]) ** 2 for k, v in zip(("sa1", "sa2"), sa_prior[:2]))
@@ -77,9 +79,9 @@ def make_nll(model, data, sv_eff, variant, sa_prior=None):
     return f, names
 
 
-def fit(model, data, sv_eff, variant, rng, x0s=(), sa_prior=None):
+def fit(model, data, sv_eff, variant, rng, x0s=(), sa_prior=None, fixed_c=None):
     from pybads import BADS
-    f, names = make_nll(model, data, sv_eff, variant, sa_prior)
+    f, names = make_nll(model, data, sv_eff, variant, sa_prior, fixed_c)
     lb, ub, plb, pub = (np.array([BOUNDS[n][i] for n in names], float) for i in range(4))
     starts = [plb + rng.random(len(lb)) * (pub - plb) for _ in range(2 if x0s else 3)] + [np.clip(x, lb + 1e-6, ub - 1e-6) for x in x0s]
     best = None
