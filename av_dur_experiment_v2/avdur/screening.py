@@ -147,7 +147,7 @@ def summary_text(result):
         v1 = e["v1_sigma_range"]
         ref = f"  [v1 σ {v1[0]:.2f}–{v1[2]:.2f}, median {v1[1]:.2f}]" if v1 else ""
         if result["task"] == "unimodal_auditory" and e["noise"] not in (None, S.NOISE_LOW):
-            ref = f"  [participant's calibrated level; target σ {S.NOISE_CALIBRATION['target_sigma']}]"
+            ref = f"  [exclude from the main experiment at σ > {S.SCREENING_CHECKS['unimodal_auditory']['high']['max_sigma']}]"
         extra = f", visual correction {e['correction_s']:+.3f} s" if "correction_s" in e else ""
         bound = " (AT THE FIT BOUND: about chance)" if e["sigma_at_bound"] else ""
         easy = f"{e['easy_correct']:.0%} of {e['easy_n']}" if e["easy_n"] else "none"

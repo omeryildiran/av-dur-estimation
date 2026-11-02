@@ -40,7 +40,7 @@ def main(argv=None):
                     help="automatic answers on the real display and sound card; saves to data_test/")
     ap.add_argument("--max-trials", type=int, help="simulate/autotest only: run just the first N trials")
     ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
-    ap.add_argument("--noise-high", type=float, help="high noise level (default: the participant's noise calibration)")
+    ap.add_argument("--noise-high", type=float, help="high noise level (default: NOISE_HIGH in experiment_settings.py)")
     ap.add_argument("--single-standard", action="store_true",
                     help="cross-modal: the 500 ms standard only (default: the extra standards for the first "
                          "CROSSMODAL_STANDARDS['n_participants'] participants)")
@@ -88,8 +88,8 @@ def main(argv=None):
     if args.task == "crossmodal" and not args.practice:
         return run_crossmodal(args, presenter, root, common, noise_high, noise_file)
     if args.task == "main" and bias is not None and noise_high is not None and str(float(noise_high)) not in bias["per_noise"]:
-        ap.error(f"The bias file was measured at noise levels {sorted(bias['per_noise'])}, but this participant's "
-                 f"high noise level is {noise_high}. Run the cross-modal task again at the calibrated level.")
+        ap.error(f"The bias file was measured at noise levels {sorted(bias['per_noise'])}, but the "
+                 f"high noise level is {noise_high}.")
     try:
         session = Session(args.task, args.pid, presenter, block=args.block, practice=args.practice, bias=bias,
                           bias_file=args.bias_file, noise_high=noise_high, noise_file=noise_file, **common)
@@ -106,20 +106,10 @@ def main(argv=None):
 
 
 def resolve_noise(ap, args, root):
-    """(high noise level, its calibration file): --noise-high, else the participant's latest calibration.
-    Without one, only practice, simulated and autotest runs may use NOISE_HIGH_DEFAULT."""
+    """(high noise level, None): --noise-high, else the fixed NOISE_HIGH (no calibration since 1 Nov 2026)."""
     if args.task == "unimodal_visual":
         return None, None
-    if args.noise_high is not None:
-        return args.noise_high, None
-    payload, path = storage.latest_noise(args.pid, root)
-    if payload is not None:
-        return payload["noise_high"], str(path)
-    if args.practice or args.simulate or args.autotest:
-        print(f"(no noise calibration for {args.pid}: using the default high noise {S.NOISE_HIGH_DEFAULT})", flush=True)
-        return S.NOISE_HIGH_DEFAULT, None
-    ap.error(f"{args.pid} has no auditory noise calibration yet. Run 'Auditory noise calibration' first "
-             "(or give --noise-high).")
+    return (args.noise_high if args.noise_high is not None else S.NOISE_HIGH), None
 
 
 def run_crossmodal(args, presenter, root, common, noise_high, noise_file):

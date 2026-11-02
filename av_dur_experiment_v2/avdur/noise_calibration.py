@@ -215,7 +215,7 @@ def plot(df, result, folder, stem):
         wrong = s["is_correct"] == 0
         ax1.scatter(s["trial_num"][wrong], s["audNoise"][wrong], s=30, facecolors="white", edgecolors=c, zorder=3)
     ax1.axhline(result["noise_high"], color="black", ls="--", lw=1, label=f"result {result['noise_high']:.2f}")
-    ax1.axhline(S.NOISE_HIGH_DEFAULT, color="0.6", ls=":", lw=1, label=f"v1 high noise {S.NOISE_HIGH_DEFAULT}")
+    ax1.axhline(S.NOISE_LEVELS[1], color="0.6", ls=":", lw=1, label=f"v1 high noise {S.NOISE_LEVELS[1]}")
     ax1.set(yscale="log", xlabel="Trial number", ylabel="Noise level", title="Staircases (open: error)")
     ax1.legend(frameon=False, fontsize=9)
     n = stair["audNoise"].to_numpy(float)
@@ -254,7 +254,7 @@ def plot(df, result, folder, stem):
 def summary_text(result):
     st = "; ".join(f"{k}: {v['noise']:.2f} ({v['reversals']} reversals)" for k, v in result["staircases"].items())
     lines = [f"── Noise calibration: high noise level {result['noise_high']:.3f} "
-             f"(target σ {result['target_sigma']}; v1 used {S.NOISE_HIGH_DEFAULT}) ──",
+             f"(target σ {result['target_sigma']}; v1 used {S.NOISE_LEVELS[1]}) ──",
              f"   staircases {st}; fit {result['noise_fit']:.2f}; catch trials {result['catch_correct']:.0%} of "
              f"{result['n_catch']}; fitted σ at the chosen level {result['sigma_fit']['sigma_at_result']:.2f}, "
              f"lapse {result['sigma_fit'].get('lapse', 0.02):.2f}"]

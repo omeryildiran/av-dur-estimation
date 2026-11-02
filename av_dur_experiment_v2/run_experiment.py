@@ -5,8 +5,8 @@
 
 Each task runs in its own process (python -m avdur.run_task ...). For the main
 experiment the launcher picks the participant's next part (part 2 continues part 1's
-staircases). Since 28 Oct 2026 there is no cross-modal task and no bias correction: the
-audiovisual bias is modelled in the analysis.
+staircases). Since 28 Oct 2026 there is no bias correction (the cross-modal task is optional,
+at 3 standards), and since 1 Nov 2026 no noise calibration: the high noise is fixed (NOISE_HIGH).
 
 Autotest runs a task (or, with its own button, the whole experiment) on the real display
 and sound card with automatic answers, saves to data_test/, and reports the timing.
@@ -40,7 +40,7 @@ def status_text(raw_pid, root=None):
     st = storage.participant_status(pid, root)
     tag = {storage.SIM_ROOT: "[SIMULATED DATA, data_simulated/] ",
            storage.TEST_ROOT: "[TEST RUNS: test display or autotest, data_test/] "}
-    lines = [tag.get(Path(root) if root else None, "") + f"Participant {pid}"]
+    lines = [tag.get(Path(root) if root else None, "") + f"Participant {pid}  (noise {S.NOISE_LOW} and {S.NOISE_HIGH})"]
     for i, task in enumerate(storage.TASK_ORDER):
         done = st[task]
         if task == "main":
@@ -55,15 +55,14 @@ def status_text(raw_pid, root=None):
                 from avdur import standards
                 stds = ", ".join(f"{1000 * v:.0f}" for v in sorted(standards.done_standards(pid, root)))
                 lines.append(f"     (optional cross-modal: done at {stds} ms)")
-        if task == "noise_calibration":
-            nz = st["noise"]
-            lines.append(f"     high noise level: {nz['noise_high']:.3f}  [{Path(st['noise_file']).name}]" if nz
-                         else "     high noise level: not calibrated yet (every task with sound needs it)")
+    if st["noise"]:
+        lines.append(f"  (optional noise calibration: {st['noise']['noise_high']:.3f}, not used; "
+                     f"high noise is {S.NOISE_HIGH}, or --noise-high)")
     return "\n".join(lines)
 
 
 def combined_command(pid, monitor, practice, simulate, autotest=False, quick=False, screen=None):
-    """Noise calibration, unimodal auditory and unimodal visual blocks in one window (avdur.run_blocks)."""
+    """Unimodal auditory and unimodal visual blocks in one window (avdur.run_blocks)."""
     cmd = [sys.executable, "-m", "avdur.run_blocks", "--pid", pid, "--monitor", monitor,
            "--data-root", str(storage.root_for(simulate, monitor, autotest))]
     cmd += ["--screen", str(screen)] if screen is not None else []
@@ -163,9 +162,6 @@ def run_window():
     ttk.OptionMenu(frm, block, "auto", "auto", *S.TASKS["main"]["blocks"]).grid(row=2, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
         row=3, column=0, sticky="w")
-    several = tk.BooleanVar(value=False)
-    ttk.Checkbutton(frm, text="Cross-modal: also the 300 and 800 ms standards", variable=several).grid(
-        row=3, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Simulate (no window; saves to data_simulated/)", variable=simulate,
                     command=lambda: refresh()).grid(row=4, column=0, columnspan=2, sticky="w")
     ttk.Checkbutton(frm, text="Autotest: automatic answers on this display and sound card (saves to data_test/)",
@@ -214,8 +210,8 @@ def run_window():
                 return
         cmd = task_command(task, p, monitor.get(), practice.get(), simulate.get(), b, None,
                            autotest.get(), quick.get(), chosen_screen())
-        if task == "crossmodal":            # optional since 28 Oct 2026; 500 ms alone, or with 300 and 800 ms
-            cmd.append("--all-standards" if several.get() else "--single-standard")
+        if task == "crossmodal":            # optional since 28 Oct 2026: 300, 500 and 800 ms interleaved
+            cmd.append("--all-standards")
         since = dt.datetime.now().isoformat(timespec="seconds")
         if not simulate.get():
             start_viewer(p, data_root())
@@ -246,7 +242,7 @@ def run_window():
         from avdur.run_blocks import blocks_to_run
         todo = blocks_to_run(p, data_root(), rerun_all=autotest.get())
         if not todo:
-            messagebox.showinfo("Combined session", "Blocks 0-2 are all done for this participant.")
+            messagebox.showinfo("Combined session", "Blocks 0-1 are all done for this participant.")
             return
         names = ", ".join(S.TASKS[t]["label"].split(" (")[0] for t in todo)
         if not messagebox.askokcancel("Combined session", f"Run {names} in one session"
@@ -308,13 +304,15 @@ def run_window():
         ttk.Button(frm, text=f"{i}.  {S.TASKS[task]['label']}", width=48,
                    command=lambda t=task: run(t)).grid(row=7 + i, column=0, columnspan=2, pady=3)
     n_tasks = len(storage.TASK_ORDER)
-    ttk.Button(frm, text="0-2 in one session (fits after each block)", width=48, command=run_combined).grid(
+    ttk.Button(frm, text="0-1 in one session (fits after each block)", width=48, command=run_combined).grid(
         row=7 + n_tasks, column=0, columnspan=2, pady=(10, 3))
     ttk.Button(frm, text="Autotest the whole experiment", width=48, command=run_autotest_all).grid(
         row=8 + n_tasks, column=0, columnspan=2, pady=3)
-    ttk.Button(frm, text="Optional: cross-modal (500 ms; tick above for 300/800 ms too)", width=48,
+    ttk.Button(frm, text="Crossmodal (optional, 3 standards)", width=48,
                command=lambda: run("crossmodal")).grid(row=9 + n_tasks, column=0, columnspan=2, pady=(10, 3))
-    ttk.Button(frm, text="Quit", command=root.destroy).grid(row=10 + n_tasks, column=1, pady=(8, 0), sticky="e")
+    ttk.Button(frm, text="Noise calibration (optional, result not used)", width=48,
+               command=lambda: run("noise_calibration")).grid(row=10 + n_tasks, column=0, columnspan=2, pady=3)
+    ttk.Button(frm, text="Quit", command=root.destroy).grid(row=11 + n_tasks, column=1, pady=(8, 0), sticky="e")
     entry.bind("<KeyRelease>", refresh)
     refresh()
     entry.focus()
@@ -330,22 +328,24 @@ def run_cli():
     root = storage.root_for(sim, mon)
     while True:
         print("\n" + status_text(p, root))
-        choice = input("\nRun 0-3 (add 'p' for practice, e.g. '3p'), 'c' blocks 0-2 in one session ('cp' with "
-                       "practice), 'a' autotest everything ('aq' quick), 'x' cross-modal 500 ms ('xx' with 300/800 ms), 'q' quit: ").strip()
+        choice = input("\nRun 0-2 (add 'p' for practice, e.g. '2p'), 'c' blocks 0-1 in one session ('cp' with "
+                       "practice), 'a' autotest everything ('aq' quick), 'x' crossmodal (optional, 3 standards), 'n' noise calibration (optional, not used), 'q' quit: ").strip()
         if choice == "q":
             return
         if choice in ("c", "cp"):
             subprocess.run(combined_command(p, mon, choice == "cp", sim), cwd=ROOT)
             continue
-        if choice in ("x", "xx"):
-            cmd = task_command("crossmodal", p, mon, False, sim)
-            subprocess.run(cmd + ["--all-standards" if choice == "xx" else "--single-standard"], cwd=ROOT)
+        if choice == "n":
+            subprocess.run(task_command("noise_calibration", p, mon, False, sim), cwd=ROOT)
+            continue
+        if choice == "x":
+            subprocess.run(task_command("crossmodal", p, mon, False, sim) + ["--all-standards"], cwd=ROOT)
             continue
         if choice in ("a", "aq"):
             text, out = autotest_mod.run(p, mon, quick=(choice == "aq"))
             print("\n" + text + f"\n\nSaved to {out}")
             continue
-        if not choice or choice[0] not in "0123":
+        if not choice or choice[0] not in "012":
             continue
         task = storage.TASK_ORDER[int(choice[0])]
         b = None

@@ -64,11 +64,19 @@ SYNC_FLIPS = 2                      # v2: flips before scheduling frame 0. The f
 VOLUME = 0.11                       # v1
 AUDIO_ONSET_OFFSET_S = 0.0          # v2: measured audio-minus-video delay (photodiode + microphone)
 NOISE_LEVELS = (0.1, 1.2)           # v1: background noise relative to the signal peak (v1 comparisons, tests)
-# v2: the low noise level is fixed; the high level is set for each participant by the
-# auditory noise calibration (avdur/noise_calibration.py) so that their auditory sigma at it
-# is NOISE_CALIBRATION["target_sigma"] (in v1, sigma at 1.2 ranged from 0.42 to chance).
+# v2: both noise levels are fixed for every participant. From 1 Nov 2026 the high level is 1.0
+# (v1: 1.2). From 28 Oct to 1 Nov 2026 it was set per participant by the auditory noise calibration
+# (avdur/noise_calibration.py, NOISE_CALIBRATION; P101-P106), dropped with the PI: in loud noise many
+# listeners fail with the test first but not second, so the calibration misjudged the level (P103,
+# P105), took 12 min and left each participant at another level. Simulated (analysis/overnight_sims/
+# fixed_noise_sim.py), model recovery does not depend on the high-noise sigma between 0.4 and 3.0;
+# 1.0 keeps the high/low contrast (v1 sigma at 1.2 ranged from 0.42 to chance) while sparing the worst
+# listeners a little. The participant is excluded if the high-noise sigma reaches the fit bound
+# (SCREENING_CHECKS). The calibration stays as an optional launcher button, just in case; nothing
+# uses its result unless the experimenter passes it as --noise-high. SPL at 1.0 still to be measured (B&K).
 NOISE_LOW = 0.1
-NOISE_HIGH_DEFAULT = 1.2            # only for simulations, tests and practice before a calibration
+NOISE_HIGH = 1.0                    # every participant, every task with sound (--noise-high overrides)
+NOISE_HIGH_DEFAULT = 1.2            # v1's level: only simulations and tests that build sessions directly
 NOISE_CALIBRATION = dict(
     target_sigma=0.75,              # (0.85 briefly on 26 Oct 2026, not used for any participant.) Model simulations: 0.7-0.85 separates fusion, causal inference and
                                     # cue switching best (switching is best separated near sigma_v, v1 median 0.62)
@@ -137,12 +145,13 @@ PRACTICE_TRIALS = 20                # v2: easy trials with feedback
 # beyond the worst v1 participant (v1 low-noise auditory sigma 0.23-0.39, easy trials 86-100%
 # correct; visual sigma 0.36-1.72, easy 79-100%). High noise is reported, not checked: in v1
 # 2 of 11 participants were at the sigma bound (3.0) there, and easy trials were 57-93% correct.
-COMBINED_SESSION_TASKS = ("noise_calibration", "unimodal_auditory", "unimodal_visual")   # cross-modal dropped 28 Oct 2026
+COMBINED_SESSION_TASKS = ("unimodal_auditory", "unimodal_visual")   # cross-modal dropped 28 Oct, calibration 1 Nov 2026
 BLOCK_REST_MIN_S = 10.0              # rest between blocks (the fit runs meanwhile)
 ORDER_GAP_WARNING = 0.25             # warn if % correct with the test first vs second differs more (chance SD ~0.08)
 SCREENING_CHECKS = {
     "unimodal_auditory": {0.1: dict(max_sigma=0.6, min_easy_correct=0.75),
-                          "high": dict(max_sigma=1.5)},       # participant's calibrated level (target 0.7)
+                          "high": dict(max_sigma=2.9)},       # NOISE_HIGH. At the fit bound (3.0): exclude from the
+                                                              # main experiment (1 Nov 2026; fixed_noise_sim.py)
     "unimodal_visual": {None: dict(max_sigma=2.0, min_easy_correct=0.70)},
 }
 V1_SIGMA_RANGE = {                   # (min, median, max) over the 11 v1 participants, lognormal fit, lapse <= 0.1

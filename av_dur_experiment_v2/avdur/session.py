@@ -47,7 +47,7 @@ class Session:
         self.close_at_end, self.verbose = close_at_end, verbose     # False: more blocks follow in this window
         self.meta = self.csv_path = self.json_path = None
         self._last_notify = 0.0
-        # v2: low noise fixed, high noise = the participant's calibrated level (NOISE_HIGH_DEFAULT without one)
+        # v2: low noise fixed; high noise NOISE_HIGH, passed by run_task / run_blocks (NOISE_HIGH_DEFAULT if not given)
         self.noise_high = round(float(noise_high if noise_high is not None else S.NOISE_HIGH_DEFAULT), 3)
         self.noise_file = noise_file
         self.cfg = self._task_cfg(design)                   # design: e.g. a shorter design for extra standards

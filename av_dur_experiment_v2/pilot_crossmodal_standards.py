@@ -118,7 +118,7 @@ def main(argv=None):
     ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
     ap.add_argument("--standards", type=float, nargs="+", default=[0.3, 0.5, 0.8], help="standard durations (s)")
     ap.add_argument("--noise-high", type=float,
-                    help="high noise level (default: the participant's noise calibration in data/, else 1.2)")
+                    help="high noise level (default: NOISE_HIGH)")
     ap.add_argument("--trials-per-staircase", type=int, default=30)
     ap.add_argument("--easy-per-level", type=int, default=3, help="easy trials per level (2 levels) and condition")
     ap.add_argument("--simulate", action="store_true", help="simulated observer, no window")
@@ -142,8 +142,7 @@ def main(argv=None):
 
     noise_high = args.noise_high
     if noise_high is None:
-        payload, _ = storage.latest_noise(pid, storage.DATA_ROOT)
-        noise_high = payload["noise_high"] if payload else S.NOISE_HIGH_DEFAULT
+        noise_high = S.NOISE_HIGH
     print(f"[{pid}] cross-modal pilot: standards {', '.join(f'{1000 * s:.0f} ms' for s in standards)} (this order), "
           f"noise {S.NOISE_LOW} and {noise_high}; data in {root}", flush=True)
     rows, sessions = [], []

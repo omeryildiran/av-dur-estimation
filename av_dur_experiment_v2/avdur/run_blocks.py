@@ -78,11 +78,7 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
     if not steps:
         log(f"{pid}: all blocks are already done.")
         return True, []
-    cal = S.NOISE_CALIBRATION
-
     def n_trials(task, des, more=()):
-        if task == "noise_calibration":
-            return len(S.TASKS["noise_calibration"]["staircases"]) * cal["trials_per_staircase"] + cal["catch_trials"]
         return sum(len(design.build_trials(task, np.random.default_rng(0), cfg=dict(S.TASKS[task], **(d or {}))))
                    for d in [des] + [d for _, d in more])
 
@@ -99,25 +95,7 @@ def run(pid, presenter, root, monitor=S.DEFAULT_MONITOR, practice=False, simulat
             last = k == len(todo) - 1
             common = dict(root=root, monitor=monitor, simulate=simulate, autotest=autotest, close_at_end=False,
                           verbose=True)
-            if task == "noise_calibration":
-                from avdur import noise_calibration
-                session = noise_calibration.NoiseCalibration(pid, presenter, max_trials=max_trials, **common)
-                if not session.run():
-                    return False, results
-                result = dict(session.calibration, task=task, conditions=[])
-                log(noise_calibration.summary_text(session.calibration))
-                if not simulate:
-                    notify.block_done(pid, noise_calibration.summary_text(session.calibration),
-                                      [session.calibration.get("plot")])
-                presenter.wait_screen(f"Part {k + 1} of {len(todo)} is done.\n\nPlease take a short break.",
-                                      lambda: True, 0.0 if last else S.BLOCK_REST_MIN_S)
-                results.append(result)
-                if not _decide(presenter, session, result, log):
-                    presenter.finish(False)
-                    return False, results
-                continue
-            noise, noise_path = storage.latest_noise(pid, root)
-            levels = dict(noise_high=noise["noise_high"] if noise else None, noise_file=str(noise_path) if noise_path else None)
+            levels = dict(noise_high=S.NOISE_HIGH)
             if practice and task not in practiced:
                 practiced.add(task)
                 if not Session(task, pid, presenter, practice=True, **levels, **common).run():

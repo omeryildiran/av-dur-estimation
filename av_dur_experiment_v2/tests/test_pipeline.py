@@ -384,23 +384,21 @@ def check_autotest_report(root):
 
 
 def check_combined_session(tmp):
-    """Three blocks in one run: fits and decisions saved; a failed check stops when the experimenter ends."""
+    """Two blocks in one run at the fixed noise levels: fits and decisions saved; a failed check stops when
+    the experimenter ends."""
     from avdur import run_blocks
     listener = dict(sigma_a=lambda n: 0.7 / np.sqrt(2) * (n / 0.8) ** 0.5)     # sigma 0.7 at noise 0.8
     ok, results = run_blocks.run("P50", SimulatedPresenter(3, listener), tmp, simulate=True, background_fits=False,
                                  log=lambda *_: None)
     assert ok and [r["task"] for r in results] == list(S.COMBINED_SESSION_TASKS)     # standards: one session
-    noise = storage.latest_noise("P50", tmp)[0]["noise_high"]
-    assert 0.40 < 0.7 * (noise / 0.8) ** 0.5 < 1.25, noise           # sigma reached near the 0.7 target (99% range)
     for task in S.COMBINED_SESSION_TASKS:
         metas = storage.sessions("P50", task, tmp)
         assert len(metas) == 1, (task, len(metas))
         for meta in metas:
             assert meta["screening"]["decision"] == "no warnings" and Path(meta["block_fit"]["plot"]).exists(), meta
-            if task != "noise_calibration":
-                assert meta["block_fit"]["conditions"], task
+            assert meta["block_fit"]["conditions"], task
         if task == "unimodal_auditory":
-            assert sorted(storage.load_trials(task, "P50", tmp).audNoise.unique()) == [S.NOISE_LOW, noise], task
+            assert sorted(storage.load_trials(task, "P50", tmp).audNoise.unique()) == [S.NOISE_LOW, S.NOISE_HIGH], task
     from avdur import screening
     m = storage.sessions("SIM01", "main", SIM_ROOT)[0]
     r = screening.main_block_fit(m["csv"], tmp / "main_fits")
@@ -412,15 +410,15 @@ def check_combined_session(tmp):
     sloppy = SimulatedPresenter(4, dict(sigma_a={0.1: 1.5, 1.2: 2.0}, lapse=0.4))
     sloppy.experimenter_continues = False
     ok, results = run_blocks.run("P51", sloppy, tmp, simulate=True, background_fits=False, log=lambda *_: None)
-    assert not ok and len(results) == 1 and results[0]["warnings"], results       # stopped after the calibration
-    (meta,) = storage.sessions("P51", "noise_calibration", tmp)
+    assert not ok and len(results) == 1 and results[0]["warnings"], results       # stopped after the auditory block
+    (meta,) = storage.sessions("P51", "unimodal_auditory", tmp)
     assert meta["completed"] and meta["screening"]["decision"] == "ended by the experimenter"
-    assert not storage.sessions("P51", "unimodal_auditory", tmp, completed_only=False), "no block after the end"
+    assert not storage.sessions("P51", "unimodal_visual", tmp, completed_only=False), "no block after the end"
 
 
 def check_noise_calibration(tmp):
-    """The calibration finds the level where a listener's sigma is the target; later tasks use it;
-    a real session without a calibration is refused."""
+    """The calibration (by hand only since 1 Nov 2026) finds the level where a listener's sigma is the
+    target; later tasks ignore it and use the fixed NOISE_HIGH."""
     from avdur import noise_calibration, run_task
     found = []
     for n_star in (0.3, 1.2):
@@ -438,12 +436,7 @@ def check_noise_calibration(tmp):
     assert found[0] < found[1], found
     assert run_task.main(["--task", "unimodal_auditory", "--pid", "SIM60", "--simulate", "--seed", "1",
                           "--data-root", str(tmp)]) == 0
-    assert set(storage.load_trials("unimodal_auditory", "SIM60", tmp).audNoise) == {S.NOISE_LOW, found[0]}
-    try:
-        run_task.main(["--task", "unimodal_auditory", "--pid", "OYX", "--data-root", str(tmp)])
-        raise AssertionError("a real session without a noise calibration must be refused")
-    except SystemExit as err:
-        assert err.code == 2
+    assert set(storage.load_trials("unimodal_auditory", "SIM60", tmp).audNoise) == {S.NOISE_LOW, S.NOISE_HIGH}
 
 
 def run_all(root=SIM_ROOT):

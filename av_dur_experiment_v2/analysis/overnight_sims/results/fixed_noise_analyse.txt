@@ -1,0 +1,8 @@
+psi 0.4: recovery  90.7%  (causal inference  92% n 25, fusion  80% n 25, switching 100% n 25)  median AIC margin 8/1/43  p_c RMSE 0.191  p_switch(high) RMSE 0.039
+psi 0.6: recovery  86.7%  (causal inference  96% n 25, fusion  76% n 25, switching  88% n 25)  median AIC margin 8/1/40  p_c RMSE 0.151  p_switch(high) RMSE 0.070
+psi 0.8: recovery  82.7%  (causal inference  92% n 25, fusion  56% n 25, switching 100% n 25)  median AIC margin 10/1/36  p_c RMSE 0.150  p_switch(high) RMSE 0.063
+psi 1.0: recovery  90.7%  (causal inference  92% n 25, fusion  80% n 25, switching 100% n 25)  median AIC margin 9/1/25  p_c RMSE 0.171  p_switch(high) RMSE 0.068
+psi 1.3: recovery  88.0%  (causal inference  88% n 25, fusion  76% n 25, switching 100% n 25)  median AIC margin 8/1/32  p_c RMSE 0.095  p_switch(high) RMSE 0.078
+psi 1.7: recovery  86.7%  (causal inference  92% n 25, fusion  76% n 25, switching  92% n 25)  median AIC margin 5/1/30  p_c RMSE 0.123  p_switch(high) RMSE 0.083
+psi 2.2: recovery  93.3%  (causal inference  92% n 25, fusion  88% n 25, switching 100% n 25)  median AIC margin 7/1/30  p_c RMSE 0.116  p_switch(high) RMSE 0.084
+psi 3.0: recovery  93.3%  (causal inference  96% n 25, fusion  88% n 25, switching  96% n 25)  median AIC margin 8/2/25  p_c RMSE 0.118  p_switch(high) RMSE 0.085

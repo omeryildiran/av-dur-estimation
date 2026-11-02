@@ -11,42 +11,34 @@ python run_experiment.py            # in the PsychoPy environment (PsychoPy 2024
 
 Choose the monitor profile and enter the participant ID: their initials (`oy` → `OY`, `ln2` → `LN2`), or `P` + number as before. Initials get the next counterbalancing number (main block order, cross-modal start order) in `participants.json` in the data folder at their first session. Typing an ID only previews the number. Keep in mind that initials identify people more easily than numbers when sharing data. Then press the task buttons in order:
 
-0. **Auditory noise calibration** (216 trials, about 12 min). It sets the participant's **high noise level**: the level at which their auditory σ is 0.75. In model simulations, 0.7–0.85 best separates fusion, causal inference and cue switching.
-   - **How:** two interleaved staircases on the noise level, both starting at 0.5 (0.3 and 1.6 until 28 Oct 2026): a 2-down-1-up, which converges at 70.7% correct (the target), and from 30 Oct 2026 a 3-down-1-up, which converges at 79.4% at a softer noise (both 2-down-1-up before). Each staircase's level is moved to the target with the fitted σ(noise) slope, so the fit sees two performance levels. The test is fixed at 332 or 752 ms against the 500 ms standard.
-   - **Catch trials:** 16 easy trials at low noise, 4 for each test (50 or 950 ms) and order (6 until 30 Oct 2026). They check attention (a warning when 3 or more are wrong), and they tell the fit how often the participant lapses, which the level is corrected for.
-   - **Estimate:** the geometric mean of the staircases (second half of each) and a fit of σ against noise.
-   - **Limits:** the level stays between 0.1 and 1.2, v1's level (2.0 until 28 Oct 2026). In loud noise most listeners fail only when the test comes first, so % correct barely changes above 1, and the staircases drifted to 1.7–1.8 for P103 and P105. Good listeners who reach the cap get a note; a level near 0.1 gets a warning.
-   - **Saved** as `<PID>/noise/<PID>_noise_<time>.json`. Every later task with sound (unimodal auditory, cross-modal, main) uses it automatically as the high noise. Low noise stays 0.1. A real session without a calibration is refused.
-   - **Accuracy:** in simulation the σ reached is within 14% of the target in half of the runs and within 34% in 90%. In v1, the fixed level of 1.2 gave σ from 0.42 to chance.
-   - **Sound level:** for levels other than 0.1 and 1.2, the output gain is interpolated between the two calibrated gains (log gain against log noise).
-   - **Bias file:** only the main experiment's old bias correction (before 28 Oct 2026) used one, and it had to be measured at the same level. The main experiment now runs without one.
-1. **Unimodal auditory** (340 trials, about 17 min: per noise level, 150 chosen by QUEST+ and 20 easy; 240 until 28 Oct 2026, 308 with staircases until 26 Oct 2026)
-2. **Unimodal visual** (170 trials, about 8 min: 150 chosen by QUEST+ and 20 easy; 120 until 28 Oct 2026, 154 until 26 Oct 2026)
+**Noise levels (fixed):** low noise 0.1, high noise **1.0** for every participant (`NOISE_HIGH`; v1 used 1.2). From 28 Oct to 1 Nov 2026 a 12-minute auditory noise calibration set the high level per participant (P101–P106). It was dropped with the PI: in loud noise many listeners fail when the test comes first but not when it comes second, so the calibration misjudged the level (P103, P105 too loud; P106 at the cap), and every participant ended at a different level. In simulation (`analysis/overnight_sims/fixed_noise_sim.py`), model recovery stays at 83–93% whatever the high-noise σ between 0.4 and 3.0, so a fixed level loses nothing, and 1.0 keeps a clear high/low contrast. **Exclusion:** a participant whose high-noise σ in the unimodal auditory block reaches the fit bound (σ > 2.9, bound 3.0) does not go on to the main experiment. The calibration stays as an optional launcher button ("Noise calibration (optional, result not used)", `n` in the text menu), just in case; the launcher status shows its level, but nothing uses it unless you pass it with `--noise-high`. The output gain at 1.0 is interpolated between the two calibrated gains (log gain against log noise); measure the sound level at 1.0 before the next participant.
+
+0. **Unimodal auditory** (340 trials, about 17 min: per noise level, 150 chosen by QUEST+ and 20 easy; 240 until 28 Oct 2026, 308 with staircases until 26 Oct 2026)
+1. **Unimodal visual** (170 trials, about 8 min: 150 chosen by QUEST+ and 20 easy; 120 until 28 Oct 2026, 154 until 26 Oct 2026)
    - **QUEST+** ([avdur/quest.py](avdur/quest.py)) replaces the four staircases in both unimodal blocks. Before each trial it picks the test duration that tells it most about the participant's PSE and σ, from a grid of possible psychometric functions (lapse estimated too, easy trials included). In simulation (`analysis/quest_unimodal_simulation.py`, 4,500 observers) it measures σ as precisely as the staircases with about 60% of the trials; the PSE is less precise, which matters little in a unimodal comparison (both intervals have the same modality). The data files look the same: `current_stair` is `QUEST`, and `quest_mu`, `quest_sigma`, `quest_lapse` hold its running estimate. The screening fit is unchanged.
-3. **Cross-modal** (388 trials at the 500 ms standard). For the first 3 participants to do them (`CROSSMODAL_STANDARDS["n_participants"]`; P101 and P104 so far), two more blocks follow at 300 and 800 ms: 172 trials each (132 until P104), with two 1D1U staircases and easy trials per noise level. Everyone after that gets the 500 ms block only. A participant who has done one extra block keeps getting the other. The launcher status shows the count ("extra blocks so far: 2 of 3 participants"). The checkbox "Cross-modal: extra blocks" unticked runs 500 ms only; `--all-standards` runs them all whatever the count.
-   - **Order:** the order of the extra blocks alternates by participant number.
-   - **Files:** each standard is its own session (`…_crossmodal_S300_…`).
-   - **Main experiment's correction:** it still comes only from the 500 ms block.
-   - **Summary:** after the last standard, the terminal and the Fits window show the bias by standard in ms and as a percentage of the standard. A flat line in ms means a constant offset; a flat line in percent means the bias scales with duration.
-   - **Repeating or skipping:** `--single-standard` runs 500 ms only; `--standard 0.3` repeats one standard. The extra blocks add about 15 minutes.
-4. **Main experiment**: two parts of 992 trials, each about 50–60 minutes (636 per part until 29 Oct 2026; three blocks with a bias correction until 28 Oct 2026).
+2. **Main experiment**: two parts of 992 trials, each about 50–60 minutes (636 per part until 29 Oct 2026; three blocks with a bias correction until 28 Oct 2026).
    - **Design:** 9 conflicts (−450 … +450 ms, whole frames) × 2 noise levels, all interleaved. Each condition has a 2D1U and a 1D2U staircase, 25 trials each per part, so 100 staircase trials per condition over both parts. Each part adds 46 easy trials per noise level.
    - **Order:** the launcher runs part 1, then part 2. Part 2 continues part 1's staircases, so part 1 must be complete first.
    - **No bias correction:** the visual flashes have their nominal durations. The audiovisual bias is modelled in the analysis.
 
-### Blocks 1–3 in one session
+**Crossmodal (optional, 3 standards)** (button below the others; `python -m avdur.run_task --task crossmodal --pid P14 --all-standards`). Not part of the experiment since 28 Oct 2026 (no bias correction): it measures the audiovisual bias (auditory test vs. visual standard) at 300, 500 and 800 ms interleaved in one session, at noise 0.1 and 1.0. 500 ms has the full design (388 trials), 300 and 800 ms 172 trials each, about 35 minutes in all.
+   - **Summary:** at the end, the terminal and the Fits window show the bias by standard in ms and as a percentage of the standard. A flat line in ms means a constant offset; a flat line in percent means the bias scales with duration.
+   - **Repeating:** `--standard 0.3` repeats one standard; `--single-standard` runs 500 ms only.
 
-The **1-3 in one session** button (`python -m avdur.run_blocks --pid P14`) runs the unimodal auditory, unimodal visual and cross-modal blocks one after another in a single window. The two unimodal blocks are about 25 minutes of trials (about 45 with the optional cross-modal block), plus breaks. With **Practice** ticked, a short practice comes before each block.
+### Blocks 0–1 in one session
+
+The **0-1 in one session** button (`python -m avdur.run_blocks --pid P14`) runs the unimodal auditory and unimodal visual blocks one after another in a single window: about 25 minutes of trials, plus breaks. With **Practice** ticked, a short practice comes before each block.
 
 - **Saving and resuming:** each block is saved as its own session, exactly as from its own button. Blocks already completed are skipped, so after a stop, press the button again to run the rest.
 - **Live progress:** every 30 trials the terminal shows the trials done and time left, easy-trial accuracy, median RT, dropped frames and every staircase's current level.
 - **Fit after each block:** while the participant rests (at least `BLOCK_REST_MIN_S`, 10 s), the block is fitted in a separate process, so trial timing is unaffected. The terminal then shows σ, PSE and lapse rate per condition next to v1's range of σ, plus the visual correction for the cross-modal block. A plot is saved to `data/<PID>/fits/`, and all plots open at the end.
 - **Checks (`SCREENING_CHECKS`):**
   - low-noise auditory: σ ≤ 0.6, and easy trials at least 75% correct;
+  - high-noise auditory: σ ≤ 2.9 (the fit bound is 3.0). Above it the participant is **excluded** from the main experiment (1 Nov 2026); end the session with Escape.
   - visual: σ ≤ 2.0, and easy trials at least 70% correct.
   - Plots show P(test judged longer) against test duration in ms.
   - These are about 1.5 times beyond v1's worst included participant.
-  - High noise and the cross-modal block are reported but not checked. In v1, 2 of 11 participants were at the σ bound (3.0) at high noise.
+  - The cross-modal block is reported but not checked. In v1 at noise 1.2, 3 of 13 people (v1 and the first pilots) would have been excluded; at 1.0 we expect about 1 in 10.
   - The checks never look at the PSE or the bias.
 - **Fit viewer:** if the PC has a second screen, the launcher opens a "Fits" window on the screen that isn't the participant's, before the experiment window. It shows each new plot as soon as it is saved: after every block of the combined session, after any single task, and after each main block, where it plots PSE shift against conflict per noise level with the slope. It updates without taking the focus from the experiment window, and the arrow buttons go back to older plots. With a single screen, the plots open at the end instead.
 - **If a check fails:** the participant sees "Please wait for the experimenter". **C** continues; **Escape** ends the session. The fit, the warnings and your decision are saved in the block's metadata (`block_fit`, `screening`).
@@ -66,7 +58,7 @@ Other launcher options:
 Put a Slack incoming-webhook URL in `slack_webhook.txt` (not in git), or set `AVDUR_SLACK_WEBHOOK`, and the experiment posts to that channel:
 - session start;
 - progress at most every 5 minutes, sent at breaks;
-- each block's fit and the calibrated noise level;
+- each block's fit;
 - warnings that wait for the experimenter;
 - the end (completed, stopped, or ended with an error);
 - failed starts.
@@ -129,7 +121,7 @@ The autotest checks that every trial runs fluently on the actual setup. Use it a
 - **Speakers and sound level.** The sounds are played through the two loudspeakers, identical in both channels.
   - Keep the speakers in the v1 positions, symmetric about the screen, so the sound seems to come from the disk.
   - Mark or tape the speaker volume knob and the Windows/Realtek volume.
-  - Before the first participant, measure at the participant's head position with an A-weighted sound level meter (v1 used a Brüel & Kjær 2240, LAeq). Target the paper's levels: about 70.5 dB SPL during the test and standard intervals, 57.4 dB (low noise) and 67.5 dB (high noise) between them. `FIXED_VOLUME` reproduces v1's digital level, so matching these values means the speaker chain is set as in v1. Recheck now and then.
+  - Before the first participant, measure at the participant's head position with an A-weighted sound level meter (v1 used a Brüel & Kjær 2240, LAeq). Target the paper's levels: about 70.5 dB SPL during the test and standard intervals, 57.4 dB (low noise) and 67.5 dB (high noise, 1.2) between them. The high noise is now 1.0: about 66 dB by calculation, to be measured. `FIXED_VOLUME` reproduces v1's digital level, so matching these values means the speaker chain is set as in v1. Recheck now and then.
   - **On the Windows lab PC:**
     - In Control Panel > Sound > (the output the speakers are plugged into) > Properties, set Advanced > Default Format to 48000 Hz and turn off audio enhancements. With aggressive low latency, PTB uses WASAPI, which needs the device at the experiment's rate; the session stops at start if the rate differs.
     - The libusb/PortAudio preloading is macOS-only; the Windows psychtoolbox wheel ships its own libraries.
@@ -165,7 +157,7 @@ The autotest checks that every trial runs fluently on the actual setup. Use it a
 
 Kept from v1:
 - standard 500 ms;
-- noise levels 0.1 and 1.2;
+- low noise 0.1 (high noise 1.0 instead of 1.2 from 1 Nov 2026);
 - signal band-pass 150–775 Hz and background 10–610 Hz;
 - burst intensity 5 with 5 ms ramps;
 - staircase steps (0.16, halved at the first two reversals);
