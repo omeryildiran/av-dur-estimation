@@ -85,9 +85,11 @@ def make_schedule(task, order, test_s, conflict_s, bias_s, rng, frame_rate, stan
 
     split = [(_split(e) if e is not None else (0, 0)) for e in ext]
     lead = to_frames(S.MIN_LEAD_S, frame_rate)          # preparation time before the first event
-    pre = max(pre, max(split[0][0], 0) + lead)
-    isi = max(isi, max(split[0][1], 0) + max(split[1][0], 0) + gap)
-    post = max(post, max(split[1][1], 0) + gap)
+    # An extended flash needs room: shift the gap's whole random range up by just enough, so the gap
+    # stays random (until 3 Nov 2026 short draws were raised to the minimum: fixed gaps at large conflicts)
+    pre += max(0, max(split[0][0], 0) + lead - to_frames(S.PRE_RANGE_S[0], frame_rate))
+    isi += max(0, max(split[0][1], 0) + max(split[1][0], 0) + gap - to_frames(S.ISI_RANGE_S[0], frame_rate))
+    post += max(0, max(split[1][1], 0) + gap - to_frames(S.POST_RANGE_S[0], frame_rate))
 
     visual = []
     for i, e in enumerate(ext):

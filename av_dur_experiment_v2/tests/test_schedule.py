@@ -11,6 +11,8 @@ conflicts up to +/-450 ms and visual bias corrections up to +/-350 ms (BIAS max_
   - no event comes before MIN_LEAD_S;
   - pre, ISI and post are never shorter than their random draw: make_schedule only lengthens
     a gap to make room for an extended flash;
+  - no gap is fixed: within a condition every draw is lengthened by the same amount, so each gap
+    keeps the full width of its random range (shifted up, not raised to a minimum);
   - the trial sound is as long as the schedule (audio and frames stay in step to the end).
 """
 
@@ -31,7 +33,9 @@ import experiment_settings as S  # noqa: E402
 from avdur.audio import AudioGenerator  # noqa: E402
 from avdur.schedule import make_schedule, to_frames  # noqa: E402
 
-CONFLICTS = (-0.45, -0.25, -0.167, -0.083, 0.0, 0.083, 0.167, 0.25, 0.45)
+# a grid up to +/-450 ms plus the main experiment's own conflicts
+CONFLICTS = tuple(sorted({-0.45, -0.25, -0.167, -0.083, 0.0, 0.083, 0.167, 0.25, 0.45,
+                          *S.TASKS["main"]["blocks"]["part1"]}))
 BIASES = (-0.35, -0.2, -0.1, -0.02, 0.0, 0.05, 0.12, 0.28, 0.35)
 
 
@@ -71,11 +75,11 @@ def check_one(task, order, test_s, conflict, bias, fr, seed):
         assert s.visual[1][0] - s.visual[0][1] >= gap, "flashes too close"
     if s.visual[1] is not None:
         assert s.total - s.visual[1][1] >= gap, "flash 2 too close to the end"
-    return s, (s.pre > pre0, s.isi > isi0, s.post > post0)
+    return s, (s.pre - pre0, s.isi - isi0, s.post - post0)
 
 
 def run():
-    n, lengthened = 0, np.zeros(3)
+    n, lengthened, shifts = 0, np.zeros(3), {}
     for fr in (120.0, 60.0):
         for task in ("unimodal_auditory", "unimodal_visual", "crossmodal", "main"):
             cfg = S.TASKS[task]
@@ -88,9 +92,14 @@ def run():
                 flash_std = S.STANDARD_DUR_S + (b + c if task == "main" else 0)
                 if min(flash_test, flash_std) < S.MIN_VISUAL_DUR_S:      # never shown (session floor, design)
                     continue
-                _, grew = check_one(task, order, test_s, c, b, fr, seed=n)
-                lengthened += grew
+                _, shift = check_one(task, order, test_s, c, b, fr, seed=n)
+                shifts.setdefault((fr, task, c, b, order), set()).add(shift)
+                lengthened += np.array(shift) > 0
                 n += 1
+    # no gap is fixed: every draw of a condition (one per test duration) is lengthened by the same
+    # amount, so each gap keeps the full width of its random range
+    varying = [(k, v) for k, v in shifts.items() if len(v) > 1]
+    assert not varying, ("a gap's lengthening depends on its draw, so the gap is not random", varying[:1])
     # the trial sound has the schedule's length (audio and frames stay in step)
     gen = AudioGenerator()
     for k, (c, b) in enumerate(((0.45, 0.35), (-0.45, 0.0), (0.0, -0.35), (0.25, 0.12))):
@@ -104,6 +113,6 @@ def run():
 if __name__ == "__main__":
     n, share = run()
     print(f"Schedules: {n} checked (all tasks, 120 and 60 Hz, conflicts to +/-450 ms, corrections to "
-          f"+/-350 ms): durations exact, flashes centred and separated, no gap shortened.")
-    print(f"Gaps lengthened to make room for flashes in this extreme grid: pre {share[0]:.0%}, "
+          f"+/-350 ms): durations exact, flashes centred and separated, no gap shortened or fixed.")
+    print(f"Gap ranges shifted up to make room for flashes in this extreme grid: pre {share[0]:.0%}, "
           f"ISI {share[1]:.0%}, post {share[2]:.0%} of schedules.")

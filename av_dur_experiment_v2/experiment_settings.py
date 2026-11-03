@@ -113,13 +113,17 @@ FIXED_VOLUME = 0.1653               # played level equals v1's (v1: -11.6 dBFS b
 
 # ── Trial timing ──────────────────────────────────────────────────────────────
 STANDARD_DUR_S = 0.5                # v1
-# v2 (26 Oct 2026): gaps shortened from v1's 0.20-0.45 / 0.40-0.90 / 0.20-0.45 s, 0.35 s less per
-# trial (about 12%). They only add noise around the sounds: make_schedule never shortens a gap
-# and never changes a sound or a flash; it lengthens pre / ISI / post when an extended flash
-# (bias correction, conflict) needs room (tests/test_schedule.py checks this for every task).
-PRE_RANGE_S = (0.20, 0.35)          # noise before interval 1 (at least MIN_LEAD_S before any event)
+# v2 (26 Oct 2026): gaps shortened from v1's 0.20-0.45 / 0.40-0.90 / 0.20-0.45 s to 0.20-0.35 /
+# 0.30-0.60 / 0.15-0.30 s, 0.35 s less per trial (about 12%). 3 Nov 2026 (user): pre and post
+# 0.10-0.45 s, ISI unchanged (pre as long as before on average, post 0.05 s longer). The gaps only
+# add noise around the sounds: make_schedule never shortens a gap and never changes a sound or a
+# flash. When an extended flash (bias correction, conflict) needs room, it shifts that gap's whole
+# random range up by just enough, so every gap stays random. Until 3 Nov 2026 it raised short draws
+# to the minimum instead, which fixed a gap at large conflicts (pre 425 ms at +450 ms, standard
+# first). tests/test_schedule.py checks this for every task.
+PRE_RANGE_S = (0.10, 0.45)          # noise before interval 1 (at least MIN_LEAD_S before any event)
 ISI_RANGE_S = (0.30, 0.60)          # between the two intervals
-POST_RANGE_S = (0.15, 0.30)         # noise after interval 2 (masks its offset), then the prompt
+POST_RANGE_S = (0.10, 0.45)         # noise after interval 2 (masks its offset), then the prompt
 MIN_VISUAL_GAP_S = 0.10             # v2: minimum blank between and after visual flashes (0.05 until 26 Oct 2026)
 MIN_VISUAL_DUR_S = 0.025            # v2: shortest visual flash allowed after the bias correction
 # The prompt appears on every trial, POST_STIM_WAIT_S after the stimulus (sound and flashes)
@@ -128,7 +132,7 @@ MIN_VISUAL_DUR_S = 0.025            # v2: shortest visual flash allowed after th
 # allowed for one day, let answers come before the participant saw the prompt).
 PRE_TRIAL_WAIT_S = 0.03
 POST_STIM_WAIT_S = 0.03
-MIN_LEAD_S = 0.20                   # = the shortest v1 pre-stimulus noise: no event earlier in a trial
+MIN_LEAD_S = PRE_RANGE_S[0]         # no event earlier in a trial: the shortest pre (0.20 until 3 Nov 2026)
 BREAK_EVERY_N_TRIALS = 30           # v1
 BREAK_MIN_WAIT_S = 2.5              # v2 (v1: 5 s)
 ORDER_CUE_MIN_WAIT_S = 1.0          # cross-modal "A -> V / V -> A" cue: keys pressed earlier are ignored (P104 skipped it)

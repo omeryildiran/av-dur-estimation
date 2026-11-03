@@ -171,7 +171,13 @@ def check_audio():
 
     def measure(gen, task, noise, test, reps=100):
         pad = 2 * len(gen.pad)
-        sched = make_schedule(task, 1, test, 0.0, 0.0, rng, FR)
+        # v1's pre range (0.20-0.45 s) for every measure: peak mode ("v1") scales each noise segment by
+        # its own peak, so a pre shorter than v1 ever used would bias the v1 reference SNR low
+        v2_pre, S.PRE_RANGE_S = S.PRE_RANGE_S, (0.20, 0.45)
+        try:
+            sched = make_schedule(task, 1, test, 0.0, 0.0, rng, FR)
+        finally:
+            S.PRE_RANGE_S = v2_pre
 
         def seg(x, i):
             on, off = sched.interval_frames(i)
