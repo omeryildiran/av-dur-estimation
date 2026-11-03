@@ -13,12 +13,25 @@ Choose the monitor profile and enter the participant ID: their initials (`oy` �
 
 **Noise levels (fixed):** low noise 0.1, high noise **1.0** for every participant (`NOISE_HIGH`; v1 used 1.2). From 28 Oct to 1 Nov 2026 a 12-minute auditory noise calibration set the high level per participant (P101–P106). It was dropped with the PI: in loud noise many listeners fail when the test comes first but not when it comes second, so the calibration misjudged the level (P103, P105 too loud; P106 at the cap), and every participant ended at a different level. In simulation (`analysis/overnight_sims/fixed_noise_sim.py`), model recovery stays at 83–93% whatever the high-noise σ between 0.4 and 3.0, so a fixed level loses nothing, and 1.0 keeps a clear high/low contrast. **Exclusion:** a participant whose high-noise σ in the unimodal auditory block reaches the fit bound (σ > 2.9, bound 3.0) does not go on to the main experiment. The calibration stays as an optional launcher button ("Noise calibration (optional, result not used)", `n` in the text menu), just in case; the launcher status shows its level, but nothing uses it unless you pass it with `--noise-high`. The output gain at 1.0 is interpolated between the two calibrated gains (log gain against log noise); measure the sound level at 1.0 before the next participant.
 
-0. **Unimodal auditory** (340 trials, about 17 min: per noise level, 150 chosen by QUEST+ and 20 easy; 240 until 28 Oct 2026, 308 with staircases until 26 Oct 2026)
-1. **Unimodal visual** (170 trials, about 8 min: 150 chosen by QUEST+ and 20 easy; 120 until 28 Oct 2026, 154 until 26 Oct 2026)
-   - **QUEST+** ([avdur/quest.py](avdur/quest.py)) replaces the four staircases in both unimodal blocks. Before each trial it picks the test duration that tells it most about the participant's PSE and σ, from a grid of possible psychometric functions (lapse estimated too, easy trials included). In simulation (`analysis/quest_unimodal_simulation.py`, 4,500 observers) it measures σ as precisely as the staircases with about 60% of the trials; the PSE is less precise, which matters little in a unimodal comparison (both intervals have the same modality). The data files look the same: `current_stair` is `QUEST`, and `quest_mu`, `quest_sigma`, `quest_lapse` hold its running estimate. The screening fit is unchanged.
-2. **Main experiment**: two parts of 992 trials, each about 50–60 minutes (636 per part until 29 Oct 2026; three blocks with a bias correction until 28 Oct 2026).
-   - **Design:** 9 conflicts (−450 … +450 ms, whole frames) × 2 noise levels, all interleaved. Each condition has a 2D1U and a 1D2U staircase, 25 trials each per part, so 100 staircase trials per condition over both parts. Each part adds 46 easy trials per noise level.
-   - **Order:** the launcher runs part 1, then part 2. Part 2 continues part 1's staircases, so part 1 must be complete first.
+0. **Unimodal auditory** (QUEST+: 340 trials, about 17–24 min, per noise level 150 chosen by QUEST+ and 20 easy; staircases: 320 trials)
+1. **Unimodal visual** (QUEST+: 170 trials, about 9–12 min, 150 chosen by QUEST+ and 20 easy; staircases: 160 trials)
+   - **Method (launcher "Unimodal blocks", `--method quest|staircase`; from 3 Nov 2026).** QUEST+ by default; the staircases are the other option. The choice is saved in each session's metadata (`design_override`; none means the default).
+     - **QUEST+** ([avdur/quest.py](avdur/quest.py)): before each trial it picks the test duration that tells it most about the participant's PSE and σ, from a grid of possible psychometric functions (lapse estimated too, easy trials included). The data files look the same: `current_stair` is `QUEST`, and `quest_mu`, `quest_sigma`, `quest_lapse` hold its running estimate.
+     - **Staircases**: the v2 staircases used until 27 Oct, 2D1U, 1D2U, 3D1U, 1D3U × 35 per condition. They keep v1's rules and steps, but each starts on the side opposite the point it converges to, and orders are exactly balanced (see the v1 fixes below).
+     - **Precision** (`analysis/quest_unimodal_simulation.py`, 154 trials per condition, median over observers): σ log error 0.19 with QUEST+ against 0.28 with the staircases; PSE error 55 against 50 ms. The joint model fit takes σ_A and σ_V from these blocks, hence the default.
+     - Either way the screening fit is the same maximum-likelihood fit of all trials.
+2. **Main experiment**: three parts of 676 trials, each about 35–47 minutes (from 3 Nov 2026; two parts of 992 from 29 Oct, of 636 from 28 Oct; three blocks with a bias correction until 28 Oct 2026).
+   - **Design:** 9 conflicts (−450 … +450 ms, whole frames) × 2 noise levels, all interleaved. Each condition has a 2D1U and a 1D2U staircase, 17 trials each per part, so 102 staircase trials per condition over the three parts. Each part adds 32 easy trials per noise level.
+   - **Order:** the launcher runs part 1, then part 2, then part 3. Each part continues the earlier parts' staircases exactly where they stopped, so the split does not change them; an earlier part must be complete first.
+
+**Sessions (up to about 1.5 h each).** Times are from the pilots (3.1–4.2 s per trial, breaks included).
+
+| Session | Blocks | About |
+|---|---|---|
+| 1 | practice, 0. unimodal auditory, 1. unimodal visual, then **check the high-noise σ** (> 2.9: stop, the participant is excluded), then 2. main part 1 | 75–90 min |
+| 2 | main part 2, a longer break, main part 3 | 75–95 min |
+
+The optional blocks add time: cross-modal (3 standards) about 40–50 min, noise calibration 11–17 min; they need a session of their own.
    - **No bias correction:** the visual flashes have their nominal durations. The audiovisual bias is modelled in the analysis.
 
 **Crossmodal (optional, 3 standards)** (button below the others; `python -m avdur.run_task --task crossmodal --pid P14 --all-standards`). Not part of the experiment since 28 Oct 2026 (no bias correction): it measures the audiovisual bias (auditory test vs. visual standard) at 300, 500 and 800 ms interleaved in one session, at noise 0.1 and 1.0. 500 ms has the full design (388 trials), 300 and 800 ms 172 trials each, about 35 minutes in all.
@@ -27,7 +40,7 @@ Choose the monitor profile and enter the participant ID: their initials (`oy` �
 
 ### Blocks 0–1 in one session
 
-The **0-1 in one session** button (`python -m avdur.run_blocks --pid P14`) runs the unimodal auditory and unimodal visual blocks one after another in a single window: about 25 minutes of trials, plus breaks. With **Practice** ticked, a short practice comes before each block.
+The **0-1 in one session** button (`python -m avdur.run_blocks --pid P14`) runs the unimodal auditory and unimodal visual blocks one after another in a single window: about 25–35 minutes of trials, plus breaks. With **Practice** ticked, a short practice comes before each block.
 
 - **Saving and resuming:** each block is saved as its own session, exactly as from its own button. Blocks already completed are skipped, so after a stop, press the button again to run the rest.
 - **Live progress:** every 30 trials the terminal shows the trials done and time left, easy-trial accuracy, median RT, dropped frames and every staircase's current level.

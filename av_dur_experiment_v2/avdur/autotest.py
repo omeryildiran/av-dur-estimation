@@ -1,7 +1,7 @@
 """Autotest: run the whole experiment with automatic answers on the real display and sound
 card, then report how every trial ran.
 
-    python -m avdur.autotest --monitor lab_crt            # every task in full, both main parts
+    python -m avdur.autotest --monitor lab_crt            # every task in full, all main parts
     python -m avdur.autotest --monitor lab_crt --quick    # first 30 trials of each task (about 7 min)
     python -m avdur.autotest --report-only --pid P99      # report on this ID's earlier autotest sessions
 
@@ -33,9 +33,11 @@ from avdur.run_task import EXIT_STOPPED  # noqa: E402
 DEFAULT_PID = "P99"
 
 
-def task_command(task, pid, monitor, max_trials=None, block=None, bias_file=None, root=None, screen=None):
+def task_command(task, pid, monitor, max_trials=None, block=None, bias_file=None, root=None, screen=None, method=None):
     cmd = [sys.executable, "-m", "avdur.run_task", "--task", task, "--pid", pid, "--monitor", monitor,
            "--autotest", "--data-root", str(root or storage.TEST_ROOT)]
+    if method and task.startswith("unimodal"):
+        cmd += ["--method", method]
     if screen is not None:
         cmd += ["--screen", str(screen)]
     if max_trials:
@@ -61,8 +63,8 @@ def bias_file(pid, quick=False, root=None):
     return bias_mod.save(pid, est, confirmed_by="autotest", root=root)
 
 
-def run(pid=DEFAULT_PID, monitor=S.DEFAULT_MONITOR, quick=False, root=None, screen=None):
-    """Run every task (both main parts) and return (report text, report file)."""
+def run(pid=DEFAULT_PID, monitor=S.DEFAULT_MONITOR, quick=False, root=None, screen=None, method=None):
+    """Run every task (all main parts) and return (report text, report file)."""
     root = Path(root or storage.TEST_ROOT)
     since = dt.datetime.now().isoformat(timespec="seconds")
     max_trials = S.AUTOTEST_QUICK_TRIALS if quick else None
@@ -70,7 +72,8 @@ def run(pid=DEFAULT_PID, monitor=S.DEFAULT_MONITOR, quick=False, root=None, scre
     path = None                                     # no bias correction since 28 Oct 2026 (modelled)
     for task, block in plan:
         print(f"[autotest] starting {task}{' ' + block if block else ''}", flush=True)
-        code = subprocess.run(task_command(task, pid, monitor, max_trials, block, path, root, screen), cwd=ROOT).returncode
+        code = subprocess.run(task_command(task, pid, monitor, max_trials, block, path, root, screen, method),
+                              cwd=ROOT).returncode
         if code == EXIT_STOPPED:
             print("[autotest] stopped with Escape.", flush=True)
             break
@@ -199,12 +202,13 @@ def main(argv=None):
     ap.add_argument("--quick", action="store_true", help=f"first {S.AUTOTEST_QUICK_TRIALS} trials of each task only")
     ap.add_argument("--report-only", action="store_true", help="only report on earlier autotest sessions")
     ap.add_argument("--screen", type=int, help="screen number for the window (default: from the monitor profile)")
+    ap.add_argument("--method", choices=list(S.UNIMODAL_METHODS), help="unimodal blocks (default UNIMODAL_METHOD)")
     args = ap.parse_args(argv)
     pid = design.normalize_pid(args.pid)
     if args.report_only:
         print(report(pid))
         return 0
-    text, out = run(pid, args.monitor, args.quick, screen=args.screen)
+    text, out = run(pid, args.monitor, args.quick, screen=args.screen, method=args.method)
     print("\n" + text + f"\n\nSaved to {out}")
     return 0 if text.rstrip().endswith("no problems found.") else 1
 

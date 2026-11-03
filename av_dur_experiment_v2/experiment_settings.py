@@ -194,6 +194,19 @@ EASY_TRIALS = dict(share=0.10, minimum=20)
 QUEST = dict(target="mu_sigma", mu_range=(-1.0, 1.0), n_mu=81, sigma_range=(0.05, 2.5), n_sigma=25,
              lapse_max=0.1, n_lapse=5, n_levels=60)
 
+# Unimodal blocks: how the test durations are chosen. The launcher (or --method) chooses per session;
+# the choice is saved in the session metadata (design_override). Simulated with 154 trials per condition
+# (quest_simulation_results/unimodal_summary.csv, median over observers): log sigma error QUEST+ 0.19,
+# staircases 0.28; PSE error QUEST+ 55 ms, staircases 50 ms. The joint model fit takes sigma_A and
+# sigma_V from these blocks, so QUEST+ is the default (3 Nov 2026).
+UNIMODAL_METHODS = {
+    "quest": dict(staircases=("QUEST",), trials_per_staircase=150),          # + 20 easy per noise level
+    # the v2 staircases (as until 27 Oct 2026): v1's rules and steps, opposite-side starts, balanced orders
+    "staircase": dict(staircases=("2D1U", "1D2U", "3D1U", "1D3U"), trials_per_staircase=35),
+}
+UNIMODAL_METHOD = "quest"           # default
+UNIMODAL_METHOD_LABELS = {"quest": "QUEST+ (default)", "staircase": "Staircases (4 x 35)"}
+
 TASKS = {
     "noise_calibration": dict(
         label="Auditory noise calibration (sets the high noise level)",
@@ -202,21 +215,20 @@ TASKS = {
     "unimodal_auditory": dict(
         label="Unimodal auditory",
         noise_levels=NOISE_LEVELS, conflicts=(0.0,),
-        # QUEST+ since 27 Oct 2026 (before: 2D1U, 1D2U, 3D1U, 1D3U x 35 = 308 trials, as v1): 90 + 14 easy
-        # per noise level; in simulation sigma as precise as the staircases' 154 (PSE error about +40%).
-        # 100 + 20 easy per noise level from 28 Oct 2026; 150 + 20 from 29 Oct 2026 (340 trials, ~17 min):
-        # log sigma error about 0.20 instead of 0.23 (quest_simulation_results/unimodal_summary.csv), since
-        # the joint fit takes sigma_A from this block (overnight_sims/report/bias_report.pdf)
-        staircases=("QUEST",), trials_per_staircase=150,
+        # UNIMODAL_METHODS: QUEST+ 150 + 20 easy per noise level (340 trials, ~17-24 min; default), or the
+        # staircases 4 x 35 + 20 easy (320 trials, ~17-22 min). History: v2 staircases (4 x 35 + 14 easy, 308)
+        # until 27 Oct 2026; QUEST+ 90 + 14 easy from 27 Oct, 100 + 20 from 28 Oct, 150 + 20 from 29 Oct;
+        # the choice between the two in the launcher from 3 Nov 2026.
+        **UNIMODAL_METHODS[UNIMODAL_METHOD],
         floor=-0.9, lapse_levels=(-0.9, 0.9),
     ),
     "unimodal_visual": dict(
         label="Unimodal visual",
         noise_levels=(None,), conflicts=(0.0,),
-        # QUEST+ since 27 Oct 2026 (before: 4 staircases x 35 = 154 trials, as v1): 70 + 14 easy.
-        # 100 from 28 Oct 2026: the joint fit takes sigma_V from this block (overnight_sims report);
-        # 150 + 20 easy from 29 Oct 2026 (170 trials, ~8 min), as the auditory block
-        staircases=("QUEST",), trials_per_staircase=150,
+        # UNIMODAL_METHODS, as the auditory block: QUEST+ 150 + 20 easy (170 trials, ~9-12 min; default) or the
+        # staircases 4 x 35 + 20 easy (160). History: staircases (154) until 27 Oct 2026; QUEST+ 70 + 14 easy
+        # from 27 Oct, 100 from 28 Oct, 150 + 20 from 29 Oct; the choice in the launcher from 3 Nov 2026.
+        **UNIMODAL_METHODS[UNIMODAL_METHOD],
         floor=-0.9, lapse_levels=(-0.8, 0.8),
     ),
     "crossmodal": dict(
@@ -235,15 +247,20 @@ TASKS = {
         # all interleaved, in two parts; part 2 continues part 1's staircases. No bias correction: the bias
         # is modelled. From 29 Oct 2026, 25 trials per staircase per part (50 per staircase, 100 per condition,
         # plus 46 easy per noise level and part: 992 trials per part, ~50-60 min); 16 until then (636 per part).
+        # From 3 Nov 2026 three parts of 17 trials per staircase (51 per staircase, 102 per condition; 612 + 64 easy
+        # = 676 trials per part, ~35-47 min at the pilots' 3.1-4.2 s per trial), so the experiment fits in two
+        # sessions of up to 1.5 h: unimodal blocks + part 1, then parts 2 and 3. Each part continues the earlier
+        # parts' staircases, so the split does not change them.
         # Before: 7 conflicts -250 ... +250 ms in blocks B1-B3, 70 trials per staircase, corrected visual.
-        staircases=("2D1U", "1D2U"), trials_per_staircase=25,
+        staircases=("2D1U", "1D2U"), trials_per_staircase=17,
         floor=-0.95, lapse_levels=("floor", 0.9),
-        blocks={part: (0.0, -0.1167, 0.1167, -0.225, 0.225, -0.3333, 0.3333, -0.45, 0.45) for part in ("part1", "part2")},
+        blocks={part: (0.0, -0.1167, 0.1167, -0.225, 0.225, -0.3333, 0.3333, -0.45, 0.45)
+                for part in ("part1", "part2", "part3")},
     ),
 }
 
 # v2: main-experiment block order, assigned by the participant number (P01 -> first row, ...)
-BLOCK_ORDERS = [("part1", "part2")]   # from 28 Oct 2026 (before: the 6 orders of B1-B3)
+BLOCK_ORDERS = [("part1", "part2", "part3")]   # from 3 Nov 2026 (two parts from 28 Oct; before: the 6 orders of B1-B3)
 
 # ── Cross-modal task at several standards (v2, 2026-10-23) ─────────────────────
 # Is the audiovisual duration bias a constant offset or does it scale with duration? With

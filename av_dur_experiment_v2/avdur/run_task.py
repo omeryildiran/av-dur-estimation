@@ -1,7 +1,7 @@
 """Run one task for one participant (normally started by run_experiment.py).
 
     python -m avdur.run_task --task crossmodal --pid P14
-    python -m avdur.run_task --task main --pid P14 --block part1      # then part2 (continues the staircases)
+    python -m avdur.run_task --task main --pid P14 --block part1      # then part2, part3 (continue the staircases)
     add --simulate to run the simulated observer instead of PsychoPy (no window)
     add --autotest for automatic answers on the real display and sound card (saves to data_test/)
 
@@ -46,6 +46,8 @@ def main(argv=None):
                          "CROSSMODAL_STANDARDS['n_participants'] participants)")
     ap.add_argument("--all-standards", action="store_true", help="cross-modal: every standard, whatever the count")
     ap.add_argument("--standard", type=float, help="cross-modal: run this one standard (s), e.g. to repeat it")
+    ap.add_argument("--method", choices=list(S.UNIMODAL_METHODS),
+                    help=f"unimodal blocks: how test durations are chosen (default {S.UNIMODAL_METHOD})")
     ap.add_argument("--seed", type=int)
     ap.add_argument("--data-root", help="default: data/ (data_simulated/ with --simulate, data_test/ with --autotest)")
     args = ap.parse_args(argv)
@@ -57,6 +59,8 @@ def main(argv=None):
         ap.error("--simulate runs without a window; --autotest runs the real window. Choose one.")
     if args.max_trials and not (args.simulate or args.autotest):
         ap.error("--max-trials is for --simulate or --autotest runs only")
+    if args.method and not args.task.startswith("unimodal"):
+        ap.error("--method is for the unimodal blocks only")
 
     bias = json.loads(Path(args.bias_file).read_text()) if args.bias_file else None
     if args.task == "main" and args.block is None:
@@ -92,8 +96,9 @@ def main(argv=None):
                  f"high noise level is {noise_high}.")
     try:
         session = Session(args.task, args.pid, presenter, block=args.block, practice=args.practice, bias=bias,
-                          bias_file=args.bias_file, noise_high=noise_high, noise_file=noise_file, **common)
-    except ValueError as err:                                       # e.g. main part2 before part1
+                          bias_file=args.bias_file, noise_high=noise_high, noise_file=noise_file,
+                          design=S.UNIMODAL_METHODS[args.method] if args.method else None, **common)
+    except ValueError as err:                                       # e.g. main part2 before part1 (or part3 before part2)
         ap.error(str(err))
     completed = session.run()
     if completed and not args.practice and not args.simulate:      # fit and plot (the window is closed by now)

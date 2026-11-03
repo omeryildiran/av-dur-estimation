@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 import os
 import sys
@@ -57,7 +58,7 @@ def n_trials(task, n_noise, n_conflicts=1):
 
 def check_counts(root, pid):
     expected = {"unimodal_auditory": n_trials("unimodal_auditory", 2), "unimodal_visual": n_trials("unimodal_visual", 1)}
-    assert expected == {"unimodal_auditory": 340, "unimodal_visual": 170}, expected
+    assert expected == {"unimodal_auditory": 340, "unimodal_visual": 170}, expected     # QUEST+ (UNIMODAL_METHOD)
     for task, n in expected.items():
         d = storage.load_trials(task, pid, root)
         assert len(d) == n, (task, len(d), n)
@@ -65,11 +66,12 @@ def check_counts(root, pid):
         assert (easy == S.EASY_TRIALS["minimum"]).all(), (task, easy)
     m = storage.load_trials("main", pid, root)
     per_block = m.groupby("block").size().to_dict()
-    assert per_block == {"part1": 992, "part2": 992} == {b: n_trials("main", 2, 9) for b in per_block}, per_block
+    parts = tuple(S.TASKS["main"]["blocks"])
+    assert per_block == {b: 676 for b in parts} == {b: n_trials("main", 2, 9) for b in per_block}, per_block
     stair = m[m.kind == "staircase"].groupby(["block", "condition"]).size()
-    assert len(stair) == 2 * 18 and (stair == 50).all()
+    assert len(stair) == len(parts) * 18 and (stair == 34).all()
     easy = m[m.kind == "lapse"].groupby(["block", "condition"]).size()
-    assert easy.between(5, 6).all() and (m[m.kind == "lapse"].groupby(["block", "audNoise"]).size() == 46).all()
+    assert easy.between(3, 4).all() and (m[m.kind == "lapse"].groupby(["block", "audNoise"]).size() == 32).all()
 
 
 def check_order_balance(root, pid):
@@ -137,23 +139,29 @@ def check_preparation_and_answer_window(root, pid):
 
 
 def check_parts(root, pid):
-    """Main experiment: no visual correction; part 2 continues every staircase exactly where part 1 stopped."""
+    """Main experiment: no visual correction; each part continues every staircase exactly where the earlier
+    parts stopped."""
     m = storage.load_trials("main", pid, root)
     assert (m.VisualPSE == 0).all() and not any(meta.get("bias_file") for meta in storage.sessions(pid, "main", root))
-    p1, p2 = (storage.sessions(pid, "main", root)[k] for k in (0, 1))
-    assert (p1["block"], p2["block"]) == ("part1", "part2") and p2["staircases_continue"] == [Path(p1["csv"]).name]
-    a, b = (pd.read_csv(x["csv"]).query("kind == 'staircase'").sort_values("trial_num") for x in (p1, p2))
-    for (noise, conflict, rule), g in a.groupby(["audNoise", "conflict_nominal", "current_stair"]):
-        st = Staircase(rule, S.TASKS["main"]["floor"], start=g.stair_start.iloc[0], **S.STAIRCASE)
-        for y in g.chose_test:
-            st.update(bool(y))
-        nxt = b[(b.audNoise == noise) & (b.conflict_nominal == conflict) & (b.current_stair == rule)].delta_dur_percents
-        assert abs(st.level - nxt.iloc[0]) < 1e-6, (noise, conflict, rule, st.level, nxt.iloc[0])
-    try:
-        Session("main", "SIM98", SimulatedPresenter(0), block="part2", root=root, simulate=True)
-        raise AssertionError("part2 before part1 must be refused")
-    except ValueError:
-        pass
+    metas = storage.sessions(pid, "main", root)
+    assert [x["block"] for x in metas] == list(S.TASKS["main"]["blocks"]) == ["part1", "part2", "part3"]
+    for k in range(1, len(metas)):
+        assert metas[k]["staircases_continue"] == [Path(x["csv"]).name for x in metas[:k]], metas[k]["block"]
+        before = pd.concat([pd.read_csv(x["csv"]) for x in metas[:k]]).query("kind == 'staircase'")
+        b = pd.read_csv(metas[k]["csv"]).query("kind == 'staircase'").sort_values("trial_num")
+        for (noise, conflict, rule), g in before.groupby(["audNoise", "conflict_nominal", "current_stair"]):
+            g = g.sort_values(["block", "trial_num"])
+            st = Staircase(rule, S.TASKS["main"]["floor"], start=g.stair_start.iloc[0], **S.STAIRCASE)
+            for y in g.chose_test:
+                st.update(bool(y))
+            nxt = b[(b.audNoise == noise) & (b.conflict_nominal == conflict) & (b.current_stair == rule)].delta_dur_percents
+            assert abs(st.level - nxt.iloc[0]) < 1e-6, (metas[k]["block"], noise, conflict, rule, st.level, nxt.iloc[0])
+    for part in ("part2", "part3"):
+        try:
+            Session("main", "SIM98", SimulatedPresenter(0), block=part, root=root, simulate=True)
+            raise AssertionError(f"{part} before the earlier parts must be refused")
+        except ValueError:
+            pass
 
 
 def check_audio():
@@ -243,7 +251,7 @@ def check_staircase_starts(root, pid):
     """Every staircase's first trial is at its logged starting end; pairs start at opposite ends."""
     for task in (t for t in storage.TASK_ORDER if t != "noise_calibration"):
         d = storage.load_trials(task, pid, root)
-        d = d[(d.kind == "staircase") & (d.current_stair != "QUEST") & (d.block != "part2")].sort_values("trial_num")
+        d = d[(d.kind == "staircase") & (d.current_stair != "QUEST") & ~d.block.isin(("part2", "part3"))].sort_values("trial_num")
         if d.empty:                                     # QUEST+ only: check_quest
             continue
         first = d.groupby(["session_file", "condition", "current_stair"]).first()
@@ -416,6 +424,35 @@ def check_combined_session(tmp):
     assert not storage.sessions("P51", "unimodal_visual", tmp, completed_only=False), "no block after the end"
 
 
+def check_unimodal_method(tmp):
+    """The staircase option for the unimodal blocks, from run_task and from the combined session: four
+    staircases x 35 per condition, starting opposite their convergence points, saved in the metadata."""
+    from avdur import run_blocks, run_task
+    assert S.UNIMODAL_METHOD == "quest" and S.TASKS["unimodal_visual"]["staircases"] == ("QUEST",)
+    assert run_task.main(["--task", "unimodal_visual", "--pid", "SIM40", "--simulate", "--seed", "2",
+                          "--method", "staircase", "--data-root", str(tmp)]) == 0
+    ok, _ = run_blocks.run("SIM41", SimulatedPresenter(6), tmp, simulate=True, background_fits=False,
+                           log=lambda *_: None, method="staircase")
+    assert ok
+    for pid, task, n in (("SIM40", "unimodal_visual", 160), ("SIM41", "unimodal_auditory", 320),
+                         ("SIM41", "unimodal_visual", 160)):
+        (meta,) = storage.sessions(pid, task, tmp)
+        assert meta["design_override"] == json.loads(json.dumps(S.UNIMODAL_METHODS["staircase"])), meta["design_override"]
+        d = storage.load_trials(task, pid, tmp)
+        stair = d[d.kind == "staircase"]
+        assert len(d) == n and set(stair.current_stair) == {"2D1U", "1D2U", "3D1U", "1D3U"}, (pid, task, len(d))
+        assert (stair.groupby(["condition", "current_stair"]).size() == 35).all()
+        first = stair.sort_values("trial_num").groupby(["condition", "current_stair"]).first()
+        assert {r: s for (_, r), s in first.stair_start.items()} == {"2D1U": "floor", "3D1U": "floor",
+                                                                      "1D2U": "ceiling", "1D3U": "ceiling"}
+    try:
+        run_task.main(["--task", "main", "--block", "part1", "--pid", "SIM42", "--simulate", "--method", "staircase",
+                       "--data-root", str(tmp)])
+        raise AssertionError("--method must be refused outside the unimodal blocks")
+    except SystemExit as err:
+        assert err.code == 2
+
+
 def check_noise_calibration(tmp):
     """The calibration (by hand only since 1 Nov 2026) finds the level where a listener's sigma is the
     target; later tasks ignore it and use the fixed NOISE_HIGH."""
@@ -462,6 +499,7 @@ def run_all(root=SIM_ROOT):
         check_solid(Path(tmp))
         check_autotest_report(Path(tmp))
         check_combined_session(Path(tmp))
+        check_unimodal_method(Path(tmp))
         check_noise_calibration(Path(tmp))
         check_entry_points(Path(tmp))
     snr = check_audio()

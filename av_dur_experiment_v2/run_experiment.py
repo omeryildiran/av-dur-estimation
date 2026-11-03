@@ -61,21 +61,24 @@ def status_text(raw_pid, root=None):
     return "\n".join(lines)
 
 
-def combined_command(pid, monitor, practice, simulate, autotest=False, quick=False, screen=None):
+def combined_command(pid, monitor, practice, simulate, autotest=False, quick=False, screen=None, method=None):
     """Unimodal auditory and unimodal visual blocks in one window (avdur.run_blocks)."""
     cmd = [sys.executable, "-m", "avdur.run_blocks", "--pid", pid, "--monitor", monitor,
            "--data-root", str(storage.root_for(simulate, monitor, autotest))]
     cmd += ["--screen", str(screen)] if screen is not None else []
     cmd += ["--practice"] * practice + ["--simulate"] * simulate + ["--autotest"] * autotest
+    cmd += ["--method", method] if method else []
     if autotest and quick:
         cmd += ["--max-trials", str(S.AUTOTEST_QUICK_TRIALS)]
     return cmd
 
 
 def task_command(task, pid, monitor, practice, simulate, block=None, bias_file=None, autotest=False, quick=False,
-                 screen=None):
+                 screen=None, method=None):
     cmd = [sys.executable, "-m", "avdur.run_task", "--task", task, "--pid", pid, "--monitor", monitor,
            "--data-root", str(storage.root_for(simulate, monitor, autotest))]
+    if method and task.startswith("unimodal"):
+        cmd += ["--method", method]
     cmd += ["--screen", str(screen)] if screen is not None else []
     if practice:
         cmd.append("--practice")
@@ -162,6 +165,14 @@ def run_window():
     ttk.OptionMenu(frm, block, "auto", "auto", *S.TASKS["main"]["blocks"]).grid(row=2, column=1, sticky="w")
     ttk.Checkbutton(frm, text="Practice run (easy trials with feedback)", variable=practice).grid(
         row=3, column=0, sticky="w")
+    method_label = tk.StringVar(value=S.UNIMODAL_METHOD_LABELS[S.UNIMODAL_METHOD])
+    method_row = ttk.Frame(frm)
+    method_row.grid(row=3, column=1, sticky="w")
+    ttk.Label(method_row, text="Unimodal blocks:").pack(side="left")
+    ttk.OptionMenu(method_row, method_label, method_label.get(), *S.UNIMODAL_METHOD_LABELS.values()).pack(side="left")
+
+    def method():
+        return next(k for k, v in S.UNIMODAL_METHOD_LABELS.items() if v == method_label.get())
     ttk.Checkbutton(frm, text="Simulate (no window; saves to data_simulated/)", variable=simulate,
                     command=lambda: refresh()).grid(row=4, column=0, columnspan=2, sticky="w")
     ttk.Checkbutton(frm, text="Autotest: automatic answers on this display and sound card (saves to data_test/)",
@@ -206,10 +217,10 @@ def run_window():
             st = storage.participant_status(p, data_root())
             b = st["next_block"] if block.get() == "auto" else block.get()
             if b is None:
-                messagebox.showinfo("Main experiment", "Both parts are done. Choose a part to run it again.")
+                messagebox.showinfo("Main experiment", "All parts are done. Choose a part to run it again.")
                 return
         cmd = task_command(task, p, monitor.get(), practice.get(), simulate.get(), b, None,
-                           autotest.get(), quick.get(), chosen_screen())
+                           autotest.get(), quick.get(), chosen_screen(), method())
         if task == "crossmodal":            # optional since 28 Oct 2026: 300, 500 and 800 ms interleaved
             cmd.append("--all-standards")
         since = dt.datetime.now().isoformat(timespec="seconds")
@@ -250,7 +261,7 @@ def run_window():
                                       "?\n\nFits and checks appear in the terminal after each block."):
             return
         cmd = combined_command(p, monitor.get(), practice.get(), simulate.get(), autotest.get(), quick.get(),
-                               chosen_screen())
+                               chosen_screen(), method())
         if not simulate.get() and start_viewer(p, data_root()):
             cmd.append("--no-open-plots")
         root.withdraw()
@@ -273,7 +284,7 @@ def run_window():
             messagebox.showerror("Participant ID", str(err))
             return
         length = (f"the first {S.AUTOTEST_QUICK_TRIALS} trials of every task (about 7 minutes)" if quick.get()
-                  else "every task in full, both main parts (about 2 hours)")
+                  else "every task in full, all three main parts (about 2.5 hours)")
         if not messagebox.askokcancel("Autotest the whole experiment",
                                       f"Run {length} with automatic answers as {p} on the '{monitor.get()}' "
                                       "profile?\n\nData go to data_test/. Press Escape during a trial to stop."):
@@ -283,6 +294,7 @@ def run_window():
             cmd += ["--screen", str(chosen_screen())]
         if quick.get():
             cmd.append("--quick")
+        cmd += ["--method", method()]
         t0 = time.time()
         start_viewer(p, storage.TEST_ROOT)
         root.withdraw()
@@ -326,6 +338,10 @@ def run_cli():
     mon = input(f"Monitor profile {list(S.MONITOR_PROFILES)} [{S.DEFAULT_MONITOR}]: ").strip() or S.DEFAULT_MONITOR
     sim = input("Simulate (no window, saves to data_simulated/)? [y/N] ").strip().lower() == "y"
     root = storage.root_for(sim, mon)
+    meth = input(f"Unimodal blocks {list(S.UNIMODAL_METHODS)} [{S.UNIMODAL_METHOD}]: ").strip() or S.UNIMODAL_METHOD
+    if meth not in S.UNIMODAL_METHODS:
+        print(f"Unknown method {meth!r}; using {S.UNIMODAL_METHOD}.")
+        meth = S.UNIMODAL_METHOD
     while True:
         print("\n" + status_text(p, root))
         choice = input("\nRun 0-2 (add 'p' for practice, e.g. '2p'), 'c' blocks 0-1 in one session ('cp' with "
@@ -333,7 +349,7 @@ def run_cli():
         if choice == "q":
             return
         if choice in ("c", "cp"):
-            subprocess.run(combined_command(p, mon, choice == "cp", sim), cwd=ROOT)
+            subprocess.run(combined_command(p, mon, choice == "cp", sim, method=meth), cwd=ROOT)
             continue
         if choice == "n":
             subprocess.run(task_command("noise_calibration", p, mon, False, sim), cwd=ROOT)
@@ -342,7 +358,7 @@ def run_cli():
             subprocess.run(task_command("crossmodal", p, mon, False, sim) + ["--all-standards"], cwd=ROOT)
             continue
         if choice in ("a", "aq"):
-            text, out = autotest_mod.run(p, mon, quick=(choice == "aq"))
+            text, out = autotest_mod.run(p, mon, quick=(choice == "aq"), method=meth)
             print("\n" + text + f"\n\nSaved to {out}")
             continue
         if not choice or choice[0] not in "012":
@@ -352,7 +368,7 @@ def run_cli():
         if task == "main":
             nxt = storage.participant_status(p, root)["next_block"]
             b = input(f"Part [{nxt}]: ").strip() or nxt
-        subprocess.run(task_command(task, p, mon, "p" in choice, sim, b), cwd=ROOT)
+        subprocess.run(task_command(task, p, mon, "p" in choice, sim, b, method=meth), cwd=ROOT)
 
 
 if __name__ == "__main__":
