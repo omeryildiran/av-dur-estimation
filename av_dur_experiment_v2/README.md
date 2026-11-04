@@ -21,7 +21,7 @@ Choose the monitor profile and enter the participant ID: their initials (`oy` �
      - **Precision** (`analysis/quest_unimodal_simulation.py`, 154 trials per condition, median over observers): σ log error 0.19 with QUEST+ against 0.28 with the staircases; PSE error 55 against 50 ms. The joint model fit takes σ_A and σ_V from these blocks, hence the default.
      - Either way the screening fit is the same maximum-likelihood fit of all trials.
 2. **Main experiment**: three parts of 676 trials, each about 35–47 minutes (from 3 Nov 2026; two parts of 992 from 29 Oct, of 636 from 28 Oct; three blocks with a bias correction until 28 Oct 2026).
-   - **Design:** 9 conflicts (−450 … +450 ms, whole frames) × 2 noise levels, all interleaved. Each condition has a 2D1U and a 1D2U staircase, 17 trials each per part, so 102 staircase trials per condition over the three parts. Each part adds 32 easy trials per noise level.
+   - **Design:** 9 conflicts (v1's 0, ±83, ±167, ±250 ms plus ±450 ms, whole frames; from 4 Nov 2026) × 2 noise levels, all interleaved. Each condition has a 2D1U and a 1D2U staircase, 17 trials each per part, so 102 staircase trials per condition over the three parts. Each part adds 32 easy trials per noise level.
    - **Order:** the launcher runs part 1, then part 2, then part 3. Each part continues the earlier parts' staircases exactly where they stopped, so the split does not change them; an earlier part must be complete first.
 
 **Sessions (up to about 1.5 h each).** Times are from the pilots (3.1–4.2 s per trial, breaks included).

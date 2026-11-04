@@ -182,7 +182,12 @@ AUTOTEST_BIAS_S = {0.1: 0.10, 1.2: -0.05}   # main-block corrections when no ful
 # Simulated: more trials near the PSE and a more precise PSE than random or same-side starts
 # (unimodal, sigma 0.6: PSE SD 33-38 vs 39-42 ms), sigma slightly less precise. v1 started
 # every staircase at the floor (from 2 June 2025).
-STAIRCASE = dict(init_step=0.16, step_factor=0.5, n_step_changes=2, ceiling=0.9)
+# Ceiling (all tasks, QUEST+ candidates and the long easy trials): 2.0, i.e. tests up to 3x the standard
+# (1500 ms), from 4 Nov 2026 (user). Until then 0.9 (950 ms, as v1): only 1.9x the standard against 10x
+# below it, so the long "easy" trials were not easy for shallow listeners, the top of the curve (lapse
+# vs sigma) was poorly pinned, and at +450 ms conflicts full visual capture put the PSE at the ceiling.
+STAIRCASE = dict(init_step=0.16, step_factor=0.5, n_step_changes=2, ceiling=2.0)
+TEST_CEILING = STAIRCASE["ceiling"]
 
 # QUEST+ (avdur/quest.py): a task whose staircases are ("QUEST",) gets one QUEST+ per condition
 # instead (trials_per_staircase trials, order balanced, plus the easy trials, which also inform
@@ -224,7 +229,7 @@ TASKS = {
         # until 27 Oct 2026; QUEST+ 90 + 14 easy from 27 Oct, 100 + 20 from 28 Oct, 150 + 20 from 29 Oct;
         # the choice between the two in the launcher from 3 Nov 2026.
         **UNIMODAL_METHODS[UNIMODAL_METHOD],
-        floor=-0.9, lapse_levels=(-0.9, 0.9),
+        floor=-0.9, lapse_levels=(-0.9, TEST_CEILING),
     ),
     "unimodal_visual": dict(
         label="Unimodal visual",
@@ -233,7 +238,7 @@ TASKS = {
         # staircases 4 x 35 + 20 easy (160). History: staircases (154) until 27 Oct 2026; QUEST+ 70 + 14 easy
         # from 27 Oct, 100 from 28 Oct, 150 + 20 from 29 Oct; the choice in the launcher from 3 Nov 2026.
         **UNIMODAL_METHODS[UNIMODAL_METHOD],
-        floor=-0.9, lapse_levels=(-0.8, 0.8),
+        floor=-0.9, lapse_levels=(-0.8, TEST_CEILING),
     ),
     "crossmodal": dict(
         label="Cross-modal (auditory test vs. visual standard)",
@@ -241,7 +246,7 @@ TASKS = {
         # v1 used 1D1U, 1U1D, 2D1U, 1D2U; its 1U1D rule moved away from threshold.
         # v2 replaces it with a second 1D1U (pairs: the two 1D1U, then 2D1U/1D2U).
         staircases=("1D1U", "1D1U_b", "2D1U", "1D2U"), trials_per_staircase=45,  # v1: 388 trials
-        floor=-0.9, lapse_levels=(-0.9, 0.9),
+        floor=-0.9, lapse_levels=(-0.9, TEST_CEILING),
         order_block_size=10,          # v1: order alternates in pre-cued mini-blocks
     ),
     "main": dict(
@@ -257,8 +262,10 @@ TASKS = {
         # parts' staircases, so the split does not change them.
         # Before: 7 conflicts -250 ... +250 ms in blocks B1-B3, 70 trials per staircase, corrected visual.
         staircases=("2D1U", "1D2U"), trials_per_staircase=17,
-        floor=-0.95, lapse_levels=("floor", 0.9),
-        blocks={part: (0.0, -0.1167, 0.1167, -0.225, 0.225, -0.3333, 0.3333, -0.45, 0.45)
+        floor=-0.95, lapse_levels=("floor", TEST_CEILING),
+        # Conflicts from 4 Nov 2026 (user): v1's 7 (0, +/-83, +/-167, +/-250 ms) plus the extremes +/-450 ms,
+        # still 9 and whole frames at 120 Hz (10, 20, 30, 54 frames). 28 Oct-4 Nov: 0, +/-117, +/-225, +/-333, +/-450.
+        blocks={part: (0.0, -0.0833, 0.0833, -0.1667, 0.1667, -0.25, 0.25, -0.45, 0.45)
                 for part in ("part1", "part2", "part3")},
     ),
 }
