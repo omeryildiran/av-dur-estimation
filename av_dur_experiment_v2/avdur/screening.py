@@ -112,12 +112,18 @@ def plot(task, df, result, folder, stem):
         c = "tab:green" if noise is None else ("tab:blue" if noise == S.NOISE_LOW else "tab:red")
         key = ("visual" if noise is None else noise) if not entry.get("several_standards") else f"{std:.0f}|{noise}"
         d = df[df["cond"] == key]
-        x = 1000 * d["testDurS"]
-        bins = np.unique(np.quantile(x, np.linspace(0, 1, 11)))      # about equal trials per point
-        bins[0], bins[-1] = bins[0] - 1e-6, bins[-1] + 1e-6
-        pts = pd.DataFrame({"x": x, "y": d["chose_test"]}).groupby(pd.cut(x, bins), observed=True).agg(
-            x=("x", "mean"), y=("y", "mean"), n=("y", "size"))
-        ax.scatter(pts.x, pts.y, s=10 + 2 * pts.n, color=c, alpha=0.6)
+        # easy trials get their own points at their exact durations (in decile bins they were averaged
+        # with nearby staircase trials, so e.g. the 50 ms trials showed up near 180 ms)
+        easy = d["kind"] == "lapse"
+        x = 1000 * d.loc[~easy, "testDurS"]
+        if len(x):
+            bins = np.unique(np.quantile(x, np.linspace(0, 1, 11)))  # about equal trials per point
+            bins[0], bins[-1] = bins[0] - 1e-6, bins[-1] + 1e-6
+            pts = pd.DataFrame({"x": x, "y": d.loc[~easy, "chose_test"]}).groupby(pd.cut(x, bins), observed=True).agg(
+                x=("x", "mean"), y=("y", "mean"), n=("y", "size"))
+            ax.scatter(pts.x, pts.y, s=10 + 2 * pts.n, color=c, alpha=0.6)
+        e = d[easy].groupby((1000 * d.loc[easy, "testDurS"]).round()).chose_test.agg(["mean", "size"])
+        ax.scatter(e.index, e["mean"], s=10 + 2 * e["size"], color=c, marker="D", alpha=0.6)
         several = len(stds) > 1
         ax.plot(ms, pm.predict(np.log(ms / std), entry["mu"], entry["sigma"], entry["lapse"]), color=c, ls=styles[std],
                 label=f"{_condition_name(task, noise, std if several else None)}: σ {entry['sigma']:.2f}, "
@@ -128,7 +134,7 @@ def plot(task, df, result, folder, stem):
         ax.axvline(std, color="0.6", lw=1, ls=":")
     what = "Auditory test" if task == "crossmodal" else "Test"
     ax.set(xlabel=f"{what} duration (ms)   [standard {', '.join(f'{v:.0f}' for v in stds)} ms]",
-           ylabel="P(test judged longer)",
+           ylabel="P(test judged longer)   [◆ easy trials]",
            xlim=(0, x_max), ylim=(-0.03, 1.03), title=f"{LABELS[task]}  ({result['n_trials']} trials)")
     ax.legend(frameon=False, fontsize=8, loc="upper left")
     for side in ("top", "right"):
