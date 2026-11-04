@@ -32,6 +32,45 @@ from avdur.run_task import EXIT_STOPPED  # noqa: E402
 
 # ── logic shared by the window and the text menu ──────────────────────────────
 
+def _trials(cfg, n_cond_per_noise, n_noise):
+    """(adaptive, easy) trials of one session or part."""
+    adaptive = len(cfg["staircases"]) * cfg["trials_per_staircase"] * n_cond_per_noise
+    return adaptive * n_noise, design.n_easy(adaptive) * n_noise
+
+
+def settings_summary():
+    """The current design and options, printed when the launcher opens."""
+    ms = lambda r: f"{1000 * r[0]:.0f}-{1000 * r[1]:.0f} ms"
+    lines = ["=" * 64, f"  {S.EXPERIMENT_NAME}   {dt.datetime.now():%Y-%m-%d %H:%M}", "=" * 64,
+             f"  Monitor (default)   {S.DEFAULT_MONITOR}: {S.MONITOR_PROFILES[S.DEFAULT_MONITOR]['frame_rate_hz']:g} Hz",
+             f"  Auditory noise      low {S.NOISE_LOW}, high {S.NOISE_HIGH} (fixed; --noise-high overrides)",
+             f"  Standard            {1000 * S.STANDARD_DUR_S:.0f} ms",
+             f"  Gaps                pre {ms(S.PRE_RANGE_S)}, ISI {ms(S.ISI_RANGE_S)}, post {ms(S.POST_RANGE_S)}",
+             f"  Breaks              every {S.BREAK_EVERY_N_TRIALS} trials", "",
+             "  Unimodal blocks (per block; auditory has both noise levels):"]
+    for name, method in S.UNIMODAL_METHODS.items():
+        a_ad, a_easy = _trials(method, 1, 2)
+        v_ad, v_easy = _trials(method, 1, 1)
+        rules = " + ".join(method["staircases"])
+        lines.append(f"    {S.UNIMODAL_METHOD_LABELS[name]:22s} {rules} x {method['trials_per_staircase']}: "
+                     f"auditory {a_ad + a_easy}, visual {v_ad + v_easy} trials"
+                     + ("   <- default" if name == S.UNIMODAL_METHOD else ""))
+    main = S.TASKS["main"]
+    parts = list(main["blocks"])
+    conflicts = main["blocks"][parts[0]]
+    m_ad, m_easy = _trials(main, len(conflicts), len(main["noise_levels"]))
+    lines += ["", f"  Main experiment     {len(parts)} parts x {m_ad + m_easy} trials "
+                  f"({' + '.join(main['staircases'])} x {main['trials_per_staircase']} per part, {m_easy} easy)",
+              "    conflicts (ms)    " + ", ".join(f"{1000 * c:+.0f}" for c in sorted(conflicts)),
+              "    staircases continue across parts", "",
+              "  Screening (unimodal auditory): low-noise sigma <= "
+              f"{S.SCREENING_CHECKS['unimodal_auditory'][0.1]['max_sigma']}, "
+              f"high-noise sigma <= {S.SCREENING_CHECKS['unimodal_auditory']['high']['max_sigma']}",
+              "  Optional: cross-modal (3 standards), noise calibration (result not used)",
+              "=" * 64]
+    return "\n".join(lines)
+
+
 def status_text(raw_pid, root=None):
     try:
         pid = design.normalize_pid(raw_pid)
@@ -372,6 +411,7 @@ def run_cli():
 
 
 if __name__ == "__main__":
+    print(settings_summary(), flush=True)
     if "--cli" in sys.argv:
         run_cli()
     else:
