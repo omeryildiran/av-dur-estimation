@@ -192,7 +192,7 @@ class Session:
                            for key, start in starts.items()})
             if "QUEST" in cfg["staircases"]:                   # QUEST+ chooses the test level (avdur.quest)
                 for noise, conflict in design.conditions(self.task, self.block, cfg["noise_levels"], cfg):
-                    stairs[(noise, conflict, "QUEST", key_std)] = QuestStair(self.floor(noise), S.STAIRCASE["ceiling"],
+                    stairs[(noise, conflict, "QUEST", key_std)] = QuestStair(self.floor(noise), S.TEST_CEILING,
                                                                              std, self.fr)
         if self.task == "main" and not self.practice and not self.max_trials:
             self._continue_stairs(stairs)

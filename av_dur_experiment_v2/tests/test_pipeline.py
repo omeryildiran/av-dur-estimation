@@ -58,7 +58,7 @@ def n_trials(task, n_noise, n_conflicts=1):
 
 def check_counts(root, pid):
     expected = {"unimodal_auditory": n_trials("unimodal_auditory", 2), "unimodal_visual": n_trials("unimodal_visual", 1)}
-    assert expected == {"unimodal_auditory": 340, "unimodal_visual": 170}, expected     # QUEST+ (UNIMODAL_METHOD)
+    assert expected == {"unimodal_auditory": 320, "unimodal_visual": 160}, expected     # staircases (UNIMODAL_METHOD)
     for task, n in expected.items():
         d = storage.load_trials(task, pid, root)
         assert len(d) == n, (task, len(d), n)
@@ -263,7 +263,7 @@ def check_staircase_starts(root, pid):
         first = d.groupby(["session_file", "condition", "current_stair"]).first()
         assert (first.stair_start.isin(["floor", "ceiling"])).all()
         top = first[first.stair_start == "ceiling"]
-        assert np.allclose(top.delta_dur_percents, S.STAIRCASE["ceiling"]), task
+        assert np.allclose(top.delta_dur_percents, S.STAIRCASE["start_top"]), task
         bottom = first[first.stair_start == "floor"].delta_dur_percents
         assert (bottom < -0.5).all(), (task, bottom.max())
         per_cond = first.groupby(["session_file", "condition"]).stair_start.apply(lambda x: (x == "ceiling").sum())
@@ -281,7 +281,7 @@ def check_quest(root, pid):
             assert len(q) == len(d.condition.unique()) * S.TASKS[task]["trials_per_staircase"], task
             frames = q.testDurS * q.frame_rate_hz
             assert np.allclose(frames, frames.round()), "QUEST+ test not a whole number of frames"
-            assert q.delta_dur_percents.between(S.TASKS[task]["floor"] - 1e-9, S.STAIRCASE["ceiling"] + 1e-9).all()
+            assert q.delta_dur_percents.between(S.TASKS[task]["floor"] - 1e-9, S.TEST_CEILING + 1e-9).all()
             assert q[["quest_mu", "quest_sigma", "quest_lapse"]].notna().all().all()
             fit = {e["noise"]: e["sigma"] for e in screening.block_fit(task, meta["csv"], None)["conditions"]}
             for cond, g in q.groupby("condition"):
@@ -431,26 +431,23 @@ def check_combined_session(tmp):
 
 
 def check_unimodal_method(tmp):
-    """The staircase option for the unimodal blocks, from run_task and from the combined session: four
-    staircases x 35 per condition, starting opposite their convergence points, saved in the metadata."""
+    """The QUEST+ option for the unimodal blocks (the staircases are the default since 4 Nov 2026), from
+    run_task and from the combined session: one QUEST+ x 150 per condition, saved in the metadata."""
     from avdur import run_blocks, run_task
-    assert S.UNIMODAL_METHOD == "quest" and S.TASKS["unimodal_visual"]["staircases"] == ("QUEST",)
+    assert S.UNIMODAL_METHOD == "staircase" and S.TASKS["unimodal_visual"]["staircases"] == ("2D1U", "1D2U", "3D1U", "1D3U")
     assert run_task.main(["--task", "unimodal_visual", "--pid", "SIM40", "--simulate", "--seed", "2",
-                          "--method", "staircase", "--data-root", str(tmp)]) == 0
+                          "--method", "quest", "--data-root", str(tmp)]) == 0
     ok, _ = run_blocks.run("SIM41", SimulatedPresenter(6), tmp, simulate=True, background_fits=False,
-                           log=lambda *_: None, method="staircase")
+                           log=lambda *_: None, method="quest")
     assert ok
-    for pid, task, n in (("SIM40", "unimodal_visual", 160), ("SIM41", "unimodal_auditory", 320),
-                         ("SIM41", "unimodal_visual", 160)):
+    for pid, task, n in (("SIM40", "unimodal_visual", 170), ("SIM41", "unimodal_auditory", 340),
+                         ("SIM41", "unimodal_visual", 170)):
         (meta,) = storage.sessions(pid, task, tmp)
-        assert meta["design_override"] == json.loads(json.dumps(S.UNIMODAL_METHODS["staircase"])), meta["design_override"]
+        assert meta["design_override"] == json.loads(json.dumps(S.UNIMODAL_METHODS["quest"])), meta["design_override"]
         d = storage.load_trials(task, pid, tmp)
-        stair = d[d.kind == "staircase"]
-        assert len(d) == n and set(stair.current_stair) == {"2D1U", "1D2U", "3D1U", "1D3U"}, (pid, task, len(d))
-        assert (stair.groupby(["condition", "current_stair"]).size() == 35).all()
-        first = stair.sort_values("trial_num").groupby(["condition", "current_stair"]).first()
-        assert {r: s for (_, r), s in first.stair_start.items()} == {"2D1U": "floor", "3D1U": "floor",
-                                                                      "1D2U": "ceiling", "1D3U": "ceiling"}
+        adaptive = d[d.kind == "staircase"]
+        assert len(d) == n and set(adaptive.current_stair) == {"QUEST"}, (pid, task, len(d))
+        assert (adaptive.groupby("condition").size() == 150).all()
     try:
         run_task.main(["--task", "main", "--block", "part1", "--pid", "SIM42", "--simulate", "--method", "staircase",
                        "--data-root", str(tmp)])

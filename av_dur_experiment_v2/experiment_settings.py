@@ -182,18 +182,21 @@ AUTOTEST_BIAS_S = {0.1: 0.10, 1.2: -0.05}   # main-block corrections when no ful
 # Simulated: more trials near the PSE and a more precise PSE than random or same-side starts
 # (unimodal, sigma 0.6: PSE SD 33-38 vs 39-42 ms), sigma slightly less precise. v1 started
 # every staircase at the floor (from 2 June 2025).
-# Ceiling (all tasks, QUEST+ candidates and the long easy trials): 2.0, i.e. tests up to 3x the standard
-# (1500 ms), from 4 Nov 2026 (user). Until then 0.9 (950 ms, as v1): only 1.9x the standard against 10x
-# below it, so the long "easy" trials were not easy for shallow listeners, the top of the curve (lapse
-# vs sigma) was poorly pinned, and at +450 ms conflicts full visual capture put the PSE at the ceiling.
-STAIRCASE = dict(init_step=0.16, step_factor=0.5, n_step_changes=2, ceiling=2.0)
-TEST_CEILING = STAIRCASE["ceiling"]
+# Long tests (4 Nov 2026, user). Until then everything stopped at 0.9 (950 ms, as v1): only 1.9x the
+# standard against 10x below it, so the long "easy" trials were not easy for shallow listeners, the top of
+# the curve (lapse vs sigma) was poorly pinned, and at +450 ms conflicts full visual capture put the PSE at
+# the cap. Now the staircases that start at the top start at start_top = 0.9 (950 ms) and can climb to a
+# safety cap of 5.0 (3000 ms, 6x the standard), which only stops runaways (a guessing listener pushes a
+# 2D1U staircase up). QUEST+ candidates and the long easy trials go up to TEST_CEILING = 3.0 (2000 ms,
+# log 1.39; 1500 ms on 4 Nov): about 92% correct even at sigma 1, where v1's 950 ms gave 74%.
+STAIRCASE = dict(init_step=0.16, step_factor=0.5, n_step_changes=2, start_top=0.9, ceiling=5.0)
+TEST_CEILING = 3.0
 
 # QUEST+ (avdur/quest.py): a task whose staircases are ("QUEST",) gets one QUEST+ per condition
 # instead (trials_per_staircase trials, order balanced, plus the easy trials, which also inform
 # its lapse). It targets mu and sigma, with the lapse as a nuisance parameter. Grids as in the
 # simulations (analysis/quest_unimodal_simulation.py); candidate tests are whole frames between
-# the task's floor and STAIRCASE["ceiling"], n_levels of them evenly spaced in log duration.
+# the task's floor and TEST_CEILING, n_levels of them evenly spaced in log duration.
 # Easy (lapse) trials, from 28 Oct 2026: per session and noise level, max(minimum, share x the adaptive
 # trials at that noise level), half at each end (lapse_levels), spread evenly over the conditions at
 # that noise level, order balanced. The fits share one lapse rate over conditions, so the count is per
@@ -207,14 +210,15 @@ QUEST = dict(target="mu_sigma", mu_range=(-1.0, 1.0), n_mu=81, sigma_range=(0.05
 # the choice is saved in the session metadata (design_override). Simulated with 154 trials per condition
 # (quest_simulation_results/unimodal_summary.csv, median over observers): log sigma error QUEST+ 0.19,
 # staircases 0.28; PSE error QUEST+ 55 ms, staircases 50 ms. The joint model fit takes sigma_A and
-# sigma_V from these blocks, so QUEST+ is the default (3 Nov 2026).
+# sigma_V from these blocks, so QUEST+ was the default from 3 Nov 2026. From 4 Nov 2026 (user) the
+# staircases are the default again: less precise for sigma, but the v1 method and easy to explain.
 UNIMODAL_METHODS = {
     "quest": dict(staircases=("QUEST",), trials_per_staircase=150),          # + 20 easy per noise level
     # the v2 staircases (as until 27 Oct 2026): v1's rules and steps, opposite-side starts, balanced orders
     "staircase": dict(staircases=("2D1U", "1D2U", "3D1U", "1D3U"), trials_per_staircase=35),
 }
-UNIMODAL_METHOD = "quest"           # default
-UNIMODAL_METHOD_LABELS = {"quest": "QUEST+ (default)", "staircase": "Staircases (4 x 35)"}
+UNIMODAL_METHOD = "staircase"       # default (QUEST+ 3-4 Nov 2026)
+UNIMODAL_METHOD_LABELS = {"quest": "QUEST+", "staircase": "Staircases (4 x 35, default)"}
 
 TASKS = {
     "noise_calibration": dict(
@@ -224,8 +228,8 @@ TASKS = {
     "unimodal_auditory": dict(
         label="Unimodal auditory",
         noise_levels=NOISE_LEVELS, conflicts=(0.0,),
-        # UNIMODAL_METHODS: QUEST+ 150 + 20 easy per noise level (340 trials, ~17-24 min; default), or the
-        # staircases 4 x 35 + 20 easy (320 trials, ~17-22 min). History: v2 staircases (4 x 35 + 14 easy, 308)
+        # UNIMODAL_METHODS: the staircases 4 x 35 + 20 easy per noise level (320 trials, ~17-22 min; default), or
+        # QUEST+ 150 + 20 easy (340 trials, ~17-24 min). History: v2 staircases (4 x 35 + 14 easy, 308)
         # until 27 Oct 2026; QUEST+ 90 + 14 easy from 27 Oct, 100 + 20 from 28 Oct, 150 + 20 from 29 Oct;
         # the choice between the two in the launcher from 3 Nov 2026.
         **UNIMODAL_METHODS[UNIMODAL_METHOD],
@@ -234,8 +238,8 @@ TASKS = {
     "unimodal_visual": dict(
         label="Unimodal visual",
         noise_levels=(None,), conflicts=(0.0,),
-        # UNIMODAL_METHODS, as the auditory block: QUEST+ 150 + 20 easy (170 trials, ~9-12 min; default) or the
-        # staircases 4 x 35 + 20 easy (160). History: staircases (154) until 27 Oct 2026; QUEST+ 70 + 14 easy
+        # UNIMODAL_METHODS, as the auditory block: the staircases 4 x 35 + 20 easy (160 trials; default) or
+        # QUEST+ 150 + 20 easy (170 trials, ~9-12 min). History: staircases (154) until 27 Oct 2026; QUEST+ 70 + 14 easy
         # from 27 Oct, 100 from 28 Oct, 150 + 20 from 29 Oct; the choice in the launcher from 3 Nov 2026.
         **UNIMODAL_METHODS[UNIMODAL_METHOD],
         floor=-0.9, lapse_levels=(-0.8, TEST_CEILING),

@@ -14,7 +14,8 @@ import re
 
 
 class Staircase:
-    def __init__(self, rule, floor, ceiling=0.9, init_step=0.16, step_factor=0.5, n_step_changes=2, start="floor"):
+    def __init__(self, rule, floor, ceiling=0.9, init_step=0.16, step_factor=0.5, n_step_changes=2, start="floor",
+                 start_top=None):
         match = re.fullmatch(r"(\d)D(\d)U(_[a-z0-9]+)?", rule)
         if match is None:
             raise ValueError(f"Staircase rule must look like '2D1U' or '1D1U_b', got {rule!r}")
@@ -25,7 +26,8 @@ class Staircase:
         self.floor, self.ceiling = float(floor), float(ceiling)
         self.init_step, self.step_factor, self.n_step_changes = init_step, step_factor, n_step_changes
         self.start = start
-        self.level = self.ceiling if start == "ceiling" else self.floor
+        # "ceiling" starts at start_top (950 ms from 4 Nov 2026), below the safety cap; default: the cap
+        self.level = (self.ceiling if start_top is None else float(start_top)) if start == "ceiling" else self.floor
         self.step = init_step
         self.reversals = 0
         self.is_reversal = False

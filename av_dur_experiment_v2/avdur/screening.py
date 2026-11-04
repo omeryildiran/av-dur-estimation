@@ -104,7 +104,7 @@ def plot(task, df, result, folder, stem):
     folder.mkdir(parents=True, exist_ok=True)
     fig, ax = plt.subplots(figsize=(6.5, 4.6))
     stds = sorted({e["standard_ms"] for e in result["conditions"]})
-    x_max = max(v * (1 + S.STAIRCASE["ceiling"]) for v in stds or [500])   # up to the longest possible test
+    x_max = max([v * (1 + S.TEST_CEILING) for v in stds or [500]] + [1000 * df["testDurS"].max()])   # longest test
     ms = np.linspace(30, x_max, 400)
     styles = dict(zip(stds, ("-", "--", ":", "-.")))
     for entry in result["conditions"]:
