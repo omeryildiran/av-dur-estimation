@@ -269,7 +269,12 @@ TASKS = {
         # sessions of up to 1.5 h: unimodal blocks + part 1, then parts 2 and 3. Each part continues the earlier
         # parts' staircases, so the split does not change them.
         # Before: 7 conflicts -250 ... +250 ms in blocks B1-B3, 70 trials per staircase, corrected visual.
-        staircases=("2D1U", "1D2U"), trials_per_staircase=17,
+        # Rules from 5 Nov 2026 (user): 2D1U from the floor and 1D3U from 950 ms per condition (2D1U + 1D2U
+        # until then). Simulated (9 conflicts x 102 trials + 96 easy per noise level, 100 observers): sigma error
+        # 26-35% vs 30-42% with 1D2U, PSE error about the same (22-23 ms at sigma 0.3). v1's two staircases
+        # shared by all conditions: fine for 0 to +/-250 ms but at +/-450 sigma error 41-56%, PSE error 33-90 ms.
+        # Each staircase has 8-15 reversals over its 51 trials (first by trial 5-15).
+        staircases=("2D1U", "1D3U"), trials_per_staircase=17,
         floor=-0.95, lapse_levels=("floor", TEST_CEILING),
         # Conflicts from 4 Nov 2026 (user): v1's 7 (0, +/-83, +/-167, +/-250 ms) plus the extremes +/-450 ms,
         # still 9 and whole frames at 120 Hz (10, 20, 30, 54 frames). 28 Oct-4 Nov: 0, +/-117, +/-225, +/-333, +/-450.
