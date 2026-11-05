@@ -212,13 +212,17 @@ QUEST = dict(target="mu_sigma", mu_range=(-1.0, 1.0), n_mu=81, sigma_range=(0.05
 # staircases 0.28; PSE error QUEST+ 55 ms, staircases 50 ms. The joint model fit takes sigma_A and
 # sigma_V from these blocks, so QUEST+ was the default from 3 Nov 2026. From 4 Nov 2026 (user) the
 # staircases are the default again: less precise for sigma, but the v1 method and easy to explain.
+# From 5 Nov 2026 (user): two staircases of 70 per condition instead of four of 35, 2D1U from the floor
+# (converges at 70.7% "test longer") and 1D3U from 950 ms (20.6%). Simulated (140 staircase + 20 easy
+# trials, 300 observers per cell): sigma error 20-30%, as good as 4 x 35 or slightly better (aud sigma
+# 0.6: 23% vs 26%), PSE error the same; 3D1U + 1D2U about the same; 2D1U + 1D2U worse (24-36%).
 UNIMODAL_METHODS = {
     "quest": dict(staircases=("QUEST",), trials_per_staircase=150),          # + 20 easy per noise level
-    # the v2 staircases (as until 27 Oct 2026): v1's rules and steps, opposite-side starts, balanced orders
-    "staircase": dict(staircases=("2D1U", "1D2U", "3D1U", "1D3U"), trials_per_staircase=35),
+    # v1's steps, opposite-side starts, balanced orders. 4 x 35 (2D1U, 1D2U, 3D1U, 1D3U) until 5 Nov 2026
+    "staircase": dict(staircases=("2D1U", "1D3U"), trials_per_staircase=70),
 }
 UNIMODAL_METHOD = "staircase"       # default (QUEST+ 3-4 Nov 2026)
-UNIMODAL_METHOD_LABELS = {"quest": "QUEST+", "staircase": "Staircases (4 x 35, default)"}
+UNIMODAL_METHOD_LABELS = {"quest": "QUEST+", "staircase": "Staircases (2 x 70, default)"}
 
 TASKS = {
     "noise_calibration": dict(
@@ -228,7 +232,7 @@ TASKS = {
     "unimodal_auditory": dict(
         label="Unimodal auditory",
         noise_levels=NOISE_LEVELS, conflicts=(0.0,),
-        # UNIMODAL_METHODS: the staircases 4 x 35 + 20 easy per noise level (320 trials, ~17-22 min; default), or
+        # UNIMODAL_METHODS: the staircases 2 x 70 (2D1U, 1D3U) + 20 easy per noise level (320 trials, ~17-22 min; default), or
         # QUEST+ 150 + 20 easy (340 trials, ~17-24 min). History: v2 staircases (4 x 35 + 14 easy, 308)
         # until 27 Oct 2026; QUEST+ 90 + 14 easy from 27 Oct, 100 + 20 from 28 Oct, 150 + 20 from 29 Oct;
         # the choice between the two in the launcher from 3 Nov 2026.
@@ -238,7 +242,7 @@ TASKS = {
     "unimodal_visual": dict(
         label="Unimodal visual",
         noise_levels=(None,), conflicts=(0.0,),
-        # UNIMODAL_METHODS, as the auditory block: the staircases 4 x 35 + 20 easy (160 trials; default) or
+        # UNIMODAL_METHODS, as the auditory block: the staircases 2 x 70 + 20 easy (160 trials; default) or
         # QUEST+ 150 + 20 easy (170 trials, ~9-12 min). History: staircases (154) until 27 Oct 2026; QUEST+ 70 + 14 easy
         # from 27 Oct, 100 from 28 Oct, 150 + 20 from 29 Oct; the choice in the launcher from 3 Nov 2026.
         **UNIMODAL_METHODS[UNIMODAL_METHOD],

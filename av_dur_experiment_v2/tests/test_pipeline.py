@@ -434,7 +434,7 @@ def check_unimodal_method(tmp):
     """The QUEST+ option for the unimodal blocks (the staircases are the default since 4 Nov 2026), from
     run_task and from the combined session: one QUEST+ x 150 per condition, saved in the metadata."""
     from avdur import run_blocks, run_task
-    assert S.UNIMODAL_METHOD == "staircase" and S.TASKS["unimodal_visual"]["staircases"] == ("2D1U", "1D2U", "3D1U", "1D3U")
+    assert S.UNIMODAL_METHOD == "staircase" and S.TASKS["unimodal_visual"]["staircases"] == ("2D1U", "1D3U")
     assert run_task.main(["--task", "unimodal_visual", "--pid", "SIM40", "--simulate", "--seed", "2",
                           "--method", "quest", "--data-root", str(tmp)]) == 0
     ok, _ = run_blocks.run("SIM41", SimulatedPresenter(6), tmp, simulate=True, background_fits=False,
