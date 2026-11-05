@@ -96,7 +96,9 @@ def _stair_plot(csv_path, plot_dir):
 
 
 def plot(task, df, result, folder, stem):
-    """P(test judged longer) against the test duration (ms), one curve per condition."""
+    """P(test judged longer) against the test duration (ms, log axis), one curve per condition. The fit is a
+    cumulative normal in log(test/standard), so on a log axis the curves are symmetric and sigma is the same
+    horizontal distance (PSE to 84%) everywhere (log axis from 4 Nov 2026; linear before)."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -105,7 +107,8 @@ def plot(task, df, result, folder, stem):
     fig, ax = plt.subplots(figsize=(6.5, 4.6))
     stds = sorted({e["standard_ms"] for e in result["conditions"]})
     x_max = max([v * (1 + S.TEST_CEILING) for v in stds or [500]] + [1000 * df["testDurS"].max()])   # longest test
-    ms = np.linspace(30, x_max, 400)
+    x_min = 0.8 * min(1000 * df["testDurS"].min(), min(stds or [500]) * 0.1)
+    ms = np.geomspace(x_min, x_max, 400)
     styles = dict(zip(stds, ("-", "--", ":", "-.")))
     for entry in result["conditions"]:
         noise, std = entry["noise"], entry["standard_ms"]
@@ -120,7 +123,7 @@ def plot(task, df, result, folder, stem):
             bins = np.unique(np.quantile(x, np.linspace(0, 1, 11)))  # about equal trials per point
             bins[0], bins[-1] = bins[0] - 1e-6, bins[-1] + 1e-6
             pts = pd.DataFrame({"x": x, "y": d.loc[~easy, "chose_test"]}).groupby(pd.cut(x, bins), observed=True).agg(
-                x=("x", "mean"), y=("y", "mean"), n=("y", "size"))
+                x=("x", lambda v: float(np.exp(np.log(v).mean()))), y=("y", "mean"), n=("y", "size"))   # geometric mean
             ax.scatter(pts.x, pts.y, s=10 + 2 * pts.n, color=c, alpha=0.6)
         e = d[easy].groupby((1000 * d.loc[easy, "testDurS"]).round()).chose_test.agg(["mean", "size"])
         ax.scatter(e.index, e["mean"], s=10 + 2 * e["size"], color=c, marker="D", alpha=0.6)
@@ -135,7 +138,12 @@ def plot(task, df, result, folder, stem):
     what = "Auditory test" if task == "crossmodal" else "Test"
     ax.set(xlabel=f"{what} duration (ms)   [standard {', '.join(f'{v:.0f}' for v in stds)} ms]",
            ylabel="P(test judged longer)   [◆ easy trials]",
-           xlim=(0, x_max), ylim=(-0.03, 1.03), title=f"{LABELS[task]}  ({result['n_trials']} trials)")
+           xlim=(x_min, x_max * 1.1), ylim=(-0.03, 1.03), title=f"{LABELS[task]}  ({result['n_trials']} trials)")
+    ax.set_xscale("log")
+    ticks = [t for t in (20, 50, 100, 200, 500, 1000, 2000, 5000) if x_min <= t <= x_max * 1.1]
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([str(t) for t in ticks])
+    ax.minorticks_off()
     ax.legend(frameon=False, fontsize=8, loc="upper left")
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
