@@ -144,7 +144,9 @@ PRACTICE_TRIALS = 20                # v2: easy trials with feedback
 # Warm-up, from 6 Nov 2026 (user): every unimodal block and every main part starts with 10 trials that
 # are dropped in the analysis (kind "warmup"): 3 short and 3 long easy trials (the block's easy-trial
 # durations) in random order, then 4 moderate ones (300 and 800 ms, two each). No feedback, and they do
-# not touch the staircases, which start on trial 11. Orders are balanced; conditions are drawn at random.
+# not touch the staircases, which start on trial 11. From 7 Nov 2026 balanced: the trials alternate between the
+# noise levels, each of which gets both easy ends and both moderate levels, orders balanced within each;
+# main conflicts drawn at random, all different (before: dealt at random; YL got all 3 short at high noise).
 WARMUP = dict(easy_each_end=3, moderate_levels=(-0.4, 0.6), moderate_each=2,
               tasks=("unimodal_auditory", "unimodal_visual", "main"))
 

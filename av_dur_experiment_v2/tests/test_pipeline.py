@@ -100,6 +100,14 @@ def check_warmup(root, pid):
             assert 1000 * w.testDurS.min() >= 49, task                          # 50 ms floor everywhere
             if task == "main":
                 assert w.condition.nunique() == N_WARMUP                      # 10 different conditions
+            # every noise level gets both ends and both moderate levels; orders balanced within each
+            part = np.where(w.trial_num < 6, "easy", "moderate")
+            for (_, noise), g in w.assign(part=part, n=w.audNoise.fillna(-1)).groupby(["part", "n"]):
+                assert g.delta_dur_percents.round(2).nunique() == 2, (task, noise, g.delta_dur_percents.tolist())
+                for _, o in g.groupby(g.delta_dur_percents.round(2)).order:
+                    assert abs((o == 1).sum() - (o == 2).sum()) <= 1, (task, noise)
+            if task == "main":
+                assert sorted(w.audNoise.value_counts().tolist()) == [5, 5], task
     # the first staircase trial of every main part-1 staircase is still at its start level
     m = storage.load_trials("main", pid, root)
     first = m[(m.block == "part1") & (m.kind == "staircase")].sort_values("trial_num").groupby(["condition", "current_stair"]).first()
