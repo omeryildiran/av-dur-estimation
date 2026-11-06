@@ -173,27 +173,58 @@ def _staircase_slots(task, cfg, block, noise_levels, standard=None, easy_per_end
 
 
 def warmup_slots(task, rng, block=None, noise_levels=None, cfg=None):
-    """WARMUP: the trials that open a block, dropped in the analysis. The easy ones (both ends, in random
-    order) come first, then the moderate ones (random order). Conditions cycle through the block's in a
-    random order; each condition alternates its orders, starting test-first in every other condition, so
-    orders are balanced overall and within each condition. They never feed a staircase."""
+    """WARMUP: the trials that open a block, dropped in the analysis. The easy ones (both ends) come
+    first, in random order, then the moderate ones (random order). They never feed a staircase.
+    Balanced, from 7 Nov 2026: the trials alternate between the noise levels, and each noise level
+    alternates between the two ends (and between the two moderate levels), so every noise level gets
+    short and long easy trials (until then the levels were dealt at random, and YL got all three short
+    ones at high noise). In the main experiment each trial gets a different conflict, drawn at random.
+    Orders: chosen at random among the assignments with as many test-first as test-second trials
+    overall and at most one apart within each noise level and within each (noise level, duration)."""
     W, cfg = S.WARMUP, cfg or S.TASKS[task]
     if task not in W["tasks"]:
         return []
-    easy = [lv for lv in cfg["lapse_levels"] for _ in range(W["easy_each_end"])]
-    moderate = [lv for lv in W["moderate_levels"] for _ in range(W["moderate_each"])]
-    rng.shuffle(easy)
-    rng.shuffle(moderate)
     conds = conditions(task, block, noise_levels, cfg)
-    conds = [conds[i] for i in rng.permutation(len(conds))]
-    slots, seen = [], {}
-    for i, level in enumerate(easy + moderate):
-        c = i % len(conds)
-        k = seen.get(c, 0)
-        seen[c] = k + 1
-        noise, conflict = conds[c]
-        slots.append(TrialSpec(task, noise, conflict, "warmup", None, level, 1 + (k + c) % 2))
-    return slots
+    noises = list(dict.fromkeys(n for n, _ in conds))
+    conflicts = {n: [c for nn, c in conds if nn == n] for n in noises}
+    for n in noises:                                   # each noise level's conflicts in random order
+        conflicts[n] = [conflicts[n][k] for k in rng.permutation(len(conflicts[n]))]
+    groups = [list(cfg["lapse_levels"]), list(W["moderate_levels"])]
+    sizes = [2 * W["easy_each_end"], len(W["moderate_levels"]) * W["moderate_each"]]
+    first_noise = int(rng.integers(len(noises)))
+    trials, i, used = [], 0, {}                        # (group, noise, conflict, level)
+    for g, (levels, size) in enumerate(zip(groups, sizes)):
+        flip, visits = int(rng.integers(2)), {}
+        for _ in range(size):
+            k = (i + first_noise) % len(noises)
+            noise = noises[k]
+            visit = visits.get(k, 0)                   # this noise level's trials so far in this group
+            visits[k] = visit + 1
+            n_used = used.get(k, 0)                    # and in the whole warm-up (for its conflicts)
+            used[k] = n_used + 1
+            conflict = conflicts[noise][n_used % len(conflicts[noise])]
+            trials.append((g, noise, conflict, levels[(visit + k + flip) % 2]))
+            i += 1
+
+    def balanced(orders):
+        def ok(idx):
+            n1 = sum(orders[j] == 1 for j in idx)
+            return abs(2 * n1 - len(idx)) <= 1
+        if sum(o == 1 for o in orders) * 2 != len(orders) and len(orders) % 2 == 0:
+            return False
+        keys = {}
+        for j, (g, noise, _, level) in enumerate(trials):
+            keys.setdefault(("noise", noise), []).append(j)
+            keys.setdefault((g, noise, level), []).append(j)
+        return all(ok(idx) for idx in keys.values())
+
+    n = len(trials)
+    valid = [o for o in itertools.product((1, 2), repeat=n) if balanced(o)]
+    orders = valid[int(rng.integers(len(valid)))]
+    slots = [TrialSpec(task, noise, conflict, "warmup", None, level, order)
+             for (g, noise, conflict, level), order in zip(trials, orders)]
+    easy, moderate = slots[:sizes[0]], slots[sizes[0]:]
+    return [easy[k] for k in rng.permutation(len(easy))] + [moderate[k] for k in rng.permutation(len(moderate))]
 
 
 def build_trials(task, rng, block=None, practice=False, first_order=1, noise_levels=None, cfg=None, standards=None):

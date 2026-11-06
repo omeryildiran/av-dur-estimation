@@ -61,7 +61,7 @@ When a session ends complete, its files are copied to `data_solid/` (see [Data l
 Other launcher options:
 
 - **Practice** runs a short version of a task (easy trials with feedback). Practice data are saved separately and never analysed.
-- **Warm-up** (from 6 Nov 2026): every unimodal block and every main part starts with 10 trials that are dropped in the analysis: 3 short and 3 long easy trials in random order, then 4 moderate ones (2 × 300 ms, 2 × 800 ms). No feedback; they never move a staircase, so the staircases start on trial 11. They are saved with `kind` = `warmup`; `storage.load_trials` and the block fits leave them out (`load_trials(..., warmup=True)` keeps them). Set in `WARMUP` in `experiment_settings.py`.
+- **Warm-up** (from 6 Nov 2026): every unimodal block and every main part starts with 10 trials that are dropped in the analysis: 3 short and 3 long easy trials in random order, then 4 moderate ones (2 × 300 ms, 2 × 800 ms). The trials alternate between the noise levels, and each noise level gets both short and long easy trials and both moderate ones, with orders balanced (from 7 Nov 2026). No feedback; they never move a staircase, so the staircases start on trial 11. They are saved with `kind` = `warmup`; `storage.load_trials` and the block fits leave them out (`load_trials(..., warmup=True)` keeps them). Set in `WARMUP` in `experiment_settings.py`.
 - **Simulate** runs a task with a simulated observer and no window, to test the code on any computer.
 - **Autotest** runs a task on the real display and sound card with automatic answers. Data go to `data_test/`, and a timing report appears at the end. See [Autotest](#autotest).
 - **Text menu:** if Tk is missing, `python run_experiment.py --cli` gives a text menu.
