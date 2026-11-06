@@ -25,7 +25,7 @@ def plot_staircases(d, title='', show_fit=True):
     condition. Filled marker: test judged longer; open: standard judged longer; black ring:
     reversal; grey x: easy (lapse) trial. Dotted line: standard; dashed: fitted PSE."""
     task = d.task.iloc[0]
-    d = d.sort_values('trial_num').copy()
+    d = d[d.kind != 'warmup'].sort_values('trial_num').copy()       # warm-up trials are not analysed
     d['test_ms'] = 1000 * d.testDurS
     d['noise'] = d.audNoise.fillna(-1)
     d['std_ms'] = (1000 * d.standardDur).round()

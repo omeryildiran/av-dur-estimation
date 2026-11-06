@@ -32,7 +32,7 @@ def block_fit(task, csv_path, plot_dir=None):
     df = pd.read_csv(csv_path)
     df = df[df["responses"].isin([1, 2])].copy()
     df["cond"] = df["audNoise"] if task != "unimodal_visual" else "visual"
-    df = df[df["kind"] != "practice"]
+    df = df[~df["kind"].isin(["practice", "warmup"])]           # warm-up trials are never analysed
     several = df["standardDur"].round(3).nunique() > 1             # cross-modal standards interleaved
     if several:
         df["cond"] = (1000 * df["standardDur"]).round().astype(int).astype(str) + "|" + df["audNoise"].astype(str)
@@ -180,7 +180,7 @@ def main_block_fit(csv_path, plot_dir=None):
     """PSE shift per noise level and conflict, the slope of PSE on conflict (the weight given to
     the visual duration), and a plot. Pooled over presentation orders, lognormal, lapse <= 0.1."""
     df = pd.read_csv(csv_path)
-    df = df[df["responses"].isin([1, 2]) & (df["kind"] != "practice")].copy()
+    df = df[df["responses"].isin([1, 2]) & ~df["kind"].isin(["practice", "warmup"])].copy()
     df["conflict_ms"] = (1000 * df["conflict_nominal"]).round().astype(int)
     result = dict(task="main", csv=str(csv_path), n_trials=int(len(df)), block=str(df["block"].iloc[0]) if len(df) else "",
                   conditions=[], slopes={}, warnings=[], plot=None)

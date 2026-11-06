@@ -141,6 +141,13 @@ RESPONSE_KEYS = {"left": 1, "right": 2}   # v1: 1 = first interval longer, 2 = s
 QUIT_KEY = "escape"
 PRACTICE_TRIALS = 20                # v2: easy trials with feedback
 
+# Warm-up, from 6 Nov 2026 (user): every unimodal block and every main part starts with 10 trials that
+# are dropped in the analysis (kind "warmup"): 3 short and 3 long easy trials (the block's easy-trial
+# durations) in random order, then 4 moderate ones (300 and 800 ms, two each). No feedback, and they do
+# not touch the staircases, which start on trial 11. Orders are balanced; conditions are drawn at random.
+WARMUP = dict(easy_each_end=3, moderate_levels=(-0.4, 0.6), moderate_each=2,
+              tasks=("unimodal_auditory", "unimodal_visual", "main"))
+
 # ── Combined session: unimodal auditory, unimodal visual, cross-modal in one window ──
 # After each block the psychometric functions are fitted in a background process while the
 # participant rests; the fit, a plot and checks appear on the terminal. If a check fails, the
@@ -281,7 +288,8 @@ TASKS = {
         # shared by all conditions: fine for 0 to +/-250 ms but at +/-450 sigma error 41-56%, PSE error 33-90 ms.
         # Each staircase has 8-15 reversals over its 51 trials (first by trial 5-15).
         staircases=("2D1U", "1D3U"), trials_per_staircase=17,
-        floor=-0.95, lapse_levels=("floor", TEST_CEILING),
+        # Floor -0.9 (50 ms, as the unimodal blocks) from 6 Nov 2026 (user); -0.95 (25 ms) until then.
+        floor=-0.9, lapse_levels=("floor", TEST_CEILING),
         # Conflicts from 4 Nov 2026 (user): v1's 7 (0, +/-83, +/-167, +/-250 ms) plus the extremes +/-450 ms,
         # still 9 and whole frames at 120 Hz (10, 20, 30, 54 frames). 28 Oct-4 Nov: 0, +/-117, +/-225, +/-333, +/-450.
         blocks={part: (0.0, -0.0833, 0.0833, -0.1667, 0.1667, -0.25, 0.25, -0.45, 0.45)

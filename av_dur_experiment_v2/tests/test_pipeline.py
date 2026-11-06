@@ -49,29 +49,61 @@ def _intervals(col):
 
 # ── checks ────────────────────────────────────────────────────────────────────
 
+N_WARMUP = 2 * S.WARMUP["easy_each_end"] + len(S.WARMUP["moderate_levels"]) * S.WARMUP["moderate_each"]
+
+
 def n_trials(task, n_noise, n_conflicts=1):
-    """Adaptive trials plus the easy trials (EASY_TRIALS: per noise level, at least 20)."""
+    """Adaptive trials plus the easy trials (EASY_TRIALS: per noise level, at least 20), plus the warm-up."""
     cfg = S.TASKS[task]
     adaptive = n_conflicts * len(cfg["staircases"]) * cfg["trials_per_staircase"]
-    return n_noise * (adaptive + design.n_easy(adaptive))
+    return n_noise * (adaptive + design.n_easy(adaptive)) + N_WARMUP
 
 
 def check_counts(root, pid):
     expected = {"unimodal_auditory": n_trials("unimodal_auditory", 2), "unimodal_visual": n_trials("unimodal_visual", 1)}
-    assert expected == {"unimodal_auditory": 320, "unimodal_visual": 160}, expected     # staircases (UNIMODAL_METHOD)
+    assert N_WARMUP == 10
+    assert expected == {"unimodal_auditory": 330, "unimodal_visual": 170}, expected     # staircases (UNIMODAL_METHOD)
     for task, n in expected.items():
-        d = storage.load_trials(task, pid, root)
+        d = storage.load_trials(task, pid, root, warmup=True)
         assert len(d) == n, (task, len(d), n)
         easy = d[d.kind == "lapse"].groupby(d.audNoise.fillna(-1)).size()
         assert (easy == S.EASY_TRIALS["minimum"]).all(), (task, easy)
-    m = storage.load_trials("main", pid, root)
+    m = storage.load_trials("main", pid, root, warmup=True)
     per_block = m.groupby("block").size().to_dict()
     parts = tuple(S.TASKS["main"]["blocks"])
-    assert per_block == {b: 676 for b in parts} == {b: n_trials("main", 2, 9) for b in per_block}, per_block
+    assert per_block == {b: 686 for b in parts} == {b: n_trials("main", 2, 9) for b in per_block}, per_block
     stair = m[m.kind == "staircase"].groupby(["block", "condition"]).size()
     assert len(stair) == len(parts) * 18 and (stair == 34).all()
     easy = m[m.kind == "lapse"].groupby(["block", "condition"]).size()
     assert easy.between(3, 4).all() and (m[m.kind == "lapse"].groupby(["block", "audNoise"]).size() == 32).all()
+
+
+def check_warmup(root, pid):
+    """Every block opens with the warm-up: 3 short + 3 long easy trials in random order, then 2 x 300 and
+    2 x 800 ms; orders balanced; no staircase moved; left out by load_trials and the screening fit."""
+    for task in ("unimodal_auditory", "unimodal_visual", "main"):
+        cfg = S.TASKS[task]
+        d = storage.load_trials(task, pid, root, warmup=True)
+        assert "warmup" not in set(storage.load_trials(task, pid, root).kind), task
+        for _, s in d.groupby("session_file"):
+            s = s.sort_values("trial_num")
+            w = s[s.kind == "warmup"]
+            assert w.trial_num.tolist() == list(range(N_WARMUP)), (task, w.trial_num.tolist())
+            assert (w.current_stair == "warmup").all() and (w.stair_start.isna() | (w.stair_start == "")).all()
+            ends = [-0.9 if lv == "floor" else lv for lv in cfg["lapse_levels"]]
+            easy, moderate = w.delta_dur_percents.iloc[:6].round(2), w.delta_dur_percents.iloc[6:].round(2)
+            assert sorted(easy) == sorted(ends * 3), (task, easy.tolist())
+            assert sorted(moderate) == [-0.4, -0.4, 0.6, 0.6], (task, moderate.tolist())
+            assert abs((w.order == 1).sum() - (w.order == 2).sum()) == 0, task
+            assert w.groupby("condition").order.apply(lambda o: abs((o == 1).sum() - (o == 2).sum())).max() <= 1, task
+            assert (s[s.trial_num >= N_WARMUP].kind != "warmup").all()
+            assert 1000 * w.testDurS.min() >= 49, task                          # 50 ms floor everywhere
+            if task == "main":
+                assert w.condition.nunique() == N_WARMUP                      # 10 different conditions
+    # the first staircase trial of every main part-1 staircase is still at its start level
+    m = storage.load_trials("main", pid, root)
+    first = m[(m.block == "part1") & (m.kind == "staircase")].sort_values("trial_num").groupby(["condition", "current_stair"]).first()
+    assert set(first.delta_dur_percents.round(2)) == {-0.9, S.STAIRCASE["start_top"]}, set(first.delta_dur_percents)
 
 
 def check_order_balance(root, pid):
@@ -497,6 +529,7 @@ def run_all(root=SIM_ROOT):
                            ("SIM02", 2, dict(true_bias={0.1: -0.12, 1.2: 0.15}, interval_bias=0.8))):
         simulate_participant(pid, seed, obs, root)
         check_counts(root, pid)
+        check_warmup(root, pid)
         check_order_balance(root, pid)
         check_staircase_starts(root, pid)
         check_quest(root, pid)

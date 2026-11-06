@@ -2,7 +2,8 @@
 
 Every staircase and every set of lapse trials gets as many test-first as test-second
 trials (an odd count is alternated between staircases, so each condition is balanced).
-The whole list is then shuffled, so conditions and staircases are randomly interleaved.
+The whole list is then shuffled, so conditions and staircases are randomly interleaved, and
+the warm-up trials (WARMUP, dropped in the analysis) are put in front of it.
 The cross-modal task keeps v1's pre-cued order blocks: each block of
 `order_block_size` trials has one order, and blocks alternate. It can interleave several
 standard durations in one session (`standards`), each with its own design.
@@ -25,9 +26,9 @@ class TrialSpec:
     task: str
     noise: float | None
     conflict: float
-    kind: str                      # "staircase", "lapse" or "practice"
+    kind: str                      # "staircase", "lapse", "practice" or "warmup"
     staircase: str | None          # rule of the staircase that sets the test level
-    fixed_level: float | None      # level for lapse/practice trials ("floor" resolved later)
+    fixed_level: float | None      # level for lapse/practice/warm-up trials ("floor" resolved later)
     order: int                     # 1 = test first, 2 = test second
     order_block: int | None = None # cross-modal mini-block index
     standard: float | None = None  # standard duration (s); None: the session's (cross-modal can interleave several)
@@ -171,6 +172,30 @@ def _staircase_slots(task, cfg, block, noise_levels, standard=None, easy_per_end
     return slots
 
 
+def warmup_slots(task, rng, block=None, noise_levels=None, cfg=None):
+    """WARMUP: the trials that open a block, dropped in the analysis. The easy ones (both ends, in random
+    order) come first, then the moderate ones (random order). Conditions cycle through the block's in a
+    random order; each condition alternates its orders, starting test-first in every other condition, so
+    orders are balanced overall and within each condition. They never feed a staircase."""
+    W, cfg = S.WARMUP, cfg or S.TASKS[task]
+    if task not in W["tasks"]:
+        return []
+    easy = [lv for lv in cfg["lapse_levels"] for _ in range(W["easy_each_end"])]
+    moderate = [lv for lv in W["moderate_levels"] for _ in range(W["moderate_each"])]
+    rng.shuffle(easy)
+    rng.shuffle(moderate)
+    conds = conditions(task, block, noise_levels, cfg)
+    conds = [conds[i] for i in rng.permutation(len(conds))]
+    slots, seen = [], {}
+    for i, level in enumerate(easy + moderate):
+        c = i % len(conds)
+        k = seen.get(c, 0)
+        seen[c] = k + 1
+        noise, conflict = conds[c]
+        slots.append(TrialSpec(task, noise, conflict, "warmup", None, level, 1 + (k + c) % 2))
+    return slots
+
+
 def build_trials(task, rng, block=None, practice=False, first_order=1, noise_levels=None, cfg=None, standards=None):
     """standards: [(standard_s, cfg)] to interleave in one session (cross-modal), each with its own design."""
     cfg = cfg or S.TASKS[task]
@@ -194,7 +219,7 @@ def build_trials(task, rng, block=None, practice=False, first_order=1, noise_lev
 
     rng.shuffle(slots)
     if task != "crossmodal":
-        return slots
+        return slots if practice else warmup_slots(task, rng, block, noise_levels, cfg) + slots
 
     # cross-modal: fill alternating single-order blocks from the two order pools
     size = cfg["order_block_size"]

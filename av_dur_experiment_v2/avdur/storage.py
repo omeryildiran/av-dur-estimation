@@ -171,11 +171,14 @@ def sessions(pid=None, task=None, root=None, completed_only=True):
     return sorted(out, key=lambda m: m["started"])
 
 
-def load_trials(task, pid=None, root=None, completed_only=True):
+def load_trials(task, pid=None, root=None, completed_only=True, warmup=False):
+    """All trials of the completed sessions; the warm-up trials (kind "warmup") only with warmup=True."""
     frames = []
     for meta in sessions(pid, task, root, completed_only):
         if Path(meta["csv"]).exists():
             d = pd.read_csv(meta["csv"])
+            if not warmup:
+                d = d[d["kind"] != "warmup"]
             d["session_file"] = Path(meta["csv"]).name
             frames.append(d)
     return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
