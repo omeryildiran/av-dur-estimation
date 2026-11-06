@@ -140,7 +140,7 @@ def check_preparation_and_answer_window(root, pid):
 
 def check_parts(root, pid):
     """Main experiment: no visual correction; each part continues every staircase exactly where the earlier
-    parts stopped."""
+    parts stopped, with the first step again (RESET_STEP_EACH_PART)."""
     m = storage.load_trials("main", pid, root)
     assert (m.VisualPSE == 0).all() and not any(meta.get("bias_file") for meta in storage.sessions(pid, "main", root))
     metas = storage.sessions(pid, "main", root)
@@ -154,8 +154,12 @@ def check_parts(root, pid):
             st = Staircase(rule, S.TASKS["main"]["floor"], start=g.stair_start.iloc[0], **S.STAIRCASE)
             for y in g.chose_test:
                 st.update(bool(y))
-            nxt = b[(b.audNoise == noise) & (b.conflict_nominal == conflict) & (b.current_stair == rule)].delta_dur_percents
-            assert abs(st.level - nxt.iloc[0]) < 1e-6, (metas[k]["block"], noise, conflict, rule, st.level, nxt.iloc[0])
+            if S.RESET_STEP_EACH_PART:
+                st.reset_step()
+            cur = b[(b.audNoise == noise) & (b.conflict_nominal == conflict) & (b.current_stair == rule)]
+            for level, y in zip(cur.delta_dur_percents, cur.chose_test):   # the whole part, with the reset step
+                assert abs(st.level - level) < 1e-6, (metas[k]["block"], noise, conflict, rule, st.level, level)
+                st.update(bool(y))
     for part in ("part2", "part3"):
         try:
             Session("main", "SIM98", SimulatedPresenter(0), block=part, root=root, simulate=True)
@@ -224,6 +228,11 @@ def check_staircase_rules():
         levels.append(round(s.level, 4))
     # up 0.16, up 0.16, down (reversal -> step 0.08), up (reversal -> 0.04), down 0.04, down 0.04
     assert levels == [-0.74, -0.58, -0.58, -0.66, -0.62, -0.62, -0.66, -0.66, -0.7], levels
+    s.reset_step()                                     # main parts 2-3: same level, first step, halving again
+    s.update(True); s.update(True)                     # down 0.16 (same direction as before: no reversal)
+    assert [round(s.level, 4), round(s.step, 4)] == [-0.86, 0.16], (s.level, s.step)
+    s.update(False)                                    # up: reversal -> 0.08
+    assert [round(s.level, 4), round(s.step, 4)] == [-0.78, 0.08], (s.level, s.step)
     top = Staircase("1D2U", floor=-0.9, start="ceiling")
     assert top.level == 0.9 and round(Staircase("1D1U_b", floor=-0.9).level, 2) == -0.9
     top.update(True)                                   # 1D: one "test longer" steps down from the ceiling

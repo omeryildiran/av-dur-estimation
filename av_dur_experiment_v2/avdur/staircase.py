@@ -6,6 +6,9 @@ this form converges; v1's "1U1D" (which moved away from threshold) cannot be exp
 A suffix after an underscore only names a second staircase with the same rule ("1D1U_b").
 `start` is "floor" or "ceiling": v2 starts one staircase of each pair at each end
 (design.staircase_starts); v1 started every staircase at the floor.
+`reset_step()` (main experiment, start of parts 2 and 3) keeps the level but goes back to the first
+step, halved again at that part's first reversals, so a staircase can follow a listener who changed
+between days.
 """
 
 from __future__ import annotations
@@ -30,6 +33,7 @@ class Staircase:
         self.level = (self.ceiling if start_top is None else float(start_top)) if start == "ceiling" else self.floor
         self.step = init_step
         self.reversals = 0
+        self._reversals_at_reset = 0        # reset_step(): the step halves again from this reversal on
         self.is_reversal = False
         self._test_streak = 0
         self._standard_streak = 0
@@ -53,10 +57,16 @@ class Staircase:
                 self._standard_streak = 0
                 self._move(+1)
 
+    def reset_step(self):
+        """Back to the first step; it halves again at the next n_step_changes reversals. Level unchanged."""
+        self.step = self.init_step
+        self._reversals_at_reset = self.reversals
+
     def _move(self, direction):
         self._directions.append(direction)
         if len(self._directions) >= 2 and self._directions[-1] != self._directions[-2]:
             self.is_reversal = True
             self.reversals += 1
-            self.step = self.init_step * self.step_factor ** min(self.reversals, self.n_step_changes)
+            self.step = self.init_step * self.step_factor ** min(self.reversals - self._reversals_at_reset,
+                                                                  self.n_step_changes)
         self.level = min(max(self.level + direction * self.step, self.floor), self.ceiling)

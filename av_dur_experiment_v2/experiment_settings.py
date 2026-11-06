@@ -189,7 +189,13 @@ AUTOTEST_BIAS_S = {0.1: 0.10, 1.2: -0.05}   # main-block corrections when no ful
 # safety cap of 5.0 (3000 ms, 6x the standard), which only stops runaways (a guessing listener pushes a
 # 2D1U staircase up). QUEST+ candidates and the long easy trials go up to TEST_CEILING = 3.0 (2000 ms,
 # log 1.39; 1500 ms on 4 Nov): about 92% correct even at sigma 1, where v1's 950 ms gave 74%.
+# Main experiment parts (6 Nov 2026, user): parts 2 and 3 continue the staircases at their levels but go
+# back to the first step (80 ms), halved again at that part's first two reversals, so a staircase can follow
+# a listener who changed between days. Simulated (part 1 day 1, parts 2-3 day 2; PSE +80 ms or sigma x1.5 or
+# x0.67 on day 2): sigma error 31-34% vs 35-38% at sigma 0.8, otherwise the same; restarting each part was
+# slightly worse everywhere.
 STAIRCASE = dict(init_step=0.16, step_factor=0.5, n_step_changes=2, start_top=0.9, ceiling=5.0)
+RESET_STEP_EACH_PART = True
 TEST_CEILING = 3.0
 
 # QUEST+ (avdur/quest.py): a task whose staircases are ("QUEST",) gets one QUEST+ per condition
