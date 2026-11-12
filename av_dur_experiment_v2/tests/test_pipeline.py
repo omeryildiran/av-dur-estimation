@@ -187,17 +187,17 @@ def check_parts(root, pid):
     assert [x["block"] for x in metas] == list(S.TASKS["main"]["blocks"]) == ["part1", "part2", "part3"]
     for k in range(1, len(metas)):
         assert metas[k]["staircases_continue"] == [Path(x["csv"]).name for x in metas[:k]], metas[k]["block"]
-        before = pd.concat([pd.read_csv(x["csv"]) for x in metas[:k]]).query("kind == 'staircase'")
-        b = pd.read_csv(metas[k]["csv"]).query("kind == 'staircase'").sort_values("trial_num")
-        for (noise, conflict, rule), g in before.groupby(["audNoise", "conflict_nominal", "current_stair"]):
-            g = g.sort_values(["block", "trial_num"])
-            st = Staircase(rule, S.TASKS["main"]["floor"], start=g.stair_start.iloc[0], **S.STAIRCASE)
-            for y in g.chose_test:
-                st.update(bool(y))
-            if S.RESET_STEP_EACH_PART:
+    # one forward pass through the parts in the order they were run, step reset at each part's start:
+    # every recorded level must follow, so each part starts exactly where the one before it ended
+    parts = [pd.read_csv(x["csv"]).query("kind == 'staircase'").sort_values("trial_num") for x in metas]
+    for (noise, conflict, rule), g in parts[0].groupby(["audNoise", "conflict_nominal", "current_stair"]):
+        st = Staircase(rule, S.TASKS["main"]["floor"], start=g.stair_start.iloc[0], **S.STAIRCASE)
+        for k, b in enumerate(parts):
+            if k and S.RESET_STEP_EACH_PART:
                 st.reset_step()
             cur = b[(b.audNoise == noise) & (b.conflict_nominal == conflict) & (b.current_stair == rule)]
-            for level, y in zip(cur.delta_dur_percents, cur.chose_test):   # the whole part, with the reset step
+            assert len(cur) == S.TASKS["main"]["trials_per_staircase"]
+            for level, y in zip(cur.delta_dur_percents, cur.chose_test):
                 assert abs(st.level - level) < 1e-6, (metas[k]["block"], noise, conflict, rule, st.level, level)
                 st.update(bool(y))
     for part in ("part2", "part3"):

@@ -225,10 +225,13 @@ class Session:
             for n, c, r, y in zip(d["audNoise"], d["conflict_nominal"], d["current_stair"], d["chose_test"]):
                 stairs[keys[(round(float(n), 4), round(float(c), 4), r)]].update(bool(y))
             replayed.append(Path(meta["csv"]).name)
-        if S.RESET_STEP_EACH_PART:          # same level, first step again (from 6 Nov 2026)
-            for st in stairs.values():
-                if hasattr(st, "reset_step"):
-                    st.reset_step()
+            # Same level, first step again (from 6 Nov 2026), after EACH replayed part, as each part was run.
+            # From 12 Nov 2026: until then the step was reset once, after the whole replay, so part 3 replayed
+            # part 2's answers with part 1's small step and started away from where part 2 ended (MZ).
+            if S.RESET_STEP_EACH_PART:
+                for st in stairs.values():
+                    if hasattr(st, "reset_step"):
+                        st.reset_step()
         self.continued_from = replayed
 
     def _trial_level(self, spec, stair):
