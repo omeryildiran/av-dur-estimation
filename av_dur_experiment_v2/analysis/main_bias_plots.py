@@ -3,6 +3,7 @@ psychometric fit of every condition. Lognormal fit, lapse <= 0.1 shared per nois
 
     python analysis/main_bias_plots.py MZ            # figures to analysis/pilot_main/
     python analysis/main_bias_plots.py MZ --refit    # refit (otherwise the saved fits are reused)
+    python analysis/main_bias_plots.py BQ --keep-fast   # keep answers < 100 ms (files get a _keepfast suffix)
 
 Left out: warm-up trials (load_trials), trials with a dropped frame or a late first frame (more than half
 a frame, so sound and flash were misaligned), and answers faster than 100 ms after the prompt.
@@ -27,6 +28,8 @@ PID = sys.argv[1] if len(sys.argv) > 1 else "MZ"
 DATA = ROOT / "data"
 OUT = ROOT / "analysis" / "pilot_main"
 N_BOOT = 200
+KEEP_FAST = "--keep-fast" in sys.argv
+SUF = "_keepfast" if KEEP_FAST else ""
 INK, MUTED, GREY = "#0b0b0b", "#52514e", "#9a9993"
 COL = {S.NOISE_LOW: "#2a78d6", S.NOISE_HIGH: "#eb6834"}          # categorical slots 1-2 (validated pair)
 plt.rcParams.update({"font.size": 10, "axes.spines.top": False, "axes.spines.right": False, "axes.edgecolor": GREY,
@@ -37,7 +40,7 @@ plt.rcParams.update({"font.size": 10, "axes.spines.top": False, "axes.spines.rig
 def clean(d):
     d = d[d.responses.isin([1, 2])]
     glitch = (d.n_dropped_frames.fillna(0) > 0) | (d.flip0_error_s.abs() > 0.5 / S.EXPECTED_FRAME_RATE_HZ)
-    fast = d.response_rts < 0.1
+    fast = (d.response_rts < 0.1) & (not KEEP_FAST)
     return d[~glitch & ~fast], int(glitch.sum()), int(fast.sum())
 
 
@@ -76,7 +79,7 @@ def main():
     m = m[m.kind.isin(["staircase", "lapse"])]
     m["conflict_ms"] = (1000 * m.conflict_nominal).round().astype(int)
     rows = []
-    saved = OUT / f"{PID}_main_fits.csv"
+    saved = OUT / f"{PID}_main_fits{SUF}.csv"
     if saved.exists() and "--refit" not in sys.argv:          # the bootstrap takes a few minutes
         rows = pd.read_csv(saved).to_dict("records")
     for (noise, c), d in ([] if rows else m.groupby(["audNoise", "conflict_ms"])):
@@ -87,7 +90,7 @@ def main():
     fits = pd.DataFrame(rows)
     uni = unimodal_sigmas(PID)
     OUT.mkdir(parents=True, exist_ok=True)
-    fits.round(4).to_csv(OUT / f"{PID}_main_fits.csv", index=False)
+    fits.round(4).to_csv(OUT / f"{PID}_main_fits{SUF}.csv", index=False)
 
     # ── figure 1: PSE shift and sigma against conflict ──────────────────────────
     fig, (a1, a2) = plt.subplots(1, 2, figsize=(11.5, 4.6))
@@ -126,10 +129,11 @@ def main():
     a1.tick_params(axis="x", labelrotation=45); a2.tick_params(axis="x", labelrotation=45)
     a1.legend(loc="lower right", fontsize=8.5)
     a2.legend(loc="upper right", fontsize=8.5)
-    fig.text(0.01, 0.005, f"{len(m)} trials (3 parts pooled; warm-up, {n_glitch} timing-glitch and {n_fast} "
+    parts = ", ".join(sorted(m.block.unique()))
+    fig.text(0.01, 0.005, f"{len(m)} trials ({parts} pooled; warm-up, {n_glitch} timing-glitch and {n_fast} "
              f"answers < 100 ms left out, of {n_all}). Lognormal fit, lapse ≤ 0.1.", color=MUTED, fontsize=8.5)
     fig.tight_layout(rect=(0, 0.03, 1, 1))
-    fig.savefig(OUT / f"{PID}_main_pse_sigma.png", dpi=160)
+    fig.savefig(OUT / f"{PID}_main_pse_sigma{SUF}.png", dpi=160)
 
     # ── figure 2: psychometric fits, one panel per noise level, one curve per conflict ──
     # diverging colour by conflict: blue = flash shorter than the sound, red = longer, grey = none
@@ -165,10 +169,10 @@ def main():
         ax.set_xlabel("test duration (ms; standard 500)")
         ax.legend(title="conflict (visual − auditory standard)", loc="upper left", fontsize=8.3, title_fontsize=8.5)
     np.atleast_1d(axes)[0].set_ylabel("P(test judged longer)")
-    fig.suptitle(f"{PID}: main experiment, all parts — lines: lognormal fits; dots: staircase trials, binned; "
+    fig.suptitle(f"{PID}: main experiment, {parts} — lines: lognormal fits; dots: staircase trials, binned; "
                  "dotted: standard", fontsize=10, color=INK, x=0.01, ha="left")
     fig.tight_layout(rect=(0, 0, 1, 0.95))
-    fig.savefig(OUT / f"{PID}_main_psychometrics.png", dpi=160)
+    fig.savefig(OUT / f"{PID}_main_psychometrics{SUF}.png", dpi=160)
     print(fits.round(3).to_string(index=False))
     print("unimodal sigma:", {k: round(v, 3) for k, v in uni.items()})
     print(f"left out: {n_glitch} timing glitches, {n_fast} answers < 100 ms (of {n_all})")
