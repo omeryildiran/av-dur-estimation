@@ -20,10 +20,19 @@ def condition_label(task, noise, conflict, standard_ms=None):
     return label + (f', conflict {1000 * conflict:+.0f} ms' if task == 'main' else '')
 
 
+def y_range(d, std_ms):
+    """Y limits (ms) that hold every staircase trial and the standard, with a small margin."""
+    s = d.test_ms[d.kind == 'staircase']
+    lo, hi = min(s.min(), std_ms) if len(s) else std_ms, max(s.max(), std_ms) if len(s) else std_ms
+    pad = 0.06 * (hi - lo) + 10
+    return max(lo - pad, 0), hi + pad
+
+
 def plot_staircases(d, title='', show_fit=True):
     """Test duration (ms) of every trial in session order, one line per staircase, one panel per
     condition. Filled marker: test judged longer; open: standard judged longer; black ring:
-    reversal; grey x: easy (lapse) trial. Dotted line: standard; dashed: fitted PSE."""
+    reversal; grey x: easy (lapse) trial, grey triangle on the panel edge: easy trial outside the
+    staircases' range. Dotted line: standard; dashed: fitted PSE."""
     task = d.task.iloc[0]
     d = d[d.kind != 'warmup'].sort_values('trial_num').copy()       # warm-up trials are not analysed
     d['test_ms'] = 1000 * d.testDurS
@@ -59,9 +68,20 @@ def plot_staircases(d, title='', show_fit=True):
             ax.scatter(s.trial_num[~yes], s.test_ms[~yes], s=22, facecolors='white', edgecolors=col, zorder=3)
             rev = s.stair_is_reversal.isin(TRUE)
             ax.scatter(s.trial_num[rev], s.test_ms[rev], s=70, facecolors='none', edgecolors='black', lw=1, zorder=4)
-        lapse = c[c.kind == 'lapse']
-        ax.scatter(lapse.trial_num, lapse.test_ms, marker='x', color='0.5', s=25, label='easy trials')
+        # The y range follows the staircases, not the easy trials (from 13 Nov 2026): an easy trial outside it
+        # (e.g. 2000 ms) is drawn on the panel edge as a grey triangle, so the staircases keep the room.
         std = 1000 * c.standardDur.iloc[0]
+        lo, hi = y_range(d if not several else c, std)
+        ax.set_ylim(lo, hi)
+        lapse = c[c.kind == 'lapse']
+        inside = lapse.test_ms.between(lo, hi)
+        ax.scatter(lapse.trial_num[inside], lapse.test_ms[inside], marker='x', color='0.5', s=25, label='easy trials')
+        for side, y, mk in (('above', hi, '^'), ('below', lo, 'v')):
+            out = lapse[lapse.test_ms > hi] if side == 'above' else lapse[lapse.test_ms < lo]
+            if len(out):
+                ms = ', '.join(f'{v:.0f}' for v in sorted(out.test_ms.round().unique()))
+                ax.scatter(out.trial_num, np.full(len(out), y), marker=mk, color='0.5', s=22, clip_on=False,
+                           zorder=5, label=f'easy trials at {ms} ms (drawn on the edge)')
         ax.axhline(std, color='0.4', ls=':', lw=1)
         if show_fit and c.responses.isin([1, 2]).sum() > 20:
             p = pm.fit(c.assign(cnd='x'), 'cnd', 'lognormal', lapse_max=0.1)['params'].iloc[0]
