@@ -1,0 +1,32 @@
+{
+  "participant": "BQ",
+  "analysis": "main",
+  "status": "complete",
+  "fingerprint": "227e50c3fd02",
+  "data_files": [
+    "BQ_main_part1_20261113-130813.csv",
+    "BQ_main_part2_20261113-134918.csv",
+    "BQ_main_part3_20261113-144146.csv"
+  ],
+  "n_trials": 2025,
+  "nll": 1107.638237825643,
+  "at_bound": [
+    "lapse[1]"
+  ],
+  "lapse_groups": "noise",
+  "n_boot": 1000,
+  "seed": 0,
+  "settings": {
+    "lapse_max": 0.1,
+    "mu_bounds": [
+      -2.0,
+      2.0
+    ],
+    "sigma_bounds": [
+      0.01,
+      5.0
+    ],
+    "min_rt_s": 0.0
+  },
+  "fitted": "2026-11-16T12:56:58"
+}

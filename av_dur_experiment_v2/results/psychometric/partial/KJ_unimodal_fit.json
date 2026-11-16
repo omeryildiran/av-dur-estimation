@@ -1,0 +1,28 @@
+{
+  "participant": "KJ",
+  "analysis": "unimodal",
+  "status": "partial",
+  "fingerprint": "9c72c6044d39",
+  "data_files": [
+    "KJ_unimodal_auditory_20261112-164815.csv"
+  ],
+  "n_trials": 319,
+  "nll": 154.50007103118358,
+  "at_bound": [],
+  "lapse_groups": "task",
+  "n_boot": 1000,
+  "seed": 0,
+  "settings": {
+    "lapse_max": 0.1,
+    "mu_bounds": [
+      -2.0,
+      2.0
+    ],
+    "sigma_bounds": [
+      0.01,
+      5.0
+    ],
+    "min_rt_s": 0.0
+  },
+  "fitted": "2026-11-16T12:56:40"
+}

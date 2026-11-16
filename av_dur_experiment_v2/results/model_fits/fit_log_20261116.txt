@@ -1,0 +1,79 @@
+[fit] KJ fusion: start 1/6 -log L 809.49
+[fit] BQ fusion: start 1/6 -log L 1399.88
+[fit] BQ fusion: start 2/6 -log L 1399.88
+[fit] KJ fusion: start 2/6 -log L 809.49
+[fit] KJ fusion: start 3/6 -log L 809.49
+[fit] BQ fusion: start 3/6 -log L 1399.88
+[fit] BQ fusion: start 4/6 -log L 1399.88
+[fit] KJ fusion: start 4/6 -log L 809.49
+[fit] BQ fusion: start 5/6 -log L 1399.88
+[fit] KJ switching: start 1/6 -log L 817.26
+[fit] BQ fusion: start 6/6 -log L 1399.88
+[fit] KJ fusion: start 5/6 -log L 809.49
+[fit] MZ switching: start 1/6 -log L 1238.37
+[fit] KJ fusion: start 6/6 -log L 809.49
+[fit] EK fusion: start 1/6 -log L 573.20
+[fit] EK fusion: start 2/6 -log L 573.20
+[fit] EK fusion: start 3/6 -log L 573.20
+[fit] EK fusion: start 4/6 -log L 573.20
+[fit] EK fusion: start 5/6 -log L 573.20
+[fit] BQ switching: start 1/6 -log L 1390.09
+[fit] EK fusion: start 6/6 -log L 573.20
+[fit] MZ switching: start 2/6 -log L 1238.37
+[fit] KJ switching: start 2/6 -log L 817.26
+[fit] MZ switching: start 3/6 -log L 1238.37
+[fit] BQ switching: start 2/6 -log L 1390.09
+[fit] KJ switching: start 3/6 -log L 817.26
+[fit] BQ switching: start 3/6 -log L 1390.09
+[fit] MZ switching: start 4/6 -log L 1238.37
+[fit] KJ switching: start 4/6 -log L 817.26
+[fit] MZ switching: start 5/6 -log L 1238.37
+[fit] KJ switching: start 5/6 -log L 817.26
+[fit] BQ switching: start 4/6 -log L 1390.09
+[fit] KJ switching: start 6/6 -log L 817.26
+[fit] MZ switching: start 6/6 -log L 1238.37
+[fit] BQ switching: start 5/6 -log L 1390.09
+[fit] EK switching: start 1/6 -log L 563.51
+[fit] BQ switching: start 6/6 -log L 1390.09
+[fit] EK switching: start 2/6 -log L 563.51
+[fit] EK switching: start 3/6 -log L 563.51
+[fit] EK switching: start 4/6 -log L 563.51
+[fit] EK switching: start 5/6 -log L 563.51
+[fit] EK switching: start 6/6 -log L 563.51
+[fit] EK causal: start 1/6 -log L 568.60
+[fit] BQ causal: start 1/6 -log L 1391.81
+[fit] KJ causal: start 1/6 -log L 809.49
+[fit] EK causal: start 2/6 -log L 568.60
+[fit] MZ causal: start 1/6 -log L 1235.20
+[fit] BQ causal: start 2/6 -log L 1391.81
+[fit] EK causal: start 3/6 -log L 568.60
+[fit] BQ causal: start 3/6 -log L 1391.81
+[fit] EK causal: start 4/6 -log L 616.34
+[fit] MZ causal: start 2/6 -log L 1235.20
+[fit] KJ causal: start 2/6 -log L 809.49
+[fit] EK causal: start 5/6 -log L 568.60
+[fit] EK causal: start 6/6 -log L 568.60
+[fit] BQ causal: start 4/6 -log L 1391.81
+[fit] MZ causal: start 3/6 -log L 1235.20
+[fit] KJ causal: start 3/6 -log L 809.49
+[fit] BQ causal: start 5/6 -log L 1391.81
+[fit] BQ causal: start 6/6 -log L 1391.81
+[fit] KJ causal: start 4/6 -log L 809.49
+[fit] MZ causal: start 4/6 -log L 1235.20
+[fit] KJ causal: start 5/6 -log L 809.49
+[fit] MZ causal: start 5/6 -log L 1235.20
+[fit] KJ causal: start 6/6 -log L 809.49
+[fit] MZ causal: start 6/6 -log L 1235.20
+participant   status     model       nll  n_params  n_trials       aic       bic  n_near_best at_bound  seconds  lapse  sigma_a_low  sigma_a_high  sigma_v    p_c  p_switch_low  p_switch_high
+         MZ complete    fusion 1241.2936         4      2497 2490.5873 2513.8787            5               0.3 0.0604       0.1826        0.3712   0.5985    NaN           NaN            NaN
+         MZ complete    causal 1235.2006         5      2497 2480.4013 2509.5155            6             351.7 0.0540       0.1884        0.3772   0.4793 0.9995           NaN            NaN
+         MZ complete switching 1238.3749         6      2497 2488.7498 2523.6868            6               5.8 0.0352       0.1670        0.2942   0.3220    NaN        0.1335         0.3810
+         KJ  partial    fusion  809.4889         4      1666 1626.9777 1648.6504            6               0.6 0.0125       0.2130        0.3365   0.6457    NaN           NaN            NaN
+         KJ  partial    causal  809.4888         5      1666 1628.9775 1656.0684            6      p_c    340.4 0.0125       0.2130        0.3365   0.6457 1.0000           NaN            NaN
+         KJ  partial switching  817.2645         6      1666 1646.5291 1679.0382            6               5.8 0.0091       0.1714        0.2533   0.4251    NaN        0.1711         0.3245
+         BQ complete    fusion 1399.8754         4      2503 2807.7508 2831.0518            6               0.5 0.1162       0.2901        0.7319   0.8509    NaN           NaN            NaN
+         BQ complete    causal 1391.8132         5      2503 2793.6263 2822.7525            6             229.2 0.0873       0.3373        1.0789   0.4784 0.6727           NaN            NaN
+         BQ complete switching 1390.0914         6      2503 2792.1828 2827.1343            6               6.3 0.0948       0.3102        0.6335   0.2981    NaN        0.0219         0.4106
+         EK  partial    fusion  573.1971         4      1153 1154.3941 1174.5946            6               0.8 0.1061       0.1970        0.2688   0.5548    NaN           NaN            NaN
+         EK  partial    causal  568.6045         5      1153 1147.2089 1172.4595            5             162.0 0.0957       0.2205        0.3431   0.2143 0.3835           NaN            NaN
+         EK  partial switching  563.5075         6      1153 1139.0150 1169.3158            6               3.2 0.0735       0.2084        0.2908   0.1945    NaN        0.1002         0.2659

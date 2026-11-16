@@ -1,0 +1,31 @@
+{
+  "participant": "MZ",
+  "analysis": "unimodal",
+  "status": "complete",
+  "fingerprint": "284cb5c07c1f",
+  "data_files": [
+    "MZ_unimodal_auditory_20261106-155245.csv",
+    "MZ_unimodal_visual_20261111-173752.csv"
+  ],
+  "n_trials": 476,
+  "nll": 237.60034896196044,
+  "at_bound": [
+    "lapse[0]"
+  ],
+  "lapse_groups": "task",
+  "n_boot": 1000,
+  "seed": 0,
+  "settings": {
+    "lapse_max": 0.1,
+    "mu_bounds": [
+      -2.0,
+      2.0
+    ],
+    "sigma_bounds": [
+      0.01,
+      5.0
+    ],
+    "min_rt_s": 0.0
+  },
+  "fitted": "2026-11-16T12:56:39"
+}

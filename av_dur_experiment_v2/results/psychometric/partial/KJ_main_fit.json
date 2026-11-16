@@ -1,0 +1,29 @@
+{
+  "participant": "KJ",
+  "analysis": "main",
+  "status": "partial",
+  "fingerprint": "d491bf9c8d16",
+  "data_files": [
+    "KJ_main_part1_20261112-145207.csv",
+    "KJ_main_part2_20261112-160539.csv"
+  ],
+  "n_trials": 1347,
+  "nll": 636.3420271208399,
+  "at_bound": [],
+  "lapse_groups": "noise",
+  "n_boot": 1000,
+  "seed": 0,
+  "settings": {
+    "lapse_max": 0.1,
+    "mu_bounds": [
+      -2.0,
+      2.0
+    ],
+    "sigma_bounds": [
+      0.01,
+      5.0
+    ],
+    "min_rt_s": 0.0
+  },
+  "fitted": "2026-11-16T12:56:52"
+}

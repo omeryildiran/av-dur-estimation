@@ -212,6 +212,44 @@ An interrupted session keeps its trials; its metadata says `completed: false`, a
 
 ## Analysis
 
+### v2 analysis package (from 16 Nov 2026)
+
+[avdur_analysis/](avdur_analysis/) holds the analysis code. The notebooks in [notebooks/](notebooks/) call it,
+and everything it produces goes to `results/`.
+
+| Module | What it does |
+|---|---|
+| `data.py` | Loads and cleans the trials of `data/` and reports participant status (complete or partial). |
+| `psychometric.py` | Fits lognormal psychometric functions per condition, runs a parametric bootstrap (1000 samples), and saves fits to `results/psychometric/<complete\|partial>/`. |
+| `models.py` | Forced fusion, causal inference and cue switching (v1's lognormal models). P("test longer") is computed exactly or by quadrature, with no Monte Carlo. |
+| `fitting.py` | Fits the unimodal blocks and the main experiment jointly. Saves fits to `results/model_fits/<complete\|partial>/`. |
+| `verify.py` | Double checks: the models against v1's `monteCarloClass` and Monte Carlo, the 2IFC √2 rule, and log-time weighting. |
+| `raw_figures.py`, `model_figures.py`, `recovery.py` | The figures. `recovery.py` also runs the recovery simulations. |
+| `style.py` | v1's style and colour code. |
+
+The notebooks:
+
+- `01_raw_data.ipynb`: unimodal curves and Weber fractions, bimodal curves, PSE and σ against conflict, staircases.
+- `02_modelling.ipynb`: double checks, joint fits, optimal integration, ΔAIC, measured vs. predicted PSE and σ, posterior of a common cause.
+- `03_recovery.ipynb`: parameter and model recovery.
+
+Each figure function takes a participant ID, `"group"` (mean ± SEM) or `"all"` (one panel per participant).
+
+Commands, run from this folder:
+
+    python -m avdur_analysis.fitting --workers 7               # joint fits (saved fits are reused)
+    python -m avdur_analysis.recovery --kind parameter --n 50  # hours; resumable
+    python -m avdur_analysis.recovery --kind model --n 50
+
+Analysis decisions, documented in the module docstrings:
+
+- **Fast answers are kept.** v2 accepts answers only after the prompt, and the fast ones are as accurate as the rest.
+- **Lapse rates.** The raw psychometric fits share one lapse rate per block (unimodal) or per noise level (main).
+- **Single-interval σ.** The models use single-interval σ; a psychometric σ is √2 times larger.
+- **Boxcar prior.** The models' prior covers 50 ms to 2000 ms, the range of test durations.
+
+### Notebooks from before the experiment
+
 The notebooks in [analysis/](analysis/) use the repository's `plot_style.py`:
 
 - `01_unimodal_fits.ipynb`: auditory and visual psychometric functions, σ (and σ/√2 for the models), a free-μ check, and a visual timing check.
