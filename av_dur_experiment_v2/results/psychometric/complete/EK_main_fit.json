@@ -1,0 +1,30 @@
+{
+  "participant": "EK",
+  "analysis": "main",
+  "status": "complete",
+  "fingerprint": "0776289b0bba",
+  "data_files": [
+    "EK_main_part1_20261113-181955.csv",
+    "EK_main_part2_20261116-163351.csv",
+    "EK_main_part3_20261116-171540.csv"
+  ],
+  "n_trials": 2021,
+  "nll": 951.4337683765086,
+  "at_bound": [],
+  "lapse_groups": "noise",
+  "n_boot": 1000,
+  "seed": 0,
+  "settings": {
+    "lapse_max": 0.1,
+    "mu_bounds": [
+      -2.0,
+      2.0
+    ],
+    "sigma_bounds": [
+      0.01,
+      5.0
+    ],
+    "min_rt_s": 0.0
+  },
+  "fitted": "2026-11-16T18:08:51"
+}

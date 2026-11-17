@@ -45,14 +45,16 @@ def setup(scale=1.0):
 
 
 def conflict_color(noise, k, n):
-    """Shade of the noise colour for the k-th of n conflicts (v1: 0.25 + 0.65 k / (n - 1))."""
+    """Shade of the noise colour for the k-th of n conflicts (v1 started at 0.25; 0.4 keeps the lightest
+    shade visible on white)."""
     cmap = plt.get_cmap(NOISE_CMAPS[noise])
-    return cmap(0.25 + 0.65 * k / max(n - 1, 1))
+    return cmap(0.4 + 0.55 * k / max(n - 1, 1))
 
 
 def conflict_rgba(noise, k, n):
-    """v1's PSE-vs-conflict points: the noise colour with alpha rising from 0.25 to 1 over the conflicts."""
-    return (*mcolors.to_rgb(NOISE_COLORS[noise]), float(np.linspace(0.25, 1.0, n)[k]))
+    """v1's PSE-vs-conflict points: the noise colour with alpha rising over the conflicts (v1 from 0.25;
+    from 0.45 here so the most negative conflict stays visible)."""
+    return (*mcolors.to_rgb(NOISE_COLORS[noise]), float(np.linspace(0.45, 1.0, n)[k]))
 
 
 def panel_labels(axes, labels=None, x=-0.14, y=1.06, **kw):

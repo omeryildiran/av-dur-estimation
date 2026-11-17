@@ -212,8 +212,10 @@ def fig2_bimodal(who="MZ", pids=None, complete_only=False, points=True, save=Tru
             for ax, noise in zip(row, noises):
                 _bimodal_panel(ax, t, trials, noise, scale=0.7, points=points)
                 ax.set_title(f"{pid} ({t.status.iloc[0]}): {St.NOISE_LABELS[noise].split(' (')[0].lower()}")
+            row[1].set_ylabel("")
         for ax in axes[-1]:
-            St.legend_outside(ax, "below", ncol=5, title="Conflict (visual - auditory standard)")
+            St.legend_outside(ax, "below", ncol=3, title="Conflict, visual - auditory (ms)",
+                              fontsize=plt.rcParams["legend.fontsize"] * 0.9)
         fig.tight_layout()
         return _save(fig, "fig2_bimodal_all", save)
 
@@ -227,7 +229,8 @@ def fig2_bimodal(who="MZ", pids=None, complete_only=False, points=True, save=Tru
     for ax, noise in zip(axes, noises):
         _bimodal_panel(ax, t, trials, noise, points=points)
         ax.set_title(St.NOISE_LABELS[noise])
-        St.legend_outside(ax, "right", title="Conflict", fontsize=11, title_fontsize=12)
+        ax.legend(loc="lower right", ncol=2, title="Conflict (ms)", fontsize=10, title_fontsize=11,
+                  handlelength=1.2, columnspacing=0.8)
     St.panel_labels(axes)
     fig.suptitle(_who_label(who, t), y=1.02)
     fig.tight_layout()
@@ -315,6 +318,8 @@ def fig3_conflict_effect(who="MZ", errorbar="auto", baseline="standard", sigma="
             a_pse.set_ylabel(ylab_pse)
             a_sig.set_ylabel(ylab_sig)
             a_pse.set_title(f"{pid} ({t.status.iloc[0]})", loc="left")
+        for ax in axes[:-1].ravel():
+            ax.set_xlabel("")
         fig.legend(handles=handles, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.03))
         fig.tight_layout()
         return _save(fig, f"fig3_conflict_all_{baseline}_{sigma}", save)

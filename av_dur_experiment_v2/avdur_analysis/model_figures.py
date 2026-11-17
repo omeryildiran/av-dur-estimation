@@ -275,6 +275,11 @@ def _fig_models(col, ylabel, who, errorbar, save, name):
             _models_panels(row, meas[meas.participant == pid], pred[pred.participant == pid], col, pid,
                            "ci" if errorbar == "auto" else errorbar)
             row[0].set_ylabel(f"{pid}\n{ylabel}")
+        for row in axes[1:]:
+            for ax in row:
+                ax.set_title("")
+        for ax in axes[:-1].ravel():
+            ax.set_xlabel("")
         fig.legend(handles=_model_handles(), loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.02))
         fig.tight_layout()
         return _save(fig, f"{name}_all", save)
@@ -348,7 +353,8 @@ def fig7_posterior_common(who="all", save=True):
         for ax, pid in zip(axes, pids):
             panel(ax, post[post.participant == pid])
             ax.set_title(pid)
-        axes[0].legend(fontsize=10, loc="lower left")
+        fig.legend(*axes[0].get_legend_handles_labels(), loc="lower center", ncol=3,
+                   bbox_to_anchor=(0.5, -0.08))
         fig.tight_layout()
         return _save(fig, "fig7_posterior_common_all", save)
     fig, ax = plt.subplots(figsize=(7, 5))
