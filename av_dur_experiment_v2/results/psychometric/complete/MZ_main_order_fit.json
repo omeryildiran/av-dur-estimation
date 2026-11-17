@@ -1,0 +1,30 @@
+{
+  "participant": "MZ",
+  "analysis": "main_order",
+  "status": "complete",
+  "fingerprint": "ad43ce482d3f",
+  "data_files": [
+    "MZ_main_part1_20261110-160437.csv",
+    "MZ_main_part2_20261110-165446.csv",
+    "MZ_main_part3_20261111-161254.csv"
+  ],
+  "n_trials": 2021,
+  "nll": 850.5283740032205,
+  "at_bound": [],
+  "lapse_groups": "noise",
+  "n_boot": 1000,
+  "seed": 0,
+  "settings": {
+    "lapse_max": 0.1,
+    "mu_bounds": [
+      -2.0,
+      2.0
+    ],
+    "sigma_bounds": [
+      0.01,
+      5.0
+    ],
+    "min_rt_s": 0.0
+  },
+  "fitted": "2026-11-17T16:47:31"
+}

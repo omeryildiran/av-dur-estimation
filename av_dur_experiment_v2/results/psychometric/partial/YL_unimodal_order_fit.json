@@ -1,0 +1,30 @@
+{
+  "participant": "YL",
+  "analysis": "unimodal_order",
+  "status": "partial",
+  "fingerprint": "4a2299deae41",
+  "data_files": [
+    "YL_unimodal_auditory_20261106-152513.csv"
+  ],
+  "n_trials": 319,
+  "nll": 175.52086086593314,
+  "at_bound": [
+    "sigma[2]"
+  ],
+  "lapse_groups": "task",
+  "n_boot": 1000,
+  "seed": 0,
+  "settings": {
+    "lapse_max": 0.1,
+    "mu_bounds": [
+      -2.0,
+      2.0
+    ],
+    "sigma_bounds": [
+      0.01,
+      5.0
+    ],
+    "min_rt_s": 0.0
+  },
+  "fitted": "2026-11-17T16:47:02"
+}

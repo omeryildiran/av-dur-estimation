@@ -20,6 +20,12 @@ extrapolated (a reviewer's point on v1: the high-noise threshold lay outside the
 
 Bootstrap: parametric. Answers are drawn from the fitted curves at the tested levels (same number of
 trials per level) and refitted, starting from the fit; percentile 95% intervals.
+Presentation order (reviewer 1 on v1): the analyses "unimodal_order" and "main_order" fit every condition
+twice, once on the test-first trials (order 1) and once on the test-second trials (order 2), with the same
+lapse groups as the pooled fits (the lapse is shared by both orders). Their conditions are labelled
+"<condition>|test_first" / "|test_second"; the summary has the columns base_condition and order.
+Sessions: "main_part" fits every condition once per main-experiment part (part1-3, separate days), lapse
+per noise level and part; the summary column part names it.
 Results: results/psychometric/<complete|partial>/<pid>_<analysis>{.csv,_boot.npz,_fit.json}; a saved
 fit is reused while the data files, trial count and settings are unchanged.
 """
@@ -182,7 +188,9 @@ def summary(f, boot, d, cond_col="condition"):
     stair_max = d[d["kind"] == "staircase"].groupby(cond_col)["testDurS"].max()
     rows = []
     for i, c in enumerate(f.conditions):
-        row = dict(condition=c, task=first.loc[c, "task"], noise=first.loc[c, "noise"],
+        base, _, split = str(c).partition("|")
+        row = dict(condition=c, base_condition=base, order=split if split in ORDER_NAMES.values() else "both",
+                   part=split if split.startswith("part") else "all", task=first.loc[c, "task"], noise=first.loc[c, "noise"],
                    conflict_ms=int(first.loc[c, "conflict_ms"]), conflict_s=float(first.loc[c, "conflict"]),
                    n_trials=int((d[cond_col] == c).sum()))
         for name, v in est.items():
@@ -198,14 +206,45 @@ def summary(f, boot, d, cond_col="condition"):
 
 # ── analyses, saving and loading ──────────────────────────────────────────────
 
+ORDER_NAMES = {1: "test_first", 2: "test_second"}
+
+
+def by_order(d):
+    """Trials with the presentation order appended to the condition label (see the module docstring)."""
+    if d.empty:
+        return d
+    d = d[d["order"].isin(list(ORDER_NAMES))].copy()
+    d["condition"] = d["condition"].astype(str) + "|" + d["order"].astype(int).map(ORDER_NAMES)
+    return d
+
+
+def by_part(d):
+    """Main-experiment trials with the part (session) appended to the condition label; lapse groups are
+    noise level x part (column noise_part)."""
+    if d.empty:
+        return d
+    d = d.copy()
+    d["condition"] = d["condition"].astype(str) + "|" + d["block"].astype(str)
+    d["noise_part"] = d["noise"].astype(str) + "|" + d["block"].astype(str)
+    return d
+
+
 ANALYSES = {
     # name: (loader, lapse grouping column)
     "unimodal": (lambda pid: D.load_unimodal(pid)[0], "task"),
     "main": (lambda pid: D.load(pid, "main")[0], "noise"),
+    "unimodal_order": (lambda pid: by_order(D.load_unimodal(pid)[0]), "task"),
+    "main_order": (lambda pid: by_order(D.load(pid, "main")[0]), "noise"),
+    "main_part": (lambda pid: by_part(D.load(pid, "main")[0]), "noise_part"),
 }
 
 
 def _cond_key(c):
+    c, _, order = str(c).partition("|")
+    return _base_key(c) + (order,)
+
+
+def _base_key(c):
     parts = str(c).split("_")
     order = {"A": 0, "V": 1, "AV": 2}
     noise = {"low": 0, "high": 1}

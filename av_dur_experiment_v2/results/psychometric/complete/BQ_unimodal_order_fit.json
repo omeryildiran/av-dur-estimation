@@ -1,0 +1,29 @@
+{
+  "participant": "BQ",
+  "analysis": "unimodal_order",
+  "status": "complete",
+  "fingerprint": "406c0285537f",
+  "data_files": [
+    "BQ_unimodal_auditory_20261113-123933.csv",
+    "BQ_unimodal_visual_20261113-122501.csv"
+  ],
+  "n_trials": 478,
+  "nll": 237.6691768638392,
+  "at_bound": [],
+  "lapse_groups": "task",
+  "n_boot": 1000,
+  "seed": 0,
+  "settings": {
+    "lapse_max": 0.1,
+    "mu_bounds": [
+      -2.0,
+      2.0
+    ],
+    "sigma_bounds": [
+      0.01,
+      5.0
+    ],
+    "min_rt_s": 0.0
+  },
+  "fitted": "2026-11-17T16:47:11"
+}

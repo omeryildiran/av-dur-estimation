@@ -1,0 +1,32 @@
+{
+  "participant": "KJ",
+  "analysis": "main_part",
+  "status": "complete",
+  "fingerprint": "cbf24a75cca0",
+  "data_files": [
+    "KJ_main_part1_20261112-145207.csv",
+    "KJ_main_part2_20261112-160539.csv",
+    "KJ_main_part3_20261117-112023.csv"
+  ],
+  "n_trials": 2021,
+  "nll": 923.7614073382447,
+  "at_bound": [
+    "lapse[3]"
+  ],
+  "lapse_groups": "noise_part",
+  "n_boot": 1000,
+  "seed": 0,
+  "settings": {
+    "lapse_max": 0.1,
+    "mu_bounds": [
+      -2.0,
+      2.0
+    ],
+    "sigma_bounds": [
+      0.01,
+      5.0
+    ],
+    "min_rt_s": 0.0
+  },
+  "fitted": "2026-11-17T17:06:37"
+}

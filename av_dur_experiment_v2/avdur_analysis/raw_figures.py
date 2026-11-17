@@ -4,6 +4,9 @@
     fig2_bimodal(who)           psychometric curves across conflicts: low noise | high noise
     fig3_conflict_effect(who)   PSE shift | sigma against conflict, by noise level
     fig4_staircases(pid)        every staircase of the main experiment (or the unimodal blocks)
+    fig5_order(who, part)       presentation order: test-first vs test-second PSE shift and sigma, unimodal
+                                blocks (part="unimodal") or against conflict (part="bimodal")
+    fig6_sessions(who)          the same against conflict, one line per main-experiment part (session)
 
 who: a participant ID, "group" (curves averaged over participants, pooled data points, mean +/- SEM), or
 "all" (one panel, or one row, per participant). errorbar: "auto" (participant: bootstrap 95% CI; group:
@@ -419,3 +422,179 @@ def fig4_staircases(pid="MZ", task="main", save=True):
     fig.suptitle(f"{pid} ({'complete' if D.status(pid)['complete'] else 'partial'}): staircases, {parts}", y=1.01)
     fig.tight_layout()
     return _save(fig, name, save)
+
+
+# ── figure 5: presentation order (reviewer 1) ─────────────────────────────────
+
+ORDER_STYLE = {"test_first": dict(mfc=None, ls="-", label="Test first", dx=-0.12, dc=-8),
+               "test_second": dict(mfc="white", ls="--", label="Test second", dx=0.12, dc=8)}
+PART_STYLE = {"part1": dict(mfc="white", ls=":", marker="^", label="Part 1", dc=-12),
+              "part2": dict(mfc=None, ls="--", marker="s", label="Part 2", dc=0),
+              "part3": dict(mfc=None, ls="-", marker="o", label="Part 3", dc=12)}
+SPLIT_STYLES = {"order": ORDER_STYLE, "part": PART_STYLE}
+
+
+TESTED_MS = (50.0, 2000.0)          # test durations used; a PSE outside them is extrapolated
+
+
+def _reliable(t):
+    """Estimates with the PSE inside the tested durations and no parameter at its bound (a nearly flat
+    curve, often a test-first one at high noise, puts the PSE far outside, e.g. BQ +3200 ms)."""
+    return t.pse_ms.between(*TESTED_MS) & t.at_bound.fillna("").astype(str).eq("")
+
+
+def _order_point(ax, x, rows, col, mode, group, color, sty, size=7):
+    if rows.empty:
+        return np.nan
+    if group:
+        m, e = _err(rows[col], mode)
+        yerr = None if np.isnan(e) else e
+    else:
+        r = rows.iloc[0]
+        m = r[col]
+        yerr = [[m - r[f"{col}_lo"]], [r[f"{col}_hi"] - m]] if mode == "ci" else None
+    ax.errorbar(x, m, yerr=yerr, fmt=sty.get("marker", "o"), color=color, mec=color, mfc=sty["mfc"] or color, ms=size, capsize=3,
+                lw=1.4, zorder=4)
+    return m if group or rows.iloc[0]["reliable"] else np.nan      # unreliable ones do not set the axis range
+
+
+def _order_ylim(ax, values, log=False):
+    """Axis range from the estimates (not the intervals), so one runaway interval cannot flatten the rest."""
+    v = np.asarray([x for x in values if np.isfinite(x)], float)
+    if not len(v):
+        return
+    if log:
+        ax.set_yscale("log")
+        ax.set_ylim(max(v.min() / 1.8, 0.01), v.max() * 1.8)
+    else:
+        pad = 0.2 * (v.max() - v.min()) + 30
+        ax.set_ylim(min(v.min(), 0) - pad, max(v.max(), 0) + pad)
+
+
+def _order_unimodal_panels(a_pse, a_sig, t, mode, group):
+    conds = [c for c in St.UNIMODAL_STYLE if c in set(t.base_condition)]
+    seen = {"shift_ms": [], "sigma": []}
+    for i, cond in enumerate(conds):
+        color = St.UNIMODAL_STYLE[cond]["color"]
+        for order, sty in ORDER_STYLE.items():
+            rows = t[(t.base_condition == cond) & (t.order == order)]
+            if rows.empty:
+                continue
+            for ax, col in ((a_pse, "shift_ms"), (a_sig, "sigma")):
+                seen[col].append(_order_point(ax, i + sty["dx"], rows, col, mode, group, color, sty))
+    for ax in (a_pse, a_sig):
+        ax.set_xticks(range(len(conds)))
+        ax.set_xticklabels([St.UNIMODAL_STYLE[c]["label"].replace(", ", "\n") for c in conds])
+        ax.set_xlim(-0.5, len(conds) - 0.5)
+    a_pse.axhline(0, **St.GUIDE)
+    _order_ylim(a_pse, seen["shift_ms"])
+    _order_ylim(a_sig, seen["sigma"], log=True)
+    a_pse.set_ylabel("PSE shift (ms)")
+    a_sig.set_ylabel("σ (log units, psychometric)")
+
+
+def _order_bimodal_panels(axes, t, mode, group, split="order"):
+    """axes: PSE low, PSE high, sigma low, sigma high; one line per value of column `split`."""
+    for j, (col, noise) in enumerate([(c, n) for c in ("shift_ms", "sigma") for n in (D.NOISE_LOW, D.NOISE_HIGH)]):
+        ax = axes[j]
+        color = St.NOISE_COLORS[noise]
+        tn = t[np.isclose(t.noise, noise)]
+        seen = []
+        for key, sty in SPLIT_STYLES[split].items():
+            to = tn[tn[split] == key]
+            xs, ms = [], []
+            for c in sorted(to.conflict_ms.unique()):
+                ms.append(_order_point(ax, c + sty["dc"], to[to.conflict_ms == c], col, mode, group, color, sty, 6))
+                xs.append(c + sty["dc"])
+            ax.plot(xs, ms, color=color, ls=sty["ls"], lw=1.2, zorder=3)
+            seen += ms
+        ax.axvline(0, **St.GUIDE)
+        if col == "shift_ms":
+            ax.axhline(0, **St.GUIDE)
+            ax.plot([-450, 450], [-450, 450], color="0.75", lw=1, zorder=0)    # full visual capture
+        _order_ylim(ax, seen, log=col == "sigma")
+        ax.set_xlabel("Conflict: visual - auditory standard (ms)")
+        ax.set_ylabel("PSE shift (ms)" if col == "shift_ms" else "σ (log units, psychometric)")
+        ax.set_title(St.NOISE_LABELS[noise], fontsize=plt.rcParams["axes.titlesize"] * 0.8)
+
+
+def _order_handles(split="order"):
+    return [Line2D([], [], color="0.3", marker=s.get("marker", "o"), ls=s["ls"], mfc=s["mfc"] or "0.3",
+                   label=s["label"]) for s in SPLIT_STYLES[split].values()]
+
+
+def fig5_order(who="group", part="bimodal", errorbar="auto", pids=None, complete_only=True, save=True,
+               split="order"):
+    """Presentation order (reviewer 1): every condition fitted separately on the test-first and the
+    test-second trials (psychometric.py, analyses unimodal_order / main_order). Filled markers, solid
+    lines: test first; open markers, dashed lines: test second. part: "unimodal" (PSE shift | sigma per
+    block) or "bimodal" (PSE shift and sigma against conflict, per noise level; grey diagonal: full visual
+    capture). sigma on a log axis. The axis range follows the estimates, so a very wide interval (a flat
+    test-first curve) can run off the panel. Estimates with the PSE outside the tested durations or a
+    parameter at its bound are left out of the group means and the axis ranges (the title gives how many).
+    complete_only: participants with every block (default)."""
+    if split == "part" and part == "unimodal":
+        raise ValueError("the unimodal blocks were run in one session each")
+    analysis = "unimodal_order" if part == "unimodal" else "main_order" if split == "order" else "main_part"
+    name = f"fig5_order_{part}" if split == "order" else "fig6_sessions"
+    table = _pids_with(analysis, pids, complete_only)
+    table = table.assign(reliable=_reliable(table))
+    n_cols = 2 if part == "unimodal" else 4
+    panel_w = 4.6 if part == "unimodal" else 4.2
+
+    def draw(row, t, mode, group):
+        if part == "unimodal":
+            _order_unimodal_panels(row[0], row[1], t, mode, group)
+        else:
+            _order_bimodal_panels(row, t, mode, group, split)
+
+    if who == ALL:
+        parts = sorted(table.participant.unique(), key=D.participants().index)
+        fig, axes = plt.subplots(len(parts), n_cols, figsize=(panel_w * n_cols, 3.6 * len(parts)), squeeze=False)
+        mode = _mode(errorbar, False)
+        for row, pid in zip(axes, parts):
+            draw(row, table[table.participant == pid], mode, False)
+            tp = table[table.participant == pid]
+            label = f"{pid} ({tp.status.iloc[0]}" + (f", {(~tp.reliable).sum()} off the axes)"
+                                                     if (~tp.reliable).any() else ")")
+            if part == "unimodal":
+                row[0].set_title(label, loc="left")
+            else:
+                row[0].set_ylabel(f"{label}\nPSE shift (ms)")
+        if part == "bimodal":                         # noise-level titles on the top row only
+            for ax in axes[1:].ravel():
+                ax.set_title("")
+        for ax in axes[:-1].ravel():
+            ax.set_xlabel("")
+        fig.legend(handles=_order_handles(split), loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.03))
+        fig.tight_layout()
+        return _save(fig, f"{name}_all", save)
+
+    group = who == GROUP
+    mode = _mode(errorbar, group)
+    t = table if group else table[table.participant == who]
+    if t.empty:
+        raise ValueError(f"no {analysis} data for {who}")
+    dropped = int((~t.reliable).sum())
+    if group:
+        t = t[t.reliable]                             # extrapolated or at-bound estimates left out of the means
+    fig, axes = plt.subplots(1, n_cols, figsize=(panel_w * n_cols, 4.6), squeeze=False)
+    draw(axes[0], t, mode, group)
+    axes[0][-1].legend(handles=_order_handles(split), loc="best", fontsize=11)
+    St.panel_labels(axes[0])
+    bars = {"ci": "bootstrap 95% CI" if not group else "95% CI over participants", "sem": "SEM", "sd": "SD"}
+    note = "" if not dropped else (f"; {dropped} estimates outside the tested range left out" if group
+                                     else f"; {dropped} estimates off the axes")
+    fig.suptitle(f"{_who_label(who, t)}; error bars: {bars.get(mode, mode)}{note}", y=1.02)
+    fig.tight_layout()
+    return _save(fig, f"{name}_{who}", save)
+
+
+# ── figure 6: sessions ────────────────────────────────────────────────────────
+
+def fig6_sessions(who="all", errorbar="auto", pids=None, complete_only=True, save=True):
+    """PSE shift and sigma against conflict, fitted separately in each main-experiment part (separate
+    sessions; psychometric analysis main_part, lapse per noise level and part). Part 1 open triangles,
+    dotted; part 2 squares, dashed; part 3 circles, solid. About 37 trials per condition and part, so the
+    single estimates are noisy; look for shifts of the whole curve, not single points."""
+    return fig5_order(who, "bimodal", errorbar, pids, complete_only, save, split="part")
