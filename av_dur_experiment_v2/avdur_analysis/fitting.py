@@ -14,6 +14,12 @@ unimodal auditory, unimodal visual and main blocks a lapse each.
 Optimiser: L-BFGS-B from N_STARTS starts (the first from the unimodal psychometric fits, the rest spread
 over the bounds by a fixed-seed Sobol sequence). The likelihood has no Monte Carlo noise, so the best start
 is the fit; `n_near_best` (starts within 0.5 of the best -log L) shows how reliably it is found.
+optimizer="bads" (CLI --optimizer bads) uses BADS (pybads; Acerbi & Ma 2017) from the same starts instead,
+as in v1 and the lab; its fits are saved with the suffix _bads so the two can be compared. v1 needed BADS
+because its likelihoods were Monte Carlo (noisy); here they are exact and smooth, so the gradient method is
+the faster default, and BADS is the cross-check. Checked 17 Nov 2026 (MZ, KJ, BQ, EK, all three models):
+the same best -log L within 0.001 and the same parameters within 0.001; BADS took 15-60 s per fusion or
+switching fit (L-BFGS-B under 7 s) and about the same time for causal inference.
 Fits are saved to results/model_fits/<complete|partial>/<pid>_<model>[_options].json with every start,
 the settings and the data files, and reused until the data or settings change.
 """
@@ -35,7 +41,9 @@ from . import data as D
 from . import models as M
 
 N_STARTS = 6
+OPTIMIZERS = ("lbfgsb", "bads")
 BOUNDS = dict(lapse=(0.0, 0.2), sigma=(0.01, 4.0), prob=(0.0, 1.0))
+PLAUSIBLE = dict(lapse=(0.001, 0.1), sigma=(0.03, 2.0), prob=(0.01, 0.99))     # BADS only: where the starts lie
 FIT_DIR = D.RESULTS / "model_fits"
 EPS = 1e-12
 
@@ -165,6 +173,26 @@ def _starts(des, names, n_starts, seed):
     return [first] + rest
 
 
+def _minimize(x0, model, des, names, bounds, optimizer="lbfgsb", seed=0):
+    """One start: dict(x, nll, converged, n_eval)."""
+    if optimizer == "lbfgsb":
+        r = minimize(neg_log_lik, x0, args=(model, des, names), method="L-BFGS-B", bounds=bounds,
+                     options=dict(maxiter=500))
+        return dict(x=[float(v) for v in r.x], nll=float(r.fun), converged=bool(r.success), n_eval=int(r.nfev))
+    if optimizer != "bads":
+        raise ValueError(f"optimizer must be one of {OPTIMIZERS}")
+    from pybads import BADS
+    kind = lambda n: "lapse" if n.startswith("lapse") else "sigma" if n.startswith("sigma") else "prob"
+    lb, ub = np.array(bounds, float).T
+    plb = np.array([PLAUSIBLE[kind(n)][0] for n in names])
+    pub = np.array([PLAUSIBLE[kind(n)][1] for n in names])
+    x0 = np.clip(np.asarray(x0, float), plb, pub)                  # BADS needs the start inside the plausible box
+    r = BADS(lambda x: neg_log_lik(np.asarray(x), model, des, names), x0, lb, ub, plb, pub,
+             options=dict(display="off", uncertainty_handling=False, random_seed=seed)).optimize()
+    return dict(x=[float(v) for v in r["x"]], nll=float(r["fval"]), converged=bool(r["success"]),
+                n_eval=int(r["func_count"]))
+
+
 def _key(des, model, names, n_starts, seed, options):
     blob = json.dumps(dict(files=des.files, n=des.n_trials, model=model, names=names, n_starts=n_starts, seed=seed,
                            bounds=BOUNDS, box=[M.T_MIN, M.T_MAX], quad=[M.N_GH, M.N_GRID, M.N_E],
@@ -172,20 +200,23 @@ def _key(des, model, names, n_starts, seed, options):
     return hashlib.sha1(blob.encode()).hexdigest()[:12]
 
 
-def fit_path(pid, model, state, lapse="shared", p_c="shared"):
+def fit_path(pid, model, state, lapse="shared", p_c="shared", optimizer="lbfgsb"):
     suffix = ("" if lapse == "shared" else f"_lapse-{lapse}") + ("" if p_c == "shared" or model != "causal" else f"_pc-{p_c}")
+    suffix += "" if optimizer == "lbfgsb" else f"_{optimizer}"
     return FIT_DIR / state / f"{pid}_{model}{suffix}.json"
 
 
-def fit(pid, model, lapse="shared", p_c="shared", n_starts=N_STARTS, seed=0, refit=False, verbose=True):
+def fit(pid, model, lapse="shared", p_c="shared", n_starts=N_STARTS, seed=0, refit=False, verbose=True,
+        optimizer="lbfgsb"):
     """Joint fit of one participant (needs main-experiment data). Returns the saved record (dict)."""
     des = design(pid)
     if des.main.empty:
         return None
     state = "complete" if D.status(pid)["complete"] else "partial"
     names = param_names(model, lapse, p_c)
-    key = _key(des, model, names, n_starts, seed, dict(lapse=lapse, p_c=p_c))
-    path = fit_path(pid, model, state, lapse, p_c)
+    options = dict(lapse=lapse, p_c=p_c, **({} if optimizer == "lbfgsb" else dict(optimizer=optimizer)))
+    key = _key(des, model, names, n_starts, seed, options)
+    path = fit_path(pid, model, state, lapse, p_c, optimizer)
     if not refit and path.exists():
         rec = json.loads(path.read_text())
         if rec.get("fingerprint") == key:
@@ -194,18 +225,16 @@ def fit(pid, model, lapse="shared", p_c="shared", n_starts=N_STARTS, seed=0, ref
     bounds = _bounds(names)
     starts = []
     for x0 in _starts(des, names, n_starts, seed):
-        r = minimize(neg_log_lik, x0, args=(model, des, names), method="L-BFGS-B", bounds=bounds,
-                     options=dict(maxiter=500))
-        starts.append(dict(start=[float(v) for v in x0], x=[float(v) for v in r.x], nll=float(r.fun),
-                           converged=bool(r.success), n_eval=int(r.nfev)))
+        r = _minimize(x0, model, des, names, bounds, optimizer, seed + len(starts))
+        starts.append(dict(start=[float(v) for v in x0], **r))
         if verbose:
-            print(f"[fit] {pid} {model}: start {len(starts)}/{n_starts} -log L {r.fun:.2f}", flush=True)
+            print(f"[fit] {pid} {model} ({optimizer}): start {len(starts)}/{n_starts} -log L {r['nll']:.2f}", flush=True)
     best = min(starts, key=lambda s: s["nll"])
     k, n = len(names), des.n_trials
     parts = neg_log_lik(np.array(best["x"]), model, des, names, parts=True)
     at_bound = [nm for nm, v, (lo, hi) in zip(names, best["x"], bounds)
                 if (abs(v - hi) < 1e-4 or abs(v - lo) < 1e-4) and not (nm.startswith("lapse") and v < 1e-4)]
-    rec = dict(participant=pid, status=state, model=model, lapse=lapse, p_c=p_c, fingerprint=key,
+    rec = dict(participant=pid, status=state, model=model, lapse=lapse, p_c=p_c, optimizer=optimizer, fingerprint=key,
                params=dict(zip(names, best["x"])), nll=best["nll"], n_params=k, n_trials=n,
                aic=2 * k + 2 * best["nll"], bic=k * np.log(n) + 2 * best["nll"],
                loglik_parts={kk: float(v) for kk, v in parts.items()}, at_bound=at_bound,
@@ -217,7 +246,7 @@ def fit(pid, model, lapse="shared", p_c="shared", n_starts=N_STARTS, seed=0, ref
     path.parent.mkdir(parents=True, exist_ok=True)
     for other in ("complete", "partial"):
         if other != state:
-            fit_path(pid, model, other, lapse, p_c).unlink(missing_ok=True)
+            fit_path(pid, model, other, lapse, p_c, optimizer).unlink(missing_ok=True)
     path.write_text(json.dumps(rec, indent=2))
     return rec
 
@@ -288,15 +317,16 @@ def record_row(rec):
 
 
 def main(argv=None):
-    """python -m avdur_analysis.fitting [--pids MZ BQ] [--models causal] [--workers 7] [--refit]"""
+    """python -m avdur_analysis.fitting [--pids MZ BQ] [--models causal] [--workers 7] [--refit] [--optimizer bads]"""
     import argparse
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--pids", nargs="+", default=None)
     ap.add_argument("--models", nargs="+", default=list(M.MODELS), choices=list(M.MODELS))
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--refit", action="store_true")
+    ap.add_argument("--optimizer", default="lbfgsb", choices=OPTIMIZERS)
     args = ap.parse_args(argv)
-    t = fit_all(args.pids, tuple(args.models), workers=args.workers, refit=args.refit)
+    t = fit_all(args.pids, tuple(args.models), workers=args.workers, refit=args.refit, optimizer=args.optimizer)
     pd.set_option("display.width", 250, "display.max_columns", 30)
     print(t.round(4).to_string(index=False))
 
