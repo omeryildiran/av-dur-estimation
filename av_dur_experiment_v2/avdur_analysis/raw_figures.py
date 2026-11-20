@@ -466,6 +466,7 @@ def _order_ylim(ax, values, log=False):
     if log:
         ax.set_yscale("log")
         ax.set_ylim(max(v.min() / 1.8, 0.01), v.max() * 1.8)
+        St.plain_log_y(ax)
     else:
         pad = 0.2 * (v.max() - v.min()) + 30
         ax.set_ylim(min(v.min(), 0) - pad, max(v.max(), 0) + pad)

@@ -31,7 +31,10 @@ DURATION_TICKS_MS = [50, 100, 200, 500, 1000, 2000]
 
 
 def setup(scale=1.0):
-    """v1 rcParams; scale < 1 for figures with many panels (v1: 18 pt labels)."""
+    """v1 rcParams; scale < 1 for figures with many panels (v1: 18 pt labels). Also fixes the date written
+    into saved PDFs (SOURCE_DATE_EPOCH), so rerunning a notebook changes only figures that really changed."""
+    import os
+    os.environ.setdefault("SOURCE_DATE_EPOCH", "0")
     fs = 18 * scale
     plt.rcParams.update({
         "font.family": "sans-serif", "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
@@ -70,6 +73,15 @@ def duration_axis(ax, lo=40, hi=2300):
     ax.set_xticks([t for t in DURATION_TICKS_MS if lo <= t <= hi])
     ax.set_xticklabels([str(t) for t in DURATION_TICKS_MS if lo <= t <= hi])
     ax.minorticks_off()
+
+
+def plain_log_y(ax):
+    """Log y axis with plain tick labels at 1, 2, 5 x 10^k (0.1, 0.2, 0.5, 1, ...), no minor labels."""
+    from matplotlib.ticker import FuncFormatter, LogLocator, NullFormatter, NullLocator
+    ax.yaxis.set_major_locator(LogLocator(base=10, subs=(1.0, 2.0, 5.0)))
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _: f"{v:g}"))
+    ax.yaxis.set_minor_locator(NullLocator())
+    ax.yaxis.set_minor_formatter(NullFormatter())
 
 
 def legend_outside(ax, where="right", **kw):

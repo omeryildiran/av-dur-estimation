@@ -326,6 +326,8 @@ def _ylim(ax, values, log=False):
     if log:
         ax.set_yscale("log")
         ax.set_ylim(max(v.min() / 1.6, 0.01), v.max() * 1.6)
+        from . import style as St
+        St.plain_log_y(ax)
     else:
         pad = 0.15 * (v.max() - v.min()) + 25
         ax.set_ylim(min(v.min(), 0) - pad, max(v.max(), 0) + pad)
