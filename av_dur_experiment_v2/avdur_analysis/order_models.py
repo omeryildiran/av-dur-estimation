@@ -298,50 +298,177 @@ def predicted_pf(pid, model):
     return pd.DataFrame(rows)
 
 
-def fig_predictions(pids=None, models=("switching", "causal"), col="shift_ms", save=True):
-    """Measured PSE shift (or sigma) per order (markers: filled test first, open test second, bootstrap 95%
-    CI) and the order models' predictions (lines: solid test first, dashed test second; one colour per model)."""
+FIG_DIR = D.RESULTS / "figures" / "order_models"
+ORDERS = (("test_first", "Test first"), ("test_second", "Test second"))
+TESTED_MS = (50.0, 2000.0)
+
+
+def _save(fig, name, save):
+    if save:
+        FIG_DIR.mkdir(parents=True, exist_ok=True)
+        for ext in ("pdf", "png"):
+            fig.savefig(FIG_DIR / f"{name}.{ext}")
+    return fig
+
+
+def fitted_pids(model="switching"):
+    return [p for p in D.participants() if fit_path(p, model, "complete").exists() or fit_path(p, model, "partial").exists()]
+
+
+def predictions(pids, models=M.MODELS):
+    return pd.concat([predicted_pf(p, m) for p in pids for m in models], ignore_index=True)
+
+
+def _ylim(ax, values, log=False):
+    v = np.asarray([x for x in values if np.isfinite(x)], float)
+    if not len(v):
+        return
+    if log:
+        ax.set_yscale("log")
+        ax.set_ylim(max(v.min() / 1.6, 0.01), v.max() * 1.6)
+    else:
+        pad = 0.15 * (v.max() - v.min()) + 25
+        ax.set_ylim(min(v.min(), 0) - pad, max(v.max(), 0) + pad)
+
+
+def fig_predictions(who="all", col="shift_ms", models=M.MODELS, errorbar="auto", save=True, width=15.0,
+                    grid=False):
+    """Data and order-model predictions, one column per noise level x order (test first | test second), so
+    the flatter test-first curves and the smaller test-second conflict effect are visible directly.
+    Points: the data fitted per condition and order (participant: bootstrap 95% CI; group: mean +/- SEM over
+    participants). Lines: each model's expected answers fitted the same way (v1 model colours and line
+    styles). col: "shift_ms" (PSE shift) or "sigma" (psychometric sigma, log axis). The y range of a row
+    follows the estimates; a PSE outside the tested durations (50-2000 ms) is not drawn (the title says how
+    many), and intervals may run off the panel. width: figure width in inches (narrower = larger text).
+    grid: for one participant or the group, 2 x 2 panels (rows: noise level, columns: order)."""
     import matplotlib.pyplot as plt
     from matplotlib.lines import Line2D
     from . import psychometric as P
     from . import style as St
-    pids = pids or [p for p in D.participants() if fit_path(p, models[0], "complete").exists()
-                    or fit_path(p, models[0], "partial").exists()]
+    pids = fitted_pids(models[0])
     meas = P.collect("main_order", pids)
-    fig, axes = plt.subplots(len(pids), 2, figsize=(11, 3.6 * len(pids)), squeeze=False, sharex=True)
-    for row, pid in zip(axes, pids):
-        pred = pd.concat([predicted_pf(pid, m) for m in models])
-        for ax, noise in zip(row, (D.NOISE_LOW, D.NOISE_HIGH)):
+    meas = meas.assign(ok=meas.pse_ms.between(*TESTED_MS) & meas.at_bound.fillna("").astype(str).eq(""))
+    pred = predictions(pids, models)
+    group = who == "group"
+    rows = ["group"] if group else (pids if who == "all" else [who])
+    mode = ("sem" if group else "ci") if errorbar == "auto" else errorbar
+    log = col == "sigma"
+    grid = grid and len(rows) == 1
+    if grid:
+        fig, ax2 = plt.subplots(2, 2, figsize=(width, 0.72 * width), sharex=True)
+        axes = np.array(list(ax2.ravel()), dtype=object).reshape(1, 4)
+    else:
+        fig, axes = plt.subplots(len(rows), 4, figsize=(width, width / 15 * 3.5 * len(rows) + 0.6), squeeze=False,
+                                 sharex=True)
+    for row, who_r in zip(axes, rows):
+        sel = pids if who_r == "group" else [who_r]
+        mt_all, pr_all = meas[meas.participant.isin(sel)], pred[pred.participant.isin(sel)]
+        seen, hidden = [], int((~mt_all.ok).sum())
+        for j, (noise, (order, olabel)) in enumerate([(n, o) for n in (D.NOISE_LOW, D.NOISE_HIGH) for o in ORDERS]):
+            ax = row[j]
             color = St.NOISE_COLORS[noise]
-            for order, mfc, ls, dx in (("test_first", color, "-", -8), ("test_second", "white", "--", 8)):
-                mt = meas[(meas.participant == pid) & np.isclose(meas.noise, noise) & (meas.order == order)]
-                mt = mt.sort_values("conflict_ms")
-                ok = mt.pse_ms.between(50, 2000)
-                ax.errorbar(mt.conflict_ms[ok] + dx, mt[col][ok], yerr=[mt[col][ok] - mt[f"{col}_lo"][ok],
-                            mt[f"{col}_hi"][ok] - mt[col][ok]], fmt="o", color=color, mfc=mfc, ms=6, capsize=2,
-                            lw=1, zorder=4)
-                for m in models:
-                    pm = pred[(pred.model == m) & np.isclose(pred.noise, noise) & (pred.order == order)]
-                    pm = pm.sort_values("conflict_ms")
-                    ax.plot(pm.conflict_ms, pm[col], color=St.MODEL_STYLE[m]["color"], ls=ls, lw=1.6, zorder=3)
+            mt = mt_all[np.isclose(mt_all.noise, noise) & (mt_all.order == order) & mt_all.ok]
+            pr = pr_all[np.isclose(pr_all.noise, noise) & (pr_all.order == order)]
+            for m in models:
+                line = pr[pr.model == m].groupby("conflict_ms")[col].mean()
+                sty = St.MODEL_STYLE[m]
+                ax.plot(line.index, line.to_numpy(), color=sty["color"], ls=sty["ls"], lw=1.8, zorder=3)
+                seen += list(line.to_numpy())
+            mfc = color if order == "test_first" else "white"
+            for c, g in mt.groupby("conflict_ms"):
+                if group:
+                    v = g[col].to_numpy()
+                    y = v.mean()
+                    e = v.std(ddof=1) / np.sqrt(len(v)) if len(v) > 1 and mode == "sem" else None
+                else:
+                    r = g.iloc[0]
+                    y, e = r[col], [[r[col] - r[f"{col}_lo"]], [r[f"{col}_hi"] - r[col]]]
+                ax.errorbar(c, y, yerr=e, fmt="o", color=color, mfc=mfc, ms=6, capsize=2, lw=1.1, zorder=4)
+                seen.append(y)
             ax.axvline(0, **St.GUIDE)
-            if col == "shift_ms":
+            if not log:
                 ax.axhline(0, **St.GUIDE)
-            ax.set_title(St.NOISE_LABELS[noise] if pid == pids[0] else "", fontsize=plt.rcParams["axes.titlesize"] * 0.8)
-        row[0].set_ylabel(f"{pid}\n" + ("PSE shift (ms)" if col == "shift_ms" else "σ (psychometric)"))
-    for ax in axes[-1]:
-        ax.set_xlabel("Conflict: visual - auditory standard (ms)")
+            if who_r == rows[0]:
+                ax.set_title(f"{St.NOISE_LABELS[noise].split(' (')[0]}, {olabel.lower()}",
+                             fontsize=plt.rcParams["axes.titlesize"] * 0.8)
+        for ax in row:
+            _ylim(ax, seen, log)
+        label = f"Group (N = {len(pids)})" if group else who_r
+        if hidden:
+            label += f"\n({hidden} off-range PSEs not drawn)"
+        ylab = "PSE shift (ms)" if col == "shift_ms" else "σ (log units, psychometric)"
+        row[0].set_ylabel(f"{label}\n{ylab}")
+        if grid:
+            row[2].set_ylabel(ylab)
+        for ax in row[1:]:
+            ax.tick_params(labelleft=True)
+    for ax in (axes[0][2:] if grid else axes[-1]):
+        ax.set_xlabel("Conflict (ms)")
     handles = [Line2D([], [], color="0.3", marker="o", ls="", label="Data, test first"),
                Line2D([], [], color="0.3", marker="o", mfc="white", ls="", label="Data, test second")]
-    handles += [Line2D([], [], color=St.MODEL_STYLE[m]["color"], label=St.MODEL_STYLE[m]["label"] + " + contraction")
-                for m in models]
-    handles += [Line2D([], [], color="0.3", ls="-", label="Prediction, test first"),
-                Line2D([], [], color="0.3", ls="--", label="Prediction, test second")]
-    fig.legend(handles=handles, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.05))
+    handles += [Line2D([], [], color=St.MODEL_STYLE[m]["color"], ls=St.MODEL_STYLE[m]["ls"], lw=1.8,
+                       label=St.MODEL_STYLE[m]["label"] + " + contraction") for m in models]
+    fig.legend(handles=handles, loc="lower center", ncol=5 if width >= 14 and not grid else 3,
+               bbox_to_anchor=(0.5, -0.06 if grid else -0.02 - (0.03 if width >= 14 else 0.09) / len(rows)))
+    bars = "bootstrap 95% CI" if mode == "ci" else "SEM over participants" if mode == "sem" else str(mode)
+    fig.suptitle(f"Order models: data (error bars: {bars}) and predictions", y=1.0)
     fig.tight_layout()
-    if save:
-        out = D.RESULTS / "figures" / "order_models"
-        out.mkdir(parents=True, exist_ok=True)
-        for ext in ("pdf", "png"):
-            fig.savefig(out / f"fig_order_predictions_{col}.{ext}")
-    return fig
+    return _save(fig, f"fig_predictions_{col}_{who}", save)
+
+
+def fig_fit_summary(save=True, layout="row"):
+    """A: how much contraction improves each model (AIC with order minus without; negative: better).
+    B: model comparison with order, delta AIC vs forced fusion per participant and summed (95% interval from
+    resampling participants). C, D: the fitted contraction weight g_first and reference duration ref.
+    layout: "row" (1 x 4) or "grid" (2 x 2, for a page)."""
+    import matplotlib.pyplot as plt
+    from . import model_figures as MF
+    from . import style as St
+    t = table()
+    pids = [p for p in D.participants() if p in set(t.participant)]
+    if layout == "grid":
+        fig, axes = plt.subplots(2, 2, figsize=(11, 8))
+        axes = axes.ravel()
+    else:
+        fig, axes = plt.subplots(1, 4, figsize=(17, 4.4), gridspec_kw=dict(width_ratios=[1.2, 1.5, 1, 1]))
+    x = np.arange(len(pids))
+    h = 0.8 / len(M.MODELS)
+    for j, m in enumerate(M.MODELS):
+        sty = St.MODEL_STYLE[m]
+        tm = t[t.model == m].set_index("participant").reindex(pids)
+        axes[0].bar(x + (j - 1) * h, tm.d_aic_order, width=h, color=sty["color"], alpha=0.85, label=sty["label"])
+        axes[2].scatter(x + (j - 1) * h, tm.g_first, color=sty["color"], marker=sty["marker"], s=45, zorder=3)
+        axes[3].scatter(x + (j - 1) * h, tm.ref_ms, color=sty["color"], marker=sty["marker"], s=45, zorder=3)
+    axes[0].set_ylabel("ΔAIC: with order - without")
+    axes[0].set_title("Gain from contraction", fontsize=plt.rcParams["axes.titlesize"] * 0.8)
+    axes[0].legend(fontsize=10, loc="lower left")
+    dl = MF.delta_aic(t).drop(columns="fusion")
+    g = MF.group_delta(t).set_index("model").drop(index="fusion")
+    xs = np.arange(len(pids) + 1)
+    h2 = 0.8 / dl.shape[1]
+    for j, m in enumerate(dl.columns):
+        sty = St.MODEL_STYLE[m]
+        vals = list(dl[m].reindex(pids)) + [g.loc[m, "summed"]]
+        xx = xs + (j - (dl.shape[1] - 1) / 2) * h2
+        axes[1].bar(xx, vals, width=h2, color=sty["color"], alpha=0.85)
+        axes[1].errorbar(xx[-1], g.loc[m, "summed"], yerr=[[g.loc[m, "summed"] - g.loc[m, "lo"]],
+                         [g.loc[m, "hi"] - g.loc[m, "summed"]]], color="black", capsize=5, lw=1.4)
+    axes[1].axvline(len(pids) - 0.5, color="0.7", lw=1)
+    axes[1].set_xticks(xs)
+    axes[1].set_xticklabels(pids + ["Summed"])
+    axes[1].set_ylabel("ΔAIC vs forced fusion")
+    axes[1].set_title("Models with contraction (negative: better than fusion)",
+                      fontsize=plt.rcParams["axes.titlesize"] * 0.8)
+    axes[2].axhline(1, **St.GUIDE)
+    axes[2].set_ylim(0, 1.05)
+    axes[2].set_ylabel("g_first (1 = no contraction)")
+    axes[3].axhline(1000 * D.STANDARD_S, **St.GUIDE)
+    axes[3].set_ylabel("Reference duration ref (ms)")
+    for ax in (axes[0], axes[2], axes[3]):
+        ax.set_xticks(x)
+        ax.set_xticklabels(pids)
+    for ax in axes[:2]:
+        ax.axhline(0, color="black", lw=1)
+    St.panel_labels(axes)
+    fig.tight_layout()
+    return _save(fig, "fig_fit_summary", save)
