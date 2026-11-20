@@ -474,3 +474,39 @@ def fig_fit_summary(save=True, layout="row"):
     St.panel_labels(axes)
     fig.tight_layout()
     return _save(fig, "fig_fit_summary", save)
+
+
+def fig_aic_heatmap(save=True):
+    """Model comparison as delta AIC vs forced fusion, per participant plus the sum over participants:
+    A without order (the main fits), B with memory contraction (each model compared with forced fusion that
+    also has contraction). Both panels share one colour scale (as in model_figures.fig2_aic_heatmap); negative (red) is better than fusion."""
+    import matplotlib.pyplot as plt
+    from . import model_figures as MF
+    from . import style as St
+    t = table()
+    status = t.drop_duplicates("participant").set_index("participant").status
+    panels = [("aic_no_order", "Without order"), ("aic", "With memory contraction")]
+    dls = []
+    for crit, _ in panels:
+        dl = MF.delta_aic(t, crit=crit)
+        dl.loc["Summed"] = dl.sum()
+        dls.append(dl)
+    lim = max(10.0, max(np.nanmax(np.abs(d.drop(index="Summed").to_numpy())) for d in dls))
+    n_r, n_c = dls[0].shape
+    fig, axes = plt.subplots(1, 2, figsize=(2.0 + 3.4 * n_c, 1.4 + 0.65 * n_r), sharey=True)
+    for ax, dl, (_, title) in zip(axes, dls, panels):
+        im = ax.imshow(dl.to_numpy(), cmap="RdBu", vmin=-lim, vmax=lim, aspect="auto")
+        for (i, j), v in np.ndenumerate(dl.to_numpy()):
+            ax.text(j, i, f"{v:+.1f}", ha="center", va="center", fontsize=12,
+                    fontweight="bold" if dl.index[i] == "Summed" else "normal",
+                    color="white" if abs(v) > 0.6 * lim else "black")
+        ax.axhline(n_r - 1.5, color="black", lw=1.5)
+        ax.set_xticks(range(n_c))
+        ax.set_xticklabels([St.MODEL_STYLE[m]["label"].replace(" ", "\n") for m in dl.columns])
+        ax.set_title(title, fontsize=plt.rcParams["axes.titlesize"] * 0.85)
+    axes[0].set_yticks(range(n_r))
+    axes[0].set_yticklabels([f"{p} ({status[p]})" if p in status else p for p in dls[0].index])
+    cb = fig.colorbar(im, ax=axes, fraction=0.035, pad=0.02)
+    cb.set_label("ΔAIC vs forced fusion\n(negative: better)")
+    St.panel_labels(axes)
+    return _save(fig, "fig_aic_heatmap", save)
